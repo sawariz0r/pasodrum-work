@@ -42,6 +42,61 @@ export interface Message {
   ts: number;
   status: 'sent' | 'sending' | 'failed';
   edited?: boolean;
+  /** M2. Absent = 'text'. */
+  kind?: MessageKind;
+  /** M2. Sanitized HTML (allow-listed tags only) when the sender sent formatting; `body` is always the plain fallback. */
+  html?: string;
+  /** M2. For image/video/audio/file. */
+  media?: Media;
+  /** M2. The message this one replies to. `found: false` = original not loaded; show the fallback body, not clickable. */
+  replyTo?: { id: string; sender?: Person; body: string; found: boolean };
+  /** M2. Grouped by key (emoji or text), in first-reacted order. */
+  reactions?: Reaction[];
+  /** M2. This message mentions the signed-in person. */
+  mentionsMe?: boolean;
+  /** M2. For kind 'system': collapsed joins/leaves between messages. */
+  system?: { joined: Person[]; left: Person[] };
+}
+
+export type MessageKind = 'text' | 'emote' | 'notice' | 'image' | 'video' | 'audio' | 'file' | 'deleted' | 'unsupported' | 'system';
+
+export interface Media {
+  /** Opaque server reference; turn it into a URL with store.mediaUrl(). */
+  ref: string;
+  name: string;
+  mimetype?: string;
+  size?: number;
+  width?: number;
+  height?: number;
+  thumbnailRef?: string;
+  durationMs?: number;
+}
+
+export interface Reaction {
+  key: string;
+  count: number;
+  mine: boolean;
+  senders: Person[];
+}
+
+export interface Upload {
+  id: string;
+  name: string;
+  size: number;
+  mimetype: string;
+  /** 0..1 */
+  progress: number;
+  status: 'uploading' | 'done' | 'failed' | 'too-large';
+  /** Local object URL for image previews. */
+  previewUrl?: string;
+}
+
+export interface Draft {
+  body: string;
+  html?: string;
+  /** User ids mentioned (for m.mentions). */
+  mentions: string[];
+  replyTo?: string;
 }
 
 export interface Timeline {
@@ -63,6 +118,10 @@ export interface WorkspaceSnapshot {
   /** Only channels opened with openTimeline(). */
   timelines: Record<string, Timeline>;
   sessionExpired: boolean;
+  /** M2. People typing per channel (excluding me). */
+  typing: Record<string, Person[]>;
+  /** M2. Composer upload tray per channel. */
+  uploads: Record<string, Upload[]>;
 }
 
 export interface WorkspaceStore {
@@ -76,6 +135,23 @@ export interface WorkspaceStore {
   markRead(channelId: string): void;
   reconnectNow(): void;
   signOut(): Promise<void>;
+  // M2
+  /** Sends text (with optional formatting, mentions, reply) plus any finished uploads in the tray, then clears the tray. */
+  send(channelId: string, draft: Draft): void;
+  edit(channelId: string, messageId: string, draft: Draft): void;
+  remove(channelId: string, messageId: string): void;
+  react(channelId: string, messageId: string, key: string): void;
+  unreact(channelId: string, messageId: string, key: string): void;
+  attach(channelId: string, files: File[]): void;
+  retryUpload(channelId: string, uploadId: string): void;
+  removeUpload(channelId: string, uploadId: string): void;
+  setTyping(channelId: string, typing: boolean): void;
+  /** People who can be mentioned in this channel. */
+  members(channelId: string): Person[];
+  /** Authenticated media → object URL (cached). */
+  mediaUrl(ref: string, opts?: { thumbnail?: boolean }): Promise<string>;
+  /** Shareable link to a message (opens in Pasodrum work). */
+  messageLink(channelId: string, messageId: string): string;
 }
 
 export type SignInFailure = 'wrong-password' | 'unreachable' | 'other';

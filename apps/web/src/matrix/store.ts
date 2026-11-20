@@ -100,6 +100,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     ...workspaceOf(client.getRooms().map(factsOf)),
     timelines: Object.fromEntries([...open].map(([id, flags]) => [id, timelineOf(id, flags)])),
     sessionExpired,
+    typing: {},
+    uploads: {},
   });
 
   let snapshot = build();
@@ -215,5 +217,20 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       client.removeAllListeners();
       clearSession();
     },
+    // M2: implemented in task M2-01; until then the composer only uses sendText.
+    send(channelId, draft) {
+      this.sendText(channelId, draft.body);
+    },
+    edit: noop,
+    remove: noop,
+    react: noop,
+    unreact: noop,
+    attach: noop,
+    retryUpload: noop,
+    removeUpload: noop,
+    setTyping: noop,
+    members: () => [],
+    mediaUrl: () => Promise.reject(new Error('M2')),
+    messageLink: (channelId, messageId) => `${location.origin}/m/${encodeURIComponent(channelId)}/${encodeURIComponent(messageId)}`,
   };
 }

@@ -59,6 +59,8 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     channels,
     timelines: {},
     sessionExpired: false,
+    typing: {},
+    uploads: {},
   };
   const listeners = new Set<() => void>();
   let localId = 0;
@@ -116,5 +118,56 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       set({ connection: 'online' });
     },
     async signOut() {},
+    send(channelId, draft) {
+      this.sendText(channelId, draft.body);
+    },
+    edit(channelId, messageId, draft) {
+      setTimeline(channelId, { messages: messagesOf(channelId).map((x) => (x.id === messageId ? { ...x, body: draft.body, html: draft.html, edited: true } : x)) });
+    },
+    remove(channelId, messageId) {
+      setTimeline(channelId, { messages: messagesOf(channelId).map((x) => (x.id === messageId ? { ...x, kind: 'deleted', body: '', html: undefined } : x)) });
+    },
+    react(channelId, messageId, key) {
+      setTimeline(channelId, {
+        messages: messagesOf(channelId).map((x) => {
+          if (x.id !== messageId) return x;
+          const list = x.reactions ?? [];
+          const hit = list.find((r) => r.key === key);
+          if (hit?.mine) return x;
+          const next = hit
+            ? list.map((r) => (r.key === key ? { ...r, count: r.count + 1, mine: true, senders: [...r.senders, snapshot.me] } : r))
+            : [...list, { key, count: 1, mine: true, senders: [snapshot.me] }];
+          return { ...x, reactions: next };
+        }),
+      });
+    },
+    unreact(channelId, messageId, key) {
+      setTimeline(channelId, {
+        messages: messagesOf(channelId).map((x) => {
+          if (x.id !== messageId) return x;
+          const next = (x.reactions ?? [])
+            .map((r) => (r.key === key && r.mine ? { ...r, count: r.count - 1, mine: false, senders: r.senders.filter((p) => p.id !== snapshot.me.id) } : r))
+            .filter((r) => r.count > 0);
+          return { ...x, reactions: next };
+        }),
+      });
+    },
+    attach(channelId, files) {
+      const added = files.map((f) => ({
+        id: `up${localId++}`, name: f.name, size: f.size, mimetype: f.type, progress: 1,
+        status: f.size > 50 * 1024 * 1024 ? ('too-large' as const) : f.name.includes('fail') ? ('failed' as const) : ('done' as const),
+      }));
+      set({ uploads: { ...snapshot.uploads, [channelId]: [...(snapshot.uploads[channelId] ?? []), ...added] } });
+    },
+    retryUpload(channelId, uploadId) {
+      set({ uploads: { ...snapshot.uploads, [channelId]: (snapshot.uploads[channelId] ?? []).map((u) => (u.id === uploadId ? { ...u, status: 'done' as const } : u)) } });
+    },
+    removeUpload(channelId, uploadId) {
+      set({ uploads: { ...snapshot.uploads, [channelId]: (snapshot.uploads[channelId] ?? []).filter((u) => u.id !== uploadId) } });
+    },
+    setTyping() {},
+    members: () => Object.values(people),
+    mediaUrl: () => Promise.resolve('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400"><rect width="100%" height="100%" fill="%230e7c66"/></svg>'),
+    messageLink: (channelId, messageId) => `https://pasodrum.work/m/${encodeURIComponent(channelId)}/${encodeURIComponent(messageId)}`,
   };
 }

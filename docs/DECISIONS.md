@@ -102,6 +102,13 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-22 · M2 contract: rich messages, uploads, actions · Accepted · 2026-11-20
+- **Contract (matrix/types.ts):** `Message` gains optional `kind`, `html`, `media`, `replyTo`, `reactions`, `mentionsMe`, `system`; snapshot gains `typing` and `uploads`; store gains `send(Draft)`, `edit`, `remove`, `react`/`unreact`, `attach`/`retryUpload`/`removeUpload`, `setTyping`, `members`, `mediaUrl`, `messageLink`. The fake store implements them for UI work.
+- **HTML:** received `formatted_body` is sanitized in matrix/ to an allow-list (b, strong, i, em, s, del, code, pre, a[href http/https/mailto], ul, ol, li, blockquote, p, br, h1-h6 → rendered as bold text, span[data-mx-color] dropped, mx-reply stripped) and rendered in app/ by parsing to React elements — never `dangerouslySetInnerHTML`. Sent messages always carry `body` + `formatted_body` (D-05).
+- **Media:** authenticated media is fetched in matrix/ and handed out as cached object URLs (`mediaUrl`). Upload limit 50 MB (Batch B).
+- **Composer:** TipTap (D-02) with mention chips → `m.mentions.user_ids` + standard pills in `formatted_body`; emoji search uses emojibase data (EN + JA annotations).
+- **Folders:** matrix/ (M2-01), app/timeline/ rows + actions + viewer (M2-02), app/composer/ composer + editor + uploads (M2-03).
+
 ### D-21 · The canvas is the visual source of truth; push to main = production · Accepted · 2026-11-20
 - **Canvas (CEO):** "Canvas should be the source of truth." Every visual decision (spacing, type, colour, components, states, motion) lives on the design canvas first; the app matches it. A visual change starts as a canvas change the CEO approves, then the code follows. `design/canvas/` in the repo mirrors the canvas and is re-copied after every canvas publish. When the app and canvas differ, the canvas wins; if the canvas is wrong or missing something, fix the canvas (small design task), not just the code. Motion (D-20) is specified in Foundations → Motion.
 - **Deploys (CEO):** Coolify deploys `main` automatically. Every push to `main` is a production release: run `pnpm check` (and the browser check for UI work) before pushing; don't push half-finished work.
