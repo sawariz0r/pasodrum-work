@@ -102,6 +102,11 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-26 · Mail via Resend from noreply.prpl.se; invite service shape · Accepted · 2026-11-20
+- **Mail (CEO):** production mail (invites, later password reset) is sent by the invite service through the Resend HTTP API, from a verified sending domain `noreply.prpl.se` (From: `Pasodrum work <invites@noreply.prpl.se>`, configurable). The API key is sending-only, limited to that domain, and lives only in Coolify (`RESEND_API_KEY`). Locally mail goes to Mailpit (its HTTP send API), so no SMTP library is needed anywhere.
+- **Service:** `services/invite` = Node 24 + built-in `node:sqlite` (no native deps). Endpoints under `/api/invites`: create (caller verified with `whoami`; must be allowed to add people where they're adding), preview by code, claim (name + password), resend, revoke, list pending for a channel ("Copy join link"). It registers accounts with the registration token (deterministic IDs per D-07), keeps the temporary password encrypted at rest (`INVITE_SECRET`), claims by changing the password via the standard API, revokes by deactivating. Codes are random, single-use, expire after 14 days. Rate-limited per caller and per IP.
+- **Routing:** the web container's Caddy forwards `/api/invites/*` to the service (same origin, no CORS). The join page lives in the web app at `/join/:code`.
+
 ### D-25 · Roles and channel creation (Batch D answers) · Accepted · 2026-11-20
 - **Role changes:** Owners make or remove Owners. Owners and Admins change people between Member and Admin. Done from the profile card / channel members. (Supersedes the Owner-only rule drawn on RoleChange/RulesM4; canvas to be updated.)
 - **Channels in a client space:** Owners, Admins and the team members of that client space can create them; clients never can.

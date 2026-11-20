@@ -744,6 +744,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       threads: threadsOf(),
       threadTimelines: Object.fromEntries([...openThreads].map(([id, flags]) => [id, threadTimelineOf(id, flags)])),
       activity: activityOf(),
+      myRoles: {},
     };
   };
 
@@ -1157,5 +1158,25 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         ...(timeZone ? { timeZone } : {}),
       };
     },
+    // M4: implemented in task M4-02.
+    createChannel: () => Promise.reject(new Error('M4')),
+    browseChannels: () => Promise.resolve([]),
+    joinChannel: () => Promise.reject(new Error('M4')),
+    leaveChannel: () => Promise.reject(new Error('M4')),
+    setTopic: () => Promise.reject(new Error('M4')),
+    channelMembers: () => Promise.resolve([]),
+    setRole: () => Promise.reject(new Error('M4')),
+    removeFromChannel: () => Promise.reject(new Error('M4')),
+    addPeople: () => Promise.reject(new Error('M4')),
+    pendingInvites: () => Promise.resolve([]),
+    resendInvite: () => Promise.reject(new Error('M4')),
+    revokeInvite: () => Promise.reject(new Error('M4')),
+    updateProfile: () => Promise.reject(new Error('M4')),
+    devices: () => Promise.resolve([]),
+    signOutDevice: () => Promise.reject(new Error('M4')),
+    signOutOtherDevices: () => Promise.reject(new Error('M4')),
+    notifyLevel: () => 'all',
+    setNotifyLevel: () => Promise.reject(new Error('M4')),
+    setSetting: () => Promise.resolve(),
   };
 }

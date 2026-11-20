@@ -318,6 +318,7 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     threads: sampleThreads(),
     threadTimelines: {},
     activity: sampleActivity(),
+    myRoles: { '!pasodrum': 'owner', '!nordlys': 'owner' },
   };
   const listeners = new Set<() => void>();
   let localId = 0;
@@ -532,5 +533,38 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       const email = person.external ? 'henrik@nordlys.no' : `${person.name.split(' ')[0]!.toLowerCase()}@pasodrum.work`;
       return Promise.resolve({ person, email, timeZone: zones[person.name] ?? 'Europe/Oslo' });
     },
+    // M4 — fuller fake behaviour arrives with the M4 UI tasks.
+    async createChannel({ spaceId, name, private: isPrivate }) {
+      const id = `!ch-${localId++}`;
+      set({ channels: { ...snapshot.channels, [spaceId]: [...(snapshot.channels[spaceId] ?? []), { id, spaceId, name, private: isPrivate, unread: 0, mentions: 0, memberCount: 1 }].sort((a, b) => a.name.localeCompare(b.name)) } });
+      return id;
+    },
+    browseChannels: (spaceId) => Promise.resolve((snapshot.channels[spaceId] ?? []).map((c) => ({ id: c.id, spaceId, name: c.name, topic: c.topic, private: c.private, memberCount: c.memberCount, joined: true }))),
+    async joinChannel() {},
+    async leaveChannel(channelId) {
+      set({ channels: Object.fromEntries(Object.entries(snapshot.channels).map(([k, v]) => [k, v.filter((c) => c.id !== channelId)])) });
+    },
+    async setTopic(channelId, topic) {
+      set({ channels: Object.fromEntries(Object.entries(snapshot.channels).map(([k, v]) => [k, v.map((c) => (c.id === channelId ? { ...c, topic } : c))])) });
+    },
+    channelMembers: () => Promise.resolve(Object.values(people).slice(0, 5).map((person, i) => ({ person, role: i === 0 ? ('owner' as const) : i === 1 ? ('admin' as const) : ('member' as const) }))),
+    async setRole() {},
+    async removeFromChannel() {},
+    addPeople: (_channelId, req) => {
+      const ok = (e: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
+      return Promise.resolve({ added: req.userIds, invited: req.emails.filter(ok), failed: req.emails.filter((e) => !ok(e)).map((who) => ({ who, reason: 'invalid-email' as const })) });
+    },
+    pendingInvites: () => Promise.resolve([{ code: 'demo', email: 'henrik@nordlys.no', name: 'Henrik Dahl', role: 'client' as const, createdTs: Date.now() - 3_600_000, link: 'https://pasodrum.work/join/demo' }]),
+    async resendInvite() {},
+    async revokeInvite() {},
+    async updateProfile(patch) {
+      if (patch.name) set({ me: { ...snapshot.me, name: patch.name } });
+    },
+    devices: () => Promise.resolve([{ id: 'WEB1', name: 'Pasodrum work on Chrome', lastSeenTs: Date.now(), current: true }, { id: 'IOS1', name: 'Element X on iPhone', lastSeenTs: Date.now() - 86_400_000, current: false }]),
+    async signOutDevice() {},
+    async signOutOtherDevices() {},
+    notifyLevel: () => 'all',
+    async setNotifyLevel() {},
+    async setSetting() {},
   };
 }

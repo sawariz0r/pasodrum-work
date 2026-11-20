@@ -104,6 +104,60 @@ export interface Dm {
   spaceIds: string[];
 }
 
+/** M4. Owner/Admin come from power levels in the workspace (D-06); the rest from membership. */
+export type Role = 'owner' | 'admin' | 'member' | 'client' | 'guest';
+
+export interface Member {
+  person: Person;
+  role: Role;
+  /** Added but hasn't joined yet (invited by email or not yet signed in). */
+  pending?: boolean;
+}
+
+export interface JoinableChannel {
+  id: string;
+  spaceId: string;
+  name: string;
+  topic?: string;
+  private: boolean;
+  memberCount: number;
+  joined: boolean;
+}
+
+export interface PendingInvite {
+  code: string;
+  email: string;
+  name?: string;
+  role: 'member' | 'guest' | 'client';
+  createdTs: number;
+  /** Their single-use join link ("Copy join link"), only for people allowed to add people here. */
+  link?: string;
+}
+
+export interface AddPeopleResult {
+  added: string[];
+  invited: string[];
+  failed: { who: string; reason: 'already-member' | 'invalid-email' | 'not-allowed' | 'other' }[];
+}
+
+export interface Device {
+  id: string;
+  name: string;
+  lastSeenTs?: number;
+  current: boolean;
+}
+
+export type NotifyLevel = 'all' | 'mentions' | 'none';
+
+export interface InvitePreview {
+  email: string;
+  spaceName: string;
+  spaceKind: 'workspace' | 'client';
+  inviter?: string;
+  team: Person[];
+  state: 'open' | 'used' | 'expired';
+}
+
 export interface Profile {
   person: Person;
   email?: string;
@@ -187,6 +241,8 @@ export interface WorkspaceSnapshot {
   threadTimelines: Record<string, Timeline>;
   /** M3. Mentions and replies to me, newest first (built from synced history; the server has no /notifications). */
   activity: ActivityItem[];
+  /** M4. My role per space id (workspace + client spaces). */
+  myRoles: Record<string, Role>;
 }
 
 export interface WorkspaceStore {
@@ -227,6 +283,30 @@ export interface WorkspaceStore {
   /** Reuses an existing DM with exactly these people, else creates one. Resolves to its id. */
   openDm(userIds: string[]): Promise<string>;
   profile(userId: string): Promise<Profile>;
+  // M4
+  createChannel(opts: { spaceId: string; name: string; private: boolean; topic?: string }): Promise<string>;
+  browseChannels(spaceId: string): Promise<JoinableChannel[]>;
+  joinChannel(channelId: string): Promise<void>;
+  leaveChannel(channelId: string): Promise<void>;
+  setTopic(channelId: string, topic: string): Promise<void>;
+  channelMembers(channelId: string): Promise<Member[]>;
+  /** D-25: Owners make/remove Owners; Owners and Admins change Member↔Admin. */
+  setRole(spaceId: string, userId: string, role: 'owner' | 'admin' | 'member'): Promise<void>;
+  removeFromChannel(channelId: string, userId: string): Promise<void>;
+  /** Existing people get a normal invite (auto-accepted by our app); new emails go through the invite service (D-07, D-26). */
+  addPeople(channelId: string, req: { userIds: string[]; emails: string[]; role: 'member' | 'guest' | 'client' }): Promise<AddPeopleResult>;
+  pendingInvites(channelId: string): Promise<PendingInvite[]>;
+  resendInvite(code: string): Promise<void>;
+  revokeInvite(code: string): Promise<void>;
+  updateProfile(patch: { name?: string; avatar?: File; timeZone?: string }): Promise<void>;
+  devices(): Promise<Device[]>;
+  signOutDevice(deviceId: string): Promise<void>;
+  signOutOtherDevices(): Promise<void>;
+  /** 'default' = the account-wide level. */
+  notifyLevel(channelId: string | 'default'): NotifyLevel;
+  setNotifyLevel(channelId: string | 'default', level: NotifyLevel): Promise<void>;
+  /** Synced language/theme settings (account data work.pasodrum.settings, D-09). */
+  setSetting(key: 'language' | 'theme', value: string): Promise<void>;
 }
 
 export type SignInFailure = 'wrong-password' | 'unreachable' | 'other';
