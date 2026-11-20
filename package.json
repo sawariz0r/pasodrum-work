@@ -18,7 +18,8 @@
     "dev:server:reset": "docker compose -f dev/docker-compose.yml --env-file dev/.env down -v && rm -rf dev/data",
     "dev:server:logs": "docker compose -f dev/docker-compose.yml --env-file dev/.env logs -f continuwuity",
     "dev:seed": "node dev/seed.ts",
-    "probe": "node dev/probe.ts"
+    "probe": "node dev/probe.ts",
+    "setup:prod": "bash scripts/setup-production-env.sh"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
