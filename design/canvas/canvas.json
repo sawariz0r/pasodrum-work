@@ -610,6 +610,294 @@
       "title": "More menu — dark",
       "expand": "fill",
       "is_interactive": true
+    },
+    "NavigationM3.dc.html": {
+      "x": 0,
+      "y": 30460,
+      "w": 1440,
+      "h": 900,
+      "title": "Navigation (M3): rail, sidebar, rules",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Threads.dc.html": {
+      "x": 1520,
+      "y": 30460,
+      "w": 1440,
+      "h": 900,
+      "title": "Threads view, unread first",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ThreadsJP.dc.html": {
+      "x": 3040,
+      "y": 30460,
+      "w": 1440,
+      "h": 900,
+      "title": "Threads view — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ThreadNew.dc.html": {
+      "x": 0,
+      "y": 31480,
+      "w": 1440,
+      "h": 900,
+      "title": "Thread panel: first reply",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ThreadLoading.dc.html": {
+      "x": 1520,
+      "y": 31480,
+      "w": 1440,
+      "h": 900,
+      "title": "Thread panel: loading replies",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ThreadError.dc.html": {
+      "x": 3040,
+      "y": 31480,
+      "w": 1440,
+      "h": 900,
+      "title": "Thread panel: replies can’t load",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ThreadComposer.dc.html": {
+      "x": 0,
+      "y": 32500,
+      "w": 1440,
+      "h": 900,
+      "title": "Thread reply composer, typing",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ThreadErrorJP.dc.html": {
+      "x": 1520,
+      "y": 32500,
+      "w": 1440,
+      "h": 900,
+      "title": "Thread panel can’t load — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgHoverM3.dc.html": {
+      "x": 3040,
+      "y": 32500,
+      "w": 1440,
+      "h": 900,
+      "title": "Hover bar with Thread (M3)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Activity.dc.html": {
+      "x": 0,
+      "y": 33520,
+      "w": 1440,
+      "h": 900,
+      "title": "Activity: mentions and replies to you",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Mentions.dc.html": {
+      "x": 1520,
+      "y": 33520,
+      "w": 1440,
+      "h": 900,
+      "title": "Activity → Mentions",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ActivityJP.dc.html": {
+      "x": 3040,
+      "y": 33520,
+      "w": 1440,
+      "h": 900,
+      "title": "Activity — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Drafts.dc.html": {
+      "x": 0,
+      "y": 34540,
+      "w": 1440,
+      "h": 900,
+      "title": "Drafts (this device)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "DraftsJP.dc.html": {
+      "x": 1520,
+      "y": 34540,
+      "w": 1440,
+      "h": 900,
+      "title": "Drafts — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ThreadsEmpty.dc.html": {
+      "x": 3040,
+      "y": 34540,
+      "w": 1440,
+      "h": 900,
+      "title": "Threads — none yet",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "DMs.dc.html": {
+      "x": 0,
+      "y": 35560,
+      "w": 1440,
+      "h": 900,
+      "title": "DMs page (every space)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "DMsJP.dc.html": {
+      "x": 1520,
+      "y": 35560,
+      "w": 1440,
+      "h": 900,
+      "title": "DMs page — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "DMEmpty.dc.html": {
+      "x": 3040,
+      "y": 35560,
+      "w": 1440,
+      "h": 900,
+      "title": "DM header, no messages yet",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "DMEmptyJP.dc.html": {
+      "x": 0,
+      "y": 36580,
+      "w": 1440,
+      "h": 900,
+      "title": "New DM — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NewMessage.dc.html": {
+      "x": 1520,
+      "y": 36580,
+      "w": 1440,
+      "h": 900,
+      "title": "New message: find people",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NewMessageGroup.dc.html": {
+      "x": 3040,
+      "y": 36580,
+      "w": 1440,
+      "h": 900,
+      "title": "New message: group DM",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NewMessageJP.dc.html": {
+      "x": 0,
+      "y": 37600,
+      "w": 1440,
+      "h": 900,
+      "title": "New message — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ProfileCard.dc.html": {
+      "x": 1520,
+      "y": 37600,
+      "w": 1440,
+      "h": 900,
+      "title": "Profile card (click a name)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ProfileCardJP.dc.html": {
+      "x": 3040,
+      "y": 37600,
+      "w": 1440,
+      "h": 900,
+      "title": "Profile card — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ClientDMs.dc.html": {
+      "x": 0,
+      "y": 38620,
+      "w": 1440,
+      "h": 900,
+      "title": "Client: DMs with their team only",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ClientNewMessage.dc.html": {
+      "x": 1520,
+      "y": 38620,
+      "w": 1440,
+      "h": 900,
+      "title": "Client: New message, their space only",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ClientThread.dc.html": {
+      "x": 3040,
+      "y": 38620,
+      "w": 1440,
+      "h": 900,
+      "title": "Client: thread in their channel",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ThreadsDark.dc.html": {
+      "x": 0,
+      "y": 39640,
+      "w": 1440,
+      "h": 900,
+      "title": "Threads view — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "DMsDark.dc.html": {
+      "x": 1520,
+      "y": 39640,
+      "w": 1440,
+      "h": 900,
+      "title": "DMs page — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ProfileCardDark.dc.html": {
+      "x": 3040,
+      "y": 39640,
+      "w": 1440,
+      "h": 900,
+      "title": "Profile card — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ActivityEmpty.dc.html": {
+      "x": 0,
+      "y": 40660,
+      "w": 1440,
+      "h": 900,
+      "title": "Activity — nothing new",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "DraftsEmpty.dc.html": {
+      "x": 1520,
+      "y": 40660,
+      "w": 1440,
+      "h": 900,
+      "title": "Drafts — none",
+      "expand": "fill",
+      "is_interactive": true
     }
   },
   "order": [
@@ -679,7 +967,39 @@
     "MsgTextDark.dc.html",
     "MsgMediaDark.dc.html",
     "UploadDark.dc.html",
-    "MoreMenuDark.dc.html"
+    "MoreMenuDark.dc.html",
+    "NavigationM3.dc.html",
+    "Threads.dc.html",
+    "ThreadsJP.dc.html",
+    "ThreadNew.dc.html",
+    "ThreadLoading.dc.html",
+    "ThreadError.dc.html",
+    "ThreadComposer.dc.html",
+    "ThreadErrorJP.dc.html",
+    "MsgHoverM3.dc.html",
+    "Activity.dc.html",
+    "Mentions.dc.html",
+    "ActivityJP.dc.html",
+    "Drafts.dc.html",
+    "DraftsJP.dc.html",
+    "ThreadsEmpty.dc.html",
+    "DMs.dc.html",
+    "DMsJP.dc.html",
+    "DMEmpty.dc.html",
+    "DMEmptyJP.dc.html",
+    "NewMessage.dc.html",
+    "NewMessageGroup.dc.html",
+    "NewMessageJP.dc.html",
+    "ProfileCard.dc.html",
+    "ProfileCardJP.dc.html",
+    "ClientDMs.dc.html",
+    "ClientNewMessage.dc.html",
+    "ClientThread.dc.html",
+    "ThreadsDark.dc.html",
+    "DMsDark.dc.html",
+    "ProfileCardDark.dc.html",
+    "ActivityEmpty.dc.html",
+    "DraftsEmpty.dc.html"
   ],
   "notes": {
     "title": {
@@ -707,6 +1027,13 @@
       "x": 0,
       "y": 16720,
       "text": "Batch B — full timeline",
+      "kind": "title1",
+      "maxW": 4480
+    },
+    "batchC": {
+      "x": 0,
+      "y": 30360,
+      "text": "Batch C — threads, mentions, drafts, DMs",
       "kind": "title1",
       "maxW": 4480
     }

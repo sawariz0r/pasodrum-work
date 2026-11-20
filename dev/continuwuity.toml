@@ -9,6 +9,8 @@ allow_federation = false
 allow_registration = true
 allow_local_presence = true
 new_user_displayname_suffix = ""
+# 50 MB uploads (Batch B) plus request overhead.
+max_request_size = 53000000
 url_preview_domain_contains_allowlist = ["*"]
 
 [global.well_known]
