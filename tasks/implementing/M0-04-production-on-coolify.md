@@ -18,7 +18,9 @@ Production Continuwuity runs on the CEO's Coolify over real HTTPS (no staging, D
 - [x] Host chosen: CEO's Coolify, Docker Compose build pack (D-17)
 - [x] `deploy/docker-compose.yml` (env-only config, Coolify TLS, generated registration token) — boots locally, serves https `.well-known`, sliding sync on
 - [x] Repo pushed to `sawariz0r/pasodrum-work`
-- [ ] Coolify resource created with `SERVER_NAME` + domain; CEO registers his own account first with the one-time bootstrap token (it becomes server admin)
+- [x] Continuwuity live at https://pasodrum.work (Let's Encrypt, HTTP→HTTPS, `.well-known`, password login, sliding sync) — checked 2026-11-20
+- [x] `web` service (app + Caddy forwarding Matrix paths) added and tested locally
+- [ ] Domain moved from `continuwuity` to `web` in Coolify; CEO registers his own account first with the one-time bootstrap token (it becomes server admin)
 - [ ] `pnpm dev:seed` + `pnpm probe` against production (`MATRIX_BASE`, `MATRIX_SERVER`, `REGISTRATION_TOKEN` from `dev/.env.production`)
 
 ## Notes

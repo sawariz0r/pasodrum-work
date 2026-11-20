@@ -1,0 +1,25 @@
+# Plain HTTP inside the network; Coolify's proxy terminates TLS.
+{
+	auto_https off
+	admin off
+}
+
+:80 {
+	handle /_matrix/* {
+		reverse_proxy continuwuity:6167
+	}
+	handle /_continuwuity/* {
+		reverse_proxy continuwuity:6167
+	}
+	handle /.well-known/matrix/* {
+		reverse_proxy continuwuity:6167
+	}
+	handle {
+		root * /srv
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		header ?Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}

@@ -1,8 +1,18 @@
 # Production on Coolify (Docker Compose build pack, D-17/D-18). Coolify's proxy terminates TLS.
 # Coolify: Base Directory "/deploy", Docker Compose Location "/docker-compose.yml".
-# Set SERVER_NAME (e.g. pasodrum.work) and, under the continuwuity service's Domains, https://<SERVER_NAME>:6167.
-# Later the web app takes the root domain and continuwuity keeps /_matrix and /.well-known/matrix.
+# Set SERVER_NAME (e.g. pasodrum.work). Only the web service gets a domain: https://<SERVER_NAME>:80.
+# web serves the app and forwards /_matrix, /_continuwuity and /.well-known/matrix to continuwuity.
 services:
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    expose:
+      - "80"
+    depends_on:
+      - continuwuity
+
   continuwuity:
     image: forgejo.ellis.link/continuwuation/continuwuity:latest
     command: /sbin/conduwuit
