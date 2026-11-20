@@ -8,7 +8,7 @@ Operating guide for any coding agent (or human) working in this repo. Read this 
 
 You start with **no memory of prior chats** — orient yourself like this:
 
-1. **Read this file**, then skim [docs/SPEC.md](docs/SPEC.md) (scope + milestones) and [docs/DECISIONS.md](docs/DECISIONS.md) (what's decided + why).
+1. **Read this file**, then [docs/PHASES.md](docs/PHASES.md) (where every phase stands, what's waiting on the CEO, how the build loop works), then skim [docs/SPEC.md](docs/SPEC.md) and [docs/DECISIONS.md](docs/DECISIONS.md).
 2. **Check the board** in [tasks/](tasks/) — it's the **cross-session source of truth**:
    - `tasks/implementing/` **first** — anything here is in-flight; resume it before starting anything new.
    - then `tasks/todo/` — committed + ready, priority-ordered (`P0` first). Respect each task's `depends_on`.
