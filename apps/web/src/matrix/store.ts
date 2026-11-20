@@ -1538,5 +1538,12 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       const prev = client.getAccountData(SETTINGS as never)?.getContent<Record<string, unknown>>() ?? {};
       await client.setAccountData(SETTINGS as never, { ...prev, [key]: value } as never);
     },
+    // M5 — stubs until M5-01 lands.
+    createClientSpace: () => Promise.reject(new Error('not-implemented')),
+    updateSpace: () => Promise.reject(new Error('not-implemented')),
+    spaceMembers: () => Promise.reject(new Error('not-implemented')),
+    removeFromSpace: () => Promise.reject(new Error('not-implemented')),
+    setArchived: () => Promise.reject(new Error('not-implemented')),
+    anotherApp: () => ({ server: new URL(client.baseUrl).host, username: client.getUserId()!.slice(1, client.getUserId()!.indexOf(':')) }),
   };
 }

@@ -22,6 +22,10 @@ export interface Space {
   name: string;
   kind: 'workspace' | 'client';
   avatarUrl?: string;
+  /** M5. Client spaces: tile colour chosen at creation or in settings (work.pasodrum.space `colour`). Absent = derived from the id. */
+  colour?: string;
+  /** M5. Read-only for everyone: tile dims and sorts last, composers become one quiet bar. */
+  archived?: boolean;
 }
 
 export interface Channel {
@@ -33,6 +37,8 @@ export interface Channel {
   unread: number;
   mentions: number;
   memberCount: number;
+  /** M5. Clients and guests who are members (joined or pending). Only filled for team people (Owner/Admin/Member); always absent for clients and guests. */
+  outside?: Person[];
 }
 
 export interface Message {
@@ -158,6 +164,24 @@ export interface InvitePreview {
   state: 'open' | 'used' | 'expired';
 }
 
+/** M5. createClientSpace input (CreateClientSpace board). */
+export interface NewClientSpace {
+  name: string;
+  colour: string;
+  /** Channel names to create, first one is where you land. */
+  channels: string[];
+  /** Team people (user ids) added to the space and every channel. */
+  team: string[];
+  /** Client emails: invited as role 'client' through the invite service. */
+  clientEmails: string[];
+}
+
+/** M5. Profile menu → Another app (D-15). The only place a server name appears. */
+export interface AnotherAppInfo {
+  server: string;
+  username: string;
+}
+
 export interface Profile {
   person: Person;
   email?: string;
@@ -222,7 +246,7 @@ export interface Timeline {
 export interface WorkspaceSnapshot {
   me: Person;
   connection: ConnectionState;
-  /** Workspace first, then client spaces by name. */
+  /** Workspace first, then client spaces by name; archived client spaces last (M5). */
   spaces: Space[];
   /** Joined channels per space id, sorted by name. */
   channels: Record<string, Channel[]>;
@@ -307,6 +331,22 @@ export interface WorkspaceStore {
   setNotifyLevel(channelId: string | 'default', level: NotifyLevel): Promise<void>;
   /** Synced language/theme settings (account data work.pasodrum.settings, D-09). */
   setSetting(key: 'language' | 'theme', value: string): Promise<void>;
+  // M5
+  /**
+   * Owners/Admins of the workspace. Creates the space (D-27 levels), its channels, adds the team, invites the client emails.
+   * Rejects Error('name-taken') when another client space has this name (case-insensitive, trimmed); any other failure
+   * leaves nothing half-made. Resolves once the space is in the snapshot.
+   */
+  createClientSpace(opts: NewClientSpace): Promise<{ spaceId: string; channelId: string }>;
+  /** Owners/Admins of that space. Colour saves as it changes. */
+  updateSpace(spaceId: string, patch: { name?: string; colour?: string }): Promise<void>;
+  /** Team first, then clients; pending people (not joined yet) carry `pending`. */
+  spaceMembers(spaceId: string): Promise<Member[]>;
+  /** Leaves the space and every channel in it; a pending person's join link stops working. Messages and DMs stay; the account is never deleted. */
+  removeFromSpace(spaceId: string, userId: string): Promise<void>;
+  /** Archived = every channel read-only for everyone; nobody removed. Owners/Admins can undo. */
+  setArchived(spaceId: string, archived: boolean): Promise<void>;
+  anotherApp(): AnotherAppInfo;
 }
 
 export type SignInFailure = 'wrong-password' | 'unreachable' | 'other';

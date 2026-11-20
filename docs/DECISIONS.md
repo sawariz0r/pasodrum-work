@@ -102,12 +102,22 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-28 · M5 contract: client spaces, outside mark, Another app · Accepted · 2026-11-21
+- **Batch E approved** by the CEO 2026-11-21 (incl. Owners only step down themselves).
+- **Space state:** `work.pasodrum.space` (state key `''`) carries `{kind, colour?, archived?}`. `Space.colour` comes from it (absent → the old id-hash colour); `Space.archived` sorts the tile last and dims it.
+- **Archive** = raise `events_default` (and `m.reaction`/`m.room.redaction` events) to 50 in every channel of the space, so the server makes them read-only for everyone below Admin; Owners/Admins see the quiet bar with Unarchive and never post either (the UI shows the bar to all). Unarchive restores the D-27 levels. Nobody is removed.
+- **Outside mark:** `Channel.outside` = clients and guests in the channel (joined or invited), filled only when my role is owner/admin/member. DMs need no field: `Person.external` already marks them.
+- **Remove from space:** kick from the space and every channel in it, then revoke that person's open join codes for the space via the invite service (new endpoint if needed). Account is never deactivated (D-26 amendment).
+- **createClientSpace:** the name check is client-side over spaces I can see plus a server-side re-check of the room directory/hierarchy I can reach; on failure the store leaves (and forgets) whatever it created, so nothing half-made shows.
+- **Another app:** `anotherApp()` = `{server: host of the homeserver URL, username: the ID's localpart}` (D-07); the UI never builds it from IDs itself.
+- **Phones (D-15):** app routes on a narrow screen (< 640 px) show the PhoneHandoff page; `/join/*` works on phones.
+
 ### D-27 · Power levels that implement D-25 · Accepted · 2026-11-20
 - **Levels:** Owner 100, Admin 50, client-space team ("staff") 10, everyone else 0.
 - **Workspace space:** `m.room.power_levels` 50 (Admins can switch people Member↔Admin but can never touch Owners or go above 50 — Matrix enforces this), `invite` 50 (only Owner/Admin add Members), `m.space.child` 0 (any member can create workspace channels).
 - **Client space:** team members of that client space get 10; `invite` 10, `m.space.child` 10 (its team, Owners and Admins add people and create channels; clients at 0 can't). Owner/Admin carried over at 100/50.
 - **Channels:** inherit the levels of their space; `invite` 0 in workspace channels (any member can add guests), 10 in client-space channels; `m.room.power_levels` 50.
-- **Owners:** one Owner can't demote another (same level) — Owners step down themselves (Batch E answer, pending approval).
+- **Owners:** one Owner can't demote another (same level) — Owners step down themselves (Batch E, approved 2026-11-21).
 - **Room version:** keep the server default (v12). Its rule that a room's creator keeps top power can't be undone, so whoever creates a channel stays its top admin; acceptable at our size and noted here.
 
 ### D-26 · Mail via Resend from noreply.prpl.se; invite service shape · Accepted · 2026-11-20

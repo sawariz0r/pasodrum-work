@@ -1,6 +1,6 @@
 // In-memory WorkspaceStore with the canvas workspace, for tests and /dev screens. No server.
 import { PasswordRequired } from '../../matrix';
-import type { ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Draft, JoinableChannel, Media, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
+import type { ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Draft, JoinableChannel, Media, Member, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
 
 const people: Record<string, Person> = {
   so: { id: '@sofia:pasodrum.localhost', name: 'Sofia Olsen' },
@@ -31,8 +31,12 @@ const unjoined: Record<string, Omit<JoinableChannel, 'joined'>[]> = {
 
 const spaces: Space[] = [
   { id: '!pasodrum', name: 'Pasodrum', kind: 'workspace' },
-  { id: '!nordlys', name: 'Nordlys', kind: 'client' },
+  { id: '!nordlys', name: 'Nordlys', kind: 'client', colour: '#2F4A6D' },
 ];
+
+/** Workspace first, then client spaces by name; archived ones last. */
+const spaceOrder = (a: Space, b: Space) =>
+  (a.kind === 'workspace' ? -1 : b.kind === 'workspace' ? 1 : 0) || Number(!!a.archived) - Number(!!b.archived) || a.name.localeCompare(b.name);
 
 const ch = (id: string, spaceId: string, name: string, extra: Partial<Channel> = {}): Channel => ({
   id, spaceId, name, private: false, unread: 0, mentions: 0, memberCount: 4, ...extra,
@@ -40,14 +44,14 @@ const ch = (id: string, spaceId: string, name: string, extra: Partial<Channel> =
 
 const channels: Record<string, Channel[]> = {
   '!pasodrum': [
-    ch('!design', '!pasodrum', 'design', { topic: 'Product design, critiques and Figma links', memberCount: 8 }),
+    ch('!design', '!pasodrum', 'design', { topic: 'Product design, critiques and Figma links', memberCount: 8, outside: [ola] }),
     ch('!eng', '!pasodrum', 'eng', { unread: 3, topic: 'Builds, releases and the occasional fire' }),
     ch('!general', '!pasodrum', 'general', { topic: 'Company-wide news and announcements' }),
     ch('!lead', '!pasodrum', 'lead', { private: true, unread: 2, mentions: 2, memberCount: 2, topic: 'Planning and people topics' }),
   ],
   '!nordlys': [
-    ch('!project-updates', '!nordlys', 'project-updates', { memberCount: 3 }),
-    ch('!questions', '!nordlys', 'questions', { memberCount: 3 }),
+    ch('!project-updates', '!nordlys', 'project-updates', { memberCount: 3, outside: [people.hd!] }),
+    ch('!questions', '!nordlys', 'questions', { memberCount: 3, outside: [people.hd!] }),
   ],
 };
 
@@ -413,6 +417,12 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
   const browse = Object.fromEntries(Object.entries(unjoined).map(([k, v]) => [k, [...v]]));
   const patchChannel = (channelId: string, patch: Partial<Channel>) =>
     set({ channels: Object.fromEntries(Object.entries(snapshot.channels).map(([k, v]) => [k, v.map((c) => (c.id === channelId ? { ...c, ...patch } : c))])) });
+  // M5: who is in each client space (team on top, client below).
+  const spaceRoster: Record<string, { team: string[]; clients: string[] }> = {
+    '!nordlys': { team: [people.so!.id, people.jb!.id, people.ih!.id], clients: [people.hd!.id] },
+  };
+  const rosterOf = (spaceId: string) => (spaceRoster[spaceId] ??= { team: [snapshot.me.id], clients: [] });
+  const failedOnce = new Set<string>();
   const finishLoad = (channelId: string) => setTimeline(channelId, { messages: history[channelId]?.() ?? [], initialLoading: false });
 
   return {
@@ -690,5 +700,56 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     async setSetting(key, value) {
       settings[key] = value;
     },
+    // M5. Names containing "fail" reject once with a generic error (ClientSpaceCreateError board).
+    async createClientSpace({ name, colour, channels: names, team, clientEmails }) {
+      const clean = name.trim();
+      if (snapshot.spaces.some((sp) => sp.kind === 'client' && sp.name.toLowerCase() === clean.toLowerCase())) throw new Error('name-taken');
+      await new Promise((r) => setTimeout(r, opts.loadMs ?? 0));
+      if (clean.toLowerCase().includes('fail') && !failedOnce.has(clean)) {
+        failedOnce.add(clean);
+        throw new Error('other');
+      }
+      const spaceId = `!${clean.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${localId++}`;
+      const outside = clientEmails.map(byEmail);
+      outside.forEach((p) => waiting.set(p.id, p));
+      const list = names.map((n, i) => ch(`${spaceId}-c${i}`, spaceId, n, { memberCount: team.length + 1 + outside.length, ...(outside.length ? { outside } : {}) }));
+      for (const c of list) memberIds[c.id] = [snapshot.me.id, ...team, ...outside.map((p) => p.id)];
+      spaceRoster[spaceId] = { team: [snapshot.me.id, ...team], clients: outside.map((p) => p.id) };
+      const sorted = [...snapshot.spaces, { id: spaceId, name: clean, kind: 'client' as const, colour }].sort(spaceOrder);
+      set({ spaces: sorted, channels: { ...snapshot.channels, [spaceId]: list }, myRoles: { ...snapshot.myRoles, [spaceId]: snapshot.myRoles['!pasodrum'] ?? 'member' } });
+      return { spaceId, channelId: list[0]!.id };
+    },
+    async updateSpace(spaceId, patch) {
+      set({ spaces: snapshot.spaces.map((sp) => (sp.id === spaceId ? { ...sp, ...patch } : sp)).sort(spaceOrder) });
+    },
+    spaceMembers: (spaceId) => {
+      const r = rosterOf(spaceId);
+      const of = (id: string, fallback: Role): Member => {
+        const pending = waiting.get(id);
+        if (pending) return { person: pending, role: fallback, pending: true };
+        return { person: id === snapshot.me.id ? snapshot.me : ([...Object.values(people), ola].find((p) => p.id === id) ?? { id, name: id }), role: fallback === 'client' ? 'client' : role(id) };
+      };
+      return Promise.resolve([...r.team.map((id) => of(id, 'member')), ...r.clients.map((id) => of(id, 'client'))]);
+    },
+    async removeFromSpace(spaceId, userId) {
+      const r = rosterOf(spaceId);
+      r.team = r.team.filter((id) => id !== userId);
+      r.clients = r.clients.filter((id) => id !== userId);
+      for (const c of snapshot.channels[spaceId] ?? []) memberIds[c.id] = membersOf(c.id).filter((id) => id !== userId);
+      set({
+        channels: {
+          ...snapshot.channels,
+          [spaceId]: (snapshot.channels[spaceId] ?? []).map((c) => {
+            const next = { ...c, outside: c.outside?.filter((p) => p.id !== userId) };
+            if (!next.outside?.length) delete next.outside;
+            return next;
+          }),
+        },
+      });
+    },
+    async setArchived(spaceId, archived) {
+      set({ spaces: snapshot.spaces.map((sp) => (sp.id === spaceId ? { ...sp, archived } : sp)).sort(spaceOrder) });
+    },
+    anotherApp: () => ({ server: 'pasodrum.work', username: snapshot.me.id.slice(1, snapshot.me.id.indexOf(':')) }),
   };
 }

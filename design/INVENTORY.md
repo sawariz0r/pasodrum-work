@@ -101,20 +101,20 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ. Source copy in [desig
 | Foundations: floating composer + no sideways scroll rules | Foundations | approved 2026-11-20 |
 | Built in M4-04 without a board (to confirm on the canvas): password prompt before signing devices out; join claim errors ("Couldn’t join", "Choose a longer password"); link that can't be looked up ("This page isn’t available" card) | — | needs design |
 
-## Batch E — for M5 (designed 2026-11-20, awaiting CEO approval)
+## Batch E — for M5 (approved 2026-11-21)
 
 **Outside mark:** the amber ↗ square (already on client tiles/avatars) after a channel or DM name and beside Send with the outside people's faces when a conversation includes clients or guests; team people only; no text or banner.
 
 | Screen / state | Artboard | Status |
 |---|---|---|
-| Rules for M5 | RulesM5 | designed |
-| New client space: creating, name taken, error (Retry), created (tile pops into the rail) | CreateClientSpace(+JP), ClientSpaceCreating, ClientSpaceNameTaken, ClientSpaceCreateError, ClientSpaceCreated | designed |
-| Client's view of the shell | ClientShell, ClientShellMenu, ClientShellJP, ClientShellDark | designed |
-| Guest's view | GuestShell, GuestShellJP | designed |
-| Outside mark on channels, client spaces, DMs | ExternalChannel, ExternalClientSpace, ExternalDM, ExternalJP, ExternalDark | designed |
-| Client space settings, people, remove a person, archive / archived | ClientSpaceMenuAdmin, SpaceSettings(+JP), SpacePeople(+Dark), RemoveFromSpace(+JP), ArchiveSpace, ArchivedSpace | designed |
-| Another app (server + username, copy) | ProfileMenuAnotherApp, AnotherApp(+JP), JoinDoneOther | designed |
-| Phone hand-off, join page on phone | PhoneHandoff(+JP), JoinPhone, JoinDonePhone | designed |
+| Rules for M5 | RulesM5 | approved |
+| New client space: creating, name taken, error (Retry), created (tile pops into the rail) | CreateClientSpace(+JP), ClientSpaceCreating, ClientSpaceNameTaken, ClientSpaceCreateError, ClientSpaceCreated | approved |
+| Client's view of the shell | ClientShell, ClientShellMenu, ClientShellJP, ClientShellDark | approved |
+| Guest's view | GuestShell, GuestShellJP | approved |
+| Outside mark on channels, client spaces, DMs | ExternalChannel, ExternalClientSpace, ExternalDM, ExternalJP, ExternalDark | approved |
+| Client space settings, people, remove a person, archive / archived | ClientSpaceMenuAdmin, SpaceSettings(+JP), SpacePeople(+Dark), RemoveFromSpace(+JP), ArchiveSpace, ArchivedSpace | approved |
+| Another app (server + username, copy) | ProfileMenuAnotherApp, AnotherApp(+JP), JoinDoneOther | approved |
+| Phone hand-off, join page on phone | PhoneHandoff(+JP), JoinPhone, JoinDonePhone | approved |
 
 ## Batch F — for M6
 
