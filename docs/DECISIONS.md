@@ -74,8 +74,10 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Decision:** Password sign-in for v1. The SSO button stays designed and appears only if the server advertises SSO.
 - **Rationale:** Clients need accounts without our identity provider.
 
-### D-13 · Server capability findings and Continuwuity go/no-go · Proposed · 2026-11-20
-- To be written at the end of M0 from the probe table (SPEC §8). If a must-have row fails, we switch homeserver before M1.
+### D-13 · Continuwuity: GO · Accepted · 2026-11-20
+- **Decision:** Keep Continuwuity. All must-haves pass locally and on production (sliding sync for Element X, client isolation incl. user directory, threads); the CEO's Element X test on production passed ("LGTM").
+- **Fallbacks in force:** mentions list built locally (`/notifications` missing); message search = local substring scan (server search is whole-word, no Japanese); invite service checks callers with `whoami` (OpenID userinfo blocked with federation off); invite/reset mail sent by the invite service (server mail shows Matrix IDs and server branding).
+- **Open for M6:** signed cross-signing keys and history sharing, verified with the SDK.
 - **Interim (M0-03, local Continuwuity 26.9.4):** all four API must-haves pass (sliding sync, client isolation, user directory, threads); 17/20 rows pass. Fails with fallbacks: `/notifications` (404 → mentions list built locally), message search (word-based only; no partial words, no Japanese → local substring scan), OpenID userinfo (blocked with federation off → invite service checks callers with `whoami`). Details in [probe-results.md](./probe-results.md). Element X rows pending M0-05.
 
 ### D-14 · Server name `pasodrum.work` (provisional) · Accepted · 2026-11-20
@@ -93,6 +95,12 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Context:** CEO: "We won't use a staging yet, we'll deploy and iterate to production until we have two actual users and I say so."
 - **Decision:** One Coolify deployment = production, server name = the real domain (assumed `pasodrum.work`). We deploy and iterate there directly. Until the CEO says otherwise (at two real users), production is disposable: wiping its data volume is allowed, and test accounts from `pnpm dev:seed` may live there.
 - **Consequences:** the CEO registers his own account first with the one-time bootstrap token, so the server admin is a real account, not a seed account. Seed/probe run against production with `dev/.env.production` (gitignored). Before a second real person joins: wipe, or at least deactivate the seed accounts and rooms. Milestone smoke tests run on production. A staging environment returns when the CEO asks for one.
+
+### D-19 · Ship only controls that work; the store contract between matrix/ and app/ · Accepted · 2026-11-20
+- **Show only what works:** each milestone shows the parts of the approved layout it makes work. M1: space tiles in the rail, profile menu (language, theme, sign out), channel list with unread/mention counts, channel header with name, Messages tab, timeline and plain-text composer, Batch A states. Later: Home/DMs/Activity and sidebar Threads/Mentions/Drafts/DMs (M3), Add people and members (M4), "+" New client space (M5), formatting/attach/emoji/mention in the composer (M2), Pins/Files/Docs/Boards via features (M7), "Forgot password?" (M4, needs invite-service mail; production has no SMTP).
+- **Contract:** app/ talks to the server only through `WorkspaceStore` (`matrix/types.ts`): an immutable `WorkspaceSnapshot` + `subscribe`, read with `useWorkspace(selector)` (`useSyncExternalStore`), plus commands (`openTimeline`, `sendText`, `retry`, …). Entry points: `resolveServer`, `signIn`, `loadSession`, `createWorkspaceStore`. `app/testing/fakeStore.ts` implements the same contract for tests and dev screens, so UI work never needs a server.
+- **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
+- **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
 ### D-16 · Smaller decisions taken without escalation · Accepted · 2026-11-20
 - Newcomers see earlier history in channels they're added to (non-encrypted channels).
