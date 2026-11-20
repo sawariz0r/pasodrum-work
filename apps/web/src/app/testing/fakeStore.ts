@@ -193,6 +193,13 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     sessionExpired: false,
     typing: { '!eng': [people.jb!] },
     uploads: {},
+    dms: [
+      { id: '!dm-ingrid', people: [people.ih!], unread: 1, mentions: 1, lastTs: Date.UTC(2026, 10, 20, 9, 40), spaceIds: ['!pasodrum', '!nordlys'] },
+      { id: '!dm-jonas-tanaka', people: [people.jb!, people.ty!], unread: 0, mentions: 0, lastTs: Date.UTC(2026, 10, 20, 8, 15), spaceIds: ['!pasodrum'] },
+    ],
+    threads: [],
+    threadTimelines: {},
+    activity: [],
   };
   const listeners = new Set<() => void>();
   let localId = 0;
@@ -339,5 +346,31 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       return opts.mediaMs ? new Promise((r) => setTimeout(() => r(url), opts.mediaMs)) : Promise.resolve(url);
     },
     messageLink: (channelId, messageId) => `https://pasodrum.work/m/${encodeURIComponent(channelId)}/${encodeURIComponent(messageId)}`,
+    // M3 — fuller fake data arrives with the M3 UI tasks.
+    openThread(channelId, rootId) {
+      if (snapshot.threadTimelines[rootId]) return;
+      set({ threadTimelines: { ...snapshot.threadTimelines, [rootId]: { messages: [], initialLoading: false, loadingOlder: false, hasOlder: false } } });
+      void channelId;
+    },
+    loadOlderInThread() {},
+    markThreadRead(channelId, rootId) {
+      set({ threads: snapshot.threads.map((t) => (t.rootId === rootId && t.channelId === channelId ? { ...t, unread: false } : t)) });
+    },
+    markActivityRead(itemId) {
+      set({ activity: snapshot.activity.map((a) => (a.id === itemId ? { ...a, unread: false } : a)) });
+    },
+    searchPeople: (query) => Promise.resolve(Object.values(people).filter((p) => p.id !== snapshot.me.id && p.name.toLowerCase().includes(query.toLowerCase()))),
+    async openDm(userIds) {
+      const hit = snapshot.dms.find((d) => d.people.length === userIds.length && d.people.every((p) => userIds.includes(p.id)));
+      if (hit) return hit.id;
+      const id = `!dm-${localId++}`;
+      const dmPeople = Object.values(people).filter((p) => userIds.includes(p.id));
+      set({ dms: [{ id, people: dmPeople, unread: 0, mentions: 0, lastTs: Date.now(), spaceIds: ['!pasodrum'] }, ...snapshot.dms] });
+      return id;
+    },
+    profile: (userId) => {
+      const person = Object.values(people).find((p) => p.id === userId) ?? { id: userId, name: userId };
+      return Promise.resolve({ person, email: `${person.name.split(' ')[0]!.toLowerCase()}@pasodrum.work`, timeZone: person.name === '田中 由紀' ? 'Asia/Tokyo' : 'Europe/Oslo' });
+    },
   };
 }

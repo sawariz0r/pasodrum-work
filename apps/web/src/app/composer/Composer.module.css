@@ -1,6 +1,12 @@
 .dock {
   flex-shrink: 0;
   padding: 22px 20px 14px;
+  /* Floats over the timeline: only the card catches the pointer, so the conversation scrolls under the margins. */
+  pointer-events: none;
+}
+
+.dock > * {
+  pointer-events: auto;
 }
 
 .float {

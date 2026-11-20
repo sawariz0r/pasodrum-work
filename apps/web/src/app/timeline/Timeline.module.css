@@ -1,4 +1,5 @@
 .view {
+  position: relative;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -7,19 +8,31 @@
   min-height: 0;
 }
 
+/* The conversation runs the full height; the composer floats over its bottom (Slack-style). */
 .scroller {
   display: flex;
   flex: 1;
   flex-direction: column;
+  min-width: 0;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   overflow-anchor: none;
 }
 
 .content {
   position: relative;
+  min-width: 0;
   margin-top: auto;
-  padding: 12px 8px 8px;
+  padding: 12px 8px calc(var(--dock-h, 0px) + 8px);
+}
+
+.dockSlot {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
 }
 
 .srOnly {
@@ -427,6 +440,8 @@
   top: calc(100% + 8px);
   left: 50%;
   z-index: 7;
+  /* Out of layout until hover, so an invisible tooltip can't widen the timeline (sideways scroll). */
+  display: none;
   padding: 5px 9px;
   border-radius: 7px;
   background: var(--tip);
@@ -436,20 +451,19 @@
   font-weight: 600;
   line-height: normal;
   white-space: nowrap;
-  opacity: 0;
   pointer-events: none;
   transform: translateX(-50%);
-  transition: opacity var(--dur-1) var(--ease-out);
 }
 
-.tool:hover::after {
-  opacity: 1;
-  transition-delay: 500ms;
+.tool:hover:not([aria-expanded='true'])::after {
+  display: block;
+  animation: fade-in var(--dur-1) var(--ease-out) 500ms both;
 }
 
-.tool[aria-expanded='true']::after {
-  opacity: 0;
-  transition-delay: 0s;
+.actions > .tool:last-child::after {
+  left: auto;
+  right: 0;
+  transform: none;
 }
 
 .menu {
@@ -468,7 +482,7 @@
 /* Jump pill and toast float over the bottom of the timeline. */
 .floats {
   position: absolute;
-  bottom: 8px;
+  bottom: calc(var(--dock-h, 0px) + 8px);
   left: 50%;
   z-index: 12;
   transform: translateX(-50%);
@@ -527,16 +541,22 @@
 
 /* Typing: in the 22 px the composer keeps free above itself. */
 .floor {
-  position: relative;
-  z-index: 3;
+  position: absolute;
+  right: 0;
+  bottom: var(--dock-h, 0px);
+  left: 0;
+  z-index: 5;
   height: 0;
 }
 
 .typing {
   position: absolute;
   top: 0;
-  right: 24px;
-  left: 24px;
+  left: 18px;
+  max-width: calc(100% - 36px);
+  padding: 0 8px 0 6px;
+  border-radius: 6px;
+  background: var(--bg);
   display: flex;
   align-items: center;
   gap: 7px;

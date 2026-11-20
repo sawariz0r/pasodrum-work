@@ -13,6 +13,8 @@ export interface Person {
   id: string;
   name: string;
   avatarUrl?: string;
+  /** M3. Not a member of the company workspace (client or guest): amber corner badge. */
+  external?: boolean;
 }
 
 export interface Space {
@@ -57,6 +59,54 @@ export interface Message {
   mentionsMe?: boolean;
   /** M2. For kind 'system': collapsed joins/leaves between messages. */
   system?: { joined: Person[]; left: Person[] };
+  /** M3. On a thread root: summary of its replies. */
+  thread?: ThreadInfo;
+}
+
+export interface ThreadInfo {
+  count: number;
+  lastTs: number;
+  participants: Person[];
+  unread: boolean;
+}
+
+/** M3. A thread I follow (I wrote the root or replied). */
+export interface ThreadSummary {
+  channelId: string;
+  rootId: string;
+  root: Message;
+  lastReply?: Message;
+  count: number;
+  unread: boolean;
+  lastTs: number;
+}
+
+/** M3. Something aimed at me: a mention, or a reply to my message (in a channel or thread). */
+export interface ActivityItem {
+  id: string;
+  kind: 'mention' | 'reply';
+  channelId: string;
+  threadRootId?: string;
+  message: Message;
+  unread: boolean;
+}
+
+/** M3. A direct conversation with one or more people. */
+export interface Dm {
+  id: string;
+  people: Person[];
+  unread: number;
+  mentions: number;
+  lastTs: number;
+  /** Spaces this DM belongs to in the sidebar: spaces all its people share with me. */
+  spaceIds: string[];
+}
+
+export interface Profile {
+  person: Person;
+  email?: string;
+  /** IANA time zone, e.g. "Asia/Tokyo". */
+  timeZone?: string;
 }
 
 export type MessageKind = 'text' | 'emote' | 'notice' | 'image' | 'video' | 'audio' | 'file' | 'deleted' | 'unsupported' | 'system';
@@ -98,6 +148,8 @@ export interface Draft {
   /** User ids mentioned (for m.mentions). */
   mentions: string[];
   replyTo?: string;
+  /** M3. Send into this thread. */
+  threadRootId?: string;
 }
 
 export interface Timeline {
@@ -123,6 +175,14 @@ export interface WorkspaceSnapshot {
   typing: Record<string, Person[]>;
   /** M2. Composer upload tray per channel. */
   uploads: Record<string, Upload[]>;
+  /** M3. Newest first. */
+  dms: Dm[];
+  /** M3. Threads I follow, newest activity first. */
+  threads: ThreadSummary[];
+  /** M3. Open thread timelines by root id (openThread). */
+  threadTimelines: Record<string, Timeline>;
+  /** M3. Mentions and replies to me, newest first (built from synced history; the server has no /notifications). */
+  activity: ActivityItem[];
 }
 
 export interface WorkspaceStore {
@@ -153,6 +213,16 @@ export interface WorkspaceStore {
   mediaUrl(ref: string, opts?: { thumbnail?: boolean }): Promise<string>;
   /** Shareable link to a message (opens in Pasodrum work). */
   messageLink(channelId: string, messageId: string): string;
+  // M3
+  openThread(channelId: string, rootId: string): void;
+  loadOlderInThread(channelId: string, rootId: string): void;
+  markThreadRead(channelId: string, rootId: string): void;
+  markActivityRead(itemId: string): void;
+  /** People I may start a conversation with (server decides visibility; clients see only their client space's team). */
+  searchPeople(query: string): Promise<Person[]>;
+  /** Reuses an existing DM with exactly these people, else creates one. Resolves to its id. */
+  openDm(userIds: string[]): Promise<string>;
+  profile(userId: string): Promise<Profile>;
 }
 
 export type SignInFailure = 'wrong-password' | 'unreachable' | 'other';

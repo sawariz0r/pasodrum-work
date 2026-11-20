@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { useStore, useWorkspace, type WorkspaceSnapshot } from '../../matrix';
 import { ComposerProvider } from '../composer/context';
 import { Composer } from './Composer';
@@ -25,14 +25,29 @@ function ChannelPane({ channelId }: { channelId: string }) {
     store.openTimeline(channelId);
   }, [store, channelId]);
 
+  const dockRef = useRef<HTMLDivElement>(null);
+  const [dockHeight, setDockHeight] = useState(0);
+  useLayoutEffect(() => {
+    const el = dockRef.current;
+    if (!el) return;
+    const measure = () => setDockHeight(el.offsetHeight);
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <ComposerProvider>
-      <div className={s.view}>
+      <div className={s.view} style={{ '--dock-h': `${dockHeight}px` } as CSSProperties}>
         <Timeline channelId={channelId} channelName={name} timeline={timeline} meId={meId} unreadAtOpen={unreadAtOpen} />
         <div className={s.floor}>
           <TypingIndicator channelId={channelId} />
         </div>
-        <Composer channelId={channelId} channelName={name} />
+        <div className={s.dockSlot} ref={dockRef}>
+          <Composer channelId={channelId} channelName={name} />
+        </div>
       </div>
     </ComposerProvider>
   );

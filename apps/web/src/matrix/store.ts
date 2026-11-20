@@ -255,6 +255,10 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     sessionExpired,
     typing: Object.fromEntries([...open.keys()].map((id) => [id, typingOf(id)] as const).filter(([, people]) => people.length)),
     uploads: Object.fromEntries([...trays].filter(([, items]) => items.length).map(([id, items]) => [id, items.map((i) => i.upload)])),
+    dms: [],
+    threads: [],
+    threadTimelines: {},
+    activity: [],
   });
 
   let snapshot = build();
@@ -571,5 +575,13 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       return url;
     },
     messageLink: (channelId, messageId) => `${location.origin}/m/${encodeURIComponent(channelId)}/${encodeURIComponent(messageId)}`,
+    // M3: implemented in task M3-01.
+    openThread: noop,
+    loadOlderInThread: noop,
+    markThreadRead: noop,
+    markActivityRead: noop,
+    searchPeople: () => Promise.resolve([]),
+    openDm: () => Promise.reject(new Error('M3')),
+    profile: (userId) => Promise.resolve({ person: { id: userId, name: userId } }),
   };
 }
