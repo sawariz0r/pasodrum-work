@@ -102,6 +102,13 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-24 · M3 contract; DMs start unencrypted until M6 · Accepted · 2026-11-20
+- **Contract (matrix/types.ts):** snapshot gains `dms`, `threads` (followed), `threadTimelines`, `activity`; `Message.thread` summary on roots; `Person.external`; `Draft.threadRootId`; store gains `openThread`, `loadOlderInThread`, `markThreadRead`, `markActivityRead`, `searchPeople`, `openDm`, `profile`. Fake store implements basics; drafts live in `app/drafts.ts` (local, per person, per device); profile card opens via `app/people/ProfileCardContext.tsx`.
+- **Activity** is built in matrix/ from synced history (mentions of me + replies to my messages, incl. thread replies to my roots); the server has no `/notifications` (D-13). Read state = my read receipt (threaded where applicable).
+- **DMs:** created with `is_direct`, recorded in `m.direct`, preset private, **without encryption until M6** — our client has no crypto yet, and an encrypted DM would be unreadable here. M6 turns encryption on for DMs (new and existing; irreversible by design). `openDm` reuses an existing DM with exactly the same people.
+- **Profile:** display name, avatar, `m.tz` profile field for local time, email from `work.pasodrum.email` (else derived from the sign-in ID per D-07).
+- **Folders:** matrix/ (M3-01); app/shell + app/pages + app/people (M3-02); app/thread + timeline row/composer edits (M3-03).
+
 ### D-23 · Navigation: rail = across everything, sidebar = the space you're in · Accepted · 2026-11-20
 - **Decision (Batch C, approved by CEO):** rail holds Home, DMs and Activity (across the workspace and all client spaces) plus space tiles. Sidebar holds the current space: Threads, Drafts, channels, its DMs, client spaces. Mentions is a filter inside Activity (All · Mentions · Replies = what's aimed at you). Threads = conversations you follow. Drafts stay in the sidebar (per device, grey count). Only deliberate duplicate: DMs (sidebar for switching, rail page in full).
 - **Behaviour:** opening a thread or Activity item marks it read; lists keep their order while open; DMs/Activity pages show a 340px list column in place of the sidebar; New message reuses an existing DM; client people get the amber corner badge; clients can DM only team people in their client space.
