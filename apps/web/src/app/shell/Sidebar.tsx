@@ -13,6 +13,7 @@ import { ChevronDownIcon, ComposeIcon, PlusIcon, SendIcon, ThreadIcon } from './
 import { useMediaUrl } from '../timeline/Media';
 import s from './Shell.module.css';
 import { useSpaceDrafts } from './spaceRooms';
+import { ChannelsPlusMenu, SidebarAddPeople, WorkspaceMenu } from '../channels/ChannelMenus';
 
 const noChannels: Channel[] = [];
 
@@ -35,7 +36,7 @@ export function Sidebar({ space, active }: { space: Space; active?: SidebarActiv
   return (
     <aside aria-label={t('shell.sidebar.label', { workspace: space.name })} className={s.sidebar}>
       <div className={s.sideHead}>
-        <h2 className={s.spaceName}>{space.name}</h2>
+        <WorkspaceMenu space={space} channelId={active && 'channelId' in active ? active.channelId : undefined} className={s.spaceName} />
         <IconButton outline label={t('shell.sidebar.newMessage')} icon={<ComposeIcon />} onClick={newMessage} />
       </div>
       <div className={s.sideList}>
@@ -55,7 +56,7 @@ export function Sidebar({ space, active }: { space: Space; active?: SidebarActiv
           end={drafts.length > 0 && <span className={s.quietCount}>{drafts.length}</span>}
         />
 
-        <Section label={t('shell.sidebar.channels')}>
+        <Section label={t('shell.sidebar.channels')} action={<ChannelsPlusMenu space={space} className={s.sectionAction} />}>
           {channels.map((c) => {
             const current = is('channelId', c.id);
             return (
@@ -70,6 +71,7 @@ export function Sidebar({ space, active }: { space: Space; active?: SidebarActiv
               />
             );
           })}
+          <SidebarAddPeople space={space} channelId={active && 'channelId' in active ? active.channelId : undefined} />
         </Section>
 
         <Section

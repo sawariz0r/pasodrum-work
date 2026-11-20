@@ -19,38 +19,66 @@ function write(key: string, value: string | null) {
 }
 
 export type Theme = 'light' | 'dark';
+/** What the person picked: a theme, or follow the system (M4 Settings → Appearance). */
+export type ThemePref = Theme | 'system';
 
 const themeKey = 'pasodrum.theme';
 const themeListeners = new Set<() => void>();
+const darkQuery = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : undefined;
 
 function systemTheme(): Theme {
-  return typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return darkQuery?.matches ? 'dark' : 'light';
 }
 
-let theme: Theme = (() => {
+let themePref: ThemePref = (() => {
   const stored = read(themeKey);
-  return stored === 'light' || stored === 'dark' ? stored : systemTheme();
+  return stored === 'light' || stored === 'dark' ? stored : 'system';
 })();
+let theme: Theme = themePref === 'system' ? systemTheme() : themePref;
 
 export function applyTheme() {
   document.documentElement.dataset.theme = theme;
 }
 
-export function setTheme(next: Theme) {
-  theme = next;
-  write(themeKey, next);
+export function setThemePref(next: ThemePref) {
+  themePref = next;
+  theme = next === 'system' ? systemTheme() : next;
+  write(themeKey, next === 'system' ? null : next);
   applyTheme();
   themeListeners.forEach((l) => l());
 }
 
+export function setTheme(next: Theme) {
+  setThemePref(next);
+}
+
+darkQuery?.addEventListener?.('change', () => {
+  if (themePref === 'system') setThemePref('system');
+});
+
+function subscribeTheme(cb: () => void) {
+  themeListeners.add(cb);
+  return () => {
+    themeListeners.delete(cb);
+  };
+}
+
 export function useTheme(): Theme {
-  return useSyncExternalStore(
-    (cb) => {
-      themeListeners.add(cb);
-      return () => themeListeners.delete(cb);
-    },
-    () => theme,
-  );
+  return useSyncExternalStore(subscribeTheme, () => theme);
+}
+
+export function useThemePref(): ThemePref {
+  return useSyncExternalStore(subscribeTheme, () => themePref);
+}
+
+/** Called after every theme change (for syncing the choice to the account). */
+export function onThemePrefChange(cb: (pref: ThemePref) => void) {
+  let last = themePref;
+  return subscribeTheme(() => {
+    if (themePref === last) return;
+    last = themePref;
+    cb(themePref);
+  });
 }
 
 const placeKey = 'pasodrum.place';

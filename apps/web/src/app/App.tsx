@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
-import { useWorkspace, WorkspaceProvider, type Session, type WorkspaceStore } from '../matrix';
+import { useWorkspace, WorkspaceProvider, type InvitePreview, type Session, type WorkspaceStore } from '../matrix';
 import { matrixBackend, type Backend } from './backend';
+import { FirstRun, startFirstRun } from './join/FirstRun';
+import { JoinRoute, JoinRouteSignedIn } from './join/JoinRoute';
 import { lastIdentifier, rememberIdentifier } from './prefs';
+import { SettingsSync, WithSettings } from './settings/SettingsRoute';
 import { Workspace } from './shell/Shell';
 import { SignIn, type Expired } from './signin/SignIn';
 
@@ -43,13 +46,20 @@ export function AppRoutes({ backend }: { backend: Backend }) {
   };
   const from = (location.state as { from?: string } | null)?.from;
 
-  const end = (next?: Expired) => {
+  const end = (next?: Expired, to = '/signin') => {
     if (!signed) return;
     void signed.store.signOut().catch(() => {});
     setExpired(next);
     setSignedOut(!next);
     setSigned(null);
-    navigate('/signin', { replace: true });
+    navigate(to, { replace: true });
+  };
+
+  // Join page → "Open in browser": the claimed account signs in and lands in the channel it was added to.
+  const onJoined = (session: Session, identifier: string, preview: InvitePreview) => {
+    startFirstRun(session.userId, preview.spaceName);
+    onSignedIn(session, identifier);
+    navigate('/', { replace: true });
   };
 
   return (
@@ -59,12 +69,28 @@ export function AppRoutes({ backend }: { backend: Backend }) {
         element={signed ? <Navigate to={from && from !== '/signin' ? from : '/'} replace /> : <SignIn key={expired ? 'expired' : 'new'} backend={backend} expired={expired} onSignedIn={onSignedIn} />}
       />
       <Route
+        path="/join/:code"
+        element={
+          signed ? (
+            <WorkspaceProvider store={signed.store}>
+              <JoinRouteSignedIn backend={backend} onJoined={onJoined} onSignOut={() => end(undefined, location.pathname)} />
+            </WorkspaceProvider>
+          ) : (
+            <JoinRoute backend={backend} onJoined={onJoined} />
+          )
+        }
+      />
+      <Route
         path="*"
         element={
           signed ? (
             <WorkspaceProvider store={signed.store}>
               <OnExpired onExpired={() => end({ identifier: lastIdentifier(), baseUrl: signed.session.baseUrl })} />
-              <Workspace onSignOut={() => end()} />
+              <SettingsSync />
+              <FirstRun />
+              <WithSettings>
+                <Workspace onSignOut={() => end()} />
+              </WithSettings>
             </WorkspaceProvider>
           ) : (
             <Navigate to="/signin" replace state={signedOut ? undefined : { from: location.pathname + location.search }} />

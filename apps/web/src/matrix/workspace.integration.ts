@@ -162,10 +162,11 @@ describe('session end', () => {
   it('flags an expired token and clears the stored session', async () => {
     const { session, store } = await open('tanaka');
     expect(loadSession()?.accessToken).toBe(session.accessToken);
+    // Signed in before the expiry, so its saved session can't land after the store clears it.
+    const other = await signIn(BASE, 'jonas', PASSWORD);
     await mx(session.accessToken, 'POST', '/_matrix/client/v3/logout');
     store.reconnectNow();
     const general = channel(store.getSnapshot(), 'Pasodrum', 'general')!.id;
-    const other = await signIn(BASE, 'jonas', PASSWORD);
     await mx(other.accessToken, 'PUT', `/_matrix/client/v3/rooms/${encodeURIComponent(general)}/send/m.room.message/wake${Date.now()}`, { msgtype: 'm.text', body: 'wake up' });
     await mx(other.accessToken, 'POST', '/_matrix/client/v3/logout');
     await until(store, (s) => s.sessionExpired, 40_000);

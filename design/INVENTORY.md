@@ -99,6 +99,7 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ. Source copy in [desig
 | Join page: link used, wrong account | JoinUsed, JoinWrongAccount(+JP) | approved 2026-11-20 |
 | First sign-in (team, client) | FirstRunTeam, FirstRunClient(+JP) | approved 2026-11-20 |
 | Foundations: floating composer + no sideways scroll rules | Foundations | approved 2026-11-20 |
+| Built in M4-04 without a board (to confirm on the canvas): password prompt before signing devices out; join claim errors ("Couldn’t join", "Choose a longer password"); link that can't be looked up ("This page isn’t available" card) | — | needs design |
 
 ## Batch E — for M5 (designed 2026-11-20, awaiting CEO approval)
 

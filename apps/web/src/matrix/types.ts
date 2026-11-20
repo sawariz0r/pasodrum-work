@@ -316,3 +316,13 @@ export class SignInError extends Error {
     super(reason);
   }
 }
+
+/**
+ * M4. signOutDevice/signOutOtherDevices reject with this when the server asks for the password again.
+ * Ask for it, then `retry(password)`; a wrong password rejects with Error('wrong-password').
+ */
+export class PasswordRequired extends Error {
+  constructor(readonly retry: (password: string) => Promise<void>) {
+    super('password-required');
+  }
+}

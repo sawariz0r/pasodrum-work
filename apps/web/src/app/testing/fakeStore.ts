@@ -1,5 +1,6 @@
 // In-memory WorkspaceStore with the canvas workspace, for tests and /dev screens. No server.
-import type { ActivityItem, Channel, ConnectionState, Draft, Media, Message, Person, Reaction, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
+import { PasswordRequired } from '../../matrix';
+import type { ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Draft, JoinableChannel, Media, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
 
 const people: Record<string, Person> = {
   so: { id: '@sofia:pasodrum.localhost', name: 'Sofia Olsen' },
@@ -13,6 +14,21 @@ const people: Record<string, Person> = {
   hd: { id: '@henrik_nordlys.no:pasodrum.localhost', name: 'Henrik Dahl', external: true },
 };
 
+// M4: a guest in #design (ChannelMembers board); not in the people directory.
+const ola: Person = { id: '@ola_fjell.studio:pasodrum.localhost', name: 'Ola Fjell', external: true };
+
+// M4: channels you haven't joined (BrowseChannels board).
+const unjoined: Record<string, Omit<JoinableChannel, 'joined'>[]> = {
+  '!pasodrum': [
+    { id: '!marketing', spaceId: '!pasodrum', name: 'marketing', topic: 'Campaigns, launches and the brand', private: false, memberCount: 8 },
+    { id: '!office-oslo', spaceId: '!pasodrum', name: 'office-oslo', topic: 'Lunch, parcels and the coffee machine', private: false, memberCount: 15 },
+    { id: '!release-notes', spaceId: '!pasodrum', name: 'release-notes', topic: 'What shipped and when', private: false, memberCount: 18 },
+    { id: '!sales', spaceId: '!pasodrum', name: 'sales', topic: 'Leads and deals', private: false, memberCount: 6 },
+    { id: '!support', spaceId: '!pasodrum', name: 'support', topic: 'Customer questions', private: false, memberCount: 7 },
+  ],
+  '!nordlys': [{ id: '!design-review', spaceId: '!nordlys', name: 'design-review', topic: 'Screens for review', private: false, memberCount: 4 }],
+};
+
 const spaces: Space[] = [
   { id: '!pasodrum', name: 'Pasodrum', kind: 'workspace' },
   { id: '!nordlys', name: 'Nordlys', kind: 'client' },
@@ -24,10 +40,10 @@ const ch = (id: string, spaceId: string, name: string, extra: Partial<Channel> =
 
 const channels: Record<string, Channel[]> = {
   '!pasodrum': [
-    ch('!design', '!pasodrum', 'design'),
-    ch('!eng', '!pasodrum', 'eng', { unread: 3 }),
-    ch('!general', '!pasodrum', 'general'),
-    ch('!lead', '!pasodrum', 'lead', { private: true, unread: 2, mentions: 2, memberCount: 2 }),
+    ch('!design', '!pasodrum', 'design', { topic: 'Product design, critiques and Figma links', memberCount: 8 }),
+    ch('!eng', '!pasodrum', 'eng', { unread: 3, topic: 'Builds, releases and the occasional fire' }),
+    ch('!general', '!pasodrum', 'general', { topic: 'Company-wide news and announcements' }),
+    ch('!lead', '!pasodrum', 'lead', { private: true, unread: 2, mentions: 2, memberCount: 2, topic: 'Planning and people topics' }),
   ],
   '!nordlys': [
     ch('!project-updates', '!nordlys', 'project-updates', { memberCount: 3 }),
@@ -302,6 +318,8 @@ export interface FakeStoreOptions {
   uploadMs?: number;
   /** Thread replies fail to load (ThreadError); Retry loads them. */
   threadFails?: boolean;
+  /** M4. My role per space (default: Owner everywhere). */
+  roles?: Record<string, Role>;
 }
 
 export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & { set(patch: Partial<WorkspaceSnapshot>): void } {
@@ -318,7 +336,7 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     threads: sampleThreads(),
     threadTimelines: {},
     activity: sampleActivity(),
-    myRoles: { '!pasodrum': 'owner', '!nordlys': 'owner' },
+    myRoles: opts.roles ?? { '!pasodrum': 'owner', '!nordlys': 'owner' },
   };
   const listeners = new Set<() => void>();
   let localId = 0;
@@ -365,6 +383,36 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     set({ threadTimelines, ...(tl ? { timelines: { ...snapshot.timelines, [channelId]: { ...tl, messages: map(tl.messages) } } } : {}) });
   };
   let failThreads = !!opts.threadFails;
+  let myZone: string | undefined;
+  const levels: Record<string, NotifyLevel> = {};
+  const settings: Record<string, string> = {};
+  let devices: Device[] = [
+    { id: 'WEB1', name: 'Chrome on Mac', lastSeenTs: Date.now(), current: true },
+    { id: 'IOS1', name: 'Safari on iPhone', lastSeenTs: Date.now() - 2 * 3_600_000, current: false },
+    { id: 'IOS2', name: 'Element X on iPhone', lastSeenTs: Date.now() - 86_400_000, current: false },
+    { id: 'WIN1', name: 'Firefox on Windows', lastSeenTs: Date.now() - 8 * 86_400_000, current: false },
+  ];
+  // M4: workspace roles, channel members and pending people.
+  const roleOf: Record<string, Role> = { [people.ih!.id]: 'owner', [people.jb!.id]: 'admin', [people.hd!.id]: 'client', [ola.id]: 'guest' };
+  // Added by email, not joined yet: a pending member (role guest) plus a pending invite with the join link.
+  const waiting = new Map<string, Person>();
+  const byEmail = (email: string): Person => ({ id: `@${email.toLowerCase().replace('@', '_')}:pasodrum.localhost`, name: email });
+  const kari = byEmail('kari@nordlys.no');
+  waiting.set(kari.id, kari);
+  const role = (id: string): Role => (id === snapshot.me.id ? (snapshot.myRoles['!pasodrum'] ?? 'member') : (roleOf[id] ?? 'member'));
+  const memberIds: Record<string, string[]> = {
+    '!design': [people.ih!.id, people.jb!.id, people.so!.id, people.ml!.id, people.ek!.id, people.la!.id, people.tr!.id, ola.id, kari.id],
+    '!lead': [people.ih!.id, people.so!.id],
+    '!project-updates': [people.hd!.id, people.jb!.id, people.so!.id],
+    '!questions': [people.hd!.id, people.jb!.id, people.so!.id],
+  };
+  const membersOf = (channelId: string) => (memberIds[channelId] ??= [people.ih!.id, people.jb!.id, people.so!.id, people.ml!.id, people.ek!.id]);
+  const pendingBy: Record<string, PendingInvite[]> = {
+    '!design': [{ code: 'kari', email: 'kari@nordlys.no', role: 'guest', createdTs: Date.now() - 3_600_000, link: 'https://pasodrum.work/join/kari' }],
+  };
+  const browse = Object.fromEntries(Object.entries(unjoined).map(([k, v]) => [k, [...v]]));
+  const patchChannel = (channelId: string, patch: Partial<Channel>) =>
+    set({ channels: Object.fromEntries(Object.entries(snapshot.channels).map(([k, v]) => [k, v.map((c) => (c.id === channelId ? { ...c, ...patch } : c))])) });
   const finishLoad = (channelId: string) => setTimeline(channelId, { messages: history[channelId]?.() ?? [], initialLoading: false });
 
   return {
@@ -528,43 +576,119 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       return id;
     },
     profile: (userId) => {
-      const person = Object.values(people).find((p) => p.id === userId) ?? { id: userId, name: userId };
+      const person = [...Object.values(people), ola].find((p) => p.id === userId) ?? { id: userId, name: userId };
       const zones: Record<string, string> = { '田中 由紀': 'Asia/Tokyo', 'Tove Rask': 'Europe/Stockholm', 'Henrik Dahl': 'Europe/Oslo' };
       const email = person.external ? 'henrik@nordlys.no' : `${person.name.split(' ')[0]!.toLowerCase()}@pasodrum.work`;
-      return Promise.resolve({ person, email, timeZone: zones[person.name] ?? 'Europe/Oslo' });
+      const zone = userId === snapshot.me.id && myZone ? myZone : zones[person.name] ?? 'Europe/Oslo';
+      return Promise.resolve({ person: userId === snapshot.me.id ? snapshot.me : person, email, timeZone: zone });
     },
-    // M4 — fuller fake behaviour arrives with the M4 UI tasks.
-    async createChannel({ spaceId, name, private: isPrivate }) {
+    // M4
+    async createChannel({ spaceId, name, private: isPrivate, topic }) {
+      const names = [...(snapshot.channels[spaceId] ?? []), ...(browse[spaceId] ?? [])].map((c) => c.name);
+      if (!['owner', 'admin', 'member'].includes(snapshot.myRoles[spaceId] ?? '')) throw new Error('not-allowed');
+      if (names.includes(name)) throw new Error('taken');
       const id = `!ch-${localId++}`;
-      set({ channels: { ...snapshot.channels, [spaceId]: [...(snapshot.channels[spaceId] ?? []), { id, spaceId, name, private: isPrivate, unread: 0, mentions: 0, memberCount: 1 }].sort((a, b) => a.name.localeCompare(b.name)) } });
+      memberIds[id] = [snapshot.me.id];
+      set({ channels: { ...snapshot.channels, [spaceId]: [...(snapshot.channels[spaceId] ?? []), { id, spaceId, name, topic, private: isPrivate, unread: 0, mentions: 0, memberCount: 1 }].sort((a, b) => a.name.localeCompare(b.name)) } });
       return id;
     },
-    browseChannels: (spaceId) => Promise.resolve((snapshot.channels[spaceId] ?? []).map((c) => ({ id: c.id, spaceId, name: c.name, topic: c.topic, private: c.private, memberCount: c.memberCount, joined: true }))),
-    async joinChannel() {},
+    browseChannels: (spaceId) =>
+      Promise.resolve([
+        ...(snapshot.channels[spaceId] ?? []).map((c) => ({ id: c.id, spaceId, name: c.name, topic: c.topic, private: c.private, memberCount: c.memberCount, joined: true })),
+        ...(browse[spaceId] ?? []).map((c) => ({ ...c, joined: false })),
+      ]),
+    async joinChannel(channelId) {
+      for (const [spaceId, list] of Object.entries(browse)) {
+        const hit = list.find((c) => c.id === channelId);
+        if (!hit) continue;
+        browse[spaceId] = list.filter((c) => c.id !== channelId);
+        membersOf(channelId).push(snapshot.me.id);
+        const joined: Channel = { id: hit.id, spaceId, name: hit.name, topic: hit.topic, private: hit.private, unread: 0, mentions: 0, memberCount: hit.memberCount + 1 };
+        set({ channels: { ...snapshot.channels, [spaceId]: [...(snapshot.channels[spaceId] ?? []), joined].sort((a, b) => a.name.localeCompare(b.name)) } });
+      }
+    },
     async leaveChannel(channelId) {
       set({ channels: Object.fromEntries(Object.entries(snapshot.channels).map(([k, v]) => [k, v.filter((c) => c.id !== channelId)])) });
     },
     async setTopic(channelId, topic) {
-      set({ channels: Object.fromEntries(Object.entries(snapshot.channels).map(([k, v]) => [k, v.map((c) => (c.id === channelId ? { ...c, topic } : c))])) });
+      patchChannel(channelId, { topic });
     },
-    channelMembers: () => Promise.resolve(Object.values(people).slice(0, 5).map((person, i) => ({ person, role: i === 0 ? ('owner' as const) : i === 1 ? ('admin' as const) : ('member' as const) }))),
-    async setRole() {},
-    async removeFromChannel() {},
-    addPeople: (_channelId, req) => {
+    channelMembers: (channelId) =>
+      Promise.resolve(
+        membersOf(channelId).map((id) => {
+          const pending = waiting.get(id);
+          if (pending) return { person: pending, role: 'guest' as const, pending: true };
+          return { person: id === snapshot.me.id ? snapshot.me : ([...Object.values(people), ola].find((p) => p.id === id) ?? { id, name: id }), role: role(id) };
+        }),
+      ),
+    async setRole(_spaceId, userId, next) {
+      const mine = role(snapshot.me.id);
+      if (mine !== 'owner' && (mine !== 'admin' || next === 'owner' || role(userId) === 'owner')) throw new Error('not-allowed');
+      roleOf[userId] = next;
+      if (userId === snapshot.me.id) set({ myRoles: { ...snapshot.myRoles, '!pasodrum': next } });
+    },
+    async removeFromChannel(channelId, userId) {
+      memberIds[channelId] = membersOf(channelId).filter((id) => id !== userId);
+    },
+    async addPeople(channelId, req) {
       const ok = (e: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
-      return Promise.resolve({ added: req.userIds, invited: req.emails.filter(ok), failed: req.emails.filter((e) => !ok(e)).map((who) => ({ who, reason: 'invalid-email' as const })) });
+      const result: AddPeopleResult = { added: [], invited: [], failed: [] };
+      for (const id of req.userIds) {
+        if (membersOf(channelId).includes(id)) result.failed.push({ who: id, reason: 'already-member' });
+        else {
+          membersOf(channelId).push(id);
+          result.added.push(id);
+        }
+      }
+      for (const email of req.emails) {
+        if (!ok(email)) result.failed.push({ who: email, reason: 'invalid-email' });
+        else if (email.includes('notallowed')) result.failed.push({ who: email, reason: 'not-allowed' });
+        else {
+          const code = `c${localId++}`;
+          const person = byEmail(email);
+          if (membersOf(channelId).includes(person.id)) {
+            result.failed.push({ who: email, reason: 'already-member' });
+            continue;
+          }
+          waiting.set(person.id, person);
+          membersOf(channelId).push(person.id);
+          (pendingBy[channelId] ??= []).push({ code, email, role: req.role, createdTs: Date.now(), link: `https://pasodrum.work/join/${code}` });
+          result.invited.push(email);
+        }
+      }
+      return result;
     },
-    pendingInvites: () => Promise.resolve([{ code: 'demo', email: 'henrik@nordlys.no', name: 'Henrik Dahl', role: 'client' as const, createdTs: Date.now() - 3_600_000, link: 'https://pasodrum.work/join/demo' }]),
+    pendingInvites: (channelId) => Promise.resolve([...(pendingBy[channelId] ?? [])]),
     async resendInvite() {},
-    async revokeInvite() {},
+    async revokeInvite(code) {
+      for (const k of Object.keys(pendingBy)) {
+        const gone = pendingBy[k]!.find((p) => p.code === code);
+        if (gone) memberIds[k] = membersOf(k).filter((id) => id !== byEmail(gone.email).id);
+        pendingBy[k] = pendingBy[k]!.filter((p) => p.code !== code);
+      }
+    },
     async updateProfile(patch) {
       if (patch.name) set({ me: { ...snapshot.me, name: patch.name } });
+      if (patch.timeZone) myZone = patch.timeZone;
+      if (patch.avatar) set({ me: { ...snapshot.me, avatarUrl: `mxc://fake/${patch.avatar.name}` } });
     },
-    devices: () => Promise.resolve([{ id: 'WEB1', name: 'Pasodrum work on Chrome', lastSeenTs: Date.now(), current: true }, { id: 'IOS1', name: 'Element X on iPhone', lastSeenTs: Date.now() - 86_400_000, current: false }]),
-    async signOutDevice() {},
-    async signOutOtherDevices() {},
-    notifyLevel: () => 'all',
-    async setNotifyLevel() {},
-    async setSetting() {},
+    devices: () => Promise.resolve(devices),
+    async signOutDevice(deviceId) {
+      devices = devices.filter((d) => d.id !== deviceId);
+    },
+    async signOutOtherDevices() {
+      // Like the server: it asks for the password again; "wrong" is wrong.
+      throw new PasswordRequired(async (password) => {
+        if (password === 'wrong') throw new Error('wrong-password');
+        devices = devices.filter((d) => d.current);
+      });
+    },
+    notifyLevel: (channelId) => levels[channelId] ?? levels.default ?? 'mentions',
+    async setNotifyLevel(channelId, level) {
+      levels[channelId] = level;
+    },
+    async setSetting(key, value) {
+      settings[key] = value;
+    },
   };
 }

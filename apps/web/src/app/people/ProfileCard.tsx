@@ -1,10 +1,11 @@
-// The profile card (Batch C ProfileCard): name, local time, work email, Message. Never the ID.
+// The profile card (Batch C ProfileCard): name, local time, work email, role (M4, D-25), Message. Never the ID.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
-import { useStore, useWorkspace, type Profile } from '../../matrix';
+import { matchPath, useLocation, useNavigate } from 'react-router';
+import { useStore, useWorkspace, type Person, type Profile, type Role } from '../../matrix';
 import { Button } from '../../ui';
+import { MakeOwnerDialog, RoleControl } from '../channels/RoleControl';
 import { dmPath } from '../places';
 import { BubbleIcon, ClockIcon, MailIcon } from '../shell/icons';
 import { Face } from './Face';
@@ -13,6 +14,7 @@ import { ProfileCardContext, type ProfileCardApi } from './ProfileCardContext';
 import s from './People.module.css';
 
 type Open = { userId: string; anchor: HTMLElement; profile?: Profile };
+type Promote = { n: number; open: boolean; person?: Person; from?: Role };
 
 const WIDTH = 296;
 const GAP = 6;
@@ -21,6 +23,7 @@ const EDGE = 8;
 export function ProfileCardProvider({ children }: { children: ReactNode }) {
   const store = useStore();
   const [open, setOpen] = useState<Open | null>(null);
+  const [promote, setPromote] = useState<Promote>({ n: 0, open: false });
   const seq = useRef(0);
   const anchorRef = useRef<HTMLElement | null>(null);
 
@@ -54,12 +57,31 @@ export function ProfileCardProvider({ children }: { children: ReactNode }) {
   return (
     <ProfileCardContext.Provider value={api}>
       {children}
-      {open?.profile && createPortal(<Card key={open.userId} profile={open.profile} anchor={open.anchor} onClose={close} />, document.body)}
+      {open?.profile &&
+        createPortal(
+          <Card
+            key={open.userId}
+            profile={open.profile}
+            anchor={open.anchor}
+            onClose={close}
+            onMakeOwner={(person, from) => {
+              close();
+              setPromote((p) => ({ n: p.n + 1, open: true, person, from }));
+            }}
+          />,
+          // Inside a dialog (channel members) the card joins it, so the dialog keeps focus and clicks.
+          open.anchor.closest<HTMLElement>('[role="dialog"]') ?? document.body,
+        )}
+      {promote.person && promote.from && (
+        <MakeOwnerDialog key={promote.n} open={promote.open} person={promote.person} from={promote.from} onClose={() => setPromote((p) => ({ ...p, open: false }))} />
+      )}
     </ProfileCardContext.Provider>
   );
 }
 
-function Card({ profile, anchor, onClose }: { profile: Profile; anchor: HTMLElement; onClose: () => void }) {
+type CardProps = { profile: Profile; anchor: HTMLElement; onClose: () => void; onMakeOwner: (person: Person, from: Role) => void };
+
+function Card({ profile, anchor, onClose, onMakeOwner }: CardProps) {
   const { t } = useTranslation();
   const store = useStore();
   const navigate = useNavigate();
@@ -69,6 +91,8 @@ function Card({ profile, anchor, onClose }: { profile: Profile; anchor: HTMLElem
   const local = useLocalTime(profile.timeZone, now);
   const [first] = useState(() => place(anchor, 0));
   const { person, email } = profile;
+  // Roles are read from the channel in view (its members list carries them).
+  const channelId = matchPath('/w/:spaceId/c/:channelId', useLocation().pathname)?.params.channelId;
 
   useLayoutEffect(() => {
     const el = ref.current;
@@ -110,7 +134,7 @@ function Card({ profile, anchor, onClose }: { profile: Profile; anchor: HTMLElem
     >
       <Face person={person} size={72} />
       <h2 className={s.cardName}>{person.name}</h2>
-      {(local || email) && (
+      {(local || email || channelId) && (
         <div className={s.cardFacts}>
           {local && (
             <span className={s.fact}>
@@ -124,6 +148,7 @@ function Card({ profile, anchor, onClose }: { profile: Profile; anchor: HTMLElem
               <span>{email}</span>
             </span>
           )}
+          {channelId && <RoleControl person={person} channelId={channelId} onMakeOwner={onMakeOwner} />}
         </div>
       )}
       {person.id !== meId && (

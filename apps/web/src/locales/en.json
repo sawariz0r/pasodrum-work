@@ -105,6 +105,7 @@
       "language": "Language",
       "english": "English",
       "japanese": "日本語",
+      "settings": "Settings",
       "signOut": "Sign out"
     },
     "notAvailable": {
@@ -261,5 +262,134 @@
       "you": "You: {{text}}",
       "from": "{{name}}: {{text}}"
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "close": "Close",
+    "tabs": {
+      "profile": "Profile",
+      "notifications": "Notifications",
+      "appearance": "Appearance & language",
+      "devices": "Devices"
+    },
+    "profile": {
+      "uploadPhoto": "Upload photo",
+      "name": "Name",
+      "timeZone": "Time zone",
+      "zone": "{{city}} · {{time}}",
+      "email": "Email",
+      "failed": "Couldn’t save"
+    },
+    "notifications": {
+      "all": "All new messages",
+      "mentions": "DMs, mentions and replies",
+      "none": "Nothing"
+    },
+    "appearance": {
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "Match system",
+      "language": "Language"
+    },
+    "devices": {
+      "thisDevice": "This device",
+      "activeNow": "Active now",
+      "yesterday": "Yesterday",
+      "signOut": "Sign out",
+      "signOutOthers": "Sign out of other devices",
+      "failed": "Couldn’t sign out",
+      "signOutOf": "Sign out of {{name}}",
+      "cancel": "Cancel"
+    }
+  },
+  "join": {
+    "join": "Join {{name}}",
+    "done": "You’re in",
+    "expired": "Link expired",
+    "used": "Link already used",
+    "people": "{{names}} are here",
+    "name": "Name",
+    "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "joinButton": "Join",
+    "failed": "Couldn’t join",
+    "weakPassword": "Choose a longer password",
+    "open": "Open in browser",
+    "otherApp": "Another app",
+    "server": "Server",
+    "username": "Username",
+    "copyServer": "Copy server",
+    "copyUsername": "Copy username",
+    "signIn": "Sign in",
+    "signOutAndJoin": "Sign out and join",
+    "continueAs": "Continue as {{name}}"
+  },
+  "channels": {
+    "newChannel": "New channel",
+    "browseChannels": "Browse channels",
+    "title": "Channels",
+    "name": "Name",
+    "private": "Private",
+    "create": "Create",
+    "taken": "#{{name}} already exists",
+    "space": "Workspace or client space",
+    "search": "Search channels",
+    "join": "Join",
+    "joinName": "Join #{{name}}",
+    "joined": "Joined",
+    "memberCount_one": "{{count}} member",
+    "memberCount_other": "{{count}} members",
+    "about": "About",
+    "members": "Members",
+    "settings": "Settings",
+    "topic": "Topic",
+    "edit": "Edit",
+    "save": "Save",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "leave": "Leave channel",
+    "leaveTitle": "Leave #{{name}}?",
+    "leaveButton": "Leave",
+    "findMembers": "Find members",
+    "you": "(you)",
+    "tags": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member",
+      "guest": "Guest",
+      "client": "Client",
+      "pending": "Pending"
+    },
+    "more": "More for {{name}}",
+    "copyJoinLink": "Copy join link",
+    "sendAgain": "Send email again",
+    "removeFrom": "Remove from #{{name}}",
+    "notifications": "Notifications",
+    "notifyAll": "All",
+    "notifyMentions": "Mentions",
+    "notifyOff": "Off",
+    "role": "Role",
+    "roleOf": "Role: {{name}}",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member",
+      "guest": "Guest",
+      "client": "Client"
+    },
+    "makeOwnerTitle": "Make {{name}} an owner?",
+    "makeOwner": "Make owner",
+    "addTo": "Add people to #{{name}}",
+    "addCount_one": "Add {{count}} person",
+    "addCount_other": "Add {{count}} people",
+    "notEmail": "{{email}} isn’t an email address",
+    "couldNotAdd": "Couldn’t add {{name}}",
+    "suggestions": "Suggestions",
+    "inChannel": "In channel",
+    "added": "Added",
+    "add": "Add",
+    "addName": "Add {{name}}"
   }
 }

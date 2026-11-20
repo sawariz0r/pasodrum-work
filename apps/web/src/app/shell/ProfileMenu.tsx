@@ -1,13 +1,18 @@
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router';
 import { useWorkspace } from '../../matrix';
 import { Avatar, avatarColor, Menu, MenuContent, MenuItem, MenuSegments, MenuSeparator, MenuTrigger } from '../../ui';
 import { currentLanguage, setLanguage, type Language } from '../i18n';
 import { GlobeIcon, SignOutIcon } from '../icons';
+import { GearIcon } from '../settings/icons';
+import { settingsState } from '../settings/SettingsRoute';
 import { useMediaUrl } from '../timeline/Media';
 import s from './Shell.module.css';
 
 export function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const me = useWorkspace((x) => x.me);
   const online = useWorkspace((x) => x.connection === 'online');
   const color = avatarColor(me.id);
@@ -46,6 +51,9 @@ export function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
           ]}
         />
         <MenuSeparator />
+        <MenuItem icon={<GearIcon />} onSelect={() => navigate('/settings', { state: settingsState(location) })}>
+          {t('shell.profileMenu.settings')}
+        </MenuItem>
         <MenuItem icon={<SignOutIcon />} onSelect={onSignOut}>
           {t('shell.profileMenu.signOut')}
         </MenuItem>

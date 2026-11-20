@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useStore, useWorkspace, type WorkspaceSnapshot } from '../../matrix';
+import { EmptyChannelAddPeople } from '../channels/ChannelMenus';
 import { ComposerProvider } from '../composer/context';
 import { DmIntro } from '../people/DmIntro';
 import { useDmName } from '../people/names';
@@ -71,6 +72,7 @@ function ChannelPane({ channelId }: { channelId: string }) {
           unreadAtOpen={unreadAtOpen}
           onOpenThread={threads.open}
           intro={dm && <DmIntro dm={dm} />}
+          emptyAction={!dm && <EmptyChannelAddPeople channelId={channelId} />}
         />
         <div className={s.floor}>
           <TypingIndicator channelId={channelId} />

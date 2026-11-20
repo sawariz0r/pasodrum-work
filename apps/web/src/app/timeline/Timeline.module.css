@@ -86,6 +86,10 @@
   overflow-wrap: anywhere;
 }
 
+.emptyAction {
+  margin-top: 18px;
+}
+
 .divider {
   display: flex;
   align-items: center;

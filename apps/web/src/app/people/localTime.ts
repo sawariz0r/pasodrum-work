@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Language } from '../i18n';
 import { currentLanguage } from '../i18n';
@@ -42,4 +43,18 @@ export function useLocalTime(timeZone: string | undefined, now: Date): string | 
   if (!city) return time;
   const key = cities[city as keyof typeof cities];
   return t('people.localTime', { time, city: key ? t(key) : city });
+}
+
+/** "Europe/Oslo" → "Oslo" (オスロ in Japanese when we have the name); undefined for zones that aren't a place. */
+export function useCityName(): (timeZone: string) => string | undefined {
+  const { t } = useTranslation();
+  return useCallback(
+    (timeZone: string) => {
+      const city = cityOf(timeZone);
+      if (!city) return undefined;
+      const key = cities[city as keyof typeof cities];
+      return key ? t(key) : city;
+    },
+    [t],
+  );
 }

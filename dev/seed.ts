@@ -2,6 +2,7 @@
 // Local: pnpm dev:seed. Other server: MATRIX_BASE=https://… MATRIX_SERVER=… REGISTRATION_TOKEN=… BOOTSTRAP_TOKEN=… pnpm dev:seed
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { PASSWORD, SEED_FILE, SERVER, bootstrapToken, envToken, login, ok, register, send, state, userId } from './lib.ts';
+import { channelUsers, powerLevels, type SpaceKind } from '../apps/web/src/matrix/levels.ts';
 
 if (existsSync(SEED_FILE)) {
   console.log(`Already seeded (${SEED_FILE.pathname}). For a clean local server run pnpm dev:server:reset.`);
@@ -34,14 +35,19 @@ for (const who of Object.keys(people) as Who[]) {
 const t = tokens;
 const via = { via: [SERVER] };
 
-async function space(name: string, extraState: object[] = []): Promise<string> {
+// D-27 levels; Sofia creates everything, so (room version 12) she outranks everyone and isn't listed.
+const spaceUsers = { [userId('ingrid')]: 50 };
+const kinds = new Map<string, SpaceKind>();
+
+async function space(name: string, kind: SpaceKind, extraState: object[] = []): Promise<string> {
   const b = await ok(t.sofia, 'POST', '/_matrix/client/v3/createRoom', {
     name,
     preset: 'private_chat',
     creation_content: { type: 'm.space' },
-    power_level_content_override: { users: { [userId('sofia')]: 100, [userId('ingrid')]: 50 }, invite: 50, events_default: 50 },
+    power_level_content_override: powerLevels(kind, 'space', spaceUsers),
     initial_state: extraState,
   });
+  kinds.set(b.room_id, kind);
   return b.room_id;
 }
 
@@ -56,7 +62,7 @@ async function channel(parent: string, name: string, opts: { restricted?: boolea
     name,
     topic: opts.topic,
     preset: 'private_chat',
-    power_level_content_override: { users: { [userId('sofia')]: 100, [userId('ingrid')]: 50 } },
+    power_level_content_override: powerLevels(kinds.get(parent)!, 'channel', channelUsers(spaceUsers, [userId('sofia')], userId('sofia'))),
     initial_state,
   });
   await state(t.sofia, parent, 'm.space.child', b.room_id, { ...via, suggested: true });
@@ -73,7 +79,7 @@ const joinRestricted = (roomId: string, who: Who[]) =>
   Promise.all(who.map((w) => ok(t[w], 'POST', `/_matrix/client/v3/join/${encodeURIComponent(roomId)}`, {})));
 
 // Workspace "Pasodrum"
-const workspace = await space('Pasodrum');
+const workspace = await space('Pasodrum', 'workspace');
 await addTo(workspace, ['ingrid', 'jonas', 'tanaka']);
 const general = await channel(workspace, 'general', { restricted: true });
 const design = await channel(workspace, 'design', { restricted: true });
@@ -84,7 +90,7 @@ await addTo(lead, ['ingrid']);
 await addTo(design, ['lea_freelance.dev']); // guest: invited to one channel, not in the workspace
 
 // Client space "Nordlys"
-const nordlys = await space('Nordlys', [{ type: 'work.pasodrum.space', state_key: '', content: { kind: 'client' } }]);
+const nordlys = await space('Nordlys', 'client', [{ type: 'work.pasodrum.space', state_key: '', content: { kind: 'client' } }]);
 await addTo(nordlys, ['ingrid', 'henrik_nordlys.no']);
 const projectUpdates = await channel(nordlys, 'project-updates', { restricted: true });
 const questions = await channel(nordlys, 'questions', { restricted: true });

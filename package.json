@@ -14,12 +14,13 @@
     "test:matrix": "vitest run --root apps/web --config vitest.matrix.config.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm locales",
     "locales": "node scripts/check-locales.ts",
-    "dev:server": "docker compose -f dev/docker-compose.yml --env-file dev/.env up -d",
+    "dev:server": "docker compose -f dev/docker-compose.yml --env-file dev/.env up -d --build",
     "dev:server:stop": "docker compose -f dev/docker-compose.yml --env-file dev/.env down",
     "dev:server:reset": "docker compose -f dev/docker-compose.yml --env-file dev/.env down -v && rm -rf dev/data",
     "dev:server:logs": "docker compose -f dev/docker-compose.yml --env-file dev/.env logs -f continuwuity",
     "dev:seed": "node dev/seed.ts",
     "probe": "node dev/probe.ts",
+    "test:invite": "node --test services/invite/test/*.integration.ts",
     "setup:prod": "bash scripts/setup-production-env.sh"
   },
   "devDependencies": {

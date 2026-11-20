@@ -1,0 +1,168 @@
+import { describe, expect, it } from 'vitest';
+import { renderInvite, tileColor } from './email.ts';
+import { isCode, localpartFor, newCode, newPassword, normalizeEmail } from './ids.ts';
+import { parseAddress } from './mail.ts';
+import { canInvite, canManage, rateLimiter, spaceInfo, stateOf, teamOf, type StateEvent } from './rules.ts';
+import { keyFrom, seal, unseal } from './secret.ts';
+
+describe('ids', () => {
+  it('derives deterministic IDs (D-07)', () => {
+    expect(localpartFor('henrik@nordlys.no', 'pasodrum.work')).toBe('henrik_nordlys.no');
+    expect(localpartFor('oscar@pasodrum.work', 'pasodrum.work')).toBe('oscar');
+    expect(localpartFor('a.b-c@sub.example.com', 'pasodrum.work')).toBe('a.b-c_sub.example.com');
+  });
+
+  it('normalizes and validates emails', () => {
+    expect(normalizeEmail('  Henrik@Nordlys.NO ')).toBe('henrik@nordlys.no');
+    for (const bad of ['', 'henrik', 'henrik@', '@nordlys.no', 'hen rik@nordlys.no', 'h@nordlys', 'h"x@nordlys.no', 'h@-x.no', 42, null]) {
+      expect(normalizeEmail(bad)).toBeNull();
+    }
+  });
+
+  it('makes random URL-safe codes of 144 bits', () => {
+    const codes = new Set(Array.from({ length: 1000 }, newCode));
+    expect(codes.size).toBe(1000);
+    for (const c of codes) expect(isCode(c)).toBe(true);
+    expect(Buffer.from(newCode(), 'base64url').length).toBe(18);
+    expect(isCode('../../etc/passwd')).toBe(false);
+    expect(newPassword()).not.toBe(newPassword());
+  });
+});
+
+describe('secret', () => {
+  const key = keyFrom('x'.repeat(64));
+
+  it('round-trips with AES-GCM and a fresh IV', () => {
+    const a = seal(key, 'temp-password');
+    expect(a).not.toBe(seal(key, 'temp-password'));
+    expect(a).not.toContain('temp-password');
+    expect(unseal(key, a)).toBe('temp-password');
+  });
+
+  it('rejects a wrong key or tampering', () => {
+    const sealed = seal(key, 'temp-password');
+    expect(() => unseal(keyFrom('y'.repeat(64)), sealed)).toThrow();
+    const [iv, tag, ct] = sealed.split('.');
+    const flipped = Buffer.from(ct!, 'base64url');
+    flipped[0]! ^= 1;
+    expect(() => unseal(key, [iv, tag, flipped.toString('base64url')].join('.'))).toThrow();
+  });
+
+  it('refuses a short secret', () => {
+    expect(() => keyFrom('short')).toThrow();
+  });
+});
+
+describe('permission rules (D-25)', () => {
+  const sofia = '@sofia:p', ingrid = '@ingrid:p', jonas = '@jonas:p', henrik = '@henrik:p', stranger = '@x:p';
+  const member = (id: string, name?: string): StateEvent => ({ type: 'm.room.member', state_key: id, content: { membership: 'join', displayname: name } });
+  const pl: StateEvent = { type: 'm.room.power_levels', state_key: '', content: { users: { [sofia]: 100, [ingrid]: 50 } } };
+  const workspace = spaceInfo([{ type: 'm.room.name', state_key: '', content: { name: 'Pasodrum' } }, pl, member(sofia, 'Sofia Olsen'), member(ingrid), member(jonas, 'Jonas Berg'),
+    { type: 'm.room.member', state_key: stranger, content: { membership: 'invite' } }]);
+  const client = spaceInfo([{ type: 'work.pasodrum.space', state_key: '', content: { kind: 'client' } }, pl, member(sofia), member(ingrid), member(henrik)]);
+
+  it('reads the space', () => {
+    expect(workspace.name).toBe('Pasodrum');
+    expect(workspace.kind).toBe('workspace');
+    expect(client.kind).toBe('client');
+    expect(workspace.joined.get(sofia)).toBe('Sofia Olsen');
+    expect(workspace.joined.get(ingrid)).toBe('ingrid');
+    expect(workspace.joined.has(stranger)).toBe(false);
+    expect(workspace.powerOf(jonas)).toBe(0);
+  });
+
+  it('treats room-version-12 creators as top rank', () => {
+    const v12 = spaceInfo([{ type: 'm.room.create', state_key: '', sender: jonas, content: { room_version: '12', additional_creators: [henrik] } }, pl, member(jonas), member(henrik)]);
+    expect(v12.powerOf(jonas)).toBe(Infinity);
+    expect(v12.powerOf(henrik)).toBe(Infinity);
+    expect(canInvite('member', v12, jonas)).toBe(true);
+    const v11 = spaceInfo([{ type: 'm.room.create', state_key: '', sender: jonas, content: { room_version: '11' } }, pl, member(jonas)]);
+    expect(v11.powerOf(jonas)).toBe(0);
+  });
+
+  it('Owner/Admin add Members to the workspace; Members cannot', () => {
+    expect(canInvite('member', workspace, sofia)).toBe(true);
+    expect(canInvite('member', workspace, ingrid)).toBe(true);
+    expect(canInvite('member', workspace, jonas)).toBe(false);
+    expect(canInvite('member', client, sofia)).toBe(false);
+  });
+
+  it('any workspace member adds guests', () => {
+    expect(canInvite('guest', workspace, jonas)).toBe(true);
+    expect(canInvite('guest', workspace, stranger)).toBe(false);
+    expect(canInvite('guest', client, ingrid)).toBe(false);
+  });
+
+  it('the client-space team adds clients; clients cannot', () => {
+    expect(canInvite('client', client, ingrid)).toBe(true);
+    expect(canInvite('client', client, henrik)).toBe(false);
+    expect(canInvite('client', workspace, sofia)).toBe(false);
+    expect(canInvite('client', client, jonas)).toBe(false);
+  });
+
+  it('the inviter or an Admin of the space manages an invite', () => {
+    expect(canManage(jonas, jonas, null)).toBe(true);
+    expect(canManage(jonas, ingrid, workspace)).toBe(true);
+    expect(canManage(sofia, jonas, workspace)).toBe(false);
+    expect(canManage(sofia, ingrid, null)).toBe(false);
+  });
+
+  it('lists the inviter first, then by rank', () => {
+    expect(teamOf(workspace, jonas).map((p) => p.id)).toEqual([jonas, sofia, ingrid]);
+    expect(teamOf(workspace, jonas, 2)).toHaveLength(2);
+  });
+
+  it('derives invite state', () => {
+    const base = { claimedTs: null, revokedTs: null, expiresTs: 2000 };
+    expect(stateOf(base, 1000)).toBe('open');
+    expect(stateOf(base, 2000)).toBe('expired');
+    expect(stateOf({ ...base, revokedTs: 500 }, 1000)).toBe('revoked');
+    expect(stateOf({ ...base, claimedTs: 500 }, 3000)).toBe('used');
+  });
+
+  it('rate-limits per key and window', () => {
+    const allow = rateLimiter();
+    expect([1, 2, 3].map(() => allow('a', 2, 1000, 0))).toEqual([true, true, false]);
+    expect(allow('b', 2, 1000, 0)).toBe(true);
+    expect(allow('a', 2, 1000, 1000)).toBe(true);
+  });
+});
+
+describe('invite email', () => {
+  const base = {
+    inviter: 'Jonas Berg', spaceName: 'Nordlys Energi', spaceId: '!abc:p', spaceKind: 'client' as const,
+    link: 'https://pasodrum.work/join/CODE', expiresTs: Date.UTC(2026, 11, 4, 12), host: 'pasodrum.work',
+  };
+
+  it('renders the English board', () => {
+    const m = renderInvite({ ...base, locale: 'en' });
+    expect(m.subject).toBe('Jonas Berg added you to Nordlys Energi');
+    expect(m.html).toContain('lang="en"');
+    expect(m.html).toContain('>Join Nordlys Energi</a>');
+    expect(m.html).toContain('href="https://pasodrum.work/join/CODE"');
+    expect(m.html).toContain('Works once, until 4 December.<br>pasodrum.work');
+    expect(m.html).toContain(`background:${tileColor('!abc:p', 'client')}`);
+    expect(m.html).toContain('>N</td>');
+    expect(m.text).toBe('Jonas Berg added you to Nordlys Energi\n\nJoin Nordlys Energi:\nhttps://pasodrum.work/join/CODE\n\nWorks once, until 4 December.\npasodrum.work\n');
+  });
+
+  it('renders the Japanese board', () => {
+    const m = renderInvite({ ...base, locale: 'ja' });
+    expect(m.subject).toBe('Jonas Berg さんが Nordlys Energi にあなたを追加しました');
+    expect(m.html).toContain('lang="ja"');
+    expect(m.html).toContain('>Nordlys Energi に参加</a>');
+    expect(m.text).toContain('1 回だけ、12月4日まで使えます。');
+  });
+
+  it('escapes names and uses the workspace colour', () => {
+    const m = renderInvite({ ...base, locale: 'en', inviter: '<b>Eve</b>', spaceName: 'A&B', spaceKind: 'workspace' });
+    expect(m.html).not.toContain('<b>Eve</b>');
+    expect(m.html).toContain('&#60;b&#62;Eve&#60;/b&#62;');
+    expect(m.html).toContain('background:#0E7C66;color:#FFFFFF');
+  });
+
+  it('parses the From address', () => {
+    expect(parseAddress('Pasodrum work <invites@noreply.prpl.se>')).toEqual({ name: 'Pasodrum work', email: 'invites@noreply.prpl.se' });
+    expect(parseAddress('invites@noreply.prpl.se')).toEqual({ email: 'invites@noreply.prpl.se' });
+  });
+});

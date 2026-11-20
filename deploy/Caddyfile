@@ -2,6 +2,9 @@
 {
 	auto_https off
 	admin off
+	servers {
+		trusted_proxies static private_ranges
+	}
 }
 
 :80 {
@@ -13,6 +16,10 @@
 	}
 	handle /.well-known/matrix/* {
 		reverse_proxy continuwuity:6167
+	}
+	@invites path /api/invites /api/invites/*
+	handle @invites {
+		reverse_proxy invite:8080
 	}
 	handle {
 		root * /srv

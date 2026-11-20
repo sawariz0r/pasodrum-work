@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
-  connectionOf, emailFromId, loginCandidates, looksExternal, mediaOf, membershipSummary, reactionsOf, replyFallback, sameMembers, share, stripReplyFallback, threadStats, workspaceOf,
+  connectionOf, emailFromId, knownSpacesOf, loginCandidates, looksExternal, mediaOf, membershipSummary, reactionsOf, replyFallback, sameMembers, share, stripReplyFallback, threadStats, workspaceOf,
   type RoomFacts,
 } from './map';
 
 const room = (id: string, extra: Partial<RoomFacts> = {}): RoomFacts => ({
   id, name: id, joined: true, isSpace: false, otherType: false, clientSpace: false, joinRule: 'restricted',
-  children: [], unread: 0, mentions: 0, memberCount: 3, ...extra,
+  children: [], parents: [], unread: 0, mentions: 0, memberCount: 3, ...extra,
 });
 
 describe('loginCandidates (D-19)', () => {
@@ -54,6 +54,54 @@ describe('workspaceOf', () => {
     expect(channels['!acme']).toEqual([]);
     expect(channels['!pasodrum']![1]).toMatchObject({ spaceId: '!pasodrum', topic: 'All hands', unread: 2, mentions: 1, memberCount: 3 });
     expect(channels['!pasodrum']![0]).not.toHaveProperty('topic');
+  });
+});
+
+describe('workspaceOf for a guest (channels only, D-06)', () => {
+  const rooms = [
+    room('!design', { name: 'design', parents: ['!pasodrum'] }),
+    room('!launch', { name: 'launch-site', joinRule: 'invite', parents: ['!pasodrum'] }),
+    room('!dm', { name: 'Jonas' }),
+    room('!board', { name: 'Roadmap', otherType: true, parents: ['!pasodrum'] }),
+    room('!gone', { name: 'gone', joined: false, parents: ['!pasodrum'] }),
+  ];
+
+  it('groups joined channels under the space they belong to, named from account data', () => {
+    const { spaces, channels } = workspaceOf(rooms, { '!pasodrum': { name: 'Pasodrum', kind: 'workspace' } });
+    expect(spaces).toEqual([{ id: '!pasodrum', name: 'Pasodrum', kind: 'workspace' }]);
+    expect(channels['!pasodrum']!.map((c) => [c.name, c.spaceId, c.private])).toEqual([['design', '!pasodrum', false], ['launch-site', '!pasodrum', true]]);
+  });
+
+  it('falls back to a channel name, never an ID, when nothing is known', () => {
+    expect(workspaceOf(rooms).spaces).toEqual([{ id: '!pasodrum', name: 'design', kind: 'workspace' }]);
+  });
+
+  it('uses an unjoined space that lists the channel when the channel names no parent', () => {
+    const { spaces, channels } = workspaceOf(
+      [room('!q', { name: 'questions' }), room('!nordlys', { name: '', isSpace: true, joined: false, clientSpace: true, children: ['!q'] })],
+      { '!nordlys': { name: 'Nordlys', kind: 'client' } },
+    );
+    expect(spaces).toEqual([{ id: '!nordlys', name: 'Nordlys', kind: 'client' }]);
+    expect(channels['!nordlys']!.map((c) => c.id)).toEqual(['!q']);
+  });
+
+  it('leaves channels of my own spaces where they are', () => {
+    const { spaces, channels } = workspaceOf([
+      room('!pasodrum', { name: 'Pasodrum', isSpace: true, children: ['!general'] }),
+      room('!general', { name: 'general', parents: ['!pasodrum'] }),
+      room('!orphan', { name: 'orphan', parents: ['!pasodrum'] }),
+      room('!listed', { name: 'listed', parents: ['!elsewhere'] }),
+    ].map((r) => (r.id === '!pasodrum' ? { ...r, children: ['!general', '!listed'] } : r)));
+    expect(spaces.map((sp) => sp.id)).toEqual(['!pasodrum']);
+    expect(channels['!pasodrum']!.map((c) => c.id)).toEqual(['!general', '!listed']);
+  });
+
+  it('reads only well-formed account data', () => {
+    expect(knownSpacesOf({ '!a': { name: 'A', kind: 'client' }, '!b': { name: 'B' }, '!c': { name: ' ' }, '!d': 'x' })).toEqual({
+      '!a': { name: 'A', kind: 'client' },
+      '!b': { name: 'B', kind: 'workspace' },
+    });
+    expect(knownSpacesOf(undefined)).toEqual({});
   });
 });
 

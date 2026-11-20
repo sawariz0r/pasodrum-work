@@ -2,7 +2,9 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { Navigate, Route, Routes, useLocation, useParams, useSearchParams } from 'react-router';
 import { useWorkspace, type Channel, type Space } from '../../matrix';
 import { useDraftsFor } from '../drafts';
-import { HashIcon, LockIcon } from '../icons';
+import { BrowseChannels } from '../channels/BrowseChannels';
+import { ChannelHeaderBar } from '../channels/ChannelMenus';
+import { ChannelsProvider } from '../channels/ChannelsProvider';
 import { ActivityColumn } from '../pages/Activity';
 import { DmConversation, DmsColumn } from '../pages/Dms';
 import { DraftsView } from '../pages/Drafts';
@@ -35,18 +37,21 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
     <SignOut.Provider value={onSignOut}>
       <ProfileCardProvider>
         <NewMessageProvider>
-          <Routes>
-            <Route index element={<HomeRedirect />} />
-            <Route path="w/:spaceId" element={<SpaceRedirect />} />
-            <Route path="w/:spaceId/c/:channelId" element={<ChannelRoute />} />
-            <Route path="w/:spaceId/dm/:dmId" element={<SpaceDmRoute />} />
-            <Route path="threads" element={<SpaceViewRoute view="threads" />} />
-            <Route path="drafts" element={<SpaceViewRoute view="drafts" />} />
-            <Route path="dms" element={<DmsRoute />} />
-            <Route path="dms/:dmId" element={<DmsRoute />} />
-            <Route path="activity" element={<ActivityRoute />} />
-            <Route path="*" element={<UnknownRoute />} />
-          </Routes>
+          <ChannelsProvider>
+            <Routes>
+              <Route index element={<HomeRedirect />} />
+              <Route path="w/:spaceId" element={<SpaceRedirect />} />
+              <Route path="w/:spaceId/c/:channelId" element={<ChannelRoute />} />
+              <Route path="w/:spaceId/channels" element={<BrowseRoute />} />
+              <Route path="w/:spaceId/dm/:dmId" element={<SpaceDmRoute />} />
+              <Route path="threads" element={<SpaceViewRoute view="threads" />} />
+              <Route path="drafts" element={<SpaceViewRoute view="drafts" />} />
+              <Route path="dms" element={<DmsRoute />} />
+              <Route path="dms/:dmId" element={<DmsRoute />} />
+              <Route path="activity" element={<ActivityRoute />} />
+              <Route path="*" element={<UnknownRoute />} />
+            </Routes>
+          </ChannelsProvider>
         </NewMessageProvider>
       </ProfileCardProvider>
     </SignOut.Provider>
@@ -86,6 +91,17 @@ function ChannelRoute() {
   return (
     <Frame section="home" space={space} column={space && <Sidebar space={space} active={channel ? { channelId: channel.id } : undefined} />}>
       {channel ? <ChannelPage channel={channel} /> : <NotAvailable />}
+    </Frame>
+  );
+}
+
+function BrowseRoute() {
+  const { spaceId } = useParams();
+  const fallback = useFallbackSpace(spaceId);
+  const space = fallback?.id === spaceId ? fallback : undefined;
+  return (
+    <Frame section="home" space={fallback} column={fallback && <Sidebar space={fallback} />}>
+      {space ? <BrowseChannels key={space.id} space={space} /> : <NotAvailable />}
     </Frame>
   );
 }
@@ -232,10 +248,7 @@ function ChannelPage({ channel }: { channel: Channel }) {
     <>
       <header className={s.header}>
         <DrawerToggle />
-        <h1 className={s.channelName}>
-          {channel.private ? <LockIcon size={18} strokeWidth={2.1} /> : <HashIcon size={18} strokeWidth={2.1} />}
-          <span>{channel.name}</span>
-        </h1>
+        <ChannelHeaderBar channel={channel} />
       </header>
       <ChannelTabs key={channel.id} channelId={channel.id} stored={noStoredTabs} />
     </>

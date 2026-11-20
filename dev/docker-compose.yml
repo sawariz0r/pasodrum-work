@@ -27,5 +27,23 @@ services:
     ports:
       - "8025:8025"
 
+  invite:
+    build:
+      context: ..
+      dockerfile: services/invite/Dockerfile
+    restart: unless-stopped
+    environment:
+      SERVER_NAME: pasodrum.localhost
+      MATRIX_URL: http://continuwuity:6167
+      PUBLIC_URL: http://localhost:5173
+      REGISTRATION_TOKEN: ${REGISTRATION_TOKEN:?set REGISTRATION_TOKEN in dev/.env}
+      INVITE_SECRET: ${INVITE_SECRET:?set INVITE_SECRET in dev/.env}
+      MAIL_FROM: Pasodrum work <invites@pasodrum.localhost>
+      MAILPIT_URL: http://mailpit:8025
+    volumes:
+      - invite-data:/data
+    depends_on: [continuwuity, mailpit]
+
 volumes:
   continuwuity-data:
+  invite-data:

@@ -1,5 +1,5 @@
 import { escapeHtml } from './html';
-import type { Channel, ConnectionState, Media, Person, Reaction, Space } from './types';
+import type { Channel, ConnectionState, Media, Person, Reaction, Role, Space } from './types';
 
 export interface RoomFacts {
   id: string;
@@ -12,36 +12,68 @@ export interface RoomFacts {
   joinRule?: string;
   topic?: string;
   children: string[];
+  /** The spaces this room names as its parents (`m.space.parent`). */
+  parents: string[];
   unread: number;
   mentions: number;
   memberCount: number;
 }
 
-const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name);
+/** What the invite service left in account data about spaces I was added to but can't read (`work.pasodrum.spaces`). */
+export type KnownSpaces = Record<string, { name: string; kind: Space['kind'] }>;
 
-export function workspaceOf(rooms: RoomFacts[]): { spaces: Space[]; channels: Record<string, Channel[]> } {
+export function knownSpacesOf(content: unknown): KnownSpaces {
+  const out: KnownSpaces = {};
+  if (!content || typeof content !== 'object') return out;
+  for (const [id, v] of Object.entries(content as Record<string, unknown>)) {
+    const { name, kind } = (v && typeof v === 'object' ? v : {}) as Record<string, unknown>;
+    if (typeof name === 'string' && name.trim()) out[id] = { name, kind: kind === 'client' ? 'client' : 'workspace' };
+  }
+  return out;
+}
+
+const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name);
+const isChannel = (r: RoomFacts | undefined): r is RoomFacts => !!r && r.joined && !r.isSpace && !r.otherType;
+
+const channelOf = (r: RoomFacts, spaceId: string): Channel => ({
+  id: r.id,
+  spaceId,
+  name: r.name,
+  ...(r.topic ? { topic: r.topic } : {}),
+  private: r.joinRule !== 'restricted' && r.joinRule !== 'public',
+  unread: r.unread,
+  mentions: r.mentions,
+  memberCount: r.memberCount,
+});
+
+/**
+ * Spaces I'm in with their joined channels. A guest (D-06) is in channels only: those are grouped under the space
+ * they belong to, named from `known` (else after a channel, never an ID).
+ */
+export function workspaceOf(rooms: RoomFacts[], known: KnownSpaces = {}): { spaces: Space[]; channels: Record<string, Channel[]> } {
   const byId = new Map(rooms.map((r) => [r.id, r]));
   const joinedSpaces = rooms.filter((r) => r.joined && r.isSpace);
-  const spaces: Space[] = joinedSpaces
-    .map((r): Space => ({ id: r.id, name: r.name, kind: r.clientSpace ? 'client' : 'workspace' }))
-    .sort((a, b) => (a.kind === b.kind ? byName(a, b) : a.kind === 'workspace' ? -1 : 1));
+  const spaces: Space[] = joinedSpaces.map((r): Space => ({ id: r.id, name: r.name, kind: r.clientSpace ? 'client' : 'workspace' }));
   const channels: Record<string, Channel[]> = {};
-  for (const space of joinedSpaces) {
-    channels[space.id] = space.children
-      .map((id) => byId.get(id))
-      .filter((r): r is RoomFacts => !!r && r.joined && !r.isSpace && !r.otherType)
-      .map((r): Channel => ({
-        id: r.id,
-        spaceId: space.id,
-        name: r.name,
-        ...(r.topic ? { topic: r.topic } : {}),
-        private: r.joinRule !== 'restricted' && r.joinRule !== 'public',
-        unread: r.unread,
-        mentions: r.mentions,
-        memberCount: r.memberCount,
-      }))
-      .sort(byName);
+  for (const space of joinedSpaces) channels[space.id] = space.children.map((id) => byId.get(id)).filter(isChannel).map((r) => channelOf(r, space.id));
+
+  const mine = new Set(joinedSpaces.map((r) => r.id));
+  const listed = new Set(joinedSpaces.flatMap((r) => r.children));
+  const outside = new Map<string, RoomFacts[]>();
+  for (const r of rooms) {
+    if (!isChannel(r) || listed.has(r.id) || r.parents.some((id) => mine.has(id))) continue;
+    const parent = r.parents[0] ?? rooms.find((sp) => sp.isSpace && !sp.joined && sp.children.includes(r.id))?.id;
+    if (parent) outside.set(parent, [...(outside.get(parent) ?? []), r]);
   }
+  for (const [id, list] of outside) {
+    const sorted = [...list].sort(byName);
+    const k = known[id];
+    spaces.push({ id, name: k?.name ?? sorted[0]!.name, kind: k?.kind ?? (byId.get(id)?.clientSpace ? 'client' : 'workspace') });
+    channels[id] = sorted.map((r) => channelOf(r, id));
+  }
+
+  for (const list of Object.values(channels)) list.sort(byName);
+  spaces.sort((a, b) => (a.kind === b.kind ? byName(a, b) : a.kind === 'workspace' ? -1 : 1));
   return { spaces, channels };
 }
 
@@ -207,3 +239,32 @@ export const sameMembers = (a: string[], b: string[]) => {
   const y = new Set(b);
   return x.size === y.size && [...x].every((id) => y.has(id));
 };
+
+export interface PowerFacts {
+  /** Room version 12+ ("hydra"): the creator(s) outrank everyone and aren't listed in `users`. */
+  creators: string[];
+  users?: Record<string, unknown>;
+  usersDefault?: unknown;
+}
+
+export const hydra = (version: unknown) => typeof version === 'string' && (Number(version) >= 12 || version.includes('hydra'));
+
+export function powerLevel(f: PowerFacts, userId: string): number {
+  if (f.creators.includes(userId)) return Infinity;
+  const level = f.users?.[userId];
+  if (typeof level === 'number') return level;
+  return typeof f.usersDefault === 'number' ? f.usersDefault : 0;
+}
+
+/** D-06: Owner/Admin from the workspace power level; otherwise which space the person is in. */
+export function roleOf(level: number, home: 'workspace' | 'client' | 'none'): Role {
+  if (level >= 100) return 'owner';
+  if (level >= 50) return 'admin';
+  return home === 'workspace' ? 'member' : home === 'client' ? 'client' : 'guest';
+}
+
+/** D-25: Owners make or remove Owners; Owners and Admins move people between Member and Admin. Matrix adds: nobody changes someone at or above their own level, except themselves. */
+export function mayChangeRole(mine: number, theirs: number, role: 'owner' | 'admin' | 'member', self: boolean): boolean {
+  if (!self && theirs >= mine) return false;
+  return role === 'owner' || theirs >= 100 ? mine >= 100 : mine >= 50;
+}

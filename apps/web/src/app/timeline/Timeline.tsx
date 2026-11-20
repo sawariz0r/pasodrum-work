@@ -116,11 +116,13 @@ type Props = {
   thread?: ThreadMode;
   /** Shown in place of the channel's empty state (the start of a DM, Batch C DMEmpty). */
   intro?: ReactNode;
+  /** Under the empty channel's name (Add people). */
+  emptyAction?: ReactNode;
 };
 
 export type ThreadMode = { rootId: string; root?: Message; failed?: boolean; onRetry: () => void };
 
-export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen = 0, onOpenThread, thread, intro }: Props) {
+export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen = 0, onOpenThread, thread, intro, emptyAction }: Props) {
   const { t } = useTranslation();
   const store = useStore();
   const composer = useComposer();
@@ -313,6 +315,7 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
                   <HashIcon />
                 </div>
                 <h2 className={s.emptyTitle}>{t('common.channelName', { name: channelName })}</h2>
+                {emptyAction && <div className={s.emptyAction}>{emptyAction}</div>}
               </div>
             )}
             <div

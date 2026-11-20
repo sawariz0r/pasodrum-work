@@ -102,10 +102,19 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-27 · Power levels that implement D-25 · Accepted · 2026-11-20
+- **Levels:** Owner 100, Admin 50, client-space team ("staff") 10, everyone else 0.
+- **Workspace space:** `m.room.power_levels` 50 (Admins can switch people Member↔Admin but can never touch Owners or go above 50 — Matrix enforces this), `invite` 50 (only Owner/Admin add Members), `m.space.child` 0 (any member can create workspace channels).
+- **Client space:** team members of that client space get 10; `invite` 10, `m.space.child` 10 (its team, Owners and Admins add people and create channels; clients at 0 can't). Owner/Admin carried over at 100/50.
+- **Channels:** inherit the levels of their space; `invite` 0 in workspace channels (any member can add guests), 10 in client-space channels; `m.room.power_levels` 50.
+- **Owners:** one Owner can't demote another (same level) — Owners step down themselves (Batch E answer, pending approval).
+- **Room version:** keep the server default (v12). Its rule that a room's creator keeps top power can't be undone, so whoever creates a channel stays its top admin; acceptable at our size and noted here.
+
 ### D-26 · Mail via Resend from noreply.prpl.se; invite service shape · Accepted · 2026-11-20
 - **Mail (CEO):** production mail (invites, later password reset) is sent by the invite service through the Resend HTTP API, from a verified sending domain `noreply.prpl.se` (From: `Pasodrum work <invites@noreply.prpl.se>`, configurable). The API key is sending-only, limited to that domain, and lives only in Coolify (`RESEND_API_KEY`). Locally mail goes to Mailpit (its HTTP send API), so no SMTP library is needed anywhere.
 - **Service:** `services/invite` = Node 24 + built-in `node:sqlite` (no native deps). Endpoints under `/api/invites`: create (caller verified with `whoami`; must be allowed to add people where they're adding), preview by code, claim (name + password), resend, revoke, list pending for a channel ("Copy join link"). It registers accounts with the registration token (deterministic IDs per D-07), keeps the temporary password encrypted at rest (`INVITE_SECRET`), claims by changing the password via the standard API, revokes by deactivating. Codes are random, single-use, expire after 14 days. Rate-limited per caller and per IP.
 - **Routing:** the web container's Caddy forwards `/api/invites/*` to the service (same origin, no CORS). The join page lives in the web app at `/join/:code`.
+- **Amendment (lead, M4-01):** revoke invalidates the code only (state `revoked`); it never deactivates, since Matrix never frees an ID. Re-inviting an unclaimed account issues a fresh code for it (201).
 
 ### D-25 · Roles and channel creation (Batch D answers) · Accepted · 2026-11-20
 - **Role changes:** Owners make or remove Owners. Owners and Admins change people between Member and Admin. Done from the profile card / channel members. (Supersedes the Owner-only rule drawn on RoleChange/RulesM4; canvas to be updated.)
@@ -171,6 +180,12 @@ Format: **Date · short title** → what was discovered, why it matters, what ch
 - **M3-01:** Continuwuity accepts threaded read receipts but drops `thread_id`, so a room has one read position. Marking a channel read also marks its threads read up to that point; a thread read that would hide unread channel messages is kept on this device only. Revisit if the server adds threaded receipts.
 - **M3-01:** the server's user directory returns almost nobody, so `searchPeople` combines space and DM member lists with directory hits. Visibility still follows space membership (clients only share rooms with their client space's team).
 - Admin actions (issue tokens, deactivate users, reset passwords) are admin-room commands (`!admin users deactivate`, `!admin token issue`); no HTTP admin API documented. The invite service will drive these through the admin room.
+
+**2026-11-20 · Invite service facts (M4-01)**
+- New rooms on Continuwuity are room version 12: the creator isn't in `power_levels.users` and outranks everyone. Permission checks (service and app) must treat `m.room.create` sender + `additional_creators` as top rank.
+- A deactivated Matrix ID can never be registered again, so revoke does not deactivate (D-26 amendment): it kills the code and the unclaimed account stays dormant with its sealed temporary password. Inviting that email again issues a fresh code for the same account (201) and supersedes older codes; 409 `exists` only for claimed accounts or ones the service didn't create. Expired invites are never deactivated either.
+- The service reads space name, inviter and team with the caller's token at create time and stores them, since it holds no power or membership anywhere (D-07). The join page shows that snapshot.
+- Production Caddy trusts `X-Forwarded-For` from private ranges (Coolify's proxy), so per-IP rate limits see the real client.
 
 **2026-11-20 · Composer behaviour (M2-03)**
 - Enter always sends, in lists and code blocks too. Shift+Enter adds a line, list item or code line. Every Enter goes through `isImeEnter`. ProseMirror also ignores keys mid-composition.

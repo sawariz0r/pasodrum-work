@@ -1,7 +1,8 @@
 # Production on Coolify (Docker Compose build pack, D-17/D-18). Coolify's proxy terminates TLS.
 # Coolify: Base Directory "/deploy", Docker Compose Location "/docker-compose.yml".
 # Set SERVER_NAME (e.g. pasodrum.work). Only the web service gets a domain: https://<SERVER_NAME>:80.
-# web serves the app and forwards /_matrix, /_continuwuity and /.well-known/matrix to continuwuity.
+# web serves the app and forwards /_matrix, /_continuwuity and /.well-known/matrix to continuwuity, /api/invites to invite.
+# Set RESEND_API_KEY (sending-only, noreply.prpl.se) for invite mail (D-26); MAIL_FROM is optional.
 services:
   web:
     build:
@@ -10,6 +11,27 @@ services:
     restart: unless-stopped
     expose:
       - "80"
+    depends_on:
+      - continuwuity
+      - invite
+
+  invite:
+    build:
+      context: ..
+      dockerfile: services/invite/Dockerfile
+    restart: unless-stopped
+    environment:
+      SERVER_NAME: ${SERVER_NAME:?}
+      PUBLIC_URL: https://${SERVER_NAME:?}
+      MATRIX_URL: http://continuwuity:6167
+      REGISTRATION_TOKEN: ${SERVICE_PASSWORD_64_REGISTRATION}
+      INVITE_SECRET: ${SERVICE_PASSWORD_64_INVITESECRET}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      MAIL_FROM: ${MAIL_FROM:-Pasodrum work <invites@noreply.prpl.se>}
+    expose:
+      - "8080"
+    volumes:
+      - invite-data:/data
     depends_on:
       - continuwuity
 
@@ -37,3 +59,4 @@ services:
 
 volumes:
   continuwuity-data:
+  invite-data:

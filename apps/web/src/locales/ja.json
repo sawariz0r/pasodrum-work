@@ -104,6 +104,7 @@
       "language": "言語",
       "english": "English",
       "japanese": "日本語",
+      "settings": "設定",
       "signOut": "サインアウト"
     },
     "notAvailable": {
@@ -258,5 +259,132 @@
       "you": "あなた：{{text}}",
       "from": "{{name}}：{{text}}"
     }
+  },
+  "settings": {
+    "title": "設定",
+    "close": "閉じる",
+    "tabs": {
+      "profile": "プロフィール",
+      "notifications": "通知",
+      "appearance": "表示と言語",
+      "devices": "デバイス"
+    },
+    "profile": {
+      "uploadPhoto": "写真をアップロード",
+      "name": "名前",
+      "timeZone": "タイムゾーン",
+      "zone": "{{city}} · {{time}}",
+      "email": "メール",
+      "failed": "保存できませんでした"
+    },
+    "notifications": {
+      "all": "すべての新しいメッセージ",
+      "mentions": "DM・メンション・返信",
+      "none": "通知しない"
+    },
+    "appearance": {
+      "theme": "テーマ",
+      "light": "ライト",
+      "dark": "ダーク",
+      "system": "システムに合わせる",
+      "language": "言語"
+    },
+    "devices": {
+      "thisDevice": "このデバイス",
+      "activeNow": "使用中",
+      "yesterday": "昨日",
+      "signOut": "サインアウト",
+      "signOutOthers": "ほかのデバイスからサインアウト",
+      "failed": "サインアウトできませんでした",
+      "signOutOf": "{{name}} からサインアウト",
+      "cancel": "キャンセル"
+    }
+  },
+  "join": {
+    "join": "{{name}} に参加",
+    "done": "参加しました",
+    "expired": "リンクの期限が切れています",
+    "used": "このリンクは使用済みです",
+    "people": "{{names}} がいます",
+    "name": "名前",
+    "password": "パスワード",
+    "showPassword": "パスワードを表示",
+    "hidePassword": "パスワードを隠す",
+    "joinButton": "参加",
+    "failed": "参加できませんでした",
+    "weakPassword": "もっと長いパスワードにしてください",
+    "open": "ブラウザで開く",
+    "otherApp": "ほかのアプリ",
+    "server": "サーバー",
+    "username": "ユーザー名",
+    "copyServer": "サーバーをコピー",
+    "copyUsername": "ユーザー名をコピー",
+    "signIn": "サインイン",
+    "signOutAndJoin": "サインアウトして参加",
+    "continueAs": "{{name}} として続ける"
+  },
+  "channels": {
+    "newChannel": "新しいチャンネル",
+    "browseChannels": "チャンネルを探す",
+    "title": "チャンネル",
+    "name": "名前",
+    "private": "非公開",
+    "create": "作成",
+    "taken": "#{{name}} はすでにあります",
+    "space": "スペース",
+    "search": "チャンネルを検索",
+    "join": "参加",
+    "joinName": "#{{name}} に参加",
+    "joined": "参加済み",
+    "memberCount_other": "メンバー {{count}} 人",
+    "about": "概要",
+    "members": "メンバー",
+    "settings": "設定",
+    "topic": "トピック",
+    "edit": "編集",
+    "save": "保存",
+    "copyLink": "リンクをコピー",
+    "linkCopied": "コピーしました",
+    "leave": "チャンネルから退出",
+    "leaveTitle": "#{{name}} から退出しますか？",
+    "leaveButton": "退出",
+    "findMembers": "メンバーを検索",
+    "you": "（あなた）",
+    "tags": {
+      "owner": "オーナー",
+      "admin": "管理者",
+      "member": "メンバー",
+      "guest": "ゲスト",
+      "client": "クライアント",
+      "pending": "参加待ち"
+    },
+    "more": "{{name}} のその他の操作",
+    "copyJoinLink": "参加リンクをコピー",
+    "sendAgain": "メールを再送信",
+    "removeFrom": "#{{name}} から外す",
+    "notifications": "通知",
+    "notifyAll": "すべて",
+    "notifyMentions": "メンション",
+    "notifyOff": "オフ",
+    "role": "役割",
+    "roleOf": "役割: {{name}}",
+    "roles": {
+      "owner": "オーナー",
+      "admin": "管理者",
+      "member": "メンバー",
+      "guest": "ゲスト",
+      "client": "クライアント"
+    },
+    "makeOwnerTitle": "{{name}} をオーナーにしますか？",
+    "makeOwner": "オーナーにする",
+    "addTo": "#{{name}} にメンバーを追加",
+    "addCount_other": "{{count}} 人を追加",
+    "notEmail": "「{{email}}」はメールアドレスではありません",
+    "couldNotAdd": "{{name}} を追加できませんでした",
+    "suggestions": "候補",
+    "inChannel": "参加済み",
+    "added": "追加済み",
+    "add": "追加",
+    "addName": "{{name}} を追加"
   }
 }

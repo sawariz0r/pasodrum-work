@@ -3,4 +3,6 @@
 	reverse_proxy /_matrix/* continuwuity:6167
 	reverse_proxy /_continuwuity/* continuwuity:6167
 	reverse_proxy /.well-known/matrix/* continuwuity:6167
+	@invites path /api/invites /api/invites/*
+	reverse_proxy @invites invite:8080
 }
