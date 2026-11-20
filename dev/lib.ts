@@ -1,11 +1,17 @@
 import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
+import { existsSync, readFileSync } from 'node:fs';
 
 export const BASE = process.env.MATRIX_BASE ?? 'http://localhost:8008';
 export const SERVER = process.env.MATRIX_SERVER ?? 'pasodrum.localhost';
-export const PASSWORD = 'pasodrum-dev-password';
 export const LOCAL = BASE.startsWith('http://localhost');
 export const SEED_FILE = new URL(`./data/seed-${SERVER}.json`, import.meta.url);
+// Test accounts on a reachable server get a random password, kept in the gitignored seed file.
+export const PASSWORD: string = LOCAL
+  ? 'pasodrum-dev-password'
+  : existsSync(SEED_FILE)
+    ? JSON.parse(readFileSync(SEED_FILE, 'utf8')).password
+    : randomBytes(18).toString('base64url');
 export const MAILPIT = process.env.MAILPIT_URL ?? (LOCAL ? 'http://localhost:8025' : null);
 
 export type Res = { status: number; body: any };
