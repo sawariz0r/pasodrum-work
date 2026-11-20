@@ -119,4 +119,5 @@ Format: **Date · short title** → what was discovered, why it matters, what ch
 - Server emails (email verification, password reset) show the Matrix ID and "Continuwuity" branding. Client-facing mail (invites, password reset) goes through the invite service with our own EN/JP templates.
 - The invite service can claim and revoke accounts with the standard API alone: it holds the temporary password, so claim = `/account/password`, revoke = `/account/deactivate`. No admin-room scripting needed for that.
 - Custom profile fields work on the v3 endpoint (`work.pasodrum.email`), so we can store the real email on the profile.
+- Continuwuity appends an emoji to every new account's display name by default (`new_user_displayname_suffix`); set to empty in dev and production so clients get their plain name.
 - Admin actions (issue tokens, deactivate users, reset passwords) are admin-room commands (`!admin users deactivate`, `!admin token issue`); no HTTP admin API documented. The invite service will drive these through the admin room.

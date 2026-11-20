@@ -8,6 +8,7 @@ port = 6167
 allow_federation = false
 allow_registration = true
 allow_local_presence = true
+new_user_displayname_suffix = ""
 url_preview_domain_contains_allowlist = ["*"]
 
 [global.well_known]
