@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pasodrum work — DMs 800: conversation replaces the list, back arrow</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 900px; background: #FFFFFF">
+<dc-import name="Main" theme="light" perspective="team" open-modal="none" milestone="m3" composer="float" layout="800" view="dms" pane="detail" show-thread="{{no}}" hint-size="100%,900px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":800,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return { yes: true, no: false }; }
+}
+</script>
+</body>
+</html>

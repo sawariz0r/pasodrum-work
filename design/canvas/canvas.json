@@ -50,7 +50,7 @@
       "x": 0,
       "y": 2040,
       "w": 1440,
-      "h": 5180,
+      "h": 5240,
       "title": "Foundations & vocabulary"
     },
     "ClientSpace.dc.html": {
@@ -898,6 +898,428 @@
       "title": "Drafts — none",
       "expand": "fill",
       "is_interactive": true
+    },
+    "Thread1024.dc.html": {
+      "x": 0,
+      "y": 42060,
+      "w": 1024,
+      "h": 900,
+      "title": "1024: thread open, sidebar folded",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Thread800.dc.html": {
+      "x": 1104,
+      "y": 42060,
+      "w": 800,
+      "h": 900,
+      "title": "800: thread replaces the conversation",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Threads1024.dc.html": {
+      "x": 1984,
+      "y": 42060,
+      "w": 1024,
+      "h": 900,
+      "title": "Threads 1024: sidebar folds while a thread is open",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Threads800.dc.html": {
+      "x": 3088,
+      "y": 42060,
+      "w": 800,
+      "h": 900,
+      "title": "Threads 800: cards fill, sidebar is a drawer",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Activity1024.dc.html": {
+      "x": 0,
+      "y": 43080,
+      "w": 1024,
+      "h": 900,
+      "title": "Activity 1024: list + conversation",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Activity800.dc.html": {
+      "x": 1104,
+      "y": 43080,
+      "w": 800,
+      "h": 900,
+      "title": "Activity 800: the list fills the window",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "DMs1024.dc.html": {
+      "x": 1984,
+      "y": 43080,
+      "w": 1024,
+      "h": 900,
+      "title": "DMs 1024: list + conversation",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "DMs800.dc.html": {
+      "x": 3088,
+      "y": 43080,
+      "w": 800,
+      "h": 900,
+      "title": "DMs 800: conversation replaces the list, back arrow",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "DMs800JP.dc.html": {
+      "x": 0,
+      "y": 44100,
+      "w": 800,
+      "h": 900,
+      "title": "DMs 800 — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NewMessage800.dc.html": {
+      "x": 880,
+      "y": 44100,
+      "w": 800,
+      "h": 900,
+      "title": "New message at 800",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ProfileCard800.dc.html": {
+      "x": 1760,
+      "y": 44100,
+      "w": 800,
+      "h": 900,
+      "title": "Profile card at 800",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Threads1024Dark.dc.html": {
+      "x": 2640,
+      "y": 44100,
+      "w": 1024,
+      "h": 900,
+      "title": "Threads 1024 — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "RulesM4.dc.html": {
+      "x": 0,
+      "y": 45320,
+      "w": 1440,
+      "h": 1680,
+      "title": "Rules: narrow widths, roles, links, first run",
+      "is_interactive": false
+    },
+    "WorkspaceMenu.dc.html": {
+      "x": 1520,
+      "y": 45320,
+      "w": 1440,
+      "h": 900,
+      "title": "Workspace menu (Owner)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ChannelsPlusMenu.dc.html": {
+      "x": 3040,
+      "y": 45320,
+      "w": 1440,
+      "h": 900,
+      "title": "+ beside Channels",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "CreateChannel.dc.html": {
+      "x": 1520,
+      "y": 46340,
+      "w": 1440,
+      "h": 900,
+      "title": "New channel: private, name gets the lock",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "CreateChannelSpace.dc.html": {
+      "x": 3040,
+      "y": 46340,
+      "w": 1440,
+      "h": 900,
+      "title": "New channel: which space",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "CreateChannelTaken.dc.html": {
+      "x": 0,
+      "y": 47360,
+      "w": 1440,
+      "h": 900,
+      "title": "New channel: name already exists",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "CreateChannelJP.dc.html": {
+      "x": 1520,
+      "y": 47360,
+      "w": 1440,
+      "h": 900,
+      "title": "New channel — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "BrowseChannels.dc.html": {
+      "x": 3040,
+      "y": 47360,
+      "w": 1440,
+      "h": 900,
+      "title": "Browse channels, join",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "BrowseChannelsJP.dc.html": {
+      "x": 0,
+      "y": 48380,
+      "w": 1440,
+      "h": 900,
+      "title": "Browse channels — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ChannelAbout.dc.html": {
+      "x": 1520,
+      "y": 48380,
+      "w": 1440,
+      "h": 900,
+      "title": "Channel details: About (private)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ChannelMembers.dc.html": {
+      "x": 3040,
+      "y": 48380,
+      "w": 1440,
+      "h": 900,
+      "title": "Members: roles, pending person, join link",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ChannelMembersJP.dc.html": {
+      "x": 0,
+      "y": 49400,
+      "w": 1440,
+      "h": 900,
+      "title": "Members — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ChannelSettings.dc.html": {
+      "x": 1520,
+      "y": 49400,
+      "w": 1440,
+      "h": 900,
+      "title": "Channel details: Settings",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "LeaveChannel.dc.html": {
+      "x": 3040,
+      "y": 49400,
+      "w": 1440,
+      "h": 900,
+      "title": "Leave a private channel",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "RoleChange.dc.html": {
+      "x": 0,
+      "y": 50420,
+      "w": 1440,
+      "h": 900,
+      "title": "Role on the profile card (Owner)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MakeOwner.dc.html": {
+      "x": 1520,
+      "y": 50420,
+      "w": 1440,
+      "h": 900,
+      "title": "Make owner, asked once",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "AddPeopleMember.dc.html": {
+      "x": 3040,
+      "y": 50420,
+      "w": 1440,
+      "h": 900,
+      "title": "Add people as a Member: guests only",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "AddPeopleClient.dc.html": {
+      "x": 0,
+      "y": 51440,
+      "w": 1440,
+      "h": 900,
+      "title": "Add people in a client space: clients",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "AddPeopleErrors.dc.html": {
+      "x": 1520,
+      "y": 51440,
+      "w": 1440,
+      "h": 900,
+      "title": "Add people: bad email, in channel, pending",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "AddPeopleErrorsJP.dc.html": {
+      "x": 3040,
+      "y": 51440,
+      "w": 1440,
+      "h": 900,
+      "title": "Add people errors — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ProfileMenuSettings.dc.html": {
+      "x": 0,
+      "y": 52460,
+      "w": 1440,
+      "h": 900,
+      "title": "Profile menu → Settings",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SettingsProfile.dc.html": {
+      "x": 1520,
+      "y": 52460,
+      "w": 1440,
+      "h": 900,
+      "title": "Settings: profile",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SettingsProfileJP.dc.html": {
+      "x": 3040,
+      "y": 52460,
+      "w": 1440,
+      "h": 900,
+      "title": "Settings: profile — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SettingsNotifications.dc.html": {
+      "x": 0,
+      "y": 53480,
+      "w": 1440,
+      "h": 900,
+      "title": "Settings: notifications",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SettingsAppearance.dc.html": {
+      "x": 1520,
+      "y": 53480,
+      "w": 1440,
+      "h": 900,
+      "title": "Settings: appearance and language",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SettingsDevices.dc.html": {
+      "x": 3040,
+      "y": 53480,
+      "w": 1440,
+      "h": 900,
+      "title": "Settings: devices",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SettingsDevicesDark.dc.html": {
+      "x": 0,
+      "y": 54500,
+      "w": 1440,
+      "h": 900,
+      "title": "Settings: devices — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ChannelMembersDark.dc.html": {
+      "x": 1520,
+      "y": 54500,
+      "w": 1440,
+      "h": 900,
+      "title": "Members — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "InviteEmail.dc.html": {
+      "x": 3040,
+      "y": 54500,
+      "w": 1440,
+      "h": 900,
+      "title": "Email when someone adds you (EN / JP)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "JoinUsed.dc.html": {
+      "x": 0,
+      "y": 55520,
+      "w": 1440,
+      "h": 900,
+      "title": "Join page: link already used",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "JoinWrongAccount.dc.html": {
+      "x": 1520,
+      "y": 55520,
+      "w": 1440,
+      "h": 900,
+      "title": "Join page: signed in as someone else",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "JoinWrongAccountJP.dc.html": {
+      "x": 3040,
+      "y": 55520,
+      "w": 1440,
+      "h": 900,
+      "title": "Join page: someone else — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "FirstRunTeam.dc.html": {
+      "x": 0,
+      "y": 56540,
+      "w": 1440,
+      "h": 900,
+      "title": "First sign-in: new teammate",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "FirstRunClient.dc.html": {
+      "x": 1520,
+      "y": 56540,
+      "w": 1440,
+      "h": 900,
+      "title": "First sign-in: client",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "FirstRunClientJP.dc.html": {
+      "x": 3040,
+      "y": 56540,
+      "w": 1440,
+      "h": 900,
+      "title": "First sign-in: client — Japanese",
+      "expand": "fill",
+      "is_interactive": true
     }
   },
   "order": [
@@ -999,7 +1421,54 @@
     "DMsDark.dc.html",
     "ProfileCardDark.dc.html",
     "ActivityEmpty.dc.html",
-    "DraftsEmpty.dc.html"
+    "DraftsEmpty.dc.html",
+    "Thread1024.dc.html",
+    "Thread800.dc.html",
+    "Threads1024.dc.html",
+    "Threads800.dc.html",
+    "Activity1024.dc.html",
+    "Activity800.dc.html",
+    "DMs1024.dc.html",
+    "DMs800.dc.html",
+    "DMs800JP.dc.html",
+    "NewMessage800.dc.html",
+    "ProfileCard800.dc.html",
+    "Threads1024Dark.dc.html",
+    "RulesM4.dc.html",
+    "WorkspaceMenu.dc.html",
+    "ChannelsPlusMenu.dc.html",
+    "CreateChannel.dc.html",
+    "CreateChannelSpace.dc.html",
+    "CreateChannelTaken.dc.html",
+    "CreateChannelJP.dc.html",
+    "BrowseChannels.dc.html",
+    "BrowseChannelsJP.dc.html",
+    "ChannelAbout.dc.html",
+    "ChannelMembers.dc.html",
+    "ChannelMembersJP.dc.html",
+    "ChannelSettings.dc.html",
+    "LeaveChannel.dc.html",
+    "RoleChange.dc.html",
+    "MakeOwner.dc.html",
+    "AddPeopleMember.dc.html",
+    "AddPeopleClient.dc.html",
+    "AddPeopleErrors.dc.html",
+    "AddPeopleErrorsJP.dc.html",
+    "ProfileMenuSettings.dc.html",
+    "SettingsProfile.dc.html",
+    "SettingsProfileJP.dc.html",
+    "SettingsNotifications.dc.html",
+    "SettingsAppearance.dc.html",
+    "SettingsDevices.dc.html",
+    "SettingsDevicesDark.dc.html",
+    "ChannelMembersDark.dc.html",
+    "InviteEmail.dc.html",
+    "JoinUsed.dc.html",
+    "JoinWrongAccount.dc.html",
+    "JoinWrongAccountJP.dc.html",
+    "FirstRunTeam.dc.html",
+    "FirstRunClient.dc.html",
+    "FirstRunClientJP.dc.html"
   ],
   "notes": {
     "title": {
@@ -1034,6 +1503,20 @@
       "x": 0,
       "y": 30360,
       "text": "Batch C — threads, mentions, drafts, DMs",
+      "kind": "title1",
+      "maxW": 4480
+    },
+    "batchCNarrow": {
+      "x": 0,
+      "y": 41960,
+      "text": "Batch C — narrow widths",
+      "kind": "title1",
+      "maxW": 4480
+    },
+    "batchD": {
+      "x": 0,
+      "y": 45220,
+      "text": "Batch D — channels, people, settings",
       "kind": "title1",
       "maxW": 4480
     }
