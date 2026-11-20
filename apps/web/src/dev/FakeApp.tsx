@@ -12,6 +12,7 @@ const backend = createFakeBackend({
   connection: conn === 'starting' || conn === 'offline' || conn === 'reconnecting' ? (conn as ConnectionState) : 'online',
   delayMs: 400,
   loadMs: 600,
+  uploadMs: 2400,
 });
 
 const create = backend.createWorkspaceStore;

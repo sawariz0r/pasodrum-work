@@ -7,7 +7,39 @@ const min = 60_000;
 const person = (id: string) => ({ id, name: id });
 const m = (id: string, who: string, ts: number): Message => ({ id, channelId: '!c', sender: person(who), body: id, ts, status: 'sent' });
 
+const show = (i: ReturnType<typeof buildItems>[number]) =>
+  i.kind === 'message' ? `${i.key}:${i.head ? 'head' : 'cont'}${i.group ? `[${i.group.map((g) => g.id).join(',')}]` : ''}` : i.kind;
+const media = (id: string, who: string, ts: number, kind: 'image' | 'file', body = ''): Message => ({
+  ...m(id, who, ts), body, kind, media: { ref: `mxc://x/${id}`, name: `${id}.png` },
+});
+
 describe('buildItems', () => {
+  it('joins consecutive images (and files) from one sender without a caption into one row', () => {
+    const items = buildItems([
+      m('t', 'ingrid', base),
+      media('i1', 'ingrid', base + min, 'image'),
+      media('i2', 'ingrid', base + min, 'image'),
+      media('i3', 'ingrid', base + min, 'image', 'look at this'),
+      media('f1', 'ingrid', base + 2 * min, 'file'),
+      media('f2', 'ingrid', base + 2 * min, 'file'),
+      media('i4', 'jonas', base + 3 * min, 'image'),
+    ]);
+    expect(items.map(show)).toEqual(['day', 't:head', 'i1:cont[i1,i2]', 'i3:cont', 'f1:cont[f1,f2]', 'i4:head']);
+  });
+
+  it('puts the New line above the first unread and starts a new group there; deleted and system rows stand alone', () => {
+    const items = buildItems(
+      [
+        m('a', 'jonas', base),
+        { ...m('b', 'jonas', base + min), kind: 'deleted', body: '' },
+        m('c', 'jonas', base + 2 * min),
+        m('d', 'jonas', base + 3 * min),
+      ],
+      'd',
+    );
+    expect(items.map(show)).toEqual(['day', 'a:head', 'b:head', 'c:head', 'new', 'd:head']);
+  });
+
   it('groups the same sender within five minutes and breaks on sender, gap and day', () => {
     const items = buildItems([
       m('a', 'jonas', base),
@@ -16,7 +48,7 @@ describe('buildItems', () => {
       m('d', 'ingrid', base + 10 * min),
       m('e', 'ingrid', base + 24 * 60 * min),
     ]);
-    expect(items.map((i) => (i.kind === 'day' ? 'day' : `${i.key}:${i.head ? 'head' : 'cont'}`))).toEqual([
+    expect(items.map(show)).toEqual([
       'day', 'a:head', 'b:cont', 'c:head', 'd:head', 'day', 'e:head',
     ]);
   });

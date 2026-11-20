@@ -63,6 +63,16 @@
   color: var(--ink);
 }
 
+.danger {
+  padding: 0 16px;
+  background: var(--danger);
+  color: #ffffff;
+}
+
+.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 88%, #000);
+}
+
 .secondary:hover:not(:disabled),
 .ghost:hover:not(:disabled) {
   background: var(--hover);

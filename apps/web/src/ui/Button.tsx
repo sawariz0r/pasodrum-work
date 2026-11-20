@@ -2,7 +2,7 @@ import type { ComponentPropsWithRef, ReactNode } from 'react';
 import s from './Button.module.css';
 
 export type ButtonProps = ComponentPropsWithRef<'button'> & {
-  variant?: 'primary' | 'secondary' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   size?: 'md' | 'lg';
   block?: boolean;
   icon?: ReactNode;

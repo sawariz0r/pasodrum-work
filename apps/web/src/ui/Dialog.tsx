@@ -12,14 +12,17 @@ export type DialogProps = {
   children?: ReactNode;
   footer?: ReactNode;
   width?: number;
+  /** Distance from the top of the window; dialogs open from the top centre. */
+  top?: number;
+  role?: 'dialog' | 'alertdialog';
 };
 
-export function Dialog({ open, onOpenChange, title, closeLabel, children, footer, width = 540 }: DialogProps) {
+export function Dialog({ open, onOpenChange, title, closeLabel, children, footer, width = 540, top, role }: DialogProps) {
   return (
     <RD.Root open={open} onOpenChange={onOpenChange}>
       <RD.Portal>
-        <RD.Overlay className={s.overlay}>
-          <RD.Content className={s.content} style={{ maxWidth: width }} aria-describedby={undefined}>
+        <RD.Overlay className={s.overlay} style={top === undefined ? undefined : { paddingTop: top }}>
+          <RD.Content className={s.content} style={{ maxWidth: width }} aria-describedby={undefined} {...(role && { role })}>
             <div className={s.header}>
               <RD.Title className={s.title}>{title}</RD.Title>
               <RD.Close asChild>

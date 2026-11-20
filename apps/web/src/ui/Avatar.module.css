@@ -18,6 +18,18 @@
   object-fit: cover;
 }
 
+.s16 {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  font-size: 8.5px;
+  font-weight: 700;
+}
+
+.s16.cjk {
+  font-size: 10px;
+}
+
 .s20 {
   width: 20px;
   height: 20px;
@@ -40,6 +52,17 @@
 
 .s22.cjk {
   font-size: 11px;
+}
+
+.s30 {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  font-size: 11.5px;
+}
+
+.s30.cjk {
+  font-size: 13px;
 }
 
 .s32 {

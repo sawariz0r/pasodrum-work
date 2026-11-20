@@ -90,3 +90,92 @@ export const CloudOffIcon = icon(
 );
 export const ChevronRightIcon = icon(<path d="m9 6 6 6-6 6" />, { size: 13, strokeWidth: 2.4 });
 export const ExternalIcon = icon(<path d="M7 17 17 7M8 7h9v9" />, { size: 9, strokeWidth: 3 });
+
+export const SmileIcon = icon(
+  <>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" />
+  </>,
+  { size: 16, strokeWidth: 2 },
+);
+export const ReplyIcon = icon(
+  <>
+    <path d="M9 14 4 9l5-5" />
+    <path d="M20 20v-6a5 5 0 0 0-5-5H4" />
+  </>,
+  { size: 16, strokeWidth: 2 },
+);
+export const MoreIcon = icon(<path d="M5 12h.01M12 12h.01M19 12h.01" />, { size: 16, strokeWidth: 3 });
+export const EditIcon = icon(
+  <>
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+  </>,
+  { size: 16, strokeWidth: 1.9 },
+);
+export const CopyIcon = icon(
+  <>
+    <rect x="9" y="9" width="12" height="12" rx="2" />
+    <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
+  </>,
+  { size: 16, strokeWidth: 1.9 },
+);
+export const LinkIcon = icon(
+  <>
+    <path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" />
+    <path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" />
+  </>,
+  { size: 16, strokeWidth: 1.9 },
+);
+export const TrashIcon = icon(
+  <>
+    <path d="M3 6h18" />
+    <path d="M8 6V4h8v2" />
+    <path d="m19 6-1 14H6L5 6" />
+  </>,
+  { size: 16, strokeWidth: 1.9 },
+);
+export const BoxIcon = icon(
+  <>
+    <path d="M21 8 12 3 3 8v8l9 5 9-5Z" />
+    <path d="m3 8 9 5 9-5M12 13v8" />
+  </>,
+  { size: 15, strokeWidth: 1.9 },
+);
+export const DownloadIcon = icon(<path d="M12 3v12M7 10l5 5 5-5M5 21h14" />, { size: 16, strokeWidth: 2 });
+export const ChevronLeftIcon = icon(<path d="m15 18-6-6 6-6" />, { size: 22, strokeWidth: 2.2 });
+export const ChevronNextIcon = icon(<path d="m9 18 6-6-6-6" />, { size: 22, strokeWidth: 2.2 });
+export const ArrowDownIcon = icon(<path d="M12 5v14M6 13l6 6 6-6" />, { size: 16, strokeWidth: 2.2 });
+export const CheckIcon = icon(<path d="M20 6 9 17l-5-5" />, { size: 16, strokeWidth: 2.4 });
+export const UserPlusIcon = icon(
+  <>
+    <path d="M15 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+    <circle cx="8.5" cy="7" r="4" />
+    <path d="M19 8v6M22 11h-6" />
+  </>,
+  { size: 16, strokeWidth: 1.9 },
+);
+export const SearchIcon = icon(
+  <>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-3.5-3.5" />
+  </>,
+  { size: 15, strokeWidth: 2 },
+);
+
+export function PlayIcon({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function PauseIcon({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" />
+      <rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" />
+    </svg>
+  );
+}

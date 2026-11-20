@@ -38,6 +38,7 @@ export interface Message {
   id: string;
   channelId: string;
   sender: Person;
+  /** Plain text (reply fallback stripped). Media: the caption, '' when none. 'deleted' and 'system': ''. */
   body: string;
   ts: number;
   status: 'sent' | 'sending' | 'failed';
@@ -48,7 +49,7 @@ export interface Message {
   html?: string;
   /** M2. For image/video/audio/file. */
   media?: Media;
-  /** M2. The message this one replies to. `found: false` = original not loaded; show the fallback body, not clickable. */
+  /** M2. The message this one replies to. `found: false` = original not in the loaded timeline; show `body` (fetched or from the fallback), not clickable. */
   replyTo?: { id: string; sender?: Person; body: string; found: boolean };
   /** M2. Grouped by key (emoji or text), in first-reacted order. */
   reactions?: Reaction[];

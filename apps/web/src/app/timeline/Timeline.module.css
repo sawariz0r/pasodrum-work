@@ -113,8 +113,30 @@
   animation: arrive var(--dur-2) var(--ease-out) both;
 }
 
-.row:hover {
+.row:hover,
+.force {
   background: var(--hover);
+}
+
+.mention,
+.mention:hover {
+  background: var(--mentionbg);
+}
+
+.editing,
+.editing:hover {
+  background: var(--editbg);
+}
+
+.flash {
+  animation: flash calc(1000ms + var(--dur-3)) var(--ease-out);
+}
+
+@keyframes flash {
+  0%,
+  80% {
+    background: var(--mentionbg);
+  }
 }
 
 .head {
@@ -149,7 +171,8 @@
 }
 
 .row:hover .hoverTime,
-.row:focus-within .hoverTime {
+.row:focus-within .hoverTime,
+.force .hoverTime {
   visibility: visible;
   opacity: 1;
 }
@@ -190,6 +213,11 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   transition: opacity var(--dur-2) var(--ease-out);
+}
+
+/* Media that follows its sender's text sits as close as text in the same message would. */
+.mediaOnly > :first-child {
+  margin-top: -2px;
 }
 
 .dim {
@@ -258,6 +286,365 @@
 .retry:hover,
 .discard:hover {
   text-decoration: underline;
+}
+
+.pane {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Quiet rows: deleted, system */
+.quietRow {
+  gap: 12px;
+  padding: 4px 12px;
+}
+
+.quietIcon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 24px;
+  color: var(--subtle);
+}
+
+.quietText {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  color: var(--subtle);
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.quietText .hoverTime {
+  font-size: 12px;
+  line-height: inherit;
+}
+
+.systemRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  color: var(--subtle);
+  font-size: 13px;
+  line-height: normal;
+}
+
+.systemIcon {
+  display: flex;
+  justify-content: center;
+  width: 36px;
+  flex-shrink: 0;
+}
+
+/* New line */
+.newLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 12px 4px;
+}
+
+.newRule {
+  flex: 1;
+  height: 1px;
+  background: var(--danger);
+}
+
+.newLabel {
+  color: var(--dangertext);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+/* Hover bar */
+.actions {
+  position: absolute;
+  top: -16px;
+  right: 14px;
+  z-index: 2;
+  display: flex;
+  gap: 1px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--raised);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-1) var(--ease-out);
+}
+
+.row:hover .actions,
+.row:focus-within .actions,
+.force .actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tool {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    color var(--dur-1) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+
+.tool:hover,
+.tool[aria-expanded='true'] {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.tool:active {
+  transform: scale(var(--press));
+}
+
+/* Tooltip: the button's own label, after 500 ms of hover. */
+.tool::after {
+  content: attr(aria-label);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  z-index: 7;
+  padding: 5px 9px;
+  border-radius: 7px;
+  background: var(--tip);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  color: var(--ontip);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: normal;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: opacity var(--dur-1) var(--ease-out);
+}
+
+.tool:hover::after {
+  opacity: 1;
+  transition-delay: 500ms;
+}
+
+.tool[aria-expanded='true']::after {
+  opacity: 0;
+  transition-delay: 0s;
+}
+
+.menu {
+  border-radius: 12px;
+}
+
+.menuSep {
+  margin: 5px 4px;
+}
+
+.danger,
+.danger > span {
+  color: var(--dangertext);
+}
+
+/* Jump pill and toast float over the bottom of the timeline. */
+.floats {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  z-index: 12;
+  transform: translateX(-50%);
+}
+
+.jump,
+.toast {
+  display: flex;
+  align-items: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  animation: rise var(--dur-2) var(--ease-out) both;
+}
+
+.jump {
+  gap: 6px;
+  height: 34px;
+  padding: 0 15px 0 11px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  color: var(--onaccent);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+
+.jump:hover {
+  background: var(--accenthover);
+}
+
+.jump:active {
+  transform: scale(var(--press));
+}
+
+.toast {
+  gap: 8px;
+  height: 36px;
+  padding: 0 15px 0 12px;
+  border-radius: 10px;
+  background: var(--tip);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  color: var(--ontip);
+  animation:
+    rise var(--dur-2) var(--ease-out) both,
+    fade-out var(--dur-2) var(--ease-in-out) 1820ms forwards;
+}
+
+.toastIcon {
+  display: flex;
+  color: #3dd6a5;
+}
+
+/* Typing: in the 22 px the composer keeps free above itself. */
+.floor {
+  position: relative;
+  z-index: 3;
+  height: 0;
+}
+
+.typing {
+  position: absolute;
+  top: 0;
+  right: 24px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 22px;
+  overflow: hidden;
+  color: var(--subtle);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.typing strong {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.typingDots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.typingDots > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--subtle);
+  animation: blink 1.2s infinite;
+}
+
+.typingDots > span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typingDots > span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* Delete confirm */
+.dialogButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+}
+
+.preview {
+  display: flex;
+  gap: 10px;
+  margin: -2px 0 2px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.previewMain {
+  min-width: 0;
+}
+
+.previewMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  line-height: 20px;
+}
+
+.previewName {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.previewText {
+  display: block;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: var(--lh);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise));
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+
+  40% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typingDots > span {
+    animation: none;
+  }
 }
 
 @keyframes fade-in {

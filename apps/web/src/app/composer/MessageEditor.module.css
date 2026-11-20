@@ -1,0 +1,112 @@
+.box {
+  margin-top: 2px;
+  border: 1.5px solid var(--accent);
+  border-radius: 12px;
+  background: var(--raised);
+  box-shadow: 0 0 0 4px var(--accentsoft);
+  animation: fade var(--dur-2) var(--ease-out) both;
+}
+
+.field {
+  max-height: 50vh;
+  padding: 9px 12px 4px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 4px 8px 8px;
+}
+
+.cancel,
+.save {
+  height: 30px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+
+.cancel {
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.cancel:hover {
+  background: var(--hover);
+}
+
+.save {
+  padding: 0 14px;
+  border: 0;
+  background: var(--accent);
+  color: var(--onaccent);
+}
+
+.save:hover {
+  background: var(--accenthover);
+}
+
+.cancel:active,
+.save:active {
+  transform: scale(var(--press));
+}
+
+/* Delete confirm (MsgDeleteConfirm) */
+
+.preview {
+  display: flex;
+  gap: 10px;
+  margin: -2px 0 2px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.previewMain {
+  min-width: 0;
+}
+
+.previewMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  line-height: 20px;
+}
+
+.previewName {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.previewTime {
+  color: var(--subtle);
+  font-size: 12px;
+}
+
+.previewText {
+  display: block;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: var(--lh);
+  overflow-wrap: anywhere;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { connectionOf, loginCandidates, share, workspaceOf, type RoomFacts } from './map';
+import { connectionOf, loginCandidates, mediaOf, membershipSummary, reactionsOf, replyFallback, share, stripReplyFallback, workspaceOf, type RoomFacts } from './map';
 
 const room = (id: string, extra: Partial<RoomFacts> = {}): RoomFacts => ({
   id, name: id, joined: true, isSpace: false, otherType: false, clientSpace: false, joinRule: 'restricted',
@@ -84,5 +84,79 @@ describe('connectionOf', () => {
     expect(connectionOf('CATCHUP', true)).toBe('reconnecting');
     expect(connectionOf('ERROR', true)).toBe('offline');
     expect(connectionOf('ERROR', false)).toBe('offline');
+  });
+});
+
+describe('mediaOf', () => {
+  it('maps content and info; body is a caption only when it differs from the file name', () => {
+    expect(mediaOf({ msgtype: 'm.image', body: 'a.png', url: 'mxc://s/a', info: { mimetype: 'image/png', size: 10, w: 640, h: 400, thumbnail_url: 'mxc://s/t' } })).toEqual({
+      media: { ref: 'mxc://s/a', name: 'a.png', mimetype: 'image/png', size: 10, width: 640, height: 400, thumbnailRef: 'mxc://s/t' },
+      caption: '',
+    });
+    expect(mediaOf({ msgtype: 'm.audio', body: 'listen', filename: 'clip.ogg', url: 'mxc://s/c', info: { duration: 1200 } })).toEqual({
+      media: { ref: 'mxc://s/c', name: 'clip.ogg', durationMs: 1200 },
+      caption: 'listen',
+    });
+    expect(mediaOf({ body: 'sticker', url: 'mxc://s/st', info: {} }, true)).toEqual({ media: { ref: 'mxc://s/st', name: 'sticker' }, caption: '' });
+    expect(mediaOf({ msgtype: 'm.file', body: 'x', file: { url: 'mxc://enc' } })).toBeNull();
+    expect(mediaOf({ msgtype: 'm.text', body: 'x', url: 'mxc://s/a' })).toBeNull();
+  });
+});
+
+describe('reply fallbacks', () => {
+  it('strips an Element-style fallback and keeps the quote', () => {
+    expect(stripReplyFallback('> <@a:s> first\n> second\n\nreply\nmore')).toEqual({ body: 'reply\nmore', quote: { senderId: '@a:s', body: 'first\nsecond' } });
+    expect(stripReplyFallback('> <@a:s> sent an image.\n\nnice')).toEqual({ body: 'nice', quote: { senderId: '@a:s', body: 'sent an image.' } });
+    expect(stripReplyFallback('plain > text')).toEqual({ body: 'plain > text' });
+  });
+
+  it('builds a fallback that round-trips', () => {
+    const fb = replyFallback({ roomId: '!r:s', eventId: '$e', senderId: '@a:s', body: 'one\ntwo <3' });
+    expect(fb.body).toBe('> <@a:s> one\n> two <3\n\n');
+    expect(fb.html).toBe(
+      '<mx-reply><blockquote><a href="https://matrix.to/#/!r:s/$e">In reply to</a> <a href="https://matrix.to/#/@a:s">@a:s</a><br>one<br>two &lt;3</blockquote></mx-reply>',
+    );
+    expect(stripReplyFallback(fb.body + 'reply')).toEqual({ body: 'reply', quote: { senderId: '@a:s', body: 'one\ntwo <3' } });
+  });
+});
+
+describe('reactionsOf', () => {
+  const a = { id: '@a:s', name: 'A' };
+  const b = { id: '@b:s', name: 'B' };
+  it('groups by key in first-reacted order, one per sender', () => {
+    expect(
+      reactionsOf(
+        [
+          { key: '👍', sender: b, ts: 3 },
+          { key: '🎉', sender: a, ts: 1 },
+          { key: '👍', sender: a, ts: 2 },
+          { key: '👍', sender: a, ts: 4 },
+        ],
+        '@a:s',
+      ),
+    ).toEqual([
+      { key: '🎉', count: 1, mine: true, senders: [a] },
+      { key: '👍', count: 2, mine: true, senders: [a, b] },
+    ]);
+    expect(reactionsOf([{ key: 'ok', sender: b, ts: 1 }], '@a:s')).toEqual([{ key: 'ok', count: 1, mine: false, senders: [b] }]);
+  });
+});
+
+describe('membershipSummary', () => {
+  const p = (id: string) => ({ id, name: id.toUpperCase() });
+  it('nets joins and leaves per person; profile changes and invites drop out', () => {
+    expect(
+      membershipSummary([
+        { person: p('a'), prev: 'invite', next: 'join' },
+        { person: p('b'), next: 'join' },
+        { person: p('c'), prev: 'join', next: 'leave' },
+        { person: p('d'), prev: 'join', next: 'join' },
+        { person: p('e'), next: 'invite' },
+        { person: p('f'), next: 'join' },
+        { person: p('f'), prev: 'join', next: 'leave' },
+        { person: p('g'), prev: 'join', next: 'ban' },
+      ]),
+    ).toEqual({ joined: [p('a'), p('b')], left: [p('c'), p('g')] });
+    expect(membershipSummary([{ person: p('d'), prev: 'join', next: 'join' }])).toBeNull();
   });
 });

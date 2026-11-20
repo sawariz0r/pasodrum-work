@@ -14,7 +14,7 @@ export type AvatarProps = {
   name: string;
   color: string;
   src?: string;
-  size?: 20 | 22 | 32 | 36;
+  size?: 16 | 20 | 22 | 30 | 32 | 36;
   presence?: 'active' | 'away';
   className?: string;
 };

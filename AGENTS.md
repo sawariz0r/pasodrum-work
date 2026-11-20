@@ -17,7 +17,7 @@ You start with **no memory of prior chats** — orient yourself like this:
 4. **To work a task:** move its file `todo/ → implementing/`, set `stage: implementing` + `owner`, do the work, then move to `ceo-review/` with the **Outcome** filled in. Full workflow in [tasks/README.md](tasks/README.md).
 5. **Record as you go:** new decisions/learnings → `docs/DECISIONS.md`; correct this file when a rule changes.
 
-Status (2026-11-20): M1 walking skeleton built and tested against the local server: sign-in (email or username), workspace + client spaces, channels with unread/mentions, timeline, plain-text composer, EN/JA, light/dark, connection states (D-19 lists what's shown). In ceo-review: M0-01…M0-03, M1-01…M1-06. Production: the app is live at https://pasodrum.work (M0-04 in ceo-review). Run locally: `pnpm dev:server`, `pnpm dev:seed`, `pnpm dev` → http://localhost:5173 (or `/dev/app` on fake data). Next: M2 (full timeline) needs design Batch B.
+Status (2026-11-20): M2 (full timeline) built and browser-tested against the local server: formatted messages, mentions, replies, reactions, edit/delete, images/files/video/audio, uploads, image viewer, New line / Jump to latest, typing; D-20 motion and canvas-matched spacing live. Production: https://pasodrum.work (push to main deploys). In ceo-review: M0-01…M0-04, M1-01…M1-06, M2-01…M2-03. Design: Batch C (M3: threads, Activity, drafts, DMs + navigation proposal) awaits CEO approval; narrow widths for the new views still need design. Next: M3 after Batch C approval.
 
 ---
 

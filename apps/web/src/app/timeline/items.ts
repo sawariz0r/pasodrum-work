@@ -4,7 +4,9 @@ const groupWindowMs = 5 * 60_000;
 
 export type TimelineItem =
   | { kind: 'day'; key: string; day: Date }
-  | { kind: 'message'; key: string; message: Message; head: boolean };
+  | { kind: 'new'; key: 'new' }
+  /** `group`: consecutive images (one grid) or files (one card) from one sender, `message` first. */
+  | { kind: 'message'; key: string; message: Message; head: boolean; group?: Message[] };
 
 function startOfDay(ts: number): Date {
   const d = new Date(ts);
@@ -12,11 +14,23 @@ function startOfDay(ts: number): Date {
   return d;
 }
 
-/** Oldest-first messages → day dividers + rows; a row continues the group when the same sender wrote within 5 minutes on the same day. */
-export function buildItems(messages: readonly Message[]): TimelineItem[] {
+const quiet = (m: Message) => m.kind === 'deleted' || m.kind === 'system';
+
+/** Images and files without a caption of their own can join a neighbour's grid or card. */
+function groupKind(m: Message): 'image' | 'file' | null {
+  if ((m.kind !== 'image' && m.kind !== 'file') || !m.media) return null;
+  return !m.body || m.body === m.media.name ? m.kind : null;
+}
+
+/**
+ * Oldest-first messages → day dividers + rows. A row continues the group when the same sender wrote within
+ * 5 minutes on the same day; deleted and system rows stand alone. `newFrom` puts the New line above that message.
+ */
+export function buildItems(messages: readonly Message[], newFrom?: string | null): TimelineItem[] {
   const items: TimelineItem[] = [];
   let prev: Message | undefined;
   let prevDay = -1;
+  let open: Extract<TimelineItem, { kind: 'message' }> | undefined;
   for (const m of messages) {
     const day = startOfDay(m.ts);
     const newDay = day.getTime() !== prevDay;
@@ -24,8 +38,17 @@ export function buildItems(messages: readonly Message[]): TimelineItem[] {
       items.push({ kind: 'day', key: `day-${day.getTime()}`, day });
       prevDay = day.getTime();
     }
-    const head = newDay || !prev || prev.sender.id !== m.sender.id || m.ts - prev.ts > groupWindowMs;
-    items.push({ kind: 'message', key: m.id, message: m, head });
+    const isNew = m.id === newFrom;
+    if (isNew) items.push({ kind: 'new', key: 'new' });
+    const head = newDay || isNew || !prev || quiet(prev) || quiet(m) || prev.sender.id !== m.sender.id || m.ts - prev.ts > groupWindowMs;
+    const kind = groupKind(m);
+    if (!head && kind && open && groupKind(open.message) === kind) {
+      open.group = [...(open.group ?? [open.message]), m];
+    } else {
+      const item: Extract<TimelineItem, { kind: 'message' }> = { kind: 'message', key: m.id, message: m, head };
+      items.push(item);
+      open = kind ? item : undefined;
+    }
     prev = m;
   }
   return items;

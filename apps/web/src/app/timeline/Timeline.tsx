@@ -1,11 +1,19 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore, type Message, type Timeline as TimelineData } from '../../matrix';
 import { Skeleton } from '../../ui';
+import { useComposer } from '../composer/context';
+import { ArrowDownIcon, CheckIcon } from '../icons';
+import { TimelineContext, type TimelineActions } from './context';
 import { DayDivider } from './DayDivider';
+import { DeleteConfirm } from '../composer/DeleteConfirm';
+import { ImageViewer } from './ImageViewer';
 import { buildItems } from './items';
 import { MessageRow } from './MessageRow';
 import s from './Timeline.module.css';
+
+const toastMs = 2000;
+const flashMs = 1240;
 
 const bottomSlackPx = 40;
 const loadOlderWithinPx = 400;
@@ -37,6 +45,19 @@ function HashIcon() {
 }
 
 const pending = (m: Message) => m.status !== 'sent';
+const quiet = (m: Message) => m.kind === 'deleted' || m.kind === 'system';
+
+/** The first of the last `unread` messages from other people. */
+function firstUnread(messages: readonly Message[], unread: number, meId: string): string | null {
+  if (unread <= 0) return null;
+  let left = unread;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i]!;
+    if (m.sender.id === meId || quiet(m)) continue;
+    if (--left === 0) return m.id;
+  }
+  return messages.find((m) => m.sender.id !== meId && !quiet(m))?.id ?? null;
+}
 
 type RowKeys = {
   messages: readonly Message[];
@@ -86,11 +107,14 @@ type Props = {
   channelName: string;
   timeline: TimelineData | undefined;
   meId: string;
+  /** Unread count when the channel was opened: the New line goes above the first of these. */
+  unreadAtOpen?: number;
 };
 
-export function Timeline({ channelId, channelName, timeline, meId }: Props) {
+export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen = 0 }: Props) {
   const { t } = useTranslation();
   const store = useStore();
+  const composer = useComposer();
   const scroller = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const atBottom = useRef(true);
@@ -102,7 +126,19 @@ export function Timeline({ channelId, channelName, timeline, meId }: Props) {
   const loadingOlder = timeline?.loadingOlder ?? false;
   const hasOlder = timeline?.hasOlder ?? false;
   const messages = useMemo(() => timeline?.messages ?? [], [timeline?.messages]);
-  const items = useMemo(() => buildItems(messages), [messages]);
+  // The New line is placed once, when the history first arrives, and stays until you leave the channel.
+  const [newFrom, setNewFrom] = useState<string | null | undefined>(undefined);
+  if (newFrom === undefined && !initialLoading) setNewFrom(firstUnread(messages, unreadAtOpen, meId));
+  const items = useMemo(() => buildItems(messages, newFrom), [messages, newFrom]);
+  const byId = useMemo(() => new Map(messages.map((m) => [m.id, m])), [messages]);
+  const images = useMemo(() => messages.filter((m) => m.kind === 'image' && m.media), [messages]);
+
+  const [seenId, setSeenId] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<Message[] | null>(null);
+  const [toast, setToast] = useState(0);
+  const [flash, setFlash] = useState<string | null>(null);
+  const expanded = useRef(new Set<string>());
   const { keyOf, arrived } = useRowKeys(messages, !initialLoading, loadingOlder);
   const now = new Date();
 
@@ -117,6 +153,7 @@ export function Timeline({ channelId, channelName, timeline, meId }: Props) {
     const st = state.current;
     if (st.initialLoading) return;
     atBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight <= bottomSlackPx;
+    if (atBottom.current) setSeenId(st.newestId ?? null);
     if (atBottom.current && markedId.current !== (st.newestId ?? null)) {
       markedId.current = st.newestId ?? null;
       store.markRead(channelId);
@@ -169,9 +206,53 @@ export function Timeline({ channelId, channelName, timeline, meId }: Props) {
 
   const onRetry = useCallback((id: string) => store.retry(channelId, id), [store, channelId]);
   const onDiscard = useCallback((id: string) => store.discard(channelId, id), [store, channelId]);
+  const stopEdit = composer.stopEdit;
   const busy = initialLoading || loadingOlder;
 
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(0), toastMs);
+    return () => clearTimeout(id);
+  }, [toast]);
+
+  useEffect(() => {
+    if (!flash) return;
+    const id = setTimeout(() => setFlash(null), flashMs);
+    return () => clearTimeout(id);
+  }, [flash]);
+
+  const actions = useMemo<TimelineActions>(
+    () => ({
+      channelId,
+      meId,
+      openViewer: setViewing,
+      askDelete: setDeleting,
+      linkCopied: () => setToast((n) => n + 1),
+      jumpTo(id) {
+        const row = content.current?.querySelector<HTMLElement>(`[data-ids~="${CSS.escape(id)}"]`);
+        if (!row) return;
+        row.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+        setFlash(row.dataset.messageId ?? id);
+      },
+      isExpanded: (id) => expanded.current.has(id),
+      expand: (id) => void expanded.current.add(id),
+    }),
+    [channelId, meId],
+  );
+
+  // Messages from others that arrived below while scrolled up.
+  const seenAt = seenId ? messages.findIndex((m) => m.id === seenId) : -1;
+  const below = seenAt < 0 ? 0 : messages.slice(seenAt + 1).filter((m) => m.sender.id !== meId && !quiet(m)).length;
+  const jumpToLatest = () => {
+    const el = scroller.current;
+    if (!el) return;
+    if (el.scrollTo) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    else el.scrollTop = el.scrollHeight;
+  };
+
   return (
+    <TimelineContext.Provider value={actions}>
+    <div className={s.pane}>
     <div ref={scroller} className={s.scroller} onScroll={check} aria-busy={busy}>
       <div ref={content} className={s.content}>
         {busy && <span className={s.srOnly}>{t('common.loading')}</span>}
@@ -191,13 +272,28 @@ export function Timeline({ channelId, channelName, timeline, meId }: Props) {
             <div role="log" aria-label={t('common.channelName', { name: channelName })} className={s.log}>
               {items.map((item) => {
                 if (item.kind === 'day') return <DayDivider key={item.key} day={item.day} now={now} />;
-                const key = keyOf(item.message);
+                if (item.kind === 'new') {
+                  return (
+                    <div key="new" className={s.newLine} role="separator" aria-label={t('timeline.newLineLabel')}>
+                      <span className={s.newRule} />
+                      <span className={s.newLabel} aria-hidden="true">{t('timeline.newLine')}</span>
+                    </div>
+                  );
+                }
+                const m = item.message;
+                const key = keyOf(m);
                 return (
                   <MessageRow
                     key={key}
-                    message={item.message}
+                    message={m}
+                    group={item.group}
                     head={item.head}
                     arrive={arrived.has(key)}
+                    original={m.replyTo ? byId.get(m.replyTo.id) : undefined}
+                    meId={meId}
+                    editing={composer.editingId === m.id}
+                    onEditDone={stopEdit}
+                    flash={flash === m.id}
                     onRetry={onRetry}
                     onDiscard={onDiscard}
                   />
@@ -208,5 +304,35 @@ export function Timeline({ channelId, channelName, timeline, meId }: Props) {
         )}
       </div>
     </div>
+    <div className={s.floats}>
+      {below > 0 && (
+        <button type="button" className={s.jump} aria-label={t('timeline.jumpLabel', { count: below })} onClick={jumpToLatest}>
+          <ArrowDownIcon />
+          {t('timeline.newCount', { count: below })}
+        </button>
+      )}
+      {toast > 0 && below === 0 && (
+        <div key={toast} className={s.toast} role="status">
+          <span className={s.toastIcon}>
+            <CheckIcon />
+          </span>
+          {t('timeline.linkCopied')}
+        </div>
+      )}
+    </div>
+    </div>
+    {viewing && <ImageViewer images={images} startId={viewing} onClose={() => setViewing(null)} />}
+    {deleting && (
+      <DeleteConfirm
+        message={deleting[0]!}
+        open
+        onCancel={() => setDeleting(null)}
+        onDelete={() => {
+          for (const m of deleting) store.remove(channelId, m.id);
+          setDeleting(null);
+        }}
+      />
+    )}
+    </TimelineContext.Provider>
   );
 }

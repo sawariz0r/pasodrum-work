@@ -60,7 +60,7 @@ describe('ChannelView', () => {
 
     await act(() => setLanguage('ja'));
     expect(screen.getByRole('separator', { name: '今日' })).toBeTruthy();
-    expect(screen.getByRole('textbox', { name: '#general へのメッセージ' }).getAttribute('placeholder')).toBe('#general へのメッセージ');
+    expect(screen.getByRole('textbox', { name: '#general へのメッセージ' }).getAttribute('aria-placeholder')).toBe('#general へのメッセージ');
   });
 
   it('renders plain text safely: line breaks kept, URLs linked in a new tab, no HTML', () => {
@@ -96,58 +96,12 @@ describe('ChannelView', () => {
   });
 });
 
-describe('Composer', () => {
-  it('sends on Enter, keeps Shift+Enter as a new line, and keeps focus', async () => {
+// Composer behaviour (Enter, IME, mentions, uploads) is tested in app/composer/Composer.test.tsx.
+describe('Composer in the channel', () => {
+  it('mounts the composer focused and shows Not sent with Retry and Delete for a failed message', async () => {
     const store = mount();
-    const send = vi.spyOn(store, 'sendText');
-    const box = composer();
-    expect(document.activeElement).toBe(box);
-
-    fireEvent.change(box, { target: { value: 'line one' } });
-    fireEvent.keyDown(box, { key: 'Enter', shiftKey: true });
-    expect(send).not.toHaveBeenCalled();
-
-    fireEvent.change(box, { target: { value: 'line one\nline two' } });
-    fireEvent.keyDown(box, { key: 'Enter' });
-    expect(send).toHaveBeenCalledWith('!general', 'line one\nline two');
-    expect((box as HTMLTextAreaElement).value).toBe('');
-    expect(document.activeElement).toBe(box);
-    expect(screen.getByRole('img', { name: 'Sending' })).toBeTruthy();
-    await waitFor(() => expect(screen.queryByRole('img', { name: 'Sending' })).toBeNull());
-  });
-
-  it('ignores the Enter that confirms an IME composition', async () => {
-    const store = mount();
-    const send = vi.spyOn(store, 'sendText');
-    const box = composer();
-    fireEvent.change(box, { target: { value: 'にほんご' } });
-    fireEvent.keyDown(box, { key: 'Enter', isComposing: true });
-    fireEvent.keyDown(box, { key: 'Enter', keyCode: 229 });
-    fireEvent.compositionEnd(box);
-    fireEvent.keyDown(box, { key: 'Enter' });
-    expect(send).not.toHaveBeenCalled();
-
-    await new Promise((r) => setTimeout(r, 150));
-    fireEvent.keyDown(box, { key: 'Enter' });
-    expect(send).toHaveBeenCalledWith('!general', 'にほんご');
-  });
-
-  it('does not send blank messages; the send button sends', () => {
-    const store = mount();
-    const send = vi.spyOn(store, 'sendText');
-    const button = screen.getByRole('button', { name: 'Send message' }) as HTMLButtonElement;
-    fireEvent.change(composer(), { target: { value: '   ' } });
-    fireEvent.keyDown(composer(), { key: 'Enter' });
-    expect(button.disabled).toBe(true);
-    fireEvent.change(composer(), { target: { value: ' hi ' } });
-    fireEvent.click(button);
-    expect(send).toHaveBeenCalledExactlyOnceWith('!general', 'hi');
-  });
-
-  it('shows Not sent with Retry and Delete for a failed message', async () => {
-    const store = mount();
-    fireEvent.change(composer(), { target: { value: 'this will fail' } });
-    fireEvent.keyDown(composer(), { key: 'Enter' });
+    await waitFor(() => expect(document.activeElement).toBe(composer()));
+    act(() => store.send('!general', { body: 'this will fail', mentions: [] }));
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toContain('Not sent');
 
@@ -155,8 +109,7 @@ describe('Composer', () => {
     expect(screen.queryByRole('alert')).toBeNull();
     expect(store.getSnapshot().timelines['!general']!.messages.at(-1)!.status).toBe('sent');
 
-    fireEvent.change(composer(), { target: { value: 'fail again' } });
-    fireEvent.keyDown(composer(), { key: 'Enter' });
+    act(() => store.send('!general', { body: 'fail again', mentions: [] }));
     const again = await screen.findByRole('alert');
     fireEvent.click(within(again).getByRole('button', { name: 'Delete' }));
     expect(screen.queryByText('fail again')).toBeNull();

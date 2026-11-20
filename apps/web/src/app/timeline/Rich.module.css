@@ -1,0 +1,662 @@
+/* Message content: formatted text, media, files, reactions (Batch B, Foundations → Messages). */
+
+.rich,
+.plain {
+  color: var(--ink);
+  font-size: 15px;
+  line-height: var(--lh);
+  overflow-wrap: anywhere;
+}
+
+.plain {
+  white-space: pre-wrap;
+}
+
+.rich {
+  white-space: normal;
+}
+
+.p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.p:not(:first-child) {
+  margin-top: 4px;
+}
+
+.ul,
+.ol {
+  margin: 3px 0 0;
+}
+
+.ul {
+  padding-left: 22px;
+}
+
+.ol {
+  padding-left: 24px;
+}
+
+.li {
+  margin: 1px 0;
+  white-space: pre-wrap;
+}
+
+.ol > .li {
+  padding-left: 2px;
+}
+
+.quote {
+  margin: 5px 0 2px;
+  padding: 0 0 0 12px;
+  border-left: 3px solid var(--quotebar);
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+
+.rich > :first-child {
+  margin-top: 0;
+}
+
+.code {
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--well);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.codeBlock {
+  position: relative;
+  max-width: 680px;
+  margin: 6px 0 2px;
+}
+
+.pre {
+  margin: 0;
+  padding: 10px 44px 10px 12px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--well);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.copyCode {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: var(--raised);
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity var(--dur-1) var(--ease-out),
+    background-color var(--dur-1) var(--ease-out),
+    color var(--dur-1) var(--ease-out);
+}
+
+.codeBlock:hover .copyCode,
+.codeBlock:focus-within .copyCode {
+  opacity: 1;
+}
+
+.copyCode:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.link {
+  color: var(--link);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.mention {
+  padding: 1px 3px;
+  border-radius: 4px;
+  background: var(--chip);
+  color: var(--link);
+  font-weight: 600;
+}
+
+.edited {
+  color: var(--subtle);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Long messages: over 15 lines show 10 with a fade. */
+.clamp {
+  max-height: calc(150px * var(--lh));
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+  transition: max-height var(--dur-3) var(--ease-in-out);
+}
+
+.opening {
+  overflow: hidden;
+  transition: max-height var(--dur-3) var(--ease-in-out);
+}
+
+.showMore {
+  margin-top: 2px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--link);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.showMore:hover {
+  text-decoration: underline;
+}
+
+/* Quiet lines */
+.unsupported {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--subtle);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.unsupported > svg {
+  flex-shrink: 0;
+}
+
+.unsupportedText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Reply quote */
+.replyQuote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  max-width: 560px;
+  margin: 2px 0 3px;
+  padding: 2px 8px 2px 9px;
+  border: 0;
+  border-left: 2px solid var(--quotebar);
+  border-radius: 0 6px 6px 0;
+  background: transparent;
+  color: inherit;
+  font-size: 13.5px;
+  line-height: 20px;
+  text-align: left;
+  cursor: default;
+}
+
+button.replyQuote {
+  width: 100%;
+  cursor: pointer;
+  transition: background-color var(--dur-1) var(--ease-out);
+}
+
+button.replyQuote:hover {
+  background: var(--hover);
+}
+
+.replyName {
+  flex-shrink: 0;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.replyText {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Media */
+.media {
+  position: relative;
+  display: block;
+  max-width: 100%;
+  margin-top: 6px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 10px;
+  background: var(--well);
+  cursor: zoom-in;
+  transition: filter var(--dur-1) var(--ease-out);
+}
+
+.media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.07);
+  pointer-events: none;
+}
+
+.media:hover {
+  filter: brightness(0.95);
+}
+
+.img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: fade-in var(--dur-2) var(--ease-out);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  width: 400px;
+  max-width: 100%;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.tile {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: var(--well);
+  cursor: zoom-in;
+  transition: filter var(--dur-1) var(--ease-out);
+}
+
+.tile:hover {
+  filter: brightness(0.95);
+}
+
+.tileSpan {
+  grid-row: span 2;
+}
+
+.moreTiles {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(12, 11, 16, 0.5);
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.video {
+  position: relative;
+  width: 400px;
+  max-width: 100%;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--well);
+}
+
+.videoPoster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: fade-in var(--dur-2) var(--ease-out);
+}
+
+.videoShade {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 11, 16, 0.22);
+}
+
+.videoPlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.playDisc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 52px;
+  height: 52px;
+  padding-left: 3px;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  color: #1d1c22;
+  transition: transform var(--dur-1) var(--ease-out);
+}
+
+.videoPlay:active .playDisc {
+  transform: scale(var(--press));
+}
+
+.duration {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(12, 11, 16, 0.72);
+  color: #ffffff;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.videoEl {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #000000;
+}
+
+.card {
+  box-sizing: border-box;
+  width: 400px;
+  max-width: 100%;
+  margin-top: 6px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--raised);
+}
+
+.audio {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+}
+
+.playButton {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 18px;
+  background: var(--accent);
+  color: var(--onaccent);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+
+.playButton[aria-pressed='false'] {
+  padding-left: 2px;
+}
+
+.playButton:hover {
+  background: var(--accenthover);
+}
+
+.playButton:active {
+  transform: scale(var(--press));
+}
+
+.audioMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.fileName {
+  display: block;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileSize {
+  display: block;
+  color: var(--subtle);
+  font-size: 12px;
+  line-height: normal;
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 7px;
+}
+
+.bar {
+  position: relative;
+  flex: 1;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--line);
+}
+
+.barFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: width var(--dur-2) linear;
+}
+
+.time {
+  color: var(--subtle);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  line-height: normal;
+}
+
+.file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 10px 9px 12px;
+}
+
+.file + .file {
+  border-top: 1px solid var(--line);
+}
+
+.fileTile {
+  display: flex;
+  flex-shrink: 0;
+  align-items: flex-end;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 32px;
+  height: 38px;
+  padding-bottom: 5px;
+  border-radius: 6px;
+  background: var(--tile);
+  color: #ffffff;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: normal;
+  clip-path: polygon(0 0, 68% 0, 100% 24%, 100% 100%, 0 100%);
+}
+
+.fileMain {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Reactions */
+.reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.chipWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-sizing: border-box;
+  height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--well);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    border-color var(--dur-1) var(--ease-out),
+    color var(--dur-1) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+
+.chip:hover {
+  border-color: var(--subtle);
+}
+
+.chip:active {
+  transform: scale(var(--press));
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accentsoft);
+  color: var(--ink);
+}
+
+.chipNew {
+  animation: chip-pop var(--dur-2) var(--ease-out);
+}
+
+.emoji {
+  font-size: 14px;
+}
+
+.addReaction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 30px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--subtle);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    color var(--dur-1) var(--ease-out);
+}
+
+.addReaction:hover,
+.addReaction[aria-expanded='true'] {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.reactTip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: 340px;
+  padding: 6px 12px 6px 8px;
+  border-radius: 10px;
+  background: var(--tip);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  color: var(--ontip);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  pointer-events: none;
+  animation: fade-in var(--dur-1) var(--ease-out);
+}
+
+.reactTip::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 20px;
+  width: 10px;
+  height: 10px;
+  background: var(--tip);
+  transform: rotate(45deg);
+}
+
+.reactTipEmoji {
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes chip-pop {
+  from {
+    opacity: 0;
+    transform: scale(var(--pop));
+  }
+}

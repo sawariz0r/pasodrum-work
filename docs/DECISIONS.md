@@ -147,3 +147,9 @@ Format: **Date · short title** → what was discovered, why it matters, what ch
 - Custom profile fields work on the v3 endpoint (`work.pasodrum.email`), so we can store the real email on the profile.
 - Continuwuity appends an emoji to every new account's display name by default (`new_user_displayname_suffix`); set to empty in dev and production so clients get their plain name.
 - Admin actions (issue tokens, deactivate users, reset passwords) are admin-room commands (`!admin users deactivate`, `!admin token issue`); no HTTP admin API documented. The invite service will drive these through the admin room.
+
+**2026-11-20 · Composer behaviour (M2-03)**
+- Enter always sends, in lists and code blocks too. Shift+Enter adds a line, list item or code line. Every Enter goes through `isImeEnter`. ProseMirror also ignores keys mid-composition.
+- Send while an upload is in progress waits for it and then sends. A failed or too-large upload blocks Send until it is retried or removed.
+- TipTap: with `useEditor(..., [])` the options are re-applied on every render, so handlers in `editorProps` always see current state; no refs needed. Autolink makes TipTap's Link inclusive, so we extend it with `inclusive: false`.
+- emojibase ships emoji newer than macOS/Windows can draw. Skip versions whose sample glyph renders as the missing-glyph box (checked once on a canvas).

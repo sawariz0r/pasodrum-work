@@ -1,7 +1,9 @@
-import { useCallback, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore, useWorkspace, type WorkspaceSnapshot } from '../../matrix';
+import { ComposerProvider } from '../composer/context';
 import { Composer } from './Composer';
 import { Timeline } from './Timeline';
+import { TypingIndicator } from './TypingIndicator';
 import s from './Timeline.module.css';
 
 function findChannel(snapshot: WorkspaceSnapshot, channelId: string) {
@@ -17,18 +19,22 @@ function ChannelPane({ channelId }: { channelId: string }) {
   const timeline = useWorkspace((snap) => snap.timelines[channelId]);
   const name = useWorkspace((snap) => findChannel(snap, channelId)?.name ?? '');
   const meId = useWorkspace((snap) => snap.me.id);
+  const [unreadAtOpen] = useState(() => findChannel(store.getSnapshot(), channelId)?.unread ?? 0);
 
   useEffect(() => {
     store.openTimeline(channelId);
   }, [store, channelId]);
 
-  const send = useCallback((body: string) => store.sendText(channelId, body), [store, channelId]);
-
   return (
-    <div className={s.view}>
-      <Timeline channelId={channelId} channelName={name} timeline={timeline} meId={meId} />
-      <Composer channelName={name} onSend={send} />
-    </div>
+    <ComposerProvider>
+      <div className={s.view}>
+        <Timeline channelId={channelId} channelName={name} timeline={timeline} meId={meId} unreadAtOpen={unreadAtOpen} />
+        <div className={s.floor}>
+          <TypingIndicator channelId={channelId} />
+        </div>
+        <Composer channelId={channelId} channelName={name} />
+      </div>
+    </ComposerProvider>
   );
 }
 

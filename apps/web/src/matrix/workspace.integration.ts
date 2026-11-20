@@ -1,63 +1,9 @@
 // Runs against the seeded local server: pnpm dev:server && pnpm dev:seed && pnpm test:matrix
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createWorkspaceStore, loadSession, resolveServer, signIn, SignInError, type WorkspaceSnapshot, type WorkspaceStore } from './index';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { loadSession, resolveServer, signIn, SignInError } from './index';
+import { BASE, channel, mx, names, open, PASSWORD, setupIntegration, stores, until } from './integration.helpers';
 
-const BASE = process.env.MATRIX_BASE ?? 'http://localhost:8008';
-const PASSWORD = 'pasodrum-dev-password';
-const stores: WorkspaceStore[] = [];
-
-beforeAll(() => {
-  const data = new Map<string, string>();
-  globalThis.localStorage = {
-    getItem: (k: string) => data.get(k) ?? null,
-    setItem: (k: string, v: string) => void data.set(k, v),
-    removeItem: (k: string) => void data.delete(k),
-  } as Storage;
-});
-afterAll(() => Promise.all(stores.map((s) => s.signOut())));
-
-function until<T>(store: WorkspaceStore, pick: (s: WorkspaceSnapshot) => T | undefined | false, ms = 15_000): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const check = () => {
-      const v = pick(store.getSnapshot());
-      if (v === undefined || v === false) return false;
-      unsubscribe();
-      clearTimeout(timer);
-      resolve(v);
-      return true;
-    };
-    const unsubscribe = store.subscribe(check);
-    const timer = setTimeout(() => {
-      unsubscribe();
-      reject(new Error(`timed out; snapshot: ${JSON.stringify(store.getSnapshot()).slice(0, 2000)}`));
-    }, ms);
-    check();
-  });
-}
-
-async function open(identifier: string) {
-  const session = await signIn(BASE, identifier, PASSWORD);
-  const store = createWorkspaceStore(session);
-  stores.push(store);
-  expect(store.getSnapshot().connection).toBe('starting');
-  await until(store, (s) => s.connection === 'online' && s.spaces.length > 0);
-  return { session, store };
-}
-
-const channel = (s: WorkspaceSnapshot, space: string, name: string) => {
-  const spaceId = s.spaces.find((x) => x.name === space)?.id;
-  return spaceId ? s.channels[spaceId]?.find((c) => c.name === name) : undefined;
-};
-const names = (s: WorkspaceSnapshot, space: string) => s.channels[s.spaces.find((x) => x.name === space)?.id ?? '']?.map((c) => c.name);
-
-async function mx(token: string, method: string, path: string, body?: unknown) {
-  const res = await fetch(BASE + path, {
-    method,
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: method === 'GET' ? undefined : JSON.stringify(body ?? {}),
-  });
-  return { status: res.status, body: (await res.json()) as Record<string, unknown> };
-}
+setupIntegration();
 
 describe('server and sign-in', () => {
   it('resolves the server through .well-known', async () => {
@@ -101,7 +47,7 @@ describe('workspace', () => {
     expect(channel(i, 'Pasodrum', 'lead')).toMatchObject({ private: true });
   });
 
-  it('loads history, skipping what is not text', async () => {
+  it('loads history, skipping what is not shown', async () => {
     const general = channel(jonas.store.getSnapshot(), 'Pasodrum', 'general')!.id;
     jonas.store.openTimeline(general);
     expect(jonas.store.getSnapshot().timelines[general]).toBeUndefined();
@@ -113,12 +59,12 @@ describe('workspace', () => {
     const seed = t.messages.find((m) => m.body === 'Nordlys review moved to Thursday 14:00.');
     expect(seed).toMatchObject({ sender: { id: '@jonas:pasodrum.localhost', name: 'Jonas Berg' }, status: 'sent' });
     expect(t.messages.some((m) => m.sender.name === '田中 由紀')).toBe(true);
-    expect(t.messages.every((m) => m.body && m.channelId === general)).toBe(true);
+    expect(t.messages.filter((m) => !(m.channelId === general && (m.kind === 'system' ? m.system!.joined.length + m.system!.left.length : m.body || m.media || m.kind === 'deleted')))).toEqual([]);
 
     const lead = channel(ingrid.store.getSnapshot(), 'Pasodrum', 'lead')!.id;
     ingrid.store.openTimeline(lead);
     const encrypted = await until(ingrid.store, (s) => s.timelines[lead]?.initialLoading === false && s.timelines[lead]);
-    expect(encrypted.messages).toEqual([]);
+    expect(encrypted.messages.filter((m) => m.kind !== 'system')).toEqual([]);
   });
 
   it('sends, receives, edits and marks read', async () => {
@@ -184,8 +130,9 @@ describe('paging', () => {
     const { session, store } = await open('sofia');
     store.openTimeline(roomId);
     let t = await until(store, (s) => s.timelines[roomId]?.initialLoading === false && s.timelines[roomId]);
-    expect(t.messages.length).toBeGreaterThanOrEqual(30);
-    expect(t.messages.length).toBeLessThan(70);
+    const texts = () => t.messages.filter((m) => m.kind !== 'system');
+    expect(texts().length).toBeGreaterThanOrEqual(30);
+    expect(texts().length).toBeLessThan(70);
     expect(t.messages.at(-1)!.body).toBe('m70');
     expect(t.hasOlder).toBe(true);
     const counts = [t.messages.length];
@@ -194,7 +141,8 @@ describe('paging', () => {
       t = await until(store, (s) => s.timelines[roomId] !== t && !s.timelines[roomId]!.loadingOlder && s.timelines[roomId]);
       counts.push(t.messages.length);
     }
-    expect(t.messages.map((m) => m.body)).toEqual(Array.from({ length: 70 }, (_, i) => `m${i + 1}`));
+    expect(texts().map((m) => m.body)).toEqual(Array.from({ length: 70 }, (_, i) => `m${i + 1}`));
+    expect(t.messages[0]).toMatchObject({ kind: 'system', system: { joined: [{ id: '@sofia:pasodrum.localhost' }], left: [] } });
     expect(counts.length).toBeGreaterThan(2);
     await mx(session.accessToken, 'POST', `/_matrix/client/v3/rooms/${encodeURIComponent(roomId)}/leave`);
     await mx(session.accessToken, 'POST', `/_matrix/client/v3/rooms/${encodeURIComponent(roomId)}/forget`);

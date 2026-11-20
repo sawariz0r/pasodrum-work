@@ -1,0 +1,166 @@
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--viewerscrim);
+  animation: fade-in var(--dur-3) var(--ease-out);
+}
+
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 41;
+  display: flex;
+  flex-direction: column;
+  color: #ffffff;
+  font-family: var(--font-ui);
+  outline: none;
+}
+
+.top {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 12px;
+  height: 64px;
+  padding: 0 14px 0 20px;
+  animation: fade-in var(--dur-3) var(--ease-out);
+}
+
+.who {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.time {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12.5px;
+}
+
+.button,
+.nav {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  color: #ffffff;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+
+.button {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.nav {
+  position: absolute;
+  top: calc(50% - 46px);
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.button:hover,
+.nav:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.button:active,
+.nav:active {
+  transform: scale(var(--press));
+}
+
+.prev {
+  left: 24px;
+}
+
+.next {
+  right: 24px;
+}
+
+.body {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.stage {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 4px 96px 48px;
+  overflow: hidden;
+}
+
+.actual {
+  align-items: flex-start;
+  justify-content: flex-start;
+  overflow: auto;
+}
+
+.picture {
+  max-width: min(100%, 1000px);
+  max-height: 100%;
+  border-radius: 4px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  cursor: zoom-in;
+  animation: open var(--dur-3) var(--ease-out);
+}
+
+.actual .picture {
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  cursor: zoom-out;
+}
+
+.placeholder {
+  width: min(100%, 1000px);
+  max-height: 100%;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes open {
+  from {
+    opacity: 0;
+    transform: scale(var(--pop));
+  }
+}
