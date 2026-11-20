@@ -38,29 +38,29 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ. Source copy in [desig
 | Sign-in failure that is neither wrong password nor unreachable (e.g. rate limited); M1 shows the "Can’t reach" alert for now | SignIn | needs design |
 | Rail "+" = New client space (links to CreateClientSpace) | Main | approved 2026-11-20 |
 
-## Batch B — for M2 (designed 2026-11-20, awaiting CEO approval)
+## Batch B — for M2 (approved 2026-11-20)
 
 | Screen / state | Artboard | Status |
 |---|---|---|
-| Images (single, several), video, audio | MsgImages, MsgVideoAudio, MsgMediaDark | designed |
-| Files and multi-file | MsgFiles | designed |
-| Formatted text, inline code, code block | MsgText, MsgTextJP, MsgTextDark | designed |
-| Long message (over 15 lines → 10 + fade + Show more) | MsgLong | designed |
-| Replies, incl. reply from another app (fallback, not clickable) | MsgReplies | designed |
-| Edited, deleted ("Message deleted"), can't-show rows | MsgRowStates, MsgRowStatesJP | designed |
-| Reactions (mine, many, who reacted) | MsgReactions | designed |
-| Hover bar (React · Reply · More; Thread slot for M3) | MsgHover | designed |
-| More menu, copy link toast | MsgMoreMenu, MsgMoreMenuJP, MoreMenuDark, LinkCopied | designed |
-| Edit in place, delete confirm | MsgEdit, MsgDeleteConfirm | designed |
-| Composer: format bar, replying-to | ComposerFormat, ComposerReply | designed |
-| Emoji picker, mention picker | EmojiPicker, MentionPicker, MentionPickerJP | designed |
-| Link dialog | LinkDialog | designed |
-| Uploads: tray + progress, paste image, failed, drop overlay | UploadProgress, PasteImage, UploadFailed, UploadFailedJP, DropOverlay, UploadDark | designed |
-| Image viewer | ImageViewer | designed |
-| New line, Jump to latest | NewMessages, JumpToLatest, JumpToLatestJP | designed |
-| Notification ask (once, after first send, sidebar card) | NotifyAsk, NotifyAskJP | designed |
-| Desktop notification content (mentions + DMs) | DesktopNotification | designed |
-| Foundations: Messages section, Motion section (D-20), new tokens | Foundations | designed |
+| Images (single, several), video, audio | MsgImages, MsgVideoAudio, MsgMediaDark | approved 2026-11-20 |
+| Files and multi-file | MsgFiles | approved 2026-11-20 |
+| Formatted text, inline code, code block | MsgText, MsgTextJP, MsgTextDark | approved 2026-11-20 |
+| Long message (over 15 lines → 10 + fade + Show more) | MsgLong | approved 2026-11-20 |
+| Replies, incl. reply from another app (fallback, not clickable) | MsgReplies | approved 2026-11-20 |
+| Edited, deleted ("Message deleted"), can't-show rows | MsgRowStates, MsgRowStatesJP | approved 2026-11-20 |
+| Reactions (mine, many, who reacted) | MsgReactions | approved 2026-11-20 |
+| Hover bar (React · Reply · More; Thread slot for M3) | MsgHover | approved 2026-11-20 |
+| More menu, copy link toast | MsgMoreMenu, MsgMoreMenuJP, MoreMenuDark, LinkCopied | approved 2026-11-20 |
+| Edit in place, delete confirm | MsgEdit, MsgDeleteConfirm | approved 2026-11-20 |
+| Composer: format bar, replying-to | ComposerFormat, ComposerReply | approved 2026-11-20 |
+| Emoji picker, mention picker | EmojiPicker, MentionPicker, MentionPickerJP | approved 2026-11-20 |
+| Link dialog | LinkDialog | approved 2026-11-20 |
+| Uploads: tray + progress, paste image, failed, drop overlay | UploadProgress, PasteImage, UploadFailed, UploadFailedJP, DropOverlay, UploadDark | approved 2026-11-20 |
+| Image viewer | ImageViewer | approved 2026-11-20 |
+| New line, Jump to latest | NewMessages, JumpToLatest, JumpToLatestJP | approved 2026-11-20 |
+| Notification ask (once, after first send, sidebar card) | NotifyAsk, NotifyAskJP | approved 2026-11-20 |
+| Desktop notification content (mentions + DMs) | DesktopNotification | approved 2026-11-20 |
+| Foundations: Messages section, Motion section (D-20), new tokens | Foundations | approved 2026-11-20 |
 
 ## Batch C — for M3
 
