@@ -38,9 +38,29 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ. Source copy in [desig
 | Sign-in failure that is neither wrong password nor unreachable (e.g. rate limited); M1 shows the "Can’t reach" alert for now | SignIn | needs design |
 | Rail "+" = New client space (links to CreateClientSpace) | Main | approved 2026-11-20 |
 
-## Batch B — for M2
+## Batch B — for M2 (designed 2026-11-20, awaiting CEO approval)
 
-Image, video, audio, multi-file, code block, long message · reply quote from other apps · edited, deleted, unsupported rows · More menu · emoji picker · mention picker · link dialog · upload, drag-drop, progress, failure · image viewer · new-messages line and jump to latest · notification permission and content — all `needs design`.
+| Screen / state | Artboard | Status |
+|---|---|---|
+| Images (single, several), video, audio | MsgImages, MsgVideoAudio, MsgMediaDark | designed |
+| Files and multi-file | MsgFiles | designed |
+| Formatted text, inline code, code block | MsgText, MsgTextJP, MsgTextDark | designed |
+| Long message (over 15 lines → 10 + fade + Show more) | MsgLong | designed |
+| Replies, incl. reply from another app (fallback, not clickable) | MsgReplies | designed |
+| Edited, deleted ("Message deleted"), can't-show rows | MsgRowStates, MsgRowStatesJP | designed |
+| Reactions (mine, many, who reacted) | MsgReactions | designed |
+| Hover bar (React · Reply · More; Thread slot for M3) | MsgHover | designed |
+| More menu, copy link toast | MsgMoreMenu, MsgMoreMenuJP, MoreMenuDark, LinkCopied | designed |
+| Edit in place, delete confirm | MsgEdit, MsgDeleteConfirm | designed |
+| Composer: format bar, replying-to | ComposerFormat, ComposerReply | designed |
+| Emoji picker, mention picker | EmojiPicker, MentionPicker, MentionPickerJP | designed |
+| Link dialog | LinkDialog | designed |
+| Uploads: tray + progress, paste image, failed, drop overlay | UploadProgress, PasteImage, UploadFailed, UploadFailedJP, DropOverlay, UploadDark | designed |
+| Image viewer | ImageViewer | designed |
+| New line, Jump to latest | NewMessages, JumpToLatest, JumpToLatestJP | designed |
+| Notification ask (once, after first send, sidebar card) | NotifyAsk, NotifyAskJP | designed |
+| Desktop notification content (mentions + DMs) | DesktopNotification | designed |
+| Foundations: Messages section, Motion section (D-20), new tokens | Foundations | designed |
 
 ## Batch C — for M3
 

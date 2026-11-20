@@ -40,6 +40,31 @@ body{margin:0}
 .pd-railskel{background:rgba(255,255,255,.09);animation:pd-shimmer 1.4s ease-in-out infinite}
 .pd-link:hover{text-decoration:underline}
 .pd-seg:not([aria-checked="true"]):hover{color:var(--ink)!important}
+.pd-light{--quotebar:#D3D0C8;--editbg:#F1F8F5;--tip:#1D1C22;--ontip:#FFFFFF;--scrim:rgba(14,13,18,.97)}
+.pd-dark{--quotebar:#4A4952;--editbg:#16251F;--tip:#3A3A44;--ontip:#FFFFFF;--scrim:rgba(6,6,9,.97)}
+.pd-root{--mono:"SF Mono",ui-monospace,Menlo,Consolas,"Roboto Mono",monospace}
+.pd-ja{--mono:"SF Mono",ui-monospace,Menlo,Consolas,"Hiragino Sans","Yu Gothic UI",monospace}
+.pd-force .pd-actions{opacity:1}
+.pd-force .pd-time{visibility:visible!important}
+.pd-root .pd-msg.pd-force:not(.pd-mention){background:var(--hover)!important}
+.pd-root .pd-msg.pd-editing{background:var(--editbg)!important}
+.pd-code .pd-copy{opacity:0;transition:opacity .12s}
+.pd-code:hover .pd-copy,.pd-code:focus-within .pd-copy{opacity:1}
+.pd-quote:hover{background:var(--hover)}
+.pd-media:hover{filter:brightness(.95)}
+.pd-menuitem:hover,.pd-emo:hover{background:var(--hover)!important}
+.pd-viewbtn:hover{background:rgba(255,255,255,.2)!important}
+.pd-root{--ease-out:cubic-bezier(.2,.8,.2,1);--ease-in-out:cubic-bezier(.4,0,.2,1);--dur-1:120ms;--dur-2:180ms;--dur-3:240ms}
+@keyframes pd-pop{from{opacity:0;scale:.96}}
+@keyframes pd-rise{from{opacity:0;translate:0 4px}}
+@keyframes pd-fade{from{opacity:0}}
+.pd-pop{animation:pd-pop var(--dur-2) var(--ease-out) both}
+.pd-rise{animation:pd-rise var(--dur-2) var(--ease-out) both}
+.pd-fadein{animation:pd-fade var(--dur-2) var(--ease-out) both}
+.pd-menuitem,.pd-emo,.pd-quote,.pd-media,.pd-viewbtn{transition:background-color var(--dur-1) var(--ease-out),filter var(--dur-1) var(--ease-out)}
+@media (prefers-reduced-motion: reduce){.pd-pop,.pd-rise{animation-name:pd-fade}}
+@keyframes pd-caret{0%,49%{opacity:1}50%,100%{opacity:0}}
+.pd-caret{display:inline-block;width:1.5px;height:1.15em;margin:0 1px -.2em;background:var(--ink);animation:pd-caret 1s steps(1) infinite}
 @media (prefers-reduced-motion: reduce){.pd-skel,.pd-railskel,.pd-dot{animation:none}}
 </style>
 </helmet>
@@ -202,12 +227,32 @@ body{margin:0}
       <span style="width: 20px; height: 20px; flex-shrink: 0; border-radius: 6px; background: #7A4B2A; color: #FFFFFF; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center">H</span><span style="flex: 1">Halden &amp; Co.</span></button>
     </sc-if>
   </div>
+  <sc-if value="{{notifyAsk}}" hint-placeholder-val="{{false}}">
+  <div class="pd-rise" role="region" aria-label="{{txNotifications}}" style="margin: 0 10px 12px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--raised); box-shadow: 0 1px 2px rgba(0,0,0,.04)">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <span style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 8px; background: var(--accentsoft); color: var(--accent); display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></span>
+      <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: var(--ink)">{{txNotifications}}</span>
+      <button class="pd-ico" onClick="{{dismissNotify}}" aria-label="{{txNotNow}}" style="width: 26px; height: 26px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--subtle)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+    </div>
+    <button onClick="{{dismissNotify}}" style="margin-top: 10px; width: 100%; height: 32px; border: 0; border-radius: 8px; background: var(--accent); color: var(--onaccent); font-size: 13.5px; font-weight: 600; cursor: pointer">{{txTurnOn}}</button>
+  </div>
+  </sc-if>
 </aside>
 </sc-if>
 
 <!-- Conversation -->
 <sc-if value="{{showMain}}" hint-placeholder-val="{{true}}">
 <main style="flex: 999 1 560px; min-width: 0; height: 900px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg)">
+  <sc-if value="{{dropOn}}" hint-placeholder-val="{{false}}">
+  <div style="position: relative; height: 0; z-index: 22">
+    <div class="pd-fadein" aria-hidden="true" style="position: absolute; top: 0; left: 0; right: 0; height: 900px; box-sizing: border-box; padding: 12px; background: color-mix(in srgb, var(--bg) 72%, transparent)">
+      <div style="height: 100%; box-sizing: border-box; border: 2px dashed var(--accent); border-radius: 18px; background: color-mix(in srgb, var(--accentsoft) 82%, transparent); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px">
+        <span style="width: 64px; height: 64px; border-radius: 18px; background: var(--accent); color: var(--onaccent); display: flex; align-items: center; justify-content: center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M12 15V3M7 8l5-5 5 5"></path><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"></path></svg></span>
+        <span style="font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 22px; font-weight: 700; color: var(--ink)">{{txDropTo}}</span>
+      </div>
+    </div>
+  </div>
+  </sc-if>
   <sc-if value="{{showBanner}}" hint-placeholder-val="{{false}}">
   <div role="status" style="flex-shrink: 0; height: 36px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 16px; background: {{bannerBg}}; color: {{bannerInk}}; font-size: 13.5px; font-weight: 600">
     <sc-if value="{{bnOffline}}" hint-placeholder-val="{{true}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 2 20 20"></path><path d="M8.5 16.5a5 5 0 0 1 7 0"></path><path d="M2 8.8a15 15 0 0 1 4.2-2.6"></path><path d="M10.7 5c4-.4 8.1.9 11.3 3.8"></path><path d="M16.9 11.3a10 10 0 0 1 2.2 1.7"></path><path d="M5 13a10 10 0 0 1 5.2-2.8"></path><path d="M12 20h.01"></path></svg></sc-if>
@@ -288,6 +333,18 @@ body{margin:0}
             <span>{{m.text}}</span>
           </div>
         </sc-if>
+        <sc-if value="{{m.isNew}}" hint-placeholder-val="{{false}}">
+          <div role="separator" aria-label="{{txNewAria}}" style="display: flex; align-items: center; gap: 8px; margin: 10px 12px 4px 12px">
+            <div style="flex: 1; height: 1px; background: var(--danger)"></div>
+            <span style="font-size: 12px; font-weight: 700; line-height: 16px; color: var(--dangertext)">{{txNew}}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{m.isDeleted}}" hint-placeholder-val="{{false}}">
+          <div class="pd-msg" style="position: relative; display: flex; gap: 12px; padding: 4px 12px; border-radius: 10px">
+            <div style="width: 36px; flex-shrink: 0; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--subtle)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path></svg></div>
+            <div style="flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; font-size: 14px; line-height: 24px; color: var(--subtle)"><span>{{txMsgDeleted}}</span><span class="pd-time" style="visibility: hidden; font-size: 12px">{{m.time}}</span></div>
+          </div>
+        </sc-if>
         <sc-if value="{{m.isMsg}}" hint-placeholder-val="{{true}}">
           <div class="pd-msg {{m.cls}}" style="position: relative; display: flex; gap: 12px; padding: {{m.pad}}; border-radius: 10px; background: {{m.rowBg}}">
             <div style="width: 36px; flex-shrink: 0; display: flex; justify-content: flex-end">
@@ -298,7 +355,40 @@ body{margin:0}
               <sc-if value="{{m.showHead}}" hint-placeholder-val="{{true}}">
                 <div style="display: flex; align-items: baseline; gap: 8px; line-height: 22px"><span style="font-size: 15px; font-weight: 700; color: var(--ink)">{{m.name}}</span><sc-if value="{{m.showTime}}" hint-placeholder-val="{{true}}"><span style="font-size: 12px; color: var(--subtle)">{{m.time}}</span></sc-if><sc-if value="{{m.sending}}" hint-placeholder-val="{{false}}"><span role="img" aria-label="{{txSending}}" style="align-self: center; display: inline-flex; color: var(--subtle)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span></sc-if></div>
               </sc-if>
+              <sc-if value="{{m.hasQuote}}" hint-placeholder-val="{{false}}">
+                <div class="{{m.quoteCls}}" role="{{m.quoteRole}}" tabindex="{{m.quoteTab}}" style="display: flex; align-items: center; gap: 6px; max-width: 560px; margin: 2px 0 3px; padding: 2px 8px 2px 9px; border-left: 2px solid var(--quotebar); border-radius: 0 6px 6px 0; font-size: 13.5px; line-height: 20px; cursor: {{m.quoteCursor}}">
+                  <sc-if value="{{m.quoteAv}}" hint-placeholder-val="{{true}}"><span style="width: 16px; height: 16px; flex-shrink: 0; border-radius: 4px; background: {{m.quoteColor}}; color: #FFFFFF; font-size: {{m.quoteAvFs}}; font-weight: 700; display: flex; align-items: center; justify-content: center">{{m.quoteInitials}}</span></sc-if>
+                  <span style="flex-shrink: 0; font-weight: 600; color: var(--ink)">{{m.quoteName}}</span>
+                  <span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted)">{{m.quoteText}}</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{m.hasParts}}" hint-placeholder-val="{{true}}">
               <div style="font-size: 15px; line-height: var(--lh); color: var(--ink); opacity: {{m.opacity}}"><sc-for list="{{m.parts}}" as="p" hint-placeholder-count="1"><span style="white-space: pre-wrap; {{p.style}}">{{p.t}}</span></sc-for></div>
+              </sc-if>
+              <sc-if value="{{m.hasBlocks}}" hint-placeholder-val="{{false}}">
+                <div style="font-size: 15px; line-height: var(--lh); color: var(--ink); {{m.clampStyle}}">
+                <sc-for list="{{m.blocks}}" as="bk" hint-placeholder-count="2">
+                  <sc-if value="{{bk.isP}}" hint-placeholder-val="{{true}}"><div style="margin-top: {{bk.mt}}"><sc-for list="{{bk.parts}}" as="p" hint-placeholder-count="2"><sc-if value="{{p.isText}}" hint-placeholder-val="{{true}}"><span style="white-space: pre-wrap; {{p.style}}">{{p.t}}</span></sc-if><sc-if value="{{p.isLink}}" hint-placeholder-val="{{false}}"><a class="pd-link" href="#" style="color: var(--link); text-decoration: none">{{p.t}}</a></sc-if><sc-if value="{{p.isCaret}}" hint-placeholder-val="{{false}}"><span class="pd-caret" aria-hidden="true"></span></sc-if></sc-for></div></sc-if>
+                  <sc-if value="{{bk.isUl}}" hint-placeholder-val="{{false}}"><ul style="margin: 3px 0 0; padding-left: 22px"><sc-for list="{{bk.items}}" as="li" hint-placeholder-count="2"><li style="margin: 1px 0"><sc-for list="{{li}}" as="p" hint-placeholder-count="1"><sc-if value="{{p.isText}}" hint-placeholder-val="{{true}}"><span style="white-space: pre-wrap; {{p.style}}">{{p.t}}</span></sc-if><sc-if value="{{p.isLink}}" hint-placeholder-val="{{false}}"><a class="pd-link" href="#" style="color: var(--link); text-decoration: none">{{p.t}}</a></sc-if><sc-if value="{{p.isCaret}}" hint-placeholder-val="{{false}}"><span class="pd-caret" aria-hidden="true"></span></sc-if></sc-for></li></sc-for></ul></sc-if>
+                  <sc-if value="{{bk.isOl}}" hint-placeholder-val="{{false}}"><ol style="margin: 3px 0 0; padding-left: 24px"><sc-for list="{{bk.items}}" as="li" hint-placeholder-count="2"><li style="margin: 1px 0; padding-left: 2px"><sc-for list="{{li}}" as="p" hint-placeholder-count="1"><sc-if value="{{p.isText}}" hint-placeholder-val="{{true}}"><span style="white-space: pre-wrap; {{p.style}}">{{p.t}}</span></sc-if><sc-if value="{{p.isLink}}" hint-placeholder-val="{{false}}"><a class="pd-link" href="#" style="color: var(--link); text-decoration: none">{{p.t}}</a></sc-if><sc-if value="{{p.isCaret}}" hint-placeholder-val="{{false}}"><span class="pd-caret" aria-hidden="true"></span></sc-if></sc-for></li></sc-for></ol></sc-if>
+                  <sc-if value="{{bk.isQuote}}" hint-placeholder-val="{{false}}"><blockquote style="margin: 5px 0 2px; padding: 0 0 0 12px; border-left: 3px solid var(--quotebar); color: var(--muted)"><sc-for list="{{bk.parts}}" as="p" hint-placeholder-count="1"><sc-if value="{{p.isText}}" hint-placeholder-val="{{true}}"><span style="white-space: pre-wrap; {{p.style}}">{{p.t}}</span></sc-if><sc-if value="{{p.isLink}}" hint-placeholder-val="{{false}}"><a class="pd-link" href="#" style="color: var(--link); text-decoration: none">{{p.t}}</a></sc-if><sc-if value="{{p.isCaret}}" hint-placeholder-val="{{false}}"><span class="pd-caret" aria-hidden="true"></span></sc-if></sc-for></blockquote></sc-if>
+                  <sc-if value="{{bk.isCode}}" hint-placeholder-val="{{false}}"><div class="pd-code" style="position: relative; margin: 6px 0 2px; max-width: 680px"><pre style="margin: 0; padding: 10px 44px 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--well); font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--ink); white-space: pre; overflow-x: auto"><code>{{bk.code}}</code></pre><button class="pd-ico pd-copy" aria-label="{{txCopyCode}}" style="position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--raised)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path></svg></button></div></sc-if>
+                </sc-for>
+                </div>
+                <sc-if value="{{m.collapsed}}" hint-placeholder-val="{{false}}"><button class="pd-link" onClick="{{m.expand}}" aria-expanded="false" style="margin-top: 2px; padding: 0; border: 0; background: transparent; color: var(--link); font-size: 13.5px; font-weight: 600; cursor: pointer">{{txShowMore}}</button></sc-if>
+              </sc-if>
+              <sc-if value="{{m.isEditing}}" hint-placeholder-val="{{false}}">
+                <div style="margin-top: 2px; border: 1.5px solid var(--accent); border-radius: 12px; background: var(--raised); box-shadow: 0 0 0 4px var(--accentsoft)">
+                  <div role="textbox" aria-multiline="true" aria-label="{{txEditLabel}}" style="padding: 9px 12px 4px; font-size: 15px; line-height: var(--lh); color: var(--ink)">{{m.editText}}<span class="pd-caret" aria-hidden="true"></span></div>
+                  <div style="display: flex; justify-content: flex-end; gap: 6px; padding: 4px 8px 8px">
+                    <button class="pd-btn2" onClick="{{m.cancelEdit}}" style="height: 30px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--raised); color: var(--ink); font-size: 13px; font-weight: 600; cursor: pointer">{{txCancel}}</button>
+                    <button onClick="{{m.cancelEdit}}" style="height: 30px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--accent); color: var(--onaccent); font-size: 13px; font-weight: 600; cursor: pointer">{{txSave}}</button>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{m.isUnsupported}}" hint-placeholder-val="{{false}}">
+                <div style="display: flex; align-items: center; gap: 7px; font-size: 14px; line-height: 22px; color: var(--subtle)"><span style="flex-shrink: 0; display: flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M21 8 12 3 3 8v8l9 5 9-5Z"></path><path d="m3 8 9 5 9-5M12 13v8"></path></svg></span><span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{m.unsupText}}</span></div>
+              </sc-if>
               <sc-if value="{{m.failed}}" hint-placeholder-val="{{false}}">
                 <div role="alert" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 3px; font-size: 13px; line-height: 20px">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--dangertext)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4.5M12 16h.01"></path></svg>
@@ -330,6 +420,46 @@ body{margin:0}
                   </div>
                 </div>
               </sc-if>
+              <sc-if value="{{m.hasImg1}}" hint-placeholder-val="{{false}}">
+                <button class="pd-media" onClick="{{m.openViewer}}" aria-label="{{m.img1Label}}" style="display: block; margin-top: 6px; width: {{m.img1W}}; height: {{m.img1H}}; max-width: 100%; padding: 0; border: 0; border-radius: 10px; background: {{m.img1Art}}; box-shadow: inset 0 0 0 1px rgba(0,0,0,.07); cursor: zoom-in"></button>
+              </sc-if>
+              <sc-if value="{{m.hasGrid}}" hint-placeholder-val="{{false}}">
+                <div style="margin-top: 6px; width: 400px; max-width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: {{m.gridRow}}; gap: 4px; border-radius: 10px; overflow: hidden">
+                  <sc-for list="{{m.grid}}" as="g" hint-placeholder-count="4"><button class="pd-media" onClick="{{m.openViewer}}" aria-label="{{g.label}}" style="position: relative; padding: 0; border: 0; background: {{g.art}}; cursor: zoom-in; {{g.span}}"><sc-if value="{{g.more}}" hint-placeholder-val="{{false}}"><span style="position: absolute; inset: 0; background: rgba(12,11,16,.5); color: #FFFFFF; font-size: 24px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{g.moreText}}</span></sc-if></button></sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{m.hasVideo}}" hint-placeholder-val="{{false}}">
+                <div style="position: relative; margin-top: 6px; width: 400px; max-width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: {{m.videoArt}}">
+                  <button aria-label="{{txPlayVideo}}" style="position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer"><span style="width: 52px; height: 52px; border-radius: 26px; background: rgba(255,255,255,.94); color: #1D1C22; box-shadow: 0 6px 18px rgba(0,0,0,.28); display: flex; align-items: center; justify-content: center; padding-left: 3px; box-sizing: border-box"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z" fill="currentColor" stroke="none"></path></svg></span></button>
+                  <span style="position: absolute; left: 8px; bottom: 8px; padding: 2px 7px; border-radius: 6px; background: rgba(12,11,16,.72); color: #FFFFFF; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums">{{m.videoDur}}</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{m.hasVoice}}" hint-placeholder-val="{{false}}">
+                <div style="margin-top: 6px; width: 320px; max-width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 7px 16px 7px 7px; border: 1px solid var(--line); border-radius: 999px; background: var(--raised)">
+                  <button aria-label="{{m.voiceLabel}}" aria-pressed="{{m.voicePressed}}" style="width: 34px; height: 34px; flex-shrink: 0; padding: 0; border: 0; border-radius: 17px; background: var(--accent); color: var(--onaccent); display: flex; align-items: center; justify-content: center; cursor: pointer"><sc-if value="{{m.voicePlaying}}" hint-placeholder-val="{{true}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none"></rect><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none"></rect></svg></sc-if><sc-if value="{{m.voiceIdle}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z" fill="currentColor" stroke="none"></path></svg></sc-if></button>
+                  <span aria-hidden="true" style="flex: 1; min-width: 0; height: 28px; display: flex; align-items: center; gap: 2px"><sc-for list="{{m.wave}}" as="b" hint-placeholder-count="30"><span style="flex: 1; height: {{b.h}}; border-radius: 2px; background: {{b.c}}"></span></sc-for></span>
+                  <span style="flex-shrink: 0; font-size: 12.5px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums">{{m.voiceTime}}</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{m.hasAudio}}" hint-placeholder-val="{{false}}">
+                <div style="margin-top: 6px; width: 400px; max-width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--raised)">
+                  <button aria-label="{{txPlay}}" style="width: 36px; height: 36px; flex-shrink: 0; padding: 0 0 0 2px; box-sizing: border-box; border: 0; border-radius: 18px; background: var(--accent); color: var(--onaccent); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z" fill="currentColor" stroke="none"></path></svg></button>
+                  <span style="flex: 1; min-width: 0"><span style="display: block; font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{m.audioName}}</span><span style="display: flex; align-items: center; gap: 8px; margin-top: 7px"><span style="flex: 1; height: 4px; border-radius: 2px; background: var(--line)"></span><span style="font-size: 12px; color: var(--subtle); font-variant-numeric: tabular-nums">{{m.audioDur}}</span></span></span>
+                  <button class="pd-ico" aria-label="{{m.audioDl}}" style="width: 30px; height: 30px; flex-shrink: 0; border: 0; border-radius: 7px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg></button>
+                </div>
+              </sc-if>
+              <sc-if value="{{m.hasFiles}}" hint-placeholder-val="{{false}}">
+                <div style="margin-top: 6px; width: 400px; max-width: 100%; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--raised)">
+                  <sc-for list="{{m.files}}" as="f" hint-placeholder-count="2"><div style="display: flex; align-items: center; gap: 12px; padding: 9px 10px 9px 12px; border-top: {{f.border}}">
+                    <span style="width: 32px; height: 38px; flex-shrink: 0; box-sizing: border-box; padding-bottom: 5px; clip-path: polygon(0 0, 68% 0, 100% 24%, 100% 100%, 0 100%); border-radius: 6px; background: {{f.color}}; color: #FFFFFF; font-size: 8.5px; font-weight: 800; letter-spacing: .02em; display: flex; align-items: flex-end; justify-content: center">{{f.ext}}</span>
+                    <span style="flex: 1; min-width: 0"><span style="display: block; font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{f.name}}</span><span style="display: block; font-size: 12px; color: var(--subtle)">{{f.size}}</span></span>
+                    <button class="pd-ico" aria-label="{{f.dl}}" style="width: 30px; height: 30px; flex-shrink: 0; border: 0; border-radius: 7px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg></button>
+                  </div></sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{m.hasTip}}" hint-placeholder-val="{{false}}">
+                <div style="position: relative; height: 0; z-index: 6"><div class="pd-fadein" role="tooltip" style="position: absolute; left: {{m.tipLeft}}; bottom: -2px; display: flex; align-items: center; gap: 8px; width: max-content; max-width: 340px; padding: 6px 12px 6px 8px; border-radius: 10px; background: var(--tip); color: var(--ontip); font-size: 13px; font-weight: 600; line-height: 1.4; box-shadow: 0 8px 24px rgba(0,0,0,.22)"><span style="font-size: 22px; line-height: 1; font-weight: 400">{{m.tipEmoji}}</span><span>{{m.tipNames}}</span><span style="position: absolute; left: 20px; bottom: -5px; width: 10px; height: 10px; background: var(--tip); transform: rotate(45deg)"></span></div></div>
+              </sc-if>
               <sc-if value="{{m.hasReactions}}" hint-placeholder-val="{{false}}">
                 <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px">
                   <sc-for list="{{m.reactions}}" as="r" hint-placeholder-count="2">
@@ -345,11 +475,23 @@ body{margin:0}
                 </button>
               </sc-if>
             </div>
+            <sc-if value="{{m.showTools}}" hint-placeholder-val="{{true}}">
             <div class="pd-actions" style="position: absolute; top: -16px; right: 14px; display: flex; gap: 1px; padding: 3px; background: var(--raised); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,.08)">
               <button class="pd-ico" aria-label="{{txAddReaction}}" style="width: 30px; height: 30px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"></path></svg></button>
-              <button class="pd-ico" onClick="{{openThread}}" aria-label="{{txReplyInThread}}" style="width: 30px; height: 30px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"></path></svg></button>
-              <button class="pd-ico" aria-label="{{txMore}}" style="width: 30px; height: 30px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg></button>
+              <sc-if value="{{tbThread}}" hint-placeholder-val="{{true}}"><button class="pd-ico" onClick="{{openThread}}" aria-label="{{txReplyInThread}}" style="width: 30px; height: 30px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"></path></svg></button></sc-if>
+              <sc-if value="{{tbReply}}" hint-placeholder-val="{{false}}"><button class="pd-ico" aria-label="{{txReply}}" style="width: 30px; height: 30px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M9 14 4 9l5-5"></path><path d="M20 20v-6a5 5 0 0 0-5-5H4"></path></svg></button></sc-if>
+              <button class="pd-ico" onClick="{{m.toggleMenu}}" aria-label="{{txMore}}" aria-haspopup="{{m.moreHaspopup}}" aria-expanded="{{m.moreExpanded}}" style="width: 30px; height: 30px; border: 0; border-radius: 7px; background: {{m.moreBg}}; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg></button>
             </div>
+            </sc-if>
+            <sc-if value="{{m.tbTip}}" hint-placeholder-val="{{false}}"><div class="pd-fadein" role="tooltip" style="position: absolute; top: 28px; right: 64px; z-index: 7; transform: translateX(50%); padding: 5px 9px; border-radius: 7px; background: var(--tip); color: var(--ontip); font-size: 12.5px; font-weight: 600; white-space: nowrap; box-shadow: 0 6px 16px rgba(0,0,0,.18)">{{txReply}}</div></sc-if>
+            <sc-if value="{{m.menuOpen}}" hint-placeholder-val="{{false}}">
+            <div class="pd-pop" role="menu" aria-label="{{txMore}}" style="transform-origin: 100% 100%; position: absolute; right: 14px; bottom: calc(100% + 20px); z-index: 8; width: 224px; padding: 6px; box-sizing: border-box; background: var(--raised); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow)">
+              <sc-for list="{{m.menu}}" as="mi" hint-placeholder-count="5">
+                <sc-if value="{{mi.sep}}" hint-placeholder-val="{{false}}"><div role="separator" style="height: 1px; margin: 5px 4px; background: var(--line)"></div></sc-if>
+                <sc-if value="{{mi.item}}" hint-placeholder-val="{{true}}"><button class="pd-menuitem" role="menuitem" onClick="{{mi.run}}" style="width: 100%; display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: {{mi.color}}; font-size: 14px; font-weight: 500; text-align: left; cursor: pointer"><span style="display: flex; color: {{mi.icColor}}"><sc-if value="{{mi.icEdit}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></sc-if><sc-if value="{{mi.icCopy}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path></svg></sc-if><sc-if value="{{mi.icLink}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path></svg></sc-if><sc-if value="{{mi.icTrash}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path></svg></sc-if></span>{{mi.label}}</button></sc-if>
+              </sc-for>
+            </div>
+            </sc-if>
           </div>
         </sc-if>
       </sc-for>
@@ -357,6 +499,44 @@ body{margin:0}
   </div>
 
   <div style="flex-shrink: 0; padding: 0 20px 14px">
+    <sc-if value="{{hasFloat}}" hint-placeholder-val="{{false}}">
+    <div style="position: relative; height: 0; z-index: 12">
+      <sc-if value="{{jumpOn}}" hint-placeholder-val="{{false}}"><button class="pd-rise" onClick="{{jumpLatest}}" aria-label="{{txJumpAria}}" style="position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 15px 0 11px; border: 0; border-radius: 999px; background: var(--accent); color: var(--onaccent); font-size: 13.5px; font-weight: 600; white-space: nowrap; box-shadow: 0 6px 18px rgba(0,0,0,.18); cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>{{txNewCount}}</button></sc-if>
+      <sc-if value="{{toastOn}}" hint-placeholder-val="{{false}}"><div class="pd-rise" role="status" style="position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 15px 0 12px; border-radius: 10px; background: var(--tip); color: var(--ontip); font-size: 13.5px; font-weight: 600; white-space: nowrap; box-shadow: 0 8px 24px rgba(0,0,0,.2)"><span style="display: flex; color: #3DD6A5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.4"><path d="M20 6 9 17l-5-5"></path></svg></span>{{txLinkCopied}}</div></sc-if>
+      <sc-if value="{{emojiOn}}" hint-placeholder-val="{{false}}">
+      <div class="pd-pop" role="dialog" aria-label="{{txEmoji}}" style="transform-origin: 0 100%; position: absolute; left: 0; bottom: -14px; width: 344px; height: 404px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--raised); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden">
+        <div style="padding: 10px 10px 8px">
+          <div style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; box-sizing: border-box; border: 1.5px solid var(--accent); border-radius: 9px; background: var(--bg); box-shadow: 0 0 0 3px var(--accentsoft); color: var(--subtle); font-size: 14px"><span style="display: flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></span><span class="pd-caret" aria-hidden="true"></span><span>{{txEmojiSearch}}</span></div>
+        </div>
+        <div role="tablist" aria-label="{{txEmoji}}" style="display: flex; gap: 2px; padding: 0 8px 6px; border-bottom: 1px solid var(--line)"><sc-for list="{{emojiCats}}" as="c" hint-placeholder-count="9"><button role="tab" aria-selected="{{c.sel}}" aria-label="{{c.label}}" style="flex: 1; height: 30px; padding: 0; border: 0; border-radius: 7px; background: {{c.bg}}; font-size: 16px; filter: {{c.filter}}; cursor: pointer">{{c.e}}</button></sc-for></div>
+        <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 2px 8px 8px">
+          <div style="padding: 8px 6px 4px; font-size: 12px; font-weight: 600; color: var(--subtle)">{{txFrequent}}</div>
+          <div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr))"><sc-for list="{{emojiFreq}}" as="e" hint-placeholder-count="16"><button class="pd-emo" style="height: 38px; padding: 0; border: 0; border-radius: 8px; background: {{e.bg}}; font-size: 22px; cursor: pointer">{{e.e}}</button></sc-for></div>
+          <div style="padding: 10px 6px 4px; font-size: 12px; font-weight: 600; color: var(--subtle)">{{txSmileys}}</div>
+          <div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr))"><sc-for list="{{emojiSmileys}}" as="e" hint-placeholder-count="32"><button class="pd-emo" style="height: 38px; padding: 0; border: 0; border-radius: 8px; background: transparent; font-size: 22px; cursor: pointer">{{e}}</button></sc-for></div>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{mentionOn}}" hint-placeholder-val="{{false}}">
+      <div class="pd-pop" role="listbox" aria-label="{{txMention}}" style="transform-origin: 0 100%; position: absolute; left: {{mentionLeft}}; bottom: -14px; width: 300px; padding: 6px; box-sizing: border-box; background: var(--raised); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow)">
+        <sc-for list="{{mentionRows}}" as="r" hint-placeholder-count="5"><div role="option" aria-selected="{{r.sel}}" style="display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 10px; border-radius: 9px; background: {{r.bg}}; cursor: pointer">
+          <span style="position: relative; width: 24px; height: 24px; flex-shrink: 0; border-radius: 7px; background: {{r.color}}; color: #FFFFFF; font-size: {{r.avFs}}; font-weight: 700; display: flex; align-items: center; justify-content: center">{{r.initials}}<span style="position: absolute; right: -3px; bottom: -3px; width: 9px; height: 9px; box-sizing: border-box; border-radius: 5px; background: {{r.dot}}; border: {{r.dotBorder}}; box-shadow: 0 0 0 2px {{r.ring}}"></span></span>
+          <span style="flex: 1; min-width: 0; font-size: 14px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap"><span style="font-weight: 700">{{r.hit}}</span><span style="font-weight: 500">{{r.rest}}</span></span>
+        </div></sc-for>
+      </div>
+      </sc-if>
+      <sc-if value="{{linkOn}}" hint-placeholder-val="{{false}}">
+      <div class="pd-pop" role="dialog" aria-label="{{txLink}}" style="transform-origin: 0 100%; position: absolute; left: 40px; bottom: -14px; width: 360px; padding: 12px; box-sizing: border-box; background: var(--raised); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow)">
+        <div style="display: flex; align-items: center; gap: 9px; height: 38px; padding: 0 11px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-size: 14px; color: var(--ink)"><span role="img" aria-label="{{txLinkText}}" style="display: flex; color: var(--subtle)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M5 7V5h14v2M12 5v14M9 19h6"></path></svg></span><span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{linkText}}</span></div>
+        <div style="margin-top: 8px; display: flex; align-items: center; gap: 9px; height: 38px; padding: 0 11px; box-sizing: border-box; border: 1.5px solid var(--accent); border-radius: 10px; background: var(--bg); box-shadow: 0 0 0 4px var(--accentsoft); font-size: 14px; color: var(--subtle)"><span role="img" aria-label="{{txLinkUrl}}" style="display: flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path></svg></span><span class="pd-caret" aria-hidden="true"></span><span>{{txLinkUrlPh}}</span></div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px">
+          <button class="pd-btn2" style="height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--raised); color: var(--ink); font-size: 13.5px; font-weight: 600; cursor: pointer">{{txCancel}}</button>
+          <button disabled style="height: 32px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--well); color: var(--subtle); font-size: 13.5px; font-weight: 600">{{txSave}}</button>
+        </div>
+      </div>
+      </sc-if>
+    </div>
+    </sc-if>
     <div style="height: 22px; display: flex; align-items: center; gap: 7px; padding: 0 4px; font-size: 12.5px; color: var(--subtle)">
       <sc-if value="{{showTyping}}" hint-placeholder-val="{{true}}">
         <span style="display: inline-flex; gap: 3px"><span class="pd-dot" style="width: 5px; height: 5px; border-radius: 3px; background: var(--subtle)"></span><span class="pd-dot" style="width: 5px; height: 5px; border-radius: 3px; background: var(--subtle); animation-delay: .15s"></span><span class="pd-dot" style="width: 5px; height: 5px; border-radius: 3px; background: var(--subtle); animation-delay: .3s"></span></span>
@@ -364,6 +544,16 @@ body{margin:0}
       </sc-if>
     </div>
     <div class="pd-composer" style="border: 1px solid var(--line); border-radius: 14px; background: var(--raised); box-shadow: 0 1px 2px rgba(0,0,0,.04)">
+      <sc-if value="{{cReply}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; align-items: center; gap: 8px; margin: 8px 8px 0; padding: 5px 5px 5px 10px; border-radius: 9px; background: var(--well); font-size: 13.5px; line-height: 20px">
+        <span style="display: flex; flex-shrink: 0; color: var(--subtle)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M9 14 4 9l5-5"></path><path d="M20 20v-6a5 5 0 0 0-5-5H4"></path></svg></span>
+        <span style="width: 16px; height: 16px; flex-shrink: 0; border-radius: 4px; background: {{crColor}}; color: #FFFFFF; font-size: {{crAvFs}}; font-weight: 700; display: flex; align-items: center; justify-content: center">{{crInitials}}</span>
+        <span style="flex-shrink: 0; font-weight: 600; color: var(--ink)">{{crName}}</span>
+        <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted)">{{crText}}</span>
+        <button class="pd-ico" aria-label="{{txCancelReply}}" style="width: 26px; height: 26px; flex-shrink: 0; border: 0; border-radius: 7px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--subtle)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+      </div>
+      </sc-if>
+      <sc-if value="{{fmtMain}}" hint-placeholder-val="{{true}}">
       <div style="display: flex; align-items: center; gap: 2px; padding: 6px 8px 0">
         <button class="pd-ico" aria-label="{{txBold}}" style="width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 5h6a3.5 3.5 0 0 1 0 7H7ZM7 12h7a3.5 3.5 0 0 1 0 7H7Z"></path></svg></button>
         <button class="pd-ico" aria-label="{{txItalic}}" style="width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M19 4h-9M14 20H5M15 4 9 20"></path></svg></button>
@@ -372,11 +562,55 @@ body{margin:0}
         <button class="pd-ico" aria-label="{{txList}}" style="width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"></path></svg></button>
         <button class="pd-ico" aria-label="{{txCode}}" style="width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"></path></svg></button>
       </div>
+      </sc-if>
+      <sc-if value="{{fmtM2}}" hint-placeholder-val="{{false}}">
+      <div role="toolbar" aria-label="{{txFormatting}}" style="display: flex; align-items: center; gap: 2px; padding: 6px 8px 0">
+        <sc-for list="{{fmtBtns}}" as="f" hint-placeholder-count="12"><sc-if value="{{f.sep}}" hint-placeholder-val="{{false}}"><span style="width: 1px; height: 16px; background: var(--line); margin: 0 4px"></span></sc-if><sc-if value="{{f.btn}}" hint-placeholder-val="{{true}}"><button class="pd-ico" aria-label="{{f.label}}" aria-pressed="{{f.pressed}}" style="width: 28px; height: 28px; border: 0; border-radius: 6px; background: {{f.bg}}; color: {{f.color}}; display: flex; align-items: center; justify-content: center; cursor: pointer"><sc-if value="{{f.bold}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.4"><path d="M7 5h6a3.5 3.5 0 0 1 0 7H7ZM7 12h7a3.5 3.5 0 0 1 0 7H7Z"></path></svg></sc-if><sc-if value="{{f.italic}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><path d="M19 4h-9M14 20H5M15 4 9 20"></path></svg></sc-if><sc-if value="{{f.strike}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><path d="M5 12h14"></path><path d="M16 7.5A4 4 0 0 0 12 5c-2.5 0-4 1.3-4 3 0 1.1.6 2 2 2.7"></path><path d="M8 16.5A4 4 0 0 0 12 19c2.5 0 4-1.3 4-3 0-.6-.1-1.1-.4-1.5"></path></svg></sc-if><sc-if value="{{f.link}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path></svg></sc-if><sc-if value="{{f.ol}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M10 6h11M10 12h11M10 18h11"></path><path d="M4 5h1v4"></path><path d="M4 9h2"></path><path d="M6 19H4c0-1 2-1.6 2-2.6S5 15 4 15.3"></path></svg></sc-if><sc-if value="{{f.ul}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"></path></svg></sc-if><sc-if value="{{f.quote}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><path d="M4 5v14"></path><path d="M9 7h11M9 12h11M9 17h7"></path></svg></sc-if><sc-if value="{{f.code}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"></path></svg></sc-if><sc-if value="{{f.codeblock}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2.5"></rect><path d="m10 10-2 2 2 2M14 10l2 2-2 2"></path></svg></sc-if></button></sc-if></sc-for>
+      </div>
+      <sc-if value="{{cTray}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px 2px">
+        <sc-for list="{{tray}}" as="u" hint-placeholder-count="3">
+          <sc-if value="{{u.isImg}}" hint-placeholder-val="{{true}}">
+          <div role="group" aria-label="{{u.name}}" style="position: relative; width: 60px; height: 60px; flex-shrink: 0; border-radius: 10px; background: {{u.art}}; box-shadow: {{u.ring}}">
+            <sc-if value="{{u.uploading}}" hint-placeholder-val="{{false}}"><span style="position: absolute; inset: 0; border-radius: 10px; background: rgba(12,11,16,.38)"></span><span role="progressbar" aria-label="{{u.name}}" aria-valuenow="{{u.pctN}}" aria-valuemin="0" aria-valuemax="100" style="position: absolute; left: 8px; right: 8px; bottom: 8px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.35); overflow: hidden"><span style="display: block; width: {{u.pct}}; height: 100%; background: #FFFFFF"></span></span></sc-if>
+            <sc-if value="{{u.failed}}" hint-placeholder-val="{{false}}"><span style="position: absolute; inset: 0; border-radius: 10px; background: rgba(12,11,16,.55); display: flex; align-items: center; justify-content: center"><button aria-label="{{u.retryLabel}}" style="width: 32px; height: 32px; padding: 0; border: 0; border-radius: 16px; background: rgba(255,255,255,.2); color: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg></button></span></sc-if>
+            <button aria-label="{{u.removeLabel}}" style="position: absolute; top: -7px; right: -7px; width: 20px; height: 20px; padding: 0; box-sizing: border-box; border: 2px solid var(--raised); border-radius: 10px; background: var(--ink); color: var(--bg); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="3"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+          </div>
+          </sc-if>
+          <sc-if value="{{u.isFile}}" hint-placeholder-val="{{false}}">
+          <div role="group" aria-label="{{u.name}}" style="position: relative; width: 236px; height: 60px; flex-shrink: 0; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 10px; border: 1px solid {{u.border}}; border-radius: 10px; background: var(--raised); box-shadow: {{u.ring}}">
+            <span style="width: 30px; height: 36px; flex-shrink: 0; box-sizing: border-box; padding-bottom: 5px; clip-path: polygon(0 0, 68% 0, 100% 24%, 100% 100%, 0 100%); border-radius: 6px; background: {{u.color}}; color: #FFFFFF; font-size: 8px; font-weight: 800; letter-spacing: .02em; display: flex; align-items: flex-end; justify-content: center">{{u.ext}}</span>
+            <span style="flex: 1; min-width: 0">
+              <span style="display: block; font-size: 13px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{u.name}}</span>
+              <sc-if value="{{u.uploading}}" hint-placeholder-val="{{false}}"><span role="progressbar" aria-label="{{u.name}}" aria-valuenow="{{u.pctN}}" aria-valuemin="0" aria-valuemax="100" style="display: block; margin-top: 7px; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden"><span style="display: block; width: {{u.pct}}; height: 100%; background: var(--accent)"></span></span></sc-if>
+              <sc-if value="{{u.done}}" hint-placeholder-val="{{false}}"><span style="display: block; font-size: 12px; color: var(--subtle)">{{u.size}}</span></sc-if>
+              <sc-if value="{{u.failed}}" hint-placeholder-val="{{false}}"><span role="alert" style="display: flex; align-items: center; gap: 5px; font-size: 12px; line-height: 18px; white-space: nowrap"><span style="font-weight: 600; color: var(--dangertext)">{{u.error}}</span><sc-if value="{{u.canRetry}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="color: var(--subtle)">·</span><button class="pd-link" aria-label="{{u.retryLabel}}" style="padding: 0; border: 0; background: transparent; color: var(--link); font-size: 12px; font-weight: 600; cursor: pointer">{{txRetryUpload}}</button></sc-if></span></sc-if>
+            </span>
+            <button aria-label="{{u.removeLabel}}" style="position: absolute; top: -7px; right: -7px; width: 20px; height: 20px; padding: 0; box-sizing: border-box; border: 2px solid var(--raised); border-radius: 10px; background: var(--ink); color: var(--bg); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="3"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+          </div>
+          </sc-if>
+        </sc-for>
+      </div>
+      </sc-if>
+      </sc-if>
       <label for="pd-compose" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">{{txComposeLabel}}</label>
+      <sc-if value="{{plainInput}}" hint-placeholder-val="{{true}}">
       <input id="pd-compose" class="pd-input" type="text" autocomplete="off" placeholder="{{placeholder}}" value="{{draft}}" onChange="{{onDraft}}" onKeyDown="{{onKey}}" style="display: block; width: 100%; box-sizing: border-box; border: 0; background: transparent; color: var(--ink); font-family: inherit; font-size: 15px; padding: 8px 14px 10px">
+      </sc-if>
+      <sc-if value="{{richDraft}}" hint-placeholder-val="{{false}}">
+      <div role="textbox" aria-multiline="true" aria-label="{{txComposeLabel}}" style="padding: 8px 14px 10px; font-size: 15px; line-height: var(--lh); color: var(--ink)">
+                <sc-for list="{{draftBlocks}}" as="db" hint-placeholder-count="2">
+                  <sc-if value="{{db.isP}}" hint-placeholder-val="{{true}}"><div style="margin-top: {{db.mt}}"><sc-for list="{{db.parts}}" as="p" hint-placeholder-count="2"><sc-if value="{{p.isText}}" hint-placeholder-val="{{true}}"><span style="white-space: pre-wrap; {{p.style}}">{{p.t}}</span></sc-if><sc-if value="{{p.isLink}}" hint-placeholder-val="{{false}}"><a class="pd-link" href="#" style="color: var(--link); text-decoration: none">{{p.t}}</a></sc-if><sc-if value="{{p.isCaret}}" hint-placeholder-val="{{false}}"><span class="pd-caret" aria-hidden="true"></span></sc-if></sc-for></div></sc-if>
+                  <sc-if value="{{db.isUl}}" hint-placeholder-val="{{false}}"><ul style="margin: 3px 0 0; padding-left: 22px"><sc-for list="{{db.items}}" as="li" hint-placeholder-count="2"><li style="margin: 1px 0"><sc-for list="{{li}}" as="p" hint-placeholder-count="1"><sc-if value="{{p.isText}}" hint-placeholder-val="{{true}}"><span style="white-space: pre-wrap; {{p.style}}">{{p.t}}</span></sc-if><sc-if value="{{p.isLink}}" hint-placeholder-val="{{false}}"><a class="pd-link" href="#" style="color: var(--link); text-decoration: none">{{p.t}}</a></sc-if><sc-if value="{{p.isCaret}}" hint-placeholder-val="{{false}}"><span class="pd-caret" aria-hidden="true"></span></sc-if></sc-for></li></sc-for></ul></sc-if>
+                  <sc-if value="{{db.isOl}}" hint-placeholder-val="{{false}}"><ol style="margin: 3px 0 0; padding-left: 24px"><sc-for list="{{db.items}}" as="li" hint-placeholder-count="2"><li style="margin: 1px 0; padding-left: 2px"><sc-for list="{{li}}" as="p" hint-placeholder-count="1"><sc-if value="{{p.isText}}" hint-placeholder-val="{{true}}"><span style="white-space: pre-wrap; {{p.style}}">{{p.t}}</span></sc-if><sc-if value="{{p.isLink}}" hint-placeholder-val="{{false}}"><a class="pd-link" href="#" style="color: var(--link); text-decoration: none">{{p.t}}</a></sc-if><sc-if value="{{p.isCaret}}" hint-placeholder-val="{{false}}"><span class="pd-caret" aria-hidden="true"></span></sc-if></sc-for></li></sc-for></ol></sc-if>
+                  <sc-if value="{{db.isQuote}}" hint-placeholder-val="{{false}}"><blockquote style="margin: 5px 0 2px; padding: 0 0 0 12px; border-left: 3px solid var(--quotebar); color: var(--muted)"><sc-for list="{{db.parts}}" as="p" hint-placeholder-count="1"><sc-if value="{{p.isText}}" hint-placeholder-val="{{true}}"><span style="white-space: pre-wrap; {{p.style}}">{{p.t}}</span></sc-if><sc-if value="{{p.isLink}}" hint-placeholder-val="{{false}}"><a class="pd-link" href="#" style="color: var(--link); text-decoration: none">{{p.t}}</a></sc-if><sc-if value="{{p.isCaret}}" hint-placeholder-val="{{false}}"><span class="pd-caret" aria-hidden="true"></span></sc-if></sc-for></blockquote></sc-if>
+                  <sc-if value="{{db.isCode}}" hint-placeholder-val="{{false}}"><div class="pd-code" style="position: relative; margin: 6px 0 2px; max-width: 680px"><pre style="margin: 0; padding: 10px 44px 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--well); font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--ink); white-space: pre; overflow-x: auto"><code>{{db.code}}</code></pre></div></sc-if>
+                </sc-for>
+      </div>
+      </sc-if>
       <div style="display: flex; align-items: center; gap: 2px; padding: 0 8px 8px">
         <button class="pd-ico" aria-label="{{txAttach}}" style="width: 30px; height: 30px; border: 0; border-radius: 15px; background: var(--well); color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
-        <button class="pd-ico" aria-label="{{txEmoji}}" style="width: 30px; height: 30px; border: 0; border-radius: 7px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"></path></svg></button>
+        <button class="pd-ico" aria-label="{{txEmoji}}" style="width: 30px; height: 30px; border: 0; border-radius: 7px; background: {{emojiBtnBg}}; color: {{emojiBtnColor}}; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"></path></svg></button>
         <button class="pd-ico" aria-label="{{txMention}}" style="width: 30px; height: 30px; border: 0; border-radius: 7px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"></path></svg></button>
         <div style="flex: 1"></div>
         <button onClick="{{send}}" disabled="{{sendDisabled}}" aria-label="{{txSend}}" style="width: 34px; height: 32px; border: 0; border-radius: 9px; background: {{sendBg}}; color: {{sendColor}}; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z"></path></svg></button>
@@ -480,6 +714,43 @@ body{margin:0}
 </div>
 </sc-if>
 
+<!-- Delete message -->
+<sc-if value="{{confirmDelete}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; z-index: 30; background: rgba(12,11,18,.5); display: flex; justify-content: center; align-items: flex-start; padding: 168px 16px 16px; box-sizing: border-box">
+  <div class="pd-pop" role="alertdialog" aria-modal="true" aria-labelledby="pd-del-title" style="transform-origin: 50% 0; width: 100%; max-width: 440px; background: var(--raised); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 20px 16px 0 24px">
+      <h2 id="pd-del-title" style="flex: 1; min-width: 0; margin: 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -0.015em">{{txDeleteQ}}</h2>
+      <button class="pd-ico" onClick="{{cancelDelete}}" aria-label="{{txClose}}" style="width: 34px; height: 34px; flex-shrink: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+    </div>
+    <div style="display: flex; gap: 10px; margin: 16px 24px 22px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg)">
+      <span style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 8px; background: {{delColor}}; color: #FFFFFF; font-size: {{delAvFs}}; font-weight: 600; display: flex; align-items: center; justify-content: center">{{delInitials}}</span>
+      <span style="min-width: 0"><span style="display: flex; align-items: baseline; gap: 8px; line-height: 20px"><span style="font-size: 14px; font-weight: 700">{{delName}}</span><span style="font-size: 12px; color: var(--subtle)">{{delTime}}</span></span><span style="display: block; font-size: 14px; line-height: var(--lh); color: var(--ink)">{{delText}}</span></span>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--line); background: var(--well)">
+      <button class="pd-btn2" onClick="{{cancelDelete}}" style="height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">{{txCancel}}</button>
+      <button onClick="{{doDelete}}" style="height: 36px; padding: 0 16px; border: 0; border-radius: 9px; background: var(--danger); color: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer">{{txDeleteBtn}}</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<!-- Image viewer -->
+<sc-if value="{{viewerOn}}" hint-placeholder-val="{{false}}">
+<div class="pd-fadein" role="dialog" aria-modal="true" aria-label="{{viewerAria}}" style="position: absolute; inset: 0; z-index: 40; background: var(--scrim); color: #FFFFFF; display: flex; flex-direction: column">
+  <div style="height: 64px; flex-shrink: 0; display: flex; align-items: center; gap: 12px; padding: 0 14px 0 20px">
+    <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 8px; background: {{vColor}}; color: #FFFFFF; font-size: {{vAvFs}}; font-weight: 600; display: flex; align-items: center; justify-content: center">{{vInitials}}</span>
+    <span style="flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px"><span style="font-size: 15px; font-weight: 700">{{vName}}</span><span style="font-size: 12.5px; color: rgba(255,255,255,.62)">{{vTime}}</span></span>
+    <button class="pd-viewbtn" aria-label="{{txDownloadImage}}" style="width: 40px; height: 40px; padding: 0; border: 0; border-radius: 10px; background: rgba(255,255,255,.1); color: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg></button>
+    <button class="pd-viewbtn" onClick="{{closeViewer}}" aria-label="{{txClose}}" style="width: 40px; height: 40px; padding: 0; border: 0; border-radius: 10px; background: rgba(255,255,255,.1); color: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+  </div>
+  <div style="flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; padding: 4px 96px 48px">
+    <div role="img" aria-label="{{vLabel}}" style="width: min(100%, 1000px); aspect-ratio: 3 / 2; max-height: 100%; border-radius: 4px; background: {{vArt}}; box-shadow: 0 24px 64px rgba(0,0,0,.5)"></div>
+    <button class="pd-viewbtn" aria-label="{{txPrevImage}}" style="position: absolute; left: 24px; top: calc(50% - 46px); width: 48px; height: 48px; padding: 0; border: 0; border-radius: 24px; background: rgba(255,255,255,.12); color: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><path d="m15 18-6-6 6-6"></path></svg></button>
+    <button class="pd-viewbtn" aria-label="{{txNextImage}}" style="position: absolute; right: 24px; top: calc(50% - 46px); width: 48px; height: 48px; padding: 0; border: 0; border-radius: 24px; background: rgba(255,255,255,.12); color: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><path d="m9 18 6-6-6-6"></path></svg></button>
+  </div>
+</div>
+</sc-if>
+
 <!-- Profile menu: language switch -->
 <sc-if value="{{menuOpen}}" hint-placeholder-val="{{false}}">
 <div role="menu" aria-label="{{meName}}" style="position: absolute; left: 76px; bottom: 12px; z-index: 35; width: 264px; padding: 6px; box-sizing: border-box; background: var(--raised); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow)">
@@ -502,7 +773,7 @@ body{margin:0}
 </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"perspective":{"editor":"enum","options":["team","client"],"default":"team"},"showThread":{"editor":"boolean","default":true},"openModal":{"editor":"enum","options":["none","invite"],"default":"none"},"locale":{"editor":"enum","options":["en","ja"],"default":"en"},"shell":{"editor":"enum","options":["ready","syncing"],"default":"ready"},"connection":{"editor":"enum","options":["online","offline","reconnecting","restored"],"default":"online"},"timeline":{"editor":"enum","options":["ready","loading","older"],"default":"ready"},"outgoing":{"editor":"enum","options":["none","sending","failed"],"default":"none"},"layout":{"editor":"enum","options":["wide","1024","800"],"default":"wide"},"drawer":{"editor":"boolean","default":false},"openMenu":{"editor":"enum","options":["none","profile"],"default":"none"},"page":{"editor":"enum","options":["channel","unavailable"],"default":"channel"},"$preview":{"width":1440,"height":900}}'>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"perspective":{"editor":"enum","options":["team","client"],"default":"team"},"showThread":{"editor":"boolean","default":true},"openModal":{"editor":"enum","options":["none","invite"],"default":"none"},"locale":{"editor":"enum","options":["en","ja"],"default":"en"},"shell":{"editor":"enum","options":["ready","syncing"],"default":"ready"},"connection":{"editor":"enum","options":["online","offline","reconnecting","restored"],"default":"online"},"timeline":{"editor":"enum","options":["ready","loading","older"],"default":"ready"},"outgoing":{"editor":"enum","options":["none","sending","failed"],"default":"none"},"layout":{"editor":"enum","options":["wide","1024","800"],"default":"wide"},"drawer":{"editor":"boolean","default":false},"openMenu":{"editor":"enum","options":["none","profile"],"default":"none"},"page":{"editor":"enum","options":["channel","unavailable"],"default":"channel"},"content":{"editor":"enum","options":["none","images","media","files","text","long","replies","rows","reactions"],"default":"none"},"hover":{"editor":"enum","options":["none","message"],"default":"none"},"msgMenu":{"editor":"enum","options":["none","own","others"],"default":"none"},"editing":{"editor":"boolean","default":false},"confirm":{"editor":"enum","options":["none","delete"],"default":"none"},"composerState":{"editor":"enum","options":["empty","format","reply","upload","failed","paste","mention","emoji","link"],"default":"empty"},"drop":{"editor":"boolean","default":false},"viewer":{"editor":"boolean","default":false},"newLine":{"editor":"enum","options":["none","new","jump"],"default":"none"},"notify":{"editor":"enum","options":["none","ask"],"default":"none"},"toast":{"editor":"enum","options":["none","linkCopied"],"default":"none"},"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -511,7 +782,8 @@ class Component extends DCLogic {
       draft: '', replyDraft: '',
       sent: {}, replies: [], mine: {}, read: {},
       role: 'member', invitees: null, inviteDraft: '', copied: false,
-      locale: null, conn: null, outgoing: null, drawer: null, menu: null, page: null
+      locale: null, conn: null, outgoing: null, drawer: null, menu: null, page: null,
+      viewer: null, menuAt: null, editAt: null, confirmAt: null, deletedAt: {}, expanded: {}, notify: null, jumped: false, toast: null
     };
   }
 
@@ -760,6 +1032,366 @@ class Component extends DCLogic {
     return { label: v, email: v, initials: v.charAt(0).toUpperCase(), color: '#475569', ext: true };
   }
 
+  // ---- Batch B (M2 full timeline) ------------------------------------------------
+  stringsB(ja) {
+    if (ja) return {
+      reply: '返信', edit: '編集', copyText: 'テキストをコピー', copyMsgLink: 'リンクをコピー', del: '削除', deleteBtn: '削除',
+      edited: '（編集済み）', msgDeleted: 'メッセージは削除されました', cantShow: 'このメッセージは表示できません',
+      showMore: 'もっと見る', copyCode: 'コードをコピー', save: '保存', editLabel: 'メッセージを編集',
+      deleteQ: 'メッセージを削除しますか？', linkCopied: 'リンクをコピーしました',
+      newLabel: '新着', newAria: 'ここから新着', newCount: (n) => '新着 ' + n + ' 件', jumpAria: (n) => '最新のメッセージへ移動（新着 ' + n + ' 件）',
+      notifications: '通知', turnOn: 'オンにする', notNow: '今はしない',
+      dropTo: (c) => '#' + c + ' に追加',
+      formatting: '書式', strike: '取り消し線', ol: '番号付きリスト', quote: '引用', codeBlock: 'コードブロック',
+      cancelReply: '返信をやめる', removeFile: (x) => x + ' を外す', retryUpload: (x) => x + ' を再試行', retryUp: '再試行',
+      tooBig: '50 MB 超過', uploadFailed: '失敗しました',
+      emojiSearch: '絵文字を検索', frequent: 'よく使う', smileys: '顔と感情',
+      cats: ['よく使う', '顔と感情', '人', '動物と自然', '食べ物', 'アクティビティ', '旅行と場所', 'もの', '記号'],
+      linkText: '表示するテキスト', linkUrl: 'リンク先', linkUrlPh: 'https://',
+      viewer: (n) => n + ' さんの画像', prevImage: '前の画像', nextImage: '次の画像', downloadImage: 'ダウンロード',
+      openImage: (x) => x + ' を開く', openNth: (i, n) => '画像を開く（' + i + '/' + n + '）',
+      playVideo: '動画を再生', play: '再生', pause: '一時停止', downloadName: (x) => x + ' をダウンロード',
+      you: 'あなた', listNames: (names, extra) => names.join('、') + (extra ? ' ほか ' + extra + ' 人' : '')
+    };
+    return {
+      reply: 'Reply', edit: 'Edit', copyText: 'Copy text', copyMsgLink: 'Copy link', del: 'Delete', deleteBtn: 'Delete',
+      edited: '(edited)', msgDeleted: 'Message deleted', cantShow: 'This message can’t be shown',
+      showMore: 'Show more', copyCode: 'Copy code', save: 'Save', editLabel: 'Edit message',
+      deleteQ: 'Delete message?', linkCopied: 'Link copied',
+      newLabel: 'New', newAria: 'New messages', newCount: (n) => n + (n === 1 ? ' new message' : ' new messages'), jumpAria: (n) => 'Jump to latest, ' + n + ' new',
+      notifications: 'Notifications', turnOn: 'Turn on', notNow: 'Not now',
+      dropTo: (c) => 'Add to #' + c,
+      formatting: 'Formatting', strike: 'Strikethrough', ol: 'Numbered list', quote: 'Quote', codeBlock: 'Code block',
+      cancelReply: 'Cancel reply', removeFile: (x) => 'Remove ' + x, retryUpload: (x) => 'Retry ' + x, retryUp: 'Retry',
+      tooBig: 'Over 50 MB', uploadFailed: 'Upload failed',
+      emojiSearch: 'Search emoji', frequent: 'Frequently used', smileys: 'Smileys & emotion',
+      cats: ['Frequently used', 'Smileys & emotion', 'People', 'Animals & nature', 'Food & drink', 'Activities', 'Travel & places', 'Objects', 'Symbols'],
+      linkText: 'Text', linkUrl: 'Link', linkUrlPh: 'https://',
+      viewer: (n) => 'Image from ' + n, prevImage: 'Previous image', nextImage: 'Next image', downloadImage: 'Download',
+      openImage: (x) => 'Open ' + x, openNth: (i, n) => 'Open image ' + i + ' of ' + n,
+      playVideo: 'Play video', play: 'Play', pause: 'Pause', downloadName: (x) => 'Download ' + x,
+      you: 'you',
+      listNames: (names, extra) => extra
+        ? names.join(', ') + ' and ' + extra + ' others'
+        : (names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0])
+    };
+  }
+
+  feedsB(ja) {
+    const code = 'export function isImeEnter(e: KeyboardEvent) {\n  if (e.key !== \'Enter\') return false;\n  return !e.isComposing && e.keyCode !== 229;\n}';
+    const L = ja ? {
+      today: '今日',
+      workshop: 'Nordlys ワークショップの写真です。', crop: 'ヘッダーの最終トリミングです：',
+      rec: '同期を書き直した後のコールドスタートを画面収録しました：', interview: 'リサーチ用の Henrik さんのインタビューです。',
+      contract: '署名済みの Nordlys の契約書です。', thursday: '木曜に使うものはすべてここに：',
+      text1: [{ p: ['コンポーザーのルール、', { b: '確定版' }, 'です：'] }, { ol: [[{ b: 'Enter' }, ' で送信、', { code: 'Shift' }, ' + ', { code: 'Enter' }, ' で改行'], ['選択したテキストに URL を貼り付けるとリンクになる'], ['下書きは', { s: 'クラウドに' }, { i: 'このデバイスに' }, '保存']] }, { quote: ['コピーは一行、アクションはひとつ。'] }, { p: ['詳細は ', { a: 'pasodrum.work/spec/composer' }] }],
+      text2: [{ p: [{ code: 'isImeEnter()' }, ' ガードの修正です。Safari は変換を確定した直後にもう一度 Enter を送ります：'] }, { code }],
+      text3: [{ p: ['確認した環境：'] }, { ul: [['Chrome と Safari'], ['日本語 IME（', { i: 'かな入力とローマ字入力' }, '）']] }],
+      long: [
+        { p: [{ b: 'M1 リリースノート' }] },
+        { p: ['ウォーキングスケルトンを ', { a: 'pasodrum.work' }, ' に公開しました。前回のビルドからの変更点をまとめたので、ボードを探し回る必要はありません。'] },
+        { ul: [['仕事用メールアドレスかユーザー名でサインイン'], ['レールにワークスペースとクライアントスペース'], ['未読とメンションの数つきのチャンネル'], ['タイムライン、日付の区切り、プレーンテキストのコンポーザー'], ['英語と日本語、ライトとダーク'], ['オフライン、再接続中、オンラインに戻ったときのバナー'], ['送信中と送信失敗、再送信']] },
+        { p: ['まだできないこと：添付ファイル、リアクション、スレッド。M2 と M3 で入ります。'] },
+        { p: ['テスト：macOS の Chrome と Safari、日本語 IME。本番での Element X のスモークテストは火曜日に通りました。'] },
+        { p: ['次は M2、タイムラインの完成版です。デザインは今週レビュー中です。'] }
+      ],
+      thanks: 'ありがとうございます。出しましょう。',
+      q1: 'ひとつ相談です。ゲストには、参加する前のメッセージも見せるべきでしょうか？',
+      a1: '最初からそのゲストと共有しているチャンネルだけにしましょう。それ以外は参加したところから。',
+      staging: 'ステージングは問題なし。同期の書き直しで、デスクトップアプリのコールドスタートが 1.2 秒まで縮みました。',
+      phone: 'スマホでも同じく 1.3 秒でした。', agreed: '賛成です。仕様に書いておきます。',
+      q1e: 'ひとつ相談です。ゲストには、チャンネルに参加する前のメッセージも見せるべきでしょうか？',
+      poll: 'オフサイトはどこにしますか？ オスロ、ベルゲン、トロムソ', onit: '了解です。コピーは一行、アクションはひとつで。',
+      review: 'おはようございます！Nordlys のレビューは木曜 14:00 に変更になりました。', live: 'メンバー追加を全員に公開しました 🎉'
+    } : {
+      today: 'Today',
+      workshop: 'Photos from the Nordlys workshop.', crop: 'Final crop for the header:',
+      rec: 'Cold start after the sync rewrite, screen recording:', interview: 'Henrik’s interview, for the research notes.',
+      contract: 'Signed contract from Nordlys.', thursday: 'Everything for Thursday:',
+      text1: [{ p: ['Composer rules, ', { b: 'final' }, ' version:'] }, { ol: [[{ b: 'Enter' }, ' sends, ', { code: 'Shift' }, ' + ', { code: 'Enter' }, ' adds a line'], ['Paste a URL over selected text to make it a link'], ['Drafts stay ', { s: 'in the cloud' }, ' ', { i: 'on this device' }]] }, { quote: ['One line of copy, one clear action.'] }, { p: ['Details in ', { a: 'pasodrum.work/spec/composer' }] }],
+      text2: [{ p: ['Fix for the ', { code: 'isImeEnter()' }, ' guard. Safari sends one more Enter right after composition:'] }, { code }],
+      text3: [{ p: ['Checked on:'] }, { ul: [['Chrome and Safari'], ['Japanese IME, ', { i: 'kana and romaji input' }]] }],
+      long: [
+        { p: [{ b: 'M1 release notes' }] },
+        { p: ['The walking skeleton is live at ', { a: 'pasodrum.work' }, '. Here is everything that changed since the last build, so nobody has to dig through the board.'] },
+        { ul: [['Sign in with a work email or a username'], ['Workspace and client spaces on the rail'], ['Channels with unread and mention counts'], ['Timeline, day dividers and the plain-text composer'], ['English and Japanese, light and dark'], ['Offline, reconnecting and back-online banners'], ['Sending and not-sent states with retry']] },
+        { p: ['Not in yet: attachments, reactions, threads. Those land in M2 and M3.'] },
+        { p: ['Tested on Chrome and Safari on macOS, plus Japanese IME. The Element X smoke test on production passed on Tuesday.'] },
+        { p: ['Next up is M2, the full timeline. Designs are in review this week.'] }
+      ],
+      thanks: 'Thanks Lea. Ship it.',
+      q1: 'Open question: should guests see messages from before they joined?',
+      a1: 'Only when the channel is shared with them from day one. Otherwise they start fresh.',
+      staging: 'Staging is green. Cold start for the desktop app is down to 1.2 s after the sync rewrite.',
+      phone: 'Same on my phone: 1.3 s.', agreed: 'Agreed. I’ll put it in the spec.',
+      q1e: 'Open question: should guests see messages from before they joined the channel?',
+      poll: 'Where should the offsite be? Oslo, Bergen, Tromsø', onit: 'On it. One line of copy, one clear action.',
+      review: 'Morning! The Nordlys review moved to Thursday 14:00.', live: 'Add people is live for everyone 🎉'
+    };
+    const P = this.people(ja);
+    return {
+      images: [
+        { d: L.today },
+        { w: 'ih', t: '09:31', p: [L.workshop], grid: ['wall', 'team', 'sketch', 'desk', 'screen', 'header'] },
+        { w: 'ml', t: '09:52', p: [L.crop], img: { art: 'header', w: 360, h: 202, name: 'header-final.jpg' } }
+      ],
+      media: [
+        { d: L.today },
+        { w: 'ek', t: '08:40', p: [L.rec], video: { art: 'screen', dur: '0:42' } },
+        { w: 'tr', t: '09:05', voice: { dur: '0:14', at: '0:06', progress: 0.42, playing: true } },
+        { w: 'la', t: '09:12', p: [L.interview], audio: { name: 'nordlys-interview-03.m4a', dur: '12:08' } }
+      ],
+      files: [
+        { d: L.today },
+        { w: 'ih', t: '09:31', p: [L.contract], files: [{ name: 'Nordlys-contract-signed.pdf', size: '2.4 MB', kind: 'pdf' }] },
+        { w: 'jb', t: '09:40', p: [L.thursday], files: [
+          { name: 'agenda-thursday.docx', size: '86 KB', kind: 'doc' },
+          { name: 'budget-2027.xlsx', size: '312 KB', kind: 'sheet' },
+          { name: 'nordlys-kickoff.key', size: '18.2 MB', kind: 'slides' },
+          { name: 'brand-assets.zip', size: '64.9 MB', kind: 'zip' }] }
+      ],
+      text: [
+        { d: L.today },
+        { w: 'ml', t: '10:02', blocks: L.text1 },
+        { w: 'ek', t: '10:10', blocks: L.text2 },
+        { w: 'so', t: '10:14', blocks: L.text3 }
+      ],
+      long: [
+        { d: L.today },
+        { w: 'la', t: '11:20', long: true, blocks: L.long },
+        { w: 'ek', t: '11:24', p: [L.thanks], r: [['🚢', 3, false]] }
+      ],
+      replies: [
+        { d: L.today },
+        { w: 'jb', t: '09:15', p: [L.q1] },
+        { w: 'ih', t: '09:20', q: { w: 'jb', text: L.q1 }, p: [L.a1] },
+        { w: 'tr', t: '09:34', q: { name: P.ek.n, text: L.staging }, p: [L.phone] },
+        { w: 'so', t: '09:40', q: { w: 'ih', text: L.a1 }, p: [L.agreed] }
+      ],
+      rows: [
+        { d: L.today },
+        { w: 'jb', t: '09:15', p: [L.q1e], edited: true },
+        { del: true, t: '09:20' },
+        { w: 'tr', t: '09:34', unsup: L.poll },
+        { w: 'ek', t: '09:41', unsup: '' },
+        { w: 'so', t: '09:48', p: [L.onit], edited: true }
+      ],
+      reactions: [
+        { d: L.today },
+        { w: 'la', t: '09:20', p: [L.live], r: [['🎉', 24, true], ['🚀', 12, false], ['👏', 9, false], ['❤️', 7, true], ['🔥', 5, false], ['💯', 3, false], ['😮', 2, false], ['🙏', 1, false]], tip: { names: ['jb', 'ml'], you: true, extra: 21 } },
+        { w: 'jb', t: '09:24', p: [L.review], r: [['👍', 3, true], ['🙌', 1, false]] }
+      ]
+    };
+  }
+
+  // Placeholder "photos": CSS only, so the canvas needs no image files.
+  art(k) {
+    const A = {
+      wall: 'linear-gradient(#F2C94C,#F2C94C) 14% 22%/16% 24% no-repeat, linear-gradient(#9AD1C4,#9AD1C4) 38% 16%/16% 24% no-repeat, linear-gradient(#F6A5A1,#F6A5A1) 62% 24%/16% 24% no-repeat, linear-gradient(#F2C94C,#F2C94C) 86% 18%/14% 22% no-repeat, linear-gradient(#B9C7F0,#B9C7F0) 22% 76%/16% 24% no-repeat, linear-gradient(#9AD1C4,#9AD1C4) 48% 80%/16% 24% no-repeat, linear-gradient(#F2C94C,#F2C94C) 74% 72%/16% 24% no-repeat, linear-gradient(180deg,#EFE9DE,#D9CFBF)',
+      team: 'radial-gradient(circle at 28% 40%, rgba(61,214,165,.85) 0, rgba(61,214,165,0) 34%), radial-gradient(circle at 72% 62%, rgba(242,181,68,.8) 0, rgba(242,181,68,0) 30%), radial-gradient(circle at 56% 18%, rgba(255,255,255,.35) 0, rgba(255,255,255,0) 22%), linear-gradient(135deg,#123A34,#1F5A50 55%,#0E2622)',
+      sketch: 'linear-gradient(#2F2E35,#2F2E35) 16% 24%/36% 3px no-repeat, linear-gradient(#2F2E35,#2F2E35) 16% 34%/24% 3px no-repeat, linear-gradient(#2F2E35,#2F2E35) 16% 44%/30% 3px no-repeat, linear-gradient(#0E7C66,#0E7C66) 78% 28%/20% 26% no-repeat, linear-gradient(#D4351C,#D4351C) 26% 76%/42% 3px no-repeat, linear-gradient(#1D4ED8,#1D4ED8) 80% 76%/3px 30% no-repeat, linear-gradient(180deg,#FBFBF9,#E9E8E3)',
+      desk: 'radial-gradient(ellipse at 70% 24%, rgba(255,236,196,.95) 0, rgba(255,236,196,0) 46%), radial-gradient(circle at 28% 78%, rgba(80,52,38,.55) 0, rgba(80,52,38,0) 42%), linear-gradient(160deg,#D8B48E,#9A6E52 60%,#5B3E30)',
+      screen: 'linear-gradient(#18171D,#18171D) 0 0/7% 100% no-repeat, linear-gradient(#F7F6F3,#F7F6F3) 9% 0/21% 100% no-repeat, linear-gradient(#0E7C66,#0E7C66) 11% 18%/16% 6% no-repeat, linear-gradient(#E3E0D9,#E3E0D9) 11% 30%/12% 3% no-repeat, linear-gradient(#E3E0D9,#E3E0D9) 11% 38%/15% 3% no-repeat, linear-gradient(#E3E0D9,#E3E0D9) 11% 46%/11% 3% no-repeat, linear-gradient(#C2410C,#C2410C) 40% 22%/4% 7% no-repeat, linear-gradient(#D9D6CF,#D9D6CF) 56% 21%/26% 3% no-repeat, linear-gradient(#ECEAE4,#ECEAE4) 64% 28%/40% 3% no-repeat, linear-gradient(#1D4ED8,#1D4ED8) 40% 50%/4% 7% no-repeat, linear-gradient(#D9D6CF,#D9D6CF) 54% 49%/22% 3% no-repeat, linear-gradient(#ECEAE4,#ECEAE4) 62% 56%/36% 3% no-repeat, linear-gradient(#E8E6E1,#E8E6E1) 72% 90%/62% 1px no-repeat, linear-gradient(#FFFFFF,#FFFFFF)',
+      header: 'radial-gradient(circle at 72% 58%, rgba(255,226,170,1) 0, rgba(255,226,170,.6) 9%, rgba(255,226,170,0) 26%), linear-gradient(180deg,#F4C99E 0%,#E8946D 42%,#8B4E5E 72%,#3E2A44 100%)'
+    };
+    return A[k] || A.team;
+  }
+
+  fileColor(kind) {
+    return { pdf: '#B42318', doc: '#1D4ED8', sheet: '#15803D', slides: '#C2410C', zip: '#55535C', video: '#0F766E', audio: '#7E22CE' }[kind] || '#475569';
+  }
+
+  inl(arr) {
+    const MENTION = 'background: var(--chip); color: var(--link); font-weight: 600; border-radius: 4px; padding: 1px 3px';
+    const CODE = 'font-family: var(--mono); font-size: 13px; padding: 1px 5px; border: 1px solid var(--line); border-radius: 5px; background: var(--well)';
+    return arr.map((x) => {
+      const o = { t: '', style: '', isText: true, isLink: false, isCaret: false };
+      if (typeof x === 'string') return Object.assign(o, { t: x });
+      if (x.caret) return Object.assign(o, { isText: false, isCaret: true });
+      if (x.a) return Object.assign(o, { t: x.a, isText: false, isLink: true });
+      if (x.m) return Object.assign(o, { t: x.m, style: MENTION });
+      if (x.b) return Object.assign(o, { t: x.b, style: 'font-weight: 700' });
+      if (x.i) return Object.assign(o, { t: x.i, style: 'font-style: italic' });
+      if (x.s) return Object.assign(o, { t: x.s, style: 'text-decoration: line-through' });
+      if (x.code) return Object.assign(o, { t: x.code, style: CODE });
+      if (x.sel) return Object.assign(o, { t: x.sel, style: 'background: color-mix(in srgb, var(--accent) 24%, transparent); border-radius: 2px' });
+      if (x.ph) return Object.assign(o, { t: x.ph, style: 'color: var(--subtle)' });
+      if (x.muted) return Object.assign(o, { t: x.muted, style: 'font-size: 12px; color: var(--subtle)' });
+      return o;
+    });
+  }
+
+  blk(list, edited) {
+    const out = list.map((b, i) => {
+      const o = { isP: false, isUl: false, isOl: false, isQuote: false, isCode: false, parts: [], items: [], code: '', mt: i ? '4px' : '0' };
+      if (b.p) return Object.assign(o, { isP: true, parts: this.inl(b.p) });
+      if (b.ul) return Object.assign(o, { isUl: true, items: b.ul.map((it) => this.inl(it)) });
+      if (b.ol) return Object.assign(o, { isOl: true, items: b.ol.map((it) => this.inl(it)) });
+      if (b.quote) return Object.assign(o, { isQuote: true, parts: this.inl(b.quote) });
+      if (b.code !== undefined) return Object.assign(o, { isCode: true, code: b.code });
+      return o;
+    });
+    const last = out[out.length - 1];
+    if (edited && last && last.isP) last.parts = last.parts.concat(this.inl([{ muted: ' ' + edited }]));
+    return out;
+  }
+
+  plainText(x) {
+    return (x.p || []).map((pp) => (typeof pp === 'string' ? pp : pp.m)).join('');
+  }
+
+  wave(progress) {
+    const out = [];
+    for (let i = 0; i < 34; i++) {
+      const env = Math.sin((i + 1) / 35 * Math.PI);
+      const h = Math.round(5 + env * (8 + ((i * 37) % 13)));
+      out.push({ h: h + 'px', c: i / 34 < progress ? 'var(--accent)' : 'color-mix(in srgb, var(--subtle) 45%, transparent)' });
+    }
+    return out;
+  }
+
+  ownTarget(x, c) { return x.w === c.me && x.t === '09:48'; }
+  isEditing(x, idx, c) {
+    return c.s.editAt !== null ? c.s.editAt === idx : (!!this.props.editing && this.ownTarget(x, c));
+  }
+  isMenuOpen(x, idx, c) {
+    if (c.s.menuAt !== null) return c.s.menuAt === idx;
+    const m = this.props.msgMenu || 'none';
+    return (m === 'own' && this.ownTarget(x, c)) || (m === 'others' && idx === 5);
+  }
+  isForced(x, idx, c) {
+    if (this.isMenuOpen(x, idx, c)) return true;
+    return this.props.hover === 'message' && idx === 5 && c.s.menuAt === null;
+  }
+
+  msgB(x, idx, c) {
+    const { P, TB, me, bb, ja, s, key } = c;
+    const q = x.q;
+    const qp = q && q.w ? P[q.w] : null;
+    const editing = this.isEditing(x, idx, c);
+    const menuOpen = bb && this.isMenuOpen(x, idx, c);
+    const collapsed = !!x.long && !s.expanded[key];
+    const g = x.grid || [];
+    const v = x.voice;
+    const im = x.img || (bb && x.file ? { art: 'screen', w: 320, h: 200, name: x.file.name } : null);
+    const own = x.w === me;
+    const run = (what) => () => {
+      if (what === 'edit') this.setState({ menuAt: -1, editAt: idx });
+      else if (what === 'delete') this.setState({ menuAt: -1, confirmAt: idx });
+      else if (what === 'link') { this.setState({ menuAt: -1, toast: 'linkCopied' }); setTimeout(() => this.setState({ toast: 'none' }), 2000); }
+      else this.setState({ menuAt: -1 });
+    };
+    const mk = (id, label, icon, danger) => ({
+      item: true, sep: false, label, run: run(id),
+      color: danger ? 'var(--dangertext)' : 'var(--ink)', icColor: danger ? 'var(--dangertext)' : 'var(--muted)',
+      icEdit: icon === 'edit', icCopy: icon === 'copy', icLink: icon === 'link', icTrash: icon === 'trash'
+    });
+    const SEP = { item: false, sep: true, label: '', run: () => {}, color: '', icColor: '', icEdit: false, icCopy: false, icLink: false, icTrash: false };
+    const menu = !menuOpen ? [] : own
+      ? [mk('edit', TB.edit, 'edit'), mk('copy', TB.copyText, 'copy'), mk('link', TB.copyMsgLink, 'link'), SEP, mk('delete', TB.del, 'trash', true)]
+      : [mk('copy', TB.copyText, 'copy'), mk('link', TB.copyMsgLink, 'link')];
+    const tipNames = x.tip ? x.tip.names.map((k) => P[k].n).concat(x.tip.you ? [TB.you] : []) : [];
+    return {
+      hasParts: !x.blocks && x.unsup === undefined && !editing,
+      hasBlocks: !!x.blocks && !editing,
+      blocks: x.blocks ? this.blk(x.blocks, x.edited ? TB.edited : '') : [],
+      collapsed,
+      clampStyle: collapsed ? 'max-height: calc(150px * var(--lh)); overflow: hidden; -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent); mask-image: linear-gradient(to bottom, #000 55%, transparent);' : '',
+      expand: () => this.setState((st) => ({ expanded: Object.assign({}, st.expanded, { [key]: true }) })),
+      hasQuote: !!q, quoteAv: !!qp,
+      quoteName: qp ? qp.n : (q ? q.name : ''), quoteText: q ? q.text : '',
+      quoteColor: qp ? qp.c : 'transparent', quoteInitials: qp ? qp.i : '', quoteAvFs: qp ? this.avFs(qp.i, '8.5px', '10px') : '8.5px',
+      quoteCls: qp ? 'pd-quote' : '', quoteRole: qp ? 'button' : false, quoteTab: qp ? '0' : false, quoteCursor: qp ? 'pointer' : 'default',
+      isEditing: editing, editText: editing ? this.plainText(x) : '',
+      cancelEdit: () => this.setState({ editAt: -1 }),
+      isUnsupported: x.unsup !== undefined, unsupText: x.unsup ? x.unsup : TB.cantShow,
+      hasImg1: !!im, img1W: im ? im.w + 'px' : '0', img1H: im ? im.h + 'px' : '0',
+      img1Art: im ? this.art(im.art) : '', img1Label: im ? TB.openImage(im.name) : '',
+      hasGrid: g.length > 1, gridRow: g.length === 2 ? '200px' : '132px',
+      grid: g.slice(0, 4).map((a, gi) => ({
+        art: this.art(a), label: TB.openNth(gi + 1, g.length),
+        span: g.length === 3 && gi === 0 ? 'grid-row: span 2;' : '',
+        more: g.length > 4 && gi === 3, moreText: '+' + (g.length - 4)
+      })),
+      openViewer: () => this.setState({ viewer: true }),
+      hasVideo: !!x.video, videoArt: x.video ? 'linear-gradient(rgba(12,11,16,.22),rgba(12,11,16,.22)), ' + this.art(x.video.art) : '', videoDur: x.video ? x.video.dur : '',
+      hasVoice: !!v, voicePlaying: !!(v && v.playing), voiceIdle: !!(v && !v.playing),
+      voiceLabel: v && v.playing ? TB.pause : TB.play, voicePressed: v && v.playing ? 'true' : 'false',
+      wave: v ? this.wave(v.progress) : [], voiceTime: v ? (v.playing ? v.at : v.dur) : '',
+      hasAudio: !!x.audio, audioName: x.audio ? x.audio.name : '', audioDur: x.audio ? x.audio.dur : '', audioDl: x.audio ? TB.downloadName(x.audio.name) : '',
+      hasFiles: !!x.files,
+      files: (x.files || []).map((f, fi) => ({
+        name: f.name, size: f.size, ext: f.name.split('.').pop().toUpperCase().slice(0, 4), color: this.fileColor(f.kind),
+        border: fi ? '1px solid var(--line)' : '0', dl: TB.downloadName(f.name)
+      })),
+      hasTip: !!x.tip, tipLeft: '0px', tipEmoji: x.tip && x.r ? x.r[0][0] : '', tipNames: x.tip ? TB.listNames(tipNames, x.tip.extra || 0) : '',
+      showTools: !editing,
+      tbTip: bb && this.props.hover === 'message' && idx === 5 && s.menuAt === null,
+      menuOpen, menu,
+      moreBg: menuOpen ? 'var(--hover)' : 'transparent',
+      moreExpanded: bb ? (menuOpen ? 'true' : 'false') : false, moreHaspopup: bb ? 'menu' : false,
+      toggleMenu: () => { if (bb) this.setState({ menuAt: menuOpen ? -1 : idx }); }
+    };
+  }
+
+  composerB(state, c) {
+    const { P, T, TB, ja, cur } = c;
+    const on = { format: ['bold', 'ul'], link: ['link'] }[state] || [];
+    const keys = ['bold', 'italic', 'strike', '|', 'link', '|', 'ol', 'ul', '|', 'quote', 'code', 'codeblock'];
+    const labels = { bold: T.bold, italic: T.italic, strike: TB.strike, link: T.link, ol: TB.ol, ul: T.list, quote: TB.quote, code: T.code, codeblock: TB.codeBlock };
+    const fmtBtns = keys.map((k) => {
+      const o = { sep: k === '|', btn: k !== '|', label: labels[k] || '', pressed: on.includes(k) ? 'true' : 'false',
+        bg: on.includes(k) ? 'var(--accentsoft)' : 'transparent', color: on.includes(k) ? 'var(--accent)' : 'var(--subtle)' };
+      Object.keys(labels).forEach((n) => { o[n] = n === k; });
+      return o;
+    });
+    const C = { caret: true };
+    const img = (art, name, st, pct) => ({
+      isImg: true, isFile: false, art: this.art(art), name, ext: '', color: '', size: '',
+      uploading: st === 'up', failed: st === 'fail', done: st === 'done', pct: (pct || 0) + '%', pctN: String(pct || 0),
+      ring: st === 'fail' ? '0 0 0 2px var(--dangertext)' : 'inset 0 0 0 1px rgba(0,0,0,.08)', border: 'var(--line)',
+      error: '', canRetry: false, removeLabel: TB.removeFile(name), retryLabel: TB.retryUpload(name)
+    });
+    const file = (name, kind, size, st, pct, error, canRetry) => ({
+      isImg: false, isFile: true, art: '', name, ext: name.split('.').pop().toUpperCase().slice(0, 4), color: this.fileColor(kind), size,
+      uploading: st === 'up', failed: st === 'fail', done: st === 'done', pct: (pct || 0) + '%', pctN: String(pct || 0),
+      ring: st === 'fail' ? '0 0 0 3px color-mix(in srgb, var(--dangertext) 14%, transparent)' : 'none', border: st === 'fail' ? 'var(--dangertext)' : 'var(--line)',
+      error: error || '', canRetry: !!canRetry, removeLabel: TB.removeFile(name), retryLabel: TB.retryUpload(name)
+    });
+    const L = ja ? {
+      agenda: '木曜', agendaRest: 'のアジェンダ：', i1: 'クライアントスペースの説明', i2a: 'ボードと', i2b: '共有ドキュメント',
+      photos: 'ワークショップの写真とアジェンダ', recording: 'ワークショップの録画とアジェンダ', header: '新しいヘッダーです：',
+      and: ' さんと ', ship: 'リリースしましょう ', sel: 'クライアントスペースの説明', selPre: '', selPost: 'のメモを上げました。'
+    } : {
+      agenda: 'Agenda', agendaRest: ' for Thursday:', i1: 'Walkthrough of the client space', i2a: 'Board and ', i2b: 'shared docs',
+      photos: 'Workshop photos and the agenda', recording: 'Workshop recording and the agenda', header: 'Here’s the new header:',
+      and: ' and ', ship: 'Ship it ', sel: 'client space walkthrough', selPre: 'Notes from the ', selPost: ' are up.'
+    };
+    const S = {
+      format: { draft: [{ p: [{ b: L.agenda }, L.agendaRest] }, { ul: [[L.i1], [L.i2a, { b: L.i2b }, C]] }] },
+      reply: { draft: [{ p: [C, { ph: T.placeholder(cur.name) }] }], reply: true, sendOff: true },
+      upload: { draft: [{ p: [L.photos, C] }], tray: [img('wall', 'workshop-wall.jpg', 'done'), img('team', 'workshop-team.jpg', 'up', 62), file('agenda-thursday.pdf', 'pdf', '1.1 MB', 'up', 35)] },
+      failed: { draft: [{ p: [L.recording, C] }], sendOff: true, tray: [img('sketch', 'whiteboard.jpg', 'fail'), file('workshop-recording.mov', 'video', '812 MB', 'fail', 0, TB.tooBig, false), file('agenda-thursday.pdf', 'pdf', '1.1 MB', 'fail', 0, TB.uploadFailed, true)] },
+      paste: { draft: [{ p: [L.header, C] }], tray: [img('screen', 'image.png', 'up', 40)] },
+      mention: { draft: [{ p: [{ m: '@' + P.ih.n }, L.and, '@', C] }], picker: 'mention' },
+      emoji: { draft: [{ p: [L.ship, C] }], picker: 'emoji' },
+      link: { draft: [{ p: [L.selPre, { sel: L.sel }, L.selPost] }], picker: 'link' }
+    }[state];
+    const rp = P.jb;
+    const members = [['jb', true], ['ml', false], ['ek', true], ['la', true], ['tr', false]];
+    return {
+      rich: !!S, sendOff: S ? !!S.sendOff : false, picker: S ? (S.picker || 'none') : 'none',
+      reply: !!(S && S.reply), crName: rp.n, crText: this.feeds(ja).design[5].p[0], crColor: rp.c, crInitials: rp.i, crAvFs: this.avFs(rp.i, '8.5px', '10px'),
+      fmtBtns, tray: S && S.tray ? S.tray : [], draftBlocks: S ? this.blk(S.draft, '') : [],
+      linkText: L.sel, mentionLeft: ja ? '150px' : '128px',
+      mentionRows: members.map(([k, online], i) => ({
+        name: P[k].n, hit: '', rest: P[k].n, initials: P[k].i, color: P[k].c, avFs: this.avFs(P[k].i, '9.5px', '11px'),
+        sel: i === 0 ? 'true' : 'false', bg: i === 0 ? 'var(--accentsoft)' : 'transparent', ring: i === 0 ? 'var(--accentsoft)' : 'var(--raised)',
+        dot: online ? '#2BAC76' : 'var(--raised)', dotBorder: online ? '0' : '2px solid var(--subtle)'
+      }))
+    };
+  }
+
   renderVals() {
     const s = this.state;
     const pr = this.props;
@@ -830,7 +1462,20 @@ class Component extends DCLogic {
       };
     });
 
-    let feed = tl === 'loading' ? [] : (this.feeds(ja)[ch] || []).concat(s.sent[ch] || []);
+    const TB = this.stringsB(ja);
+    const content = pr.content || 'none';
+    const cstate = pr.composerState || 'empty';
+    const newLine = pr.newLine || 'none';
+    // Batch B boards show the M2 variant of the timeline: reply instead of thread, no thread summaries.
+    const bb = !syncing && (content !== 'none' || (pr.hover || 'none') !== 'none' || (pr.msgMenu || 'none') !== 'none' || !!pr.editing ||
+      (pr.confirm || 'none') !== 'none' || cstate !== 'empty' || !!pr.drop || !!pr.viewer || newLine !== 'none' || pr.notify === 'ask' || (pr.toast || 'none') !== 'none');
+    const demo = content !== 'none' && ch === startCh && !isClient;
+    let feed = tl === 'loading' ? [] : ((demo ? this.feedsB(ja)[content] : this.feeds(ja)[ch]) || []).concat(s.sent[ch] || []);
+    if (bb && !demo && ch === startCh && !isClient && tl !== 'loading') {
+      if (newLine === 'new') feed = feed.slice(0, 6).concat([{ nl: true }], feed.slice(6));
+      if (newLine === 'jump' && !s.jumped) feed = feed.slice(0, 6);
+      if (pr.notify === 'ask') feed = feed.concat([{ w: me, t: '10:06', p: [T.outText] }]);
+    }
     if (tl !== 'loading' && ch === startCh && !isClient && outgoing !== 'none' && outgoing !== 'deleted') {
       feed = feed.concat([{ w: me, t: '10:06', p: [T.outText], out: outgoing }]);
     }
@@ -839,9 +1484,12 @@ class Component extends DCLogic {
       setTimeout(() => this.setState({ outgoing: 'sent' }), 1400);
     };
     let prev = null;
+    const KIND = { isDivider: false, isSystem: false, isMsg: false, isNew: false, isDeleted: false };
     const items = feed.map((x, idx) => {
-      if (x.d) { prev = null; return { isDivider: true, label: x.d }; }
-      if (x.sys) { prev = null; return { isSystem: true, text: x.sys }; }
+      if (x.d) { prev = null; return Object.assign({}, KIND, { isDivider: true, label: x.d }); }
+      if (x.sys) { prev = null; return Object.assign({}, KIND, { isSystem: true, text: x.sys }); }
+      if (x.nl) { prev = null; return Object.assign({}, KIND, { isNew: true }); }
+      if (x.del || s.deletedAt[idx]) { prev = null; return Object.assign({}, KIND, { isDeleted: true, time: x.t || '' }); }
       const p = P[x.w];
       const cont = prev === x.w && !x.th;
       prev = x.w;
@@ -861,26 +1509,26 @@ class Component extends DCLogic {
       });
       const sending = x.out === 'sending';
       const failed = x.out === 'failed';
-      return {
+      return Object.assign({}, KIND, this.msgB(x, idx, { P, T, TB, me, bb, ja, ch, s, key: ch + ':' + idx }), {
         isMsg: true,
         showHead: !cont, cont,
         name: p.n, initials: p.i, color: p.c, time: x.t,
         avFs: this.avFs(p.i, '13px', '15px'),
-        cls: x.mention ? 'pd-mention' : '',
-        rowBg: x.mention ? 'var(--mentionbg)' : 'transparent',
+        cls: [x.mention ? 'pd-mention' : '', this.isForced(x, idx, { me, bb, s }) ? 'pd-force' : '', this.isEditing(x, idx, { me, s }) ? 'pd-editing' : ''].filter(Boolean).join(' '),
+        rowBg: x.mention ? 'var(--mentionbg)' : (this.isEditing(x, idx, { me, s }) ? 'var(--editbg)' : 'transparent'),
         pad: cont ? '2px 12px' : '8px 12px 6px',
-        parts: x.p.map((pp) => typeof pp === 'string'
+        parts: (x.p || []).map((pp) => typeof pp === 'string'
           ? { t: pp, style: '' }
-          : { t: pp.m, style: 'background: var(--chip); color: var(--link); font-weight: 600; border-radius: 4px; padding: 1px 3px' }),
+          : { t: pp.m, style: 'background: var(--chip); color: var(--link); font-weight: 600; border-radius: 4px; padding: 1px 3px' }).concat(x.edited && !x.blocks ? [{ t: ' ' + TB.edited, style: 'font-size: 12px; color: var(--subtle)' }] : []),
         hasBullets: !!x.b, bullets: x.b || [],
         hasCard: !!x.card, cardTitle: x.card ? x.card.title : '', cardSub: x.card ? x.card.sub : '',
-        hasFile: !!x.file, fileName: x.file ? x.file.name : '', fileSize: x.file ? x.file.size : '',
+        hasFile: !!x.file && !bb, fileName: x.file ? x.file.name : '', fileSize: x.file ? x.file.size : '',
         hasReactions: reactions.length > 0, reactions,
-        hasThread: !!x.th,
+        hasThread: !!x.th && !bb,
         sending, failed, showTime: !sending,
         opacity: sending ? '0.55' : '1',
         retry, discard: () => this.setState({ outgoing: 'deleted' })
-      };
+      });
     });
 
     const replies = this.threadBase(ja).concat(s.replies).map((r) => ({
@@ -952,6 +1600,19 @@ class Component extends DCLogic {
     };
 
     const hasDraft = s.draft.trim().length > 0;
+    const cs = this.composerB(cstate, { P, T, TB, ja, cur });
+    const pickEmoji = cs.picker === 'emoji', pickMention = cs.picker === 'mention', pickLink = cs.picker === 'link';
+    const jumpOn = bb && newLine === 'jump' && !s.jumped;
+    const toastOn = (s.toast !== null ? s.toast : (pr.toast || 'none')) === 'linkCopied';
+    const quietTyping = bb;
+    const viewerOn = s.viewer !== null ? s.viewer : (bb && !!pr.viewer);
+    const ownIdx = feed.findIndex((x) => x.w === me && x.t === '09:48');
+    const confirmOn = s.confirmAt !== null ? s.confirmAt >= 0 : (bb && pr.confirm === 'delete' && ownIdx >= 0);
+    const delIdx = s.confirmAt !== null && s.confirmAt >= 0 ? s.confirmAt : ownIdx;
+    const delSrc = feed[delIdx] && feed[delIdx].w ? feed[delIdx] : { w: me, t: '', p: [''] };
+    const viewerSrc = feed.find((x) => x.grid || x.img || x.file) || { w: 'ih', t: '09:31' };
+    const notifyOn = s.notify !== null ? s.notify : (bb && pr.notify === 'ask');
+    const emojiFreq = ['👍', '🙌', '✅', '🎉', '🚀', '👀', '❤️', '😂', '🔥', '💯', '🙏', '👏', '😮', '😅', '🤔', '✨'];
     const hasReply = s.replyDraft.trim().length > 0;
     const seg = (on) => ({
       on: on ? 'true' : 'false',
@@ -1024,7 +1685,7 @@ class Component extends DCLogic {
       topic: cur.topic, memberCount: cur.members,
       placeholder: T.placeholder(cur.name),
       items, isEmpty: items.length === 0 && tl !== 'loading',
-      showTyping: ch === 'design' && tl === 'ready' && conn === 'online',
+      showTyping: ch === 'design' && tl === 'ready' && conn === 'online' && !quietTyping,
       typingName: P.ih.n.split(' ')[0],
       avIH: P.ih.i, avML: P.ml.i, avFsIH: hd('ih', '9px', '11px'), avFsML: hd('ml', '9px', '11px'),
 
@@ -1035,12 +1696,45 @@ class Component extends DCLogic {
       threadRootText: T.threadRoot,
       replies,
 
+      // Batch B
+      tbThread: !bb, tbReply: bb, txReply: TB.reply,
+      notifyAsk: notifyOn && !isClient, txNotifications: TB.notifications, txTurnOn: TB.turnOn, txNotNow: TB.notNow,
+      dismissNotify: () => this.setState({ notify: false }),
+      dropOn: bb && !!pr.drop, txDropTo: TB.dropTo(cur.name),
+      hasFloat: jumpOn || toastOn || pickEmoji || pickMention || pickLink,
+      jumpOn, txNewCount: TB.newCount(3), txJumpAria: TB.jumpAria(3), jumpLatest: () => this.setState({ jumped: true }),
+      toastOn, txLinkCopied: TB.linkCopied,
+      emojiOn: pickEmoji, txEmojiSearch: TB.emojiSearch, txFrequent: TB.frequent, txSmileys: TB.smileys,
+      emojiCats: ['🕘', '😀', '👋', '🐻', '🍔', '⚽', '✈️', '💡', '❤️'].map((e, i) => ({
+        e, label: TB.cats[i], sel: i === 0 ? 'true' : 'false', bg: i === 0 ? 'var(--well)' : 'transparent', filter: i === 0 ? 'none' : 'grayscale(1) opacity(.7)'
+      })),
+      emojiFreq: emojiFreq.map((e, i) => ({ e, bg: i === 2 ? 'var(--hover)' : 'transparent' })),
+      emojiSmileys: ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '😌'],
+      mentionOn: pickMention, mentionRows: cs.mentionRows, mentionLeft: cs.mentionLeft,
+      linkOn: pickLink, linkText: cs.linkText, txLinkText: TB.linkText, txLinkUrl: TB.linkUrl, txLinkUrlPh: TB.linkUrlPh, txSave: TB.save,
+      cReply: cs.reply, crName: cs.crName, crText: cs.crText, crColor: cs.crColor, crInitials: cs.crInitials, crAvFs: cs.crAvFs, txCancelReply: TB.cancelReply,
+      fmtMain: !bb, fmtM2: bb, fmtBtns: cs.fmtBtns, txFormatting: TB.formatting,
+      cTray: cs.tray.length > 0, tray: cs.tray, txRetryUpload: TB.retryUp,
+      plainInput: !cs.rich, richDraft: cs.rich, draftBlocks: cs.draftBlocks,
+      emojiBtnBg: pickEmoji ? 'var(--accentsoft)' : 'transparent', emojiBtnColor: pickEmoji ? 'var(--accent)' : 'var(--subtle)',
+      txNew: TB.newLabel, txNewAria: TB.newAria, txMsgDeleted: TB.msgDeleted, txShowMore: TB.showMore, txCopyCode: TB.copyCode, txEditLabel: TB.editLabel,
+      txPlayVideo: TB.playVideo, txPlay: TB.play,
+      confirmDelete: confirmOn, txDeleteQ: TB.deleteQ, txDeleteBtn: TB.deleteBtn,
+      delName: P[delSrc.w].n, delInitials: P[delSrc.w].i, delColor: P[delSrc.w].c, delAvFs: this.avFs(P[delSrc.w].i, '11.5px', '13.5px'),
+      delTime: delSrc.t, delText: this.plainText(delSrc),
+      cancelDelete: () => this.setState({ confirmAt: -1 }),
+      doDelete: () => this.setState((st) => ({ confirmAt: -1, deletedAt: Object.assign({}, st.deletedAt, { [delIdx]: true }) })),
+      viewerOn, viewerAria: TB.viewer(P[viewerSrc.w].n), vName: P[viewerSrc.w].n, vInitials: P[viewerSrc.w].i, vColor: P[viewerSrc.w].c,
+      vAvFs: this.avFs(P[viewerSrc.w].i, '12px', '14px'), vTime: viewerSrc.t, vArt: this.art('team'), vLabel: TB.viewer(P[viewerSrc.w].n),
+      closeViewer: () => this.setState({ viewer: false }),
+      txDownloadImage: TB.downloadImage, txPrevImage: TB.prevImage, txNextImage: TB.nextImage,
+
       draft: s.draft,
       onDraft: (e) => this.setState({ draft: e.target.value }),
       onKey: (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent?.isComposing) { e.preventDefault(); send(); } },
-      send, sendDisabled: !hasDraft,
-      sendBg: hasDraft ? 'var(--accent)' : 'var(--well)',
-      sendColor: hasDraft ? 'var(--onaccent)' : 'var(--subtle)',
+      send, sendDisabled: cs.rich ? cs.sendOff : !hasDraft,
+      sendBg: (cs.rich ? !cs.sendOff : hasDraft) ? 'var(--accent)' : 'var(--well)',
+      sendColor: (cs.rich ? !cs.sendOff : hasDraft) ? 'var(--onaccent)' : 'var(--subtle)',
 
       replyDraft: s.replyDraft,
       onReplyDraft: (e) => this.setState({ replyDraft: e.target.value }),

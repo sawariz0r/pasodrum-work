@@ -50,12 +50,12 @@
       "x": 0,
       "y": 2040,
       "w": 1440,
-      "h": 3040,
+      "h": 5180,
       "title": "Foundations & vocabulary"
     },
     "ClientSpace.dc.html": {
       "x": 0,
-      "y": 5500,
+      "y": 7700,
       "w": 1440,
       "h": 900,
       "title": "Client's view of their space",
@@ -64,7 +64,7 @@
     },
     "InviteLanding.dc.html": {
       "x": 1520,
-      "y": 5500,
+      "y": 7700,
       "w": 1440,
       "h": 900,
       "title": "Invite link landing (browser)",
@@ -73,7 +73,7 @@
     },
     "CreateClientSpace.dc.html": {
       "x": 3040,
-      "y": 5500,
+      "y": 7700,
       "w": 1440,
       "h": 900,
       "title": "New client space",
@@ -82,7 +82,7 @@
     },
     "MainJP.dc.html": {
       "x": 0,
-      "y": 7100,
+      "y": 9300,
       "w": 1440,
       "h": 900,
       "title": "Workspace — Japanese",
@@ -91,7 +91,7 @@
     },
     "SignInJP.dc.html": {
       "x": 1520,
-      "y": 7100,
+      "y": 9300,
       "w": 1440,
       "h": 900,
       "title": "Sign in — Japanese",
@@ -100,7 +100,7 @@
     },
     "LanguageMenu.dc.html": {
       "x": 3040,
-      "y": 7100,
+      "y": 9300,
       "w": 1440,
       "h": 900,
       "title": "Profile menu: language switch",
@@ -109,7 +109,7 @@
     },
     "AppStart.dc.html": {
       "x": 0,
-      "y": 8120,
+      "y": 10320,
       "w": 1440,
       "h": 900,
       "title": "App start / first sync",
@@ -118,7 +118,7 @@
     },
     "TimelineLoading.dc.html": {
       "x": 1520,
-      "y": 8120,
+      "y": 10320,
       "w": 1440,
       "h": 900,
       "title": "Channel loading",
@@ -127,7 +127,7 @@
     },
     "OlderHistory.dc.html": {
       "x": 3040,
-      "y": 8120,
+      "y": 10320,
       "w": 1440,
       "h": 900,
       "title": "Loading older messages",
@@ -136,7 +136,7 @@
     },
     "Offline.dc.html": {
       "x": 0,
-      "y": 9140,
+      "y": 11340,
       "w": 1440,
       "h": 900,
       "title": "Offline, message waiting",
@@ -145,7 +145,7 @@
     },
     "Reconnecting.dc.html": {
       "x": 1520,
-      "y": 9140,
+      "y": 11340,
       "w": 1440,
       "h": 900,
       "title": "Reconnecting",
@@ -154,7 +154,7 @@
     },
     "BackOnline.dc.html": {
       "x": 3040,
-      "y": 9140,
+      "y": 11340,
       "w": 1440,
       "h": 900,
       "title": "Back online",
@@ -163,7 +163,7 @@
     },
     "MessageSending.dc.html": {
       "x": 0,
-      "y": 10160,
+      "y": 12360,
       "w": 1440,
       "h": 900,
       "title": "Message sending",
@@ -172,7 +172,7 @@
     },
     "MessageFailed.dc.html": {
       "x": 1520,
-      "y": 10160,
+      "y": 12360,
       "w": 1440,
       "h": 900,
       "title": "Message not sent, retry",
@@ -181,7 +181,7 @@
     },
     "NotAvailable.dc.html": {
       "x": 3040,
-      "y": 10160,
+      "y": 12360,
       "w": 1440,
       "h": 900,
       "title": "Page not available",
@@ -190,7 +190,7 @@
     },
     "SignInWrongPassword.dc.html": {
       "x": 0,
-      "y": 11180,
+      "y": 13380,
       "w": 1440,
       "h": 900,
       "title": "Sign in — wrong password",
@@ -199,7 +199,7 @@
     },
     "SignInServerDown.dc.html": {
       "x": 1520,
-      "y": 11180,
+      "y": 13380,
       "w": 1440,
       "h": 900,
       "title": "Sign in — server unreachable",
@@ -208,7 +208,7 @@
     },
     "SessionExpired.dc.html": {
       "x": 3040,
-      "y": 11180,
+      "y": 13380,
       "w": 1440,
       "h": 900,
       "title": "Signed out on this device",
@@ -217,7 +217,7 @@
     },
     "ForgotPassword.dc.html": {
       "x": 0,
-      "y": 12200,
+      "y": 14400,
       "w": 1440,
       "h": 900,
       "title": "Forgot password — email",
@@ -226,7 +226,7 @@
     },
     "ForgotPasswordSent.dc.html": {
       "x": 1520,
-      "y": 12200,
+      "y": 14400,
       "w": 1440,
       "h": 900,
       "title": "Forgot password — check email",
@@ -235,7 +235,7 @@
     },
     "ResetPassword.dc.html": {
       "x": 3040,
-      "y": 12200,
+      "y": 14400,
       "w": 1440,
       "h": 900,
       "title": "Forgot password — new password",
@@ -244,7 +244,7 @@
     },
     "Window1024.dc.html": {
       "x": 0,
-      "y": 13220,
+      "y": 15420,
       "w": 1024,
       "h": 900,
       "title": "Window 1024 px — thread open",
@@ -253,7 +253,7 @@
     },
     "Window800.dc.html": {
       "x": 1104,
-      "y": 13220,
+      "y": 15420,
       "w": 800,
       "h": 900,
       "title": "Window 800 px — thread open",
@@ -262,10 +262,352 @@
     },
     "Window800Sidebar.dc.html": {
       "x": 1984,
-      "y": 13220,
+      "y": 15420,
       "w": 800,
       "h": 900,
       "title": "Window 800 px — sidebar drawer",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgImages.dc.html": {
+      "x": 0,
+      "y": 16820,
+      "w": 1440,
+      "h": 900,
+      "title": "Images: single and several",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgVideoAudio.dc.html": {
+      "x": 1520,
+      "y": 16820,
+      "w": 1440,
+      "h": 900,
+      "title": "Video, voice and audio",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgFiles.dc.html": {
+      "x": 3040,
+      "y": 16820,
+      "w": 1440,
+      "h": 900,
+      "title": "Files: single and several",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgText.dc.html": {
+      "x": 0,
+      "y": 17840,
+      "w": 1440,
+      "h": 900,
+      "title": "Formatted text and code",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgTextJP.dc.html": {
+      "x": 1520,
+      "y": 17840,
+      "w": 1440,
+      "h": 900,
+      "title": "Formatted text — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgLong.dc.html": {
+      "x": 3040,
+      "y": 17840,
+      "w": 1440,
+      "h": 900,
+      "title": "Long message, collapsed",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgReplies.dc.html": {
+      "x": 0,
+      "y": 18860,
+      "w": 1440,
+      "h": 900,
+      "title": "Replies, incl. from another app",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgRowStates.dc.html": {
+      "x": 1520,
+      "y": 18860,
+      "w": 1440,
+      "h": 900,
+      "title": "Edited, deleted, can’t show",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgRowStatesJP.dc.html": {
+      "x": 3040,
+      "y": 18860,
+      "w": 1440,
+      "h": 900,
+      "title": "Edited, deleted, can’t show — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgReactions.dc.html": {
+      "x": 0,
+      "y": 19880,
+      "w": 1440,
+      "h": 900,
+      "title": "Reactions: mine, many, who reacted",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgHover.dc.html": {
+      "x": 1520,
+      "y": 19880,
+      "w": 1440,
+      "h": 900,
+      "title": "Message hover actions (M2)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgMoreMenu.dc.html": {
+      "x": 3040,
+      "y": 19880,
+      "w": 1440,
+      "h": 900,
+      "title": "More menu, own message",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgMoreMenuJP.dc.html": {
+      "x": 0,
+      "y": 20900,
+      "w": 1440,
+      "h": 900,
+      "title": "More menu — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgEdit.dc.html": {
+      "x": 1520,
+      "y": 20900,
+      "w": 1440,
+      "h": 900,
+      "title": "Edit in place",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgDeleteConfirm.dc.html": {
+      "x": 3040,
+      "y": 20900,
+      "w": 1440,
+      "h": 900,
+      "title": "Delete message?",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "LinkCopied.dc.html": {
+      "x": 0,
+      "y": 21920,
+      "w": 1440,
+      "h": 900,
+      "title": "Copy link → toast",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ComposerFormat.dc.html": {
+      "x": 1520,
+      "y": 21920,
+      "w": 1440,
+      "h": 900,
+      "title": "Composer: formatting",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ComposerReply.dc.html": {
+      "x": 3040,
+      "y": 21920,
+      "w": 1440,
+      "h": 900,
+      "title": "Composer: replying",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "EmojiPicker.dc.html": {
+      "x": 0,
+      "y": 22940,
+      "w": 1440,
+      "h": 900,
+      "title": "Emoji picker",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MentionPicker.dc.html": {
+      "x": 1520,
+      "y": 22940,
+      "w": 1440,
+      "h": 900,
+      "title": "Mention picker, chip in draft",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MentionPickerJP.dc.html": {
+      "x": 3040,
+      "y": 22940,
+      "w": 1440,
+      "h": 900,
+      "title": "Mention picker — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "LinkDialog.dc.html": {
+      "x": 0,
+      "y": 23960,
+      "w": 1440,
+      "h": 900,
+      "title": "Link on selected text",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "UploadProgress.dc.html": {
+      "x": 1520,
+      "y": 23960,
+      "w": 1440,
+      "h": 900,
+      "title": "Attach → uploading",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "PasteImage.dc.html": {
+      "x": 3040,
+      "y": 23960,
+      "w": 1440,
+      "h": 900,
+      "title": "Pasted image",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "UploadFailed.dc.html": {
+      "x": 0,
+      "y": 24980,
+      "w": 1440,
+      "h": 900,
+      "title": "Upload failed, too big",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "UploadFailedJP.dc.html": {
+      "x": 1520,
+      "y": 24980,
+      "w": 1440,
+      "h": 900,
+      "title": "Upload failed — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "DropOverlay.dc.html": {
+      "x": 3040,
+      "y": 24980,
+      "w": 1440,
+      "h": 900,
+      "title": "Drag and drop",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ImageViewer.dc.html": {
+      "x": 0,
+      "y": 26000,
+      "w": 1440,
+      "h": 900,
+      "title": "Image viewer",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NewMessages.dc.html": {
+      "x": 1520,
+      "y": 26000,
+      "w": 1440,
+      "h": 900,
+      "title": "New-messages line",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "JumpToLatest.dc.html": {
+      "x": 3040,
+      "y": 26000,
+      "w": 1440,
+      "h": 900,
+      "title": "Scrolled up, new below",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "JumpToLatestJP.dc.html": {
+      "x": 0,
+      "y": 27020,
+      "w": 1440,
+      "h": 900,
+      "title": "Scrolled up — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NotifyAsk.dc.html": {
+      "x": 1520,
+      "y": 27020,
+      "w": 1440,
+      "h": 900,
+      "title": "Notification ask (after first send)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NotifyAskJP.dc.html": {
+      "x": 3040,
+      "y": 27020,
+      "w": 1440,
+      "h": 900,
+      "title": "Notification ask — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "DesktopNotification.dc.html": {
+      "x": 0,
+      "y": 28040,
+      "w": 1440,
+      "h": 900,
+      "title": "Desktop notifications EN / JP",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgTextDark.dc.html": {
+      "x": 1520,
+      "y": 28040,
+      "w": 1440,
+      "h": 900,
+      "title": "Formatted text and code — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MsgMediaDark.dc.html": {
+      "x": 3040,
+      "y": 28040,
+      "w": 1440,
+      "h": 900,
+      "title": "Media and files — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "UploadDark.dc.html": {
+      "x": 0,
+      "y": 29060,
+      "w": 1440,
+      "h": 900,
+      "title": "Uploading — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MoreMenuDark.dc.html": {
+      "x": 1520,
+      "y": 29060,
+      "w": 1440,
+      "h": 900,
+      "title": "More menu — dark",
       "expand": "fill",
       "is_interactive": true
     }
@@ -299,7 +641,45 @@
     "ResetPassword.dc.html",
     "Window1024.dc.html",
     "Window800.dc.html",
-    "Window800Sidebar.dc.html"
+    "Window800Sidebar.dc.html",
+    "MsgImages.dc.html",
+    "MsgVideoAudio.dc.html",
+    "MsgFiles.dc.html",
+    "MsgText.dc.html",
+    "MsgTextJP.dc.html",
+    "MsgLong.dc.html",
+    "MsgReplies.dc.html",
+    "MsgRowStates.dc.html",
+    "MsgRowStatesJP.dc.html",
+    "MsgReactions.dc.html",
+    "MsgHover.dc.html",
+    "MsgMoreMenu.dc.html",
+    "MsgMoreMenuJP.dc.html",
+    "MsgEdit.dc.html",
+    "MsgDeleteConfirm.dc.html",
+    "LinkCopied.dc.html",
+    "ComposerFormat.dc.html",
+    "ComposerReply.dc.html",
+    "EmojiPicker.dc.html",
+    "MentionPicker.dc.html",
+    "MentionPickerJP.dc.html",
+    "LinkDialog.dc.html",
+    "UploadProgress.dc.html",
+    "PasteImage.dc.html",
+    "UploadFailed.dc.html",
+    "UploadFailedJP.dc.html",
+    "DropOverlay.dc.html",
+    "ImageViewer.dc.html",
+    "NewMessages.dc.html",
+    "JumpToLatest.dc.html",
+    "JumpToLatestJP.dc.html",
+    "NotifyAsk.dc.html",
+    "NotifyAskJP.dc.html",
+    "DesktopNotification.dc.html",
+    "MsgTextDark.dc.html",
+    "MsgMediaDark.dc.html",
+    "UploadDark.dc.html",
+    "MoreMenuDark.dc.html"
   ],
   "notes": {
     "title": {
@@ -311,15 +691,22 @@
     },
     "clients": {
       "x": 0,
-      "y": 5200,
+      "y": 7400,
       "text": "Client spaces & onboarding",
       "kind": "title1",
       "maxW": 4480
     },
     "batchA": {
       "x": 0,
-      "y": 6800,
+      "y": 9000,
       "text": "Batch A — states & Japanese",
+      "kind": "title1",
+      "maxW": 4480
+    },
+    "batchB": {
+      "x": 0,
+      "y": 16720,
+      "text": "Batch B — full timeline",
       "kind": "title1",
       "maxW": 4480
     }

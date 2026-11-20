@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pasodrum work — desktop notifications</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.dn-root{--cjk:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,"Noto Sans JP";--os:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",var(--cjk),sans-serif}
+.dn-ja{line-height:1.7}
+</style>
+</helmet>
+<div class="dn-root" style="width: 1440px; height: 900px; box-sizing: border-box; padding: 48px 56px; background: radial-gradient(circle at 18% 22%, #2F6F62 0, rgba(47,111,98,0) 42%), radial-gradient(circle at 82% 78%, #6B4E7A 0, rgba(107,78,122,0) 46%), linear-gradient(135deg, #1B2B33, #2A2338); color: #FFFFFF; font-family: Inter, var(--cjk), system-ui, sans-serif; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 56px">
+  <sc-for list="{{cols}}" as="c" hint-placeholder-count="2">
+  <section lang="{{c.lang}}" class="{{c.cls}}" style="display: flex; flex-direction: column; gap: 14px">
+    <h2 style="margin: 0 0 6px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0">{{c.title}}</h2>
+    <sc-for list="{{c.items}}" as="n" hint-placeholder-count="4">
+    <div style="display: flex; align-items: center; gap: 12px; width: 420px; padding: 12px 14px 12px 12px; box-sizing: border-box; border-radius: 18px; background: rgba(246,246,248,.88); color: #1D1C22; box-shadow: 0 12px 36px rgba(0,0,0,.35), inset 0 0 0 .5px rgba(255,255,255,.6); font-family: var(--os)">
+      <span style="width: 38px; height: 38px; flex-shrink: 0; border-radius: 10px; background: #0E7C66; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="13" width="3.6" height="7" rx="1.8" fill="#FFFFFF"></rect><rect x="10.2" y="8.5" width="3.6" height="11.5" rx="1.8" fill="#FFFFFF"></rect><rect x="16.4" y="4" width="3.6" height="16" rx="1.8" fill="#FFFFFF"></rect></svg></span>
+      <span style="flex: 1; min-width: 0">
+        <span style="display: flex; align-items: baseline; gap: 8px"><span style="flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{n.title}}</span><span style="font-size: 12px; color: #6E6C76">{{c.now}}</span></span>
+        <span style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 1px; font-size: 13px; line-height: 1.38; color: #2F2E35">{{n.body}}</span>
+      </span>
+      <span style="width: 38px; height: 38px; flex-shrink: 0; border-radius: 10px; background: {{n.color}}; color: #FFFFFF; font-family: Inter, var(--cjk), sans-serif; font-size: {{n.avFs}}; font-weight: 600; display: flex; align-items: center; justify-content: center">{{n.initials}}</span>
+    </div>
+    </sc-for>
+  </section>
+  </sc-for>
+  <div style="grid-column: span 2; align-self: end; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; padding: 18px 20px; border-radius: 16px; background: rgba(0,0,0,.28); font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,.82)">
+    <sc-for list="{{rules}}" as="r" hint-placeholder-count="4"><span><b style="display: block; color: #FFFFFF; margin-bottom: 2px">{{r.t}}</b>{{r.d}}</span></sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const av = (i, c) => ({ initials: i, color: c, avFs: /[぀-ヿ㐀-鿿]/.test(i) ? '16px' : '13px' });
+    return {
+      cols: [
+        { lang: 'en', cls: 'dn-en', title: 'English', now: 'now', items: [
+          Object.assign({ title: 'Jonas Berg', body: 'Can you join the Nordlys call at 14:00? I’ll share the board.' }, av('JB', '#1D4ED8')),
+          Object.assign({ title: '#design-studio', body: 'Ingrid Holm: @Sam Okafor can you take a pass on the empty states for the channel list? The current ones feel loud.' }, av('IH', '#C2410C')),
+          Object.assign({ title: '#design-review · Nordlys Energi', body: 'Henrik Dahl: Looks good. One question about the sign-in screen before Thursday.' }, av('HD', '#475569')),
+          Object.assign({ title: 'Maja Lind', body: 'header-final.jpg' }, av('ML', '#7E22CE'))
+        ] },
+        { lang: 'ja', cls: 'dn-ja', title: '日本語', now: '今', items: [
+          Object.assign({ title: 'Jonas Berg', body: '14:00 の Nordlys の打ち合わせに参加できますか？ボードを共有します。' }, av('JB', '#1D4ED8')),
+          Object.assign({ title: '#design-studio', body: '平野 いずみ：@Sam Okafor チャンネル一覧の空の状態を見てもらえますか？今のものは少しうるさい気がします。' }, av('平', '#C2410C')),
+          Object.assign({ title: '#design-review · Nordlys Energi', body: 'Henrik Dahl：いいですね。木曜の前に、サインイン画面についてひとつ質問があります。' }, av('HD', '#475569')),
+          Object.assign({ title: '森 真由', body: 'header-final.jpg' }, av('森', '#7E22CE'))
+        ] }
+      ],
+      rules: [
+        { t: 'Title', d: 'DM: the sender. Channel: #channel, plus “ · client space” in client spaces. Never an ID or server name.' },
+        { t: 'Body', d: 'Channel: “Name: text” (Japanese “名前：本文”). Plain text, @Name for mentions, file name for attachments; the OS clamps to two lines.' },
+        { t: 'Icon', d: 'Sender avatar, or initials on their colour. Tagged by channel, so a newer message replaces the older notification.' },
+        { t: 'When', d: 'Mentions and DMs, while the app is open, never for the channel on screen. Click focuses the app at that message.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
