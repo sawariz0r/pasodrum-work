@@ -1011,8 +1011,8 @@
       "x": 0,
       "y": 45320,
       "w": 1440,
-      "h": 1680,
-      "title": "Rules: narrow widths, roles, links, first run",
+      "h": 1760,
+      "title": "Rules: narrow widths, roles (D-25), links, first run",
       "is_interactive": false
     },
     "WorkspaceMenu.dc.html": {
@@ -1137,7 +1137,7 @@
       "y": 50420,
       "w": 1440,
       "h": 900,
-      "title": "Role on the profile card (Owner)",
+      "title": "D-25: Owners change Owners (role on the profile card)",
       "expand": "fill",
       "is_interactive": true
     },
@@ -1146,7 +1146,7 @@
       "y": 50420,
       "w": 1440,
       "h": 900,
-      "title": "Make owner, asked once",
+      "title": "Make owner, asked once (an Owner can undo it, D-25)",
       "expand": "fill",
       "is_interactive": true
     },
@@ -1320,6 +1320,320 @@
       "title": "First sign-in: client — Japanese",
       "expand": "fill",
       "is_interactive": true
+    },
+    "RulesM5.dc.html": {
+      "x": 0,
+      "y": 57860,
+      "w": 1440,
+      "h": 1480,
+      "title": "Rules: client spaces, guests, the outside mark, phones",
+      "is_interactive": false
+    },
+    "RoleChangeAdmin.dc.html": {
+      "x": 1520,
+      "y": 57860,
+      "w": 1440,
+      "h": 900,
+      "title": "D-25: an Admin switches Member ↔ Admin",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ClientSpaceCreating.dc.html": {
+      "x": 3040,
+      "y": 57860,
+      "w": 1440,
+      "h": 900,
+      "title": "New client space: creating",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ClientSpaceNameTaken.dc.html": {
+      "x": 1520,
+      "y": 58880,
+      "w": 1440,
+      "h": 900,
+      "title": "New client space: name already exists",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ClientSpaceCreateError.dc.html": {
+      "x": 3040,
+      "y": 58880,
+      "w": 1440,
+      "h": 900,
+      "title": "New client space: couldn’t create, retry",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ClientSpaceCreated.dc.html": {
+      "x": 0,
+      "y": 59900,
+      "w": 1440,
+      "h": 900,
+      "title": "New client space: created, you land in it",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "CreateClientSpaceJP.dc.html": {
+      "x": 1520,
+      "y": 59900,
+      "w": 1440,
+      "h": 900,
+      "title": "New client space — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ClientShell.dc.html": {
+      "x": 3040,
+      "y": 59900,
+      "w": 1440,
+      "h": 900,
+      "title": "Client’s shell (M5): one tile, no workspace, no +",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ClientShellMenu.dc.html": {
+      "x": 0,
+      "y": 60920,
+      "w": 1440,
+      "h": 900,
+      "title": "Client’s space menu: browse only",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ClientShellJP.dc.html": {
+      "x": 1520,
+      "y": 60920,
+      "w": 1440,
+      "h": 900,
+      "title": "Client’s shell — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "GuestShell.dc.html": {
+      "x": 3040,
+      "y": 60920,
+      "w": 1440,
+      "h": 900,
+      "title": "Guest’s shell: only the channels they were added to",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "GuestShellJP.dc.html": {
+      "x": 0,
+      "y": 61940,
+      "w": 1440,
+      "h": 900,
+      "title": "Guest’s shell — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ExternalChannel.dc.html": {
+      "x": 1520,
+      "y": 61940,
+      "w": 1440,
+      "h": 900,
+      "title": "Outside mark: workspace channel with a guest",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ExternalClientSpace.dc.html": {
+      "x": 3040,
+      "y": 61940,
+      "w": 1440,
+      "h": 900,
+      "title": "Outside mark: team inside a client space",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ExternalDM.dc.html": {
+      "x": 0,
+      "y": 62960,
+      "w": 1440,
+      "h": 900,
+      "title": "Outside mark: DM with a client",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ExternalJP.dc.html": {
+      "x": 1520,
+      "y": 62960,
+      "w": 1440,
+      "h": 900,
+      "title": "Outside mark — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ExternalDark.dc.html": {
+      "x": 3040,
+      "y": 62960,
+      "w": 1440,
+      "h": 900,
+      "title": "Outside mark — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ClientSpaceMenuAdmin.dc.html": {
+      "x": 0,
+      "y": 63980,
+      "w": 1440,
+      "h": 900,
+      "title": "Client space menu (Admin): settings",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SpaceSettings.dc.html": {
+      "x": 1520,
+      "y": 63980,
+      "w": 1440,
+      "h": 900,
+      "title": "Client space settings: name, colour, archive",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SpacePeople.dc.html": {
+      "x": 3040,
+      "y": 63980,
+      "w": 1440,
+      "h": 900,
+      "title": "Client space settings: people, remove",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "RemoveFromSpace.dc.html": {
+      "x": 0,
+      "y": 65000,
+      "w": 1440,
+      "h": 900,
+      "title": "Remove from the client space, asked once",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ArchiveSpace.dc.html": {
+      "x": 1520,
+      "y": 65000,
+      "w": 1440,
+      "h": 900,
+      "title": "Archive the client space, asked once",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ArchivedSpace.dc.html": {
+      "x": 3040,
+      "y": 65000,
+      "w": 1440,
+      "h": 900,
+      "title": "Archived client space: read-only",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SpaceSettingsJP.dc.html": {
+      "x": 0,
+      "y": 66020,
+      "w": 1440,
+      "h": 900,
+      "title": "Client space settings — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "RemoveFromSpaceJP.dc.html": {
+      "x": 1520,
+      "y": 66020,
+      "w": 1440,
+      "h": 900,
+      "title": "Remove from the client space — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SpacePeopleDark.dc.html": {
+      "x": 3040,
+      "y": 66020,
+      "w": 1440,
+      "h": 900,
+      "title": "Client space people — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ProfileMenuAnotherApp.dc.html": {
+      "x": 0,
+      "y": 67040,
+      "w": 1440,
+      "h": 900,
+      "title": "Profile menu → Another app",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "AnotherApp.dc.html": {
+      "x": 1520,
+      "y": 67040,
+      "w": 1440,
+      "h": 900,
+      "title": "Another app: server and username, copied",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "AnotherAppJP.dc.html": {
+      "x": 3040,
+      "y": 67040,
+      "w": 1440,
+      "h": 900,
+      "title": "Another app — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "JoinDoneOther.dc.html": {
+      "x": 0,
+      "y": 68060,
+      "w": 1440,
+      "h": 900,
+      "title": "Join page: done, another app open",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ClientShellDark.dc.html": {
+      "x": 1520,
+      "y": 68060,
+      "w": 1440,
+      "h": 900,
+      "title": "Client’s shell — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "PhoneHandoff.dc.html": {
+      "x": 0,
+      "y": 69080,
+      "w": 390,
+      "h": 844,
+      "title": "Phone: an app link points to the computer or Element X",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "PhoneHandoffJP.dc.html": {
+      "x": 470,
+      "y": 69080,
+      "w": 390,
+      "h": 844,
+      "title": "Phone hand-off — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "JoinPhone.dc.html": {
+      "x": 940,
+      "y": 69080,
+      "w": 390,
+      "h": 844,
+      "title": "Join page on a phone",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "JoinDonePhone.dc.html": {
+      "x": 1410,
+      "y": 69080,
+      "w": 390,
+      "h": 844,
+      "title": "Joined on a phone: Element X next",
+      "expand": "fill",
+      "is_interactive": true
     }
   },
   "order": [
@@ -1468,7 +1782,42 @@
     "JoinWrongAccountJP.dc.html",
     "FirstRunTeam.dc.html",
     "FirstRunClient.dc.html",
-    "FirstRunClientJP.dc.html"
+    "FirstRunClientJP.dc.html",
+    "RulesM5.dc.html",
+    "RoleChangeAdmin.dc.html",
+    "ClientSpaceCreating.dc.html",
+    "ClientSpaceNameTaken.dc.html",
+    "ClientSpaceCreateError.dc.html",
+    "ClientSpaceCreated.dc.html",
+    "CreateClientSpaceJP.dc.html",
+    "ClientShell.dc.html",
+    "ClientShellMenu.dc.html",
+    "ClientShellJP.dc.html",
+    "GuestShell.dc.html",
+    "GuestShellJP.dc.html",
+    "ExternalChannel.dc.html",
+    "ExternalClientSpace.dc.html",
+    "ExternalDM.dc.html",
+    "ExternalJP.dc.html",
+    "ExternalDark.dc.html",
+    "ClientSpaceMenuAdmin.dc.html",
+    "SpaceSettings.dc.html",
+    "SpacePeople.dc.html",
+    "RemoveFromSpace.dc.html",
+    "ArchiveSpace.dc.html",
+    "ArchivedSpace.dc.html",
+    "SpaceSettingsJP.dc.html",
+    "RemoveFromSpaceJP.dc.html",
+    "SpacePeopleDark.dc.html",
+    "ProfileMenuAnotherApp.dc.html",
+    "AnotherApp.dc.html",
+    "AnotherAppJP.dc.html",
+    "JoinDoneOther.dc.html",
+    "ClientShellDark.dc.html",
+    "PhoneHandoff.dc.html",
+    "PhoneHandoffJP.dc.html",
+    "JoinPhone.dc.html",
+    "JoinDonePhone.dc.html"
   ],
   "notes": {
     "title": {
@@ -1517,6 +1866,13 @@
       "x": 0,
       "y": 45220,
       "text": "Batch D — channels, people, settings",
+      "kind": "title1",
+      "maxW": 4480
+    },
+    "batchE": {
+      "x": 0,
+      "y": 57760,
+      "text": "Batch E — client spaces & guests",
       "kind": "title1",
       "maxW": 4480
     }

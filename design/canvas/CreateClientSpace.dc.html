@@ -13,11 +13,11 @@ body{margin:0}
 </style>
 </helmet>
 <div style="position: relative; width: 100%; min-height: 900px; background: #FFFFFF">
-<dc-import name="Main" theme="light" perspective="team" show-thread="{{no}}" open-modal="none" hint-size="100%,900px"></dc-import>
+<sc-if value="{{baseM2}}" hint-placeholder-val="{{true}}"><dc-import name="Main" theme="light" perspective="team" show-thread="{{no}}" open-modal="none" hint-size="100%,900px"></dc-import></sc-if><sc-if value="{{baseM5}}" hint-placeholder-val="{{false}}"><dc-import name="Main" theme="light" perspective="team" milestone="m5" composer="float" locale="{{locale}}" show-thread="{{no}}" open-modal="none" hint-size="100%,900px"></dc-import></sc-if><sc-if value="{{landed}}" hint-placeholder-val="{{false}}"><dc-import name="Main" theme="light" perspective="team" milestone="m5" composer="float" space="nordlys" fresh="{{yes}}" locale="{{locale}}" show-thread="{{no}}" open-modal="none" hint-size="100%,900px"></dc-import></sc-if>
 
 <sc-if value="{{open}}" hint-placeholder-val="{{true}}">
-<div class="pd-light" style="position: absolute; inset: 0; z-index: 40; background: rgba(12,11,18,.5); display: flex; justify-content: center; align-items: flex-start; padding: 88px 16px 16px; box-sizing: border-box; font-family: Inter, system-ui, sans-serif; color: var(--ink)">
-  <div role="dialog" aria-modal="true" aria-labelledby="cs-title" style="width: 100%; max-width: 720px; display: flex; flex-wrap: wrap; background: var(--raised); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden">
+<div class="{{dlgCls}}" style="position: absolute; inset: 0; z-index: 40; background: rgba(12,11,18,.5); display: flex; justify-content: center; align-items: flex-start; padding: 88px 16px 16px; box-sizing: border-box; font-family: Inter, {{cjk}}system-ui, sans-serif; color: var(--ink)">
+  <div role="dialog" aria-modal="true" aria-labelledby="cs-title" aria-busy="{{busy}}" style="width: 100%; max-width: 720px; display: flex; flex-wrap: wrap; background: var(--raised); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden">
 
     <div aria-hidden="true" style="flex: 1 0 150px; max-width: 180px; background: #18171D; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 28px 0">
       <span style="width: 44px; height: 44px; border-radius: 12px; background: #0E7C66; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="4" y="13" width="3.6" height="7" rx="1.8" fill="#FFFFFF"></rect><rect x="10.2" y="8.5" width="3.6" height="11.5" rx="1.8" fill="#FFFFFF"></rect><rect x="16.4" y="4" width="3.6" height="16" rx="1.8" fill="#FFFFFF"></rect></svg></span>
@@ -27,60 +27,62 @@ body{margin:0}
 
     <div style="flex: 999 1 420px; min-width: 0; display: flex; flex-direction: column">
       <div style="display: flex; align-items: center; gap: 12px; padding: 22px 16px 0 26px">
-        <h2 id="cs-title" style="flex: 1; margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -0.015em">New client space</h2>
-        <button class="pd-ico" onClick="{{close}}" aria-label="Close" style="width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+        <h2 id="cs-title" style="flex: 1; margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -0.015em">{{tx.title}}</h2>
+        <button class="pd-ico" onClick="{{close}}" aria-label="{{tx.close}}" style="width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
       </div>
 
-      <div style="padding: 18px 26px 0; display: flex; flex-direction: column; gap: 18px">
+      <div style="padding: 18px 26px 0; display: flex; flex-direction: column; gap: 18px{{fieldsBusy}}">
         <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
-          <label for="cs-name" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">Client name</label>
-          <input id="cs-name" class="pd-input" type="text" placeholder="Client name" value="{{name}}" onChange="{{onName}}" style="flex: 1 1 220px; min-width: 0; height: 46px; box-sizing: border-box; padding: 0 14px; border: 1.5px solid var(--accent); border-radius: 11px; background: var(--bg); color: var(--ink); font-family: inherit; font-size: 16px; font-weight: 600; box-shadow: 0 0 0 4px var(--accentsoft)">
-          <div role="radiogroup" aria-label="Color" style="display: flex; gap: 6px">
+          <label for="cs-name" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">{{tx.clientName}}</label>
+          <input id="cs-name" class="pd-input" type="text" placeholder="{{tx.clientName}}" value="{{name}}" onChange="{{onName}}" aria-invalid="{{taken}}" style="flex: 1 1 220px; min-width: 0; height: 46px; box-sizing: border-box; padding: 0 14px; border: 1.5px solid {{nameBorder}}; border-radius: 11px; background: var(--bg); color: var(--ink); font-family: inherit; font-size: 16px; font-weight: 600; box-shadow: 0 0 0 4px {{nameRing}}">
+          <div role="radiogroup" aria-label="{{tx.colour}}" style="display: flex; gap: 6px">
             <sc-for list="{{swatches}}" as="w" hint-placeholder-count="5">
               <button role="radio" aria-checked="{{w.checked}}" aria-label="{{w.label}}" onClick="{{w.pick}}" style="width: 28px; height: 28px; padding: 0; border: 0; border-radius: 8px; background: {{w.hex}}; box-shadow: {{w.ring}}; cursor: pointer"></button>
             </sc-for>
           </div>
         </div>
+        <sc-if value="{{taken}}" hint-placeholder-val="{{false}}"><div role="alert" class="pd-fadein" style="display: flex; align-items: center; gap: 7px; margin-top: -10px; font-size: 13px; font-weight: 600; color: var(--dangertext)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4.5M12 16h.01"></path></svg>{{takenText}}</div></sc-if>
 
-        <div role="group" aria-label="Channels" style="display: flex; flex-wrap: wrap; gap: 6px">
+        <div role="group" aria-label="{{tx.channels}}" style="display: flex; flex-wrap: wrap; gap: 6px">
           <sc-for list="{{channels}}" as="c" hint-placeholder-count="3">
             <button onClick="{{c.toggle}}" aria-pressed="{{c.pressed}}" style="display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 10px; border: 1.5px solid {{c.border}}; border-radius: 9px; background: {{c.bg}}; color: {{c.color}}; font-size: 14px; font-weight: 600; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"></path></svg>{{c.name}}</button>
           </sc-for>
-          <button class="pd-ico" aria-label="Add a channel" style="width: 34px; height: 34px; border: 1.5px dashed var(--line); border-radius: 9px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+          <button class="pd-ico" aria-label="{{tx.addChannel}}" style="width: 34px; height: 34px; border: 1.5px dashed var(--line); border-radius: 9px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
         </div>
 
-        <div role="group" aria-label="People from Pasodrum" style="display: flex; align-items: center; gap: 10px">
+        <div role="group" aria-label="{{tx.fromPasodrum}}" style="display: flex; align-items: center; gap: 10px">
           <span aria-hidden="true" style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: #0E7C66; display: flex; align-items: center; justify-content: center"><svg width="17" height="17" viewBox="0 0 24 24"><rect x="4" y="13" width="3.6" height="7" rx="1.8" fill="#FFFFFF"></rect><rect x="10.2" y="8.5" width="3.6" height="11.5" rx="1.8" fill="#FFFFFF"></rect><rect x="16.4" y="4" width="3.6" height="16" rx="1.8" fill="#FFFFFF"></rect></svg></span>
           <div style="flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 6px; padding: 6px; border: 1px solid var(--line); border-radius: 11px; min-height: 44px; box-sizing: border-box">
             <sc-for list="{{team}}" as="t" hint-placeholder-count="3">
-              <span style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 4px; border-radius: 8px; background: var(--well); font-size: 13.5px; font-weight: 500"><span style="width: 22px; height: 22px; border-radius: 6px; background: {{t.color}}; color: #FFFFFF; font-size: 9.5px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{t.initials}}</span>{{t.name}}</span>
+              <span style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 4px; border-radius: 8px; background: var(--well); font-size: 13.5px; font-weight: 500"><span style="width: 22px; height: 22px; border-radius: 6px; background: {{t.color}}; color: #FFFFFF; font-size: {{t.avFs}}; font-weight: 700; display: flex; align-items: center; justify-content: center">{{t.initials}}</span>{{t.name}}</span>
             </sc-for>
-            <button class="pd-ico" aria-label="Add someone from Pasodrum" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+            <button class="pd-ico" aria-label="{{tx.addFromPasodrum}}" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
           </div>
         </div>
 
-        <div role="group" aria-label="People from the client" style="display: flex; align-items: center; gap: 10px">
+        <div role="group" aria-label="{{tx.fromClient}}" style="display: flex; align-items: center; gap: 10px">
           <span aria-hidden="true" style="position: relative; width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: {{color}}; color: #FFFFFF; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{initial}}</span>
           <div style="flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px; border: 1px solid var(--line); border-radius: 11px; min-height: 44px; box-sizing: border-box">
             <sc-for list="{{clients}}" as="e" hint-placeholder-count="1">
-              <span style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 3px 0 10px; border-radius: 8px; background: var(--well); font-size: 13.5px; font-weight: 500">{{e.email}}<button onClick="{{e.remove}}" aria-label="Remove {{e.email}}" style="width: 22px; height: 22px; border: 0; border-radius: 6px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+              <span style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 3px 0 10px; border-radius: 8px; background: var(--well); font-size: 13.5px; font-weight: 500">{{e.email}}<button onClick="{{e.remove}}" aria-label="{{e.removeLabel}}" style="width: 22px; height: 22px; border: 0; border-radius: 6px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
             </sc-for>
-            <label for="cs-client" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">Client email</label>
-            <input id="cs-client" class="pd-input" type="email" placeholder="Client email" value="{{draft}}" onChange="{{onDraft}}" onKeyDown="{{onDraftKey}}" style="flex: 1; min-width: 150px; height: 30px; border: 0; background: transparent; color: var(--ink); font-family: inherit; font-size: 14px; padding: 0 4px">
+            <label for="cs-client" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">{{tx.clientEmail}}</label>
+            <input id="cs-client" class="pd-input" type="email" placeholder="{{tx.clientEmail}}" value="{{draft}}" onChange="{{onDraft}}" onKeyDown="{{onDraftKey}}" style="flex: 1; min-width: 150px; height: 30px; border: 0; background: transparent; color: var(--ink); font-family: inherit; font-size: 14px; padding: 0 4px">
           </div>
         </div>
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; padding: 14px 18px; border-top: 1px solid var(--line); background: var(--well)">
-        <button class="pd-btn2" onClick="{{close}}" style="height: 38px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">Cancel</button>
-        <button onClick="{{create}}" disabled="{{createDisabled}}" style="height: 38px; padding: 0 18px; border: 0; border-radius: 9px; background: {{createBg}}; color: {{createColor}}; font-size: 14px; font-weight: 600; cursor: pointer">Create</button>
+        <sc-if value="{{err}}" hint-placeholder-val="{{false}}"><span role="alert" class="pd-fadein" style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; color: var(--dangertext)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4.5M12 16h.01"></path></svg><span style="min-width: 0">{{errText}}</span></span></sc-if>
+        <button class="pd-btn2" onClick="{{close}}" style="height: 38px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">{{tx.cancel}}</button>
+        <button onClick="{{create}}" disabled="{{createDisabled}}" style="height: 38px; padding: 0 18px; border: 0; border-radius: 9px; background: {{createBg}}; color: {{createColor}}; font-size: 14px; font-weight: 600; cursor: pointer{{createExtra}}"><sc-if value="{{notCreating}}" hint-placeholder-val="{{true}}">{{createLabel}}</sc-if><sc-if value="{{creating}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; gap: 4px; align-items: center"><span class="pd-dot" style="width: 6px; height: 6px; border-radius: 3px; background: currentColor"></span><span class="pd-dot" style="width: 6px; height: 6px; border-radius: 3px; background: currentColor; animation-delay: .15s"></span><span class="pd-dot" style="width: 6px; height: 6px; border-radius: 3px; background: currentColor; animation-delay: .3s"></span></span><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">{{tx.creating}}</span></sc-if></button>
       </div>
     </div>
   </div>
 </div>
 </sc-if>
 
-<sc-if value="{{created}}" hint-placeholder-val="{{false}}">
+<sc-if value="{{toast}}" hint-placeholder-val="{{false}}">
 <div class="pd-light" role="status" style="position: absolute; left: 50%; bottom: 32px; transform: translateX(-50%); z-index: 40; display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 12px; border-radius: 14px; background: #18171D; color: #FFFFFF; font-family: Inter, system-ui, sans-serif; font-size: 14px; box-shadow: 0 12px 32px rgba(0,0,0,.25)">
   <span style="width: 28px; height: 28px; border-radius: 8px; background: {{color}}; font-family: 'Space Grotesk', sans-serif; font-weight: 700; display: flex; align-items: center; justify-content: center">{{initial}}</span>
   <span style="font-weight: 600">{{name}}</span>
@@ -90,31 +92,59 @@ body{margin:0}
 </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+<script type="text/x-dc" data-dc-script data-props='{"base":{"editor":"enum","options":["m2","m5"],"default":"m2"},"state":{"editor":"enum","options":["ready","creating","created","error","taken"],"default":"ready"},"locale":{"editor":"enum","options":["en","ja"],"default":"en"},"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = this.initial();
   }
   initial() {
+    const st = this.props.state || 'ready';
     return {
-      open: true, created: false, name: 'Nordlys Energi', color: '#2F4A6D',
+      open: st !== 'created', created: st === 'created', phase: st === 'creating' || st === 'error' ? st : null, name: st === 'taken' ? 'Halden & Co.' : 'Nordlys Energi', color: '#2F4A6D',
       channels: { proj: true, q: true, review: false },
       clients: ['henrik@nordlys.no'], draft: ''
     };
   }
+  strings(ja) {
+    return ja ? {
+      title: '新しいクライアントスペース', close: '閉じる', clientName: 'クライアント名', colour: '色', channels: 'チャンネル', addChannel: 'チャンネルを追加',
+      fromPasodrum: 'Pasodrum のメンバー', addFromPasodrum: 'Pasodrum から追加', fromClient: 'クライアントのメンバー', clientEmail: 'クライアントのメール',
+      remove: (x) => x + ' を外す', cancel: 'キャンセル', create: '作成', retry: '再試行', creating: '作成中',
+      taken: (n) => n + ' はすでにあります', err: (n) => n + ' を作成できませんでした',
+      swatches: ['スレートブルー', 'ウォルナット', 'プラム', 'パイン', 'レンガ'], ml: '森 真由', mlI: '森'
+    } : {
+      title: 'New client space', close: 'Close', clientName: 'Client name', colour: 'Color', channels: 'Channels', addChannel: 'Add a channel',
+      fromPasodrum: 'People from Pasodrum', addFromPasodrum: 'Add someone from Pasodrum', fromClient: 'People from the client', clientEmail: 'Client email',
+      remove: (x) => 'Remove ' + x, cancel: 'Cancel', create: 'Create', retry: 'Retry', creating: 'Creating',
+      taken: (n) => n + ' already exists', err: (n) => 'Couldn’t create ' + n,
+      swatches: ['Slate blue', 'Walnut', 'Plum', 'Pine', 'Brick'], ml: 'Maja Lind', mlI: 'ML'
+    };
+  }
   renderVals() {
     const s = this.state;
-    const sw = [['#2F4A6D', 'Slate blue'], ['#7A4B2A', 'Walnut'], ['#5B3E8C', 'Plum'], ['#1F6F5C', 'Pine'], ['#9A3B3B', 'Brick']];
+    const ja = this.props.locale === 'ja';
+    const L = this.strings(ja);
+    const m5 = this.props.base === 'm5';
+    const sw = [['#2F4A6D', L.swatches[0]], ['#7A4B2A', L.swatches[1]], ['#5B3E8C', L.swatches[2]], ['#1F6F5C', L.swatches[3]], ['#9A3B3B', L.swatches[4]]];
     const chDefs = [['proj', 'project-updates'], ['q', 'questions'], ['review', 'design-review']];
     const addEmail = () => {
       const v = s.draft.trim();
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v) || s.clients.includes(v)) return;
       this.setState({ clients: s.clients.concat([v]), draft: '' });
     };
-    const ok = s.name.trim().length > 0;
+    // M5: another client space with this name exists (case-insensitive, trimmed)
+    const taken = m5 && ['halden & co.', 'nordlys'].includes(s.name.trim().toLowerCase());
+    const creating = s.phase === 'creating', err = s.phase === 'error';
+    const ok = s.name.trim().length > 0 && !taken && !creating;
     return {
-      no: false,
+      no: false, yes: true,
+      baseM2: !m5, baseM5: m5 && !s.created, landed: m5 && s.created, toast: s.created && !m5,
+      dlgCls: ja ? 'pd-light pd-ja' : 'pd-light', cjk: ja ? '"Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, "Noto Sans JP", ' : '', locale: ja ? 'ja' : 'en', tx: L,
+      busy: creating, creating, notCreating: !creating, fieldsBusy: creating ? '; opacity: .6; pointer-events: none; transition: opacity var(--dur-2) var(--ease-out)' : '',
+      createExtra: creating ? '; min-width: 84px' : '', createLabel: err ? L.retry : L.create,
+      taken, takenText: L.taken(s.name.trim()), nameBorder: taken ? 'var(--danger)' : 'var(--accent)', nameRing: taken ? 'color-mix(in srgb, var(--danger) 16%, transparent)' : 'var(--accentsoft)',
+      err, errText: L.err(s.name.trim()),
       open: s.open, created: s.created,
       name: s.name, onName: (e) => this.setState({ name: e.target.value }),
       initial: (s.name.trim().charAt(0) || '?').toUpperCase(),
@@ -135,11 +165,11 @@ class Component extends DCLogic {
         };
       }),
       team: [
-        { name: 'Jonas Berg', initials: 'JB', color: '#1D4ED8' },
-        { name: 'Maja Lind', initials: 'ML', color: '#7E22CE' },
-        { name: 'Sam Okafor', initials: 'SO', color: '#0E7C66' }
+        { name: 'Jonas Berg', initials: 'JB', color: '#1D4ED8', avFs: '9.5px' },
+        { name: L.ml, initials: L.mlI, color: '#7E22CE', avFs: ja ? '11.5px' : '9.5px' },
+        { name: 'Sam Okafor', initials: 'SO', color: '#0E7C66', avFs: '9.5px' }
       ],
-      clients: s.clients.map((email) => ({ email, remove: () => this.setState({ clients: s.clients.filter((x) => x !== email) }) })),
+      clients: s.clients.map((email) => ({ email, removeLabel: L.remove(email), remove: () => this.setState({ clients: s.clients.filter((x) => x !== email) }) })),
       draft: s.draft,
       onDraft: (e) => this.setState({ draft: e.target.value }),
       onDraftKey: (e) => {
@@ -147,9 +177,14 @@ class Component extends DCLogic {
         if (e.key === 'Backspace' && !s.draft && s.clients.length) this.setState({ clients: s.clients.slice(0, -1) });
       },
       close: () => this.setState({ open: false }),
-      create: () => { if (ok) this.setState({ open: false, created: true }); },
+      create: () => {
+        if (!ok) return;
+        if (!m5) { this.setState({ open: false, created: true }); return; }
+        this.setState({ phase: 'creating' });
+        setTimeout(() => this.setState({ phase: null, open: false, created: true }), 1200);
+      },
       createDisabled: !ok,
-      createBg: ok ? 'var(--accent)' : 'var(--well)', createColor: ok ? 'var(--onaccent)' : 'var(--subtle)',
+      createBg: ok || creating ? 'var(--accent)' : 'var(--well)', createColor: ok || creating ? 'var(--onaccent)' : 'var(--subtle)',
       reset: () => this.setState(this.initial())
     };
   }

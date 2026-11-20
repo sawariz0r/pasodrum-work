@@ -92,7 +92,7 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ. Source copy in [desig
 | Create channel (name, private, which space, name taken) | CreateChannel, CreateChannelSpace, CreateChannelTaken, CreateChannelJP | approved 2026-11-20 |
 | Browse channels | BrowseChannels, BrowseChannelsJP | approved 2026-11-20 |
 | Channel details: about, members, settings, leave | ChannelAbout, ChannelMembers(+JP/Dark), ChannelSettings, LeaveChannel | approved 2026-11-20 |
-| Role change, make owner — update to D-25 (Admins change Member↔Admin; Owners make Owners) | RoleChange, MakeOwner, RulesM4 | approved, canvas update pending |
+| Role change, make owner (D-25: Owners make Owners; Owners/Admins switch Member↔Admin) | RoleChange, RoleChangeAdmin, MakeOwner, RulesM4 | approved 2026-11-20 (canvas updated) |
 | Add people: member, client, errors | AddPeopleMember, AddPeopleClient, AddPeopleErrors(+JP) | approved 2026-11-20 |
 | Settings: profile (time zone), notifications, appearance, devices | SettingsProfile(+JP), SettingsNotifications, SettingsAppearance, SettingsDevices(+Dark) | approved 2026-11-20 |
 | Invite email EN/JP | InviteEmail | approved 2026-11-20 |
@@ -100,9 +100,20 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ. Source copy in [desig
 | First sign-in (team, client) | FirstRunTeam, FirstRunClient(+JP) | approved 2026-11-20 |
 | Foundations: floating composer + no sideways scroll rules | Foundations | approved 2026-11-20 |
 
-## Batch E — for M5
+## Batch E — for M5 (designed 2026-11-20, awaiting CEO approval)
 
-Guest's view · "this leaves the company" cue · client space settings and removing a person · "Another app" page · phone hand-off page — all `needs design`.
+**Outside mark:** the amber ↗ square (already on client tiles/avatars) after a channel or DM name and beside Send with the outside people's faces when a conversation includes clients or guests; team people only; no text or banner.
+
+| Screen / state | Artboard | Status |
+|---|---|---|
+| Rules for M5 | RulesM5 | designed |
+| New client space: creating, name taken, error (Retry), created (tile pops into the rail) | CreateClientSpace(+JP), ClientSpaceCreating, ClientSpaceNameTaken, ClientSpaceCreateError, ClientSpaceCreated | designed |
+| Client's view of the shell | ClientShell, ClientShellMenu, ClientShellJP, ClientShellDark | designed |
+| Guest's view | GuestShell, GuestShellJP | designed |
+| Outside mark on channels, client spaces, DMs | ExternalChannel, ExternalClientSpace, ExternalDM, ExternalJP, ExternalDark | designed |
+| Client space settings, people, remove a person, archive / archived | ClientSpaceMenuAdmin, SpaceSettings(+JP), SpacePeople(+Dark), RemoveFromSpace(+JP), ArchiveSpace, ArchivedSpace | designed |
+| Another app (server + username, copy) | ProfileMenuAnotherApp, AnotherApp(+JP), JoinDoneOther | designed |
+| Phone hand-off, join page on phone | PhoneHandoff(+JP), JoinPhone, JoinDonePhone | designed |
 
 ## Batch F — for M6
 
