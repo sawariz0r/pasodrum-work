@@ -35,3 +35,31 @@
   border-radius: 4px;
   background: var(--attention);
 }
+
+.pop {
+  animation: pop var(--dur-2) var(--ease-out);
+}
+
+.dot {
+  animation: pop var(--dur-2) var(--ease-out);
+}
+
+@keyframes pop {
+  from {
+    opacity: 0.4;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes pop-fade {
+  from {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pop,
+  .dot {
+    animation-name: pop-fade;
+  }
+}

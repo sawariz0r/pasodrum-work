@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore, useWorkspace, type ConnectionState } from '../../matrix';
-import { Banner } from '../../ui';
+import { Banner, type BannerProps } from '../../ui';
 
 const restoredMs = 2000;
+const leaveMs = 240;
 
 export function ConnectionBanner() {
   const { t } = useTranslation();
@@ -23,16 +24,29 @@ export function ConnectionBanner() {
     return () => clearTimeout(timer);
   }, [restored]);
 
-  if (connection === 'offline') return <Banner status="offline" text={t('shell.connection.offline')} />;
-  if (connection === 'reconnecting')
+  const status: BannerProps['status'] | null =
+    connection === 'offline' || connection === 'reconnecting' ? connection : restored ? 'restored' : null;
+  const [shown, setShown] = useState(status);
+  if (status && status !== shown) setShown(status);
+
+  useEffect(() => {
+    if (status) return;
+    const timer = setTimeout(() => setShown(null), leaveMs);
+    return () => clearTimeout(timer);
+  }, [status]);
+
+  const leaving = !status;
+  if (shown === 'offline') return <Banner status="offline" text={t('shell.connection.offline')} leaving={leaving} />;
+  if (shown === 'reconnecting')
     return (
       <Banner
         status="reconnecting"
         text={t('shell.connection.reconnecting')}
         actionLabel={t('shell.connection.tryNow')}
         onAction={() => store.reconnectNow()}
+        leaving={leaving}
       />
     );
-  if (restored) return <Banner status="restored" text={t('shell.connection.backOnline')} />;
+  if (shown === 'restored') return <Banner status="restored" text={t('shell.connection.backOnline')} leaving={leaving} />;
   return null;
 }

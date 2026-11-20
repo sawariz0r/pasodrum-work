@@ -130,6 +130,7 @@
 .form {
   width: 100%;
   max-width: 400px;
+  animation: step-in var(--dur-3) var(--ease-out);
 }
 
 .title {
@@ -138,6 +139,7 @@
   font-size: 34px;
   font-weight: 700;
   letter-spacing: -0.02em;
+  line-height: normal;
 }
 
 :lang(ja) .title {
@@ -150,6 +152,7 @@
 
 .field + .field {
   margin-top: 16px;
+  animation: step-in var(--dur-2) var(--ease-out);
 }
 
 .alert {
@@ -163,6 +166,7 @@
   color: #8a1c0e;
   font-size: 14px;
   font-weight: 500;
+  animation: step-in var(--dur-2) var(--ease-out);
 }
 
 :global([data-theme='dark']) .alert {
@@ -189,6 +193,11 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: transform var(--dur-1) var(--ease-out);
+}
+
+.alertAction:active {
+  transform: scale(var(--press));
 }
 
 .submit {
@@ -207,6 +216,19 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
+  transition: color var(--dur-1) var(--ease-out);
+}
+
+.toggle:hover {
+  color: var(--ink);
+}
+
+.toggle svg {
+  transition: transform var(--dur-2) var(--ease-out);
+}
+
+.toggle[aria-expanded='true'] svg {
+  transform: rotate(90deg);
 }
 
 .who {
@@ -255,6 +277,19 @@
 
 .link:hover {
   text-decoration: underline;
+}
+
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle svg {
+    transition: none;
+  }
 }
 
 /* Stacked (narrow window): the about panel shrinks to its content above the form. */

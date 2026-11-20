@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { SignInError, type Session } from '../../matrix';
 import { Button, initialsOf, isCjk, isImeEnter, TextField } from '../../ui';
 import type { Backend } from '../backend';
-import { ChevronDownIcon, ChevronRightIcon, CloudOffIcon, LogoMark } from '../icons';
+import { ChevronRightIcon, CloudOffIcon, LogoMark } from '../icons';
 import s from './SignIn.module.css';
 
 export type Expired = { identifier: string; baseUrl: string };
@@ -178,7 +178,7 @@ export function SignIn({
                 {t('signIn.continue')}
               </Button>
               <button type="button" className={s.toggle} aria-expanded={showServer} onClick={() => setShowServer(!showServer)}>
-                {showServer ? <ChevronDownIcon /> : <ChevronRightIcon />}
+                <ChevronRightIcon />
                 {t('signIn.otherServer')}
               </button>
             </form>

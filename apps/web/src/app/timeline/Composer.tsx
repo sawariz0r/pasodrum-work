@@ -53,15 +53,17 @@ export function Composer({ channelName, onSend }: { channelName: string; onSend:
           autoComplete="off"
           autoFocus
         />
-        <button
-          type="button"
-          className={s.send}
-          onClick={send}
-          disabled={!hasText}
-          aria-label={t('composer.send')}
-        >
-          <SendIcon />
-        </button>
+        <div className={s.actions}>
+          <button
+            type="button"
+            className={s.send}
+            onClick={send}
+            disabled={!hasText}
+            aria-label={t('composer.send')}
+          >
+            <SendIcon />
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import s from './Timeline.module.css';
 type Props = {
   message: Message;
   head: boolean;
+  arrive?: boolean;
   onRetry: (id: string) => void;
   onDiscard: (id: string) => void;
 };
@@ -35,7 +36,7 @@ function Body({ text }: { text: string }) {
   );
 }
 
-export const MessageRow = memo(function MessageRow({ message: m, head, onRetry, onDiscard }: Props) {
+export const MessageRow = memo(function MessageRow({ message: m, head, arrive = false, onRetry, onDiscard }: Props) {
   const { t } = useTranslation();
   const sending = m.status === 'sending';
   const failed = m.status === 'failed';
@@ -45,7 +46,7 @@ export const MessageRow = memo(function MessageRow({ message: m, head, onRetry, 
   );
 
   return (
-    <div className={`${s.row} ${head ? s.head : s.cont}`} data-message-id={m.id}>
+    <div className={[s.row, head ? s.head : s.cont, arrive && s.arrive].filter(Boolean).join(' ')} data-message-id={m.id}>
       <div className={s.gutter}>
         {head ? (
           <Avatar className={s.avatar} name={m.sender.name} color={avatarColor(m.sender.id)} src={m.sender.avatarUrl} />

@@ -10,6 +10,15 @@
   font-size: 13.5px;
   font-weight: 600;
   white-space: nowrap;
+  overflow: hidden;
+  animation: banner-in var(--dur-3) var(--ease-out);
+  transition:
+    background-color var(--dur-3) var(--ease-out),
+    color var(--dur-3) var(--ease-out);
+}
+
+.leaving {
+  animation: banner-out var(--dur-3) var(--ease-in-out) forwards;
 }
 
 .offline,
@@ -55,6 +64,11 @@
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
+  transition: transform var(--dur-1) var(--ease-out);
+}
+
+.action:active {
+  transform: scale(var(--press));
 }
 
 @keyframes blink {
@@ -68,8 +82,42 @@
   }
 }
 
+@keyframes banner-in {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes banner-out {
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes banner-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes banner-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dots span {
     animation: none;
+  }
+
+  .banner {
+    animation-name: banner-fade-in;
+  }
+
+  .leaving {
+    animation-name: banner-fade-out;
   }
 }

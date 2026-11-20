@@ -1,6 +1,6 @@
-import { Fragment, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useStore, type Timeline as TimelineData } from '../../matrix';
+import { useStore, type Message, type Timeline as TimelineData } from '../../matrix';
 import { Skeleton } from '../../ui';
 import { DayDivider } from './DayDivider';
 import { buildItems } from './items';
@@ -36,6 +36,51 @@ function HashIcon() {
   );
 }
 
+const pending = (m: Message) => m.status !== 'sent';
+
+type RowKeys = {
+  messages: readonly Message[];
+  ready: boolean;
+  paging: boolean;
+  keys: ReadonlyMap<string, string>;
+  arrived: ReadonlySet<string>;
+};
+
+function nextRowKeys(prev: RowKeys, messages: readonly Message[], ready: boolean, paging: boolean): RowKeys {
+  const keys = new Map(prev.keys);
+  const keyOf = (m: Message) => keys.get(m.id) ?? m.id;
+  const ids = new Set(messages.map((m) => m.id));
+  const known = new Set(prev.messages.map((m) => m.id));
+  const gone = prev.messages.filter((m) => pending(m) && !ids.has(m.id));
+  for (const m of messages) {
+    if (known.has(m.id) || keys.has(m.id)) continue;
+    const was = gone.find((g) => g.sender.id === m.sender.id && g.body === m.body);
+    if (was) keys.set(m.id, keyOf(was));
+  }
+  let arrived = prev.arrived;
+  if (prev.ready && ready) {
+    const newest = prev.messages.at(-1);
+    const at = newest ? messages.findIndex((m) => keyOf(m) === keyOf(newest)) : -1;
+    const from = newest ? (at < 0 ? messages.length : at + 1) : prev.paging ? messages.length : 0;
+    if (from < messages.length) arrived = new Set([...arrived, ...messages.slice(from).map(keyOf)]);
+  }
+  return { messages, ready, paging, keys, arrived };
+}
+
+/**
+ * Row keys that survive a pending message getting its server id (so sending → sent eases instead of remounting),
+ * and the keys of messages that arrived at the end while the channel was open (not initial load or older history).
+ */
+function useRowKeys(messages: readonly Message[], ready: boolean, paging: boolean) {
+  const [state, setState] = useState<RowKeys>(() => ({ messages, ready, paging, keys: new Map(), arrived: new Set() }));
+  let current = state;
+  if (state.messages !== messages || state.ready !== ready || state.paging !== paging) {
+    current = nextRowKeys(state, messages, ready, paging);
+    setState(current);
+  }
+  return { keyOf: (m: Message) => current.keys.get(m.id) ?? m.id, arrived: current.arrived };
+}
+
 type Props = {
   channelId: string;
   channelName: string;
@@ -58,6 +103,7 @@ export function Timeline({ channelId, channelName, timeline, meId }: Props) {
   const hasOlder = timeline?.hasOlder ?? false;
   const messages = useMemo(() => timeline?.messages ?? [], [timeline?.messages]);
   const items = useMemo(() => buildItems(messages), [messages]);
+  const { keyOf, arrived } = useRowKeys(messages, !initialLoading, loadingOlder);
   const now = new Date();
 
   const state = useRef({ initialLoading, loadingOlder, hasOlder, newestId: undefined as string | undefined });
@@ -142,16 +188,21 @@ export function Timeline({ channelId, channelName, timeline, meId }: Props) {
                 <h2 className={s.emptyTitle}>{t('common.channelName', { name: channelName })}</h2>
               </div>
             )}
-            <div role="log" aria-label={t('common.channelName', { name: channelName })}>
-              {items.map((item) => (
-                <Fragment key={item.key}>
-                  {item.kind === 'day' ? (
-                    <DayDivider day={item.day} now={now} />
-                  ) : (
-                    <MessageRow message={item.message} head={item.head} onRetry={onRetry} onDiscard={onDiscard} />
-                  )}
-                </Fragment>
-              ))}
+            <div role="log" aria-label={t('common.channelName', { name: channelName })} className={s.log}>
+              {items.map((item) => {
+                if (item.kind === 'day') return <DayDivider key={item.key} day={item.day} now={now} />;
+                const key = keyOf(item.message);
+                return (
+                  <MessageRow
+                    key={key}
+                    message={item.message}
+                    head={item.head}
+                    arrive={arrived.has(key)}
+                    onRetry={onRetry}
+                    onDiscard={onDiscard}
+                  />
+                );
+              })}
             </div>
           </>
         )}

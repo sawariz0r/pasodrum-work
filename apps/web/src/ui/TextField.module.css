@@ -3,6 +3,7 @@
   margin-bottom: 6px;
   font-size: 13.5px;
   font-weight: 600;
+  line-height: normal;
 }
 
 .labelRow {
@@ -41,6 +42,9 @@
   background: var(--bg);
   color: var(--ink);
   font-size: 15px;
+  transition:
+    border-color var(--dur-1) var(--ease-out),
+    box-shadow var(--dur-1) var(--ease-out);
 }
 
 .input::placeholder {
@@ -78,6 +82,14 @@
   color: var(--dangertext);
   font-size: 13px;
   font-weight: 500;
+  animation: error-in var(--dur-2) var(--ease-out);
+}
+
+@keyframes error-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--rise) * -1));
+  }
 }
 
 .error svg {

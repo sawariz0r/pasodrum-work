@@ -30,7 +30,7 @@ export function Rail({ activeSpaceId, onSignOut }: { activeSpaceId?: string; onS
       <div className={s.railSpacer} />
       <button
         type="button"
-        className={s.railItem}
+        className={`${s.railItem} ${s.railToggle}`}
         aria-label={t(theme === 'dark' ? 'shell.rail.lightTheme' : 'shell.rail.darkTheme')}
         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       >

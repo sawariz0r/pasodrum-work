@@ -40,6 +40,22 @@
   font-size: 16px;
   font-weight: 700;
   text-decoration: none;
+  box-shadow:
+    0 0 0 0 var(--rail),
+    0 0 0 0 rgba(255, 255, 255, 0);
+  transition:
+    box-shadow var(--dur-2) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+
+.tile:hover:not([aria-current='page']) {
+  box-shadow:
+    0 0 0 2px var(--rail),
+    0 0 0 4px rgba(255, 255, 255, 0.22);
+}
+
+.tile:active {
+  transform: scale(var(--press));
 }
 
 .tile img {
@@ -99,6 +115,11 @@
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
+  transition: color var(--dur-1) var(--ease-out);
+}
+
+.railToggle {
+  padding: 0;
 }
 
 :lang(ja) .railItem {
@@ -117,13 +138,20 @@
   width: 36px;
   height: 32px;
   border-radius: 9px;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+
+.railItem:active .railIcon {
+  transform: scale(var(--press));
 }
 
 .railItem[aria-current='page'] .railIcon {
   background: rgba(255, 255, 255, 0.16);
 }
 
-.railItem:hover .railIcon {
+.railItem:not([aria-current='page']):hover .railIcon {
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -141,6 +169,11 @@
   border-radius: 10px;
   background: transparent;
   cursor: pointer;
+  transition: transform var(--dur-1) var(--ease-out);
+}
+
+.me:active {
+  transform: scale(var(--press));
 }
 
 .me .meAvatar,
@@ -158,6 +191,7 @@
   border: 2.5px solid var(--rail);
   border-radius: 6px;
   background: #6e6c76;
+  transition: background-color var(--dur-3) var(--ease-out);
 }
 
 .meDot.online {
@@ -244,6 +278,7 @@
   color: var(--sidemuted);
   font-size: 13px;
   font-weight: 600;
+  line-height: 16px;
 }
 
 .row {
@@ -258,6 +293,9 @@
   font-size: 14.5px;
   font-weight: 400;
   text-decoration: none;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    color var(--dur-1) var(--ease-out);
 }
 
 .row svg {
@@ -362,6 +400,13 @@
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
+  transition:
+    color var(--dur-1) var(--ease-out),
+    border-color var(--dur-2) var(--ease-out);
+}
+
+.tab:not([aria-selected='true']):hover {
+  color: var(--ink);
 }
 
 .tab[aria-selected='true'] {
@@ -379,6 +424,7 @@
 
 /* Not available */
 .unavailable {
+  animation: fade-in var(--dur-2) var(--ease-out);
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -405,6 +451,7 @@
   font-size: 26px;
   font-weight: 700;
   letter-spacing: -0.015em;
+  line-height: normal;
 }
 
 .unavailable .unavailableAction {
@@ -423,7 +470,7 @@
 .skelSection {
   display: flex;
   align-items: center;
-  height: 26px;
+  height: 24px;
   margin: 4px 0 2px;
   padding: 0 10px;
 }
@@ -507,8 +554,24 @@
 }
 
 @media (max-width: 999px) {
+  .rail {
+    position: relative;
+    z-index: 27;
+  }
+
   .sidebar {
-    display: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 68px;
+    z-index: 26;
+    width: 280px;
+    visibility: hidden;
+    transform: translateX(-100%);
+    transition:
+      transform var(--dur-3) var(--ease-out),
+      box-shadow var(--dur-3) var(--ease-out),
+      visibility 0s linear var(--dur-3);
   }
 
   .header .drawerToggle {
@@ -516,21 +579,56 @@
   }
 
   .drawerOpen .sidebar {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 68px;
-    z-index: 26;
-    display: flex;
-    width: 280px;
+    visibility: visible;
+    transform: none;
     box-shadow: var(--shadow);
+    transition:
+      transform var(--dur-3) var(--ease-out),
+      box-shadow var(--dur-3) var(--ease-out),
+      visibility 0s;
   }
 
-  .drawerOpen .scrim {
+  .scrim {
     position: absolute;
     inset: 0 0 0 68px;
     z-index: 24;
     display: block;
+    visibility: hidden;
     background: rgba(12, 11, 18, 0.42);
+    opacity: 0;
+    transition:
+      opacity var(--dur-3) var(--ease-out),
+      visibility 0s linear var(--dur-3);
+  }
+
+  .drawerOpen .scrim {
+    visibility: visible;
+    opacity: 1;
+    transition:
+      opacity var(--dur-3) var(--ease-out),
+      visibility 0s;
+  }
+}
+
+@media (max-width: 999px) and (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transform: none;
+    opacity: 0;
+    transition:
+      opacity var(--dur-2) var(--ease-out),
+      visibility 0s linear var(--dur-2);
+  }
+
+  .drawerOpen .sidebar {
+    opacity: 1;
+    transition:
+      opacity var(--dur-2) var(--ease-out),
+      visibility 0s;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
   }
 }

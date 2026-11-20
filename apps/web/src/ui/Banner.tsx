@@ -6,11 +6,18 @@ export type BannerProps = {
   text: string;
   actionLabel?: string;
   onAction?: () => void;
+  /** Slides out; hidden from assistive tech and focus while it does. */
+  leaving?: boolean;
 };
 
-export function Banner({ status, text, actionLabel, onAction }: BannerProps) {
+export function Banner({ status, text, actionLabel, onAction, leaving = false }: BannerProps) {
   return (
-    <div role="status" className={`${s.banner} ${s[status]}`}>
+    <div
+      role="status"
+      className={[s.banner, s[status], leaving && s.leaving].filter(Boolean).join(' ')}
+      aria-hidden={leaving || undefined}
+      inert={leaving}
+    >
       {status === 'offline' && <OfflineIcon />}
       {status === 'reconnecting' && (
         <span aria-hidden="true" className={s.dots}>

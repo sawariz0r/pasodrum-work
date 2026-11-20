@@ -32,6 +32,7 @@
 }
 
 .skelRow {
+  animation: fade-in var(--dur-2) var(--ease-out);
   display: flex;
   gap: 12px;
   padding: 10px 12px;
@@ -68,6 +69,7 @@
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.015em;
+  line-height: normal;
   overflow-wrap: anywhere;
 }
 
@@ -92,7 +94,11 @@
   color: var(--muted);
   font-size: 12px;
   font-weight: 600;
-  line-height: var(--lh);
+  line-height: normal;
+}
+
+.log {
+  animation: fade-in var(--dur-2) var(--ease-out);
 }
 
 .row {
@@ -100,6 +106,11 @@
   display: flex;
   gap: 12px;
   border-radius: 10px;
+  transition: background-color var(--dur-1) var(--ease-out);
+}
+
+.arrive {
+  animation: arrive var(--dur-2) var(--ease-out) both;
 }
 
 .row:hover {
@@ -127,6 +138,10 @@
 
 .hoverTime {
   visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity var(--dur-1) var(--ease-out),
+    visibility var(--dur-1);
   color: var(--subtle);
   font-size: 11px;
   line-height: 23px;
@@ -136,6 +151,7 @@
 .row:hover .hoverTime,
 .row:focus-within .hoverTime {
   visibility: visible;
+  opacity: 1;
 }
 
 .main {
@@ -173,10 +189,12 @@
   line-height: var(--lh);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  transition: opacity var(--dur-2) var(--ease-out);
 }
 
 .dim {
   opacity: 0.55;
+  transition-duration: 0s;
 }
 
 .link {
@@ -196,15 +214,18 @@
   margin-top: 3px;
   font-size: 13px;
   line-height: 20px;
+  animation: fade-in var(--dur-2) var(--ease-out);
 }
 
 .failedIcon {
   color: var(--dangertext);
+  animation: to-danger var(--dur-3) var(--ease-out);
 }
 
 .notSent {
   color: var(--dangertext);
   font-weight: 600;
+  animation: to-danger var(--dur-3) var(--ease-out);
 }
 
 .dot {
@@ -223,6 +244,7 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: color var(--dur-1) var(--ease-out);
 }
 
 .retry {
@@ -236,4 +258,23 @@
 .retry:hover,
 .discard:hover {
   text-decoration: underline;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise));
+  }
+}
+
+@keyframes to-danger {
+  from {
+    color: var(--subtle);
+  }
 }

@@ -11,6 +11,14 @@
   background: var(--scrim);
 }
 
+.overlay[data-state='open'] {
+  animation: fade-in var(--dur-2) var(--ease-out);
+}
+
+.overlay[data-state='closed'] {
+  animation: fade-out var(--dur-1) var(--ease-in-out) forwards;
+}
+
 .content {
   width: 100%;
   overflow: hidden;
@@ -20,6 +28,15 @@
   color: var(--ink);
   box-shadow: var(--shadow);
   font-family: var(--font-ui);
+  transform-origin: 50% 0;
+}
+
+.content[data-state='open'] {
+  animation: dialog-in var(--dur-2) var(--ease-out);
+}
+
+.content[data-state='closed'] {
+  animation: dialog-out var(--dur-1) var(--ease-in-out) forwards;
 }
 
 .content:focus {
@@ -41,6 +58,7 @@
   font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.015em;
+  line-height: normal;
 }
 
 .body {
@@ -55,4 +73,30 @@
   padding: 14px 18px;
   border-top: 1px solid var(--line);
   background: var(--well);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(var(--pop));
+  }
+}
+
+@keyframes dialog-out {
+  to {
+    opacity: 0;
+    transform: scale(var(--pop));
+  }
 }

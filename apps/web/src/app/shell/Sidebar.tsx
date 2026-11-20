@@ -32,7 +32,7 @@ export function Sidebar({ space, activeChannelId, onNavigate }: { space: Space; 
             >
               {c.private ? <LockIcon /> : <HashIcon />}
               <span className={s.rowName}>{c.name}</span>
-              {!active && c.mentions > 0 && <Badge count={c.mentions} />}
+              {!active && <Badge count={c.mentions} />}
             </Link>
           );
         })}

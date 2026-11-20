@@ -2,21 +2,23 @@
   display: block;
   flex-shrink: 0;
   border-radius: 6px;
-  background: var(--skel);
-  animation: shimmer 1.4s ease-in-out infinite;
+  background: linear-gradient(90deg, var(--skel) 35%, var(--skelshine) 50%, var(--skel) 65%) fixed;
+  background-color: var(--skel);
+  background-size: 300% 100%;
+  animation: shimmer 1.6s var(--ease-in-out) infinite;
 }
 
 .rail {
-  background: var(--railskel);
+  background-image: linear-gradient(90deg, var(--railskel) 35%, var(--railskelshine) 50%, var(--railskel) 65%);
+  background-color: var(--railskel);
 }
 
 @keyframes shimmer {
-  0%,
-  100% {
-    opacity: 0.55;
+  from {
+    background-position: 100% 0;
   }
-  50% {
-    opacity: 1;
+  to {
+    background-position: 0 0;
   }
 }
 

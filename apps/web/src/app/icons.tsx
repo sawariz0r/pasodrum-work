@@ -89,5 +89,4 @@ export const CloudOffIcon = icon(
   { size: 18, strokeWidth: 2 },
 );
 export const ChevronRightIcon = icon(<path d="m9 6 6 6-6 6" />, { size: 13, strokeWidth: 2.4 });
-export const ChevronDownIcon = icon(<path d="m6 9 6 6 6-6" />, { size: 13, strokeWidth: 2.4 });
 export const ExternalIcon = icon(<path d="M7 17 17 7M8 7h9v9" />, { size: 9, strokeWidth: 3 });
