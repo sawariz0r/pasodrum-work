@@ -12,7 +12,7 @@ owner:
 ---
 
 ## Goal
-Element X (iOS/Android) signs in to staging, sees the workspace channels it's allowed to, and chats with an account using Element Web.
+Element X (iOS/Android) signs in to production, sees the workspace channels it's allowed to, and chats with an account using Element Web.
 
 ## Acceptance criteria
 - [ ] Sign-in works (sliding sync)

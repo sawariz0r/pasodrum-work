@@ -17,7 +17,7 @@ You start with **no memory of prior chats** — orient yourself like this:
 4. **To work a task:** move its file `todo/ → implementing/`, set `stage: implementing` + `owner`, do the work, then move to `ceo-review/` with the **Outcome** filled in. Full workflow in [tasks/README.md](tasks/README.md).
 5. **Record as you go:** new decisions/learnings → `docs/DECISIONS.md`; correct this file when a rule changes.
 
-Status (2026-11-20): Plan approved (D-01…D-17). Design Batch A approved. In ceo-review: M0-01…M0-03 (workspace, local server, seed + probe — all must-haves pass), M1-01 (tokens + ui/ primitives, `/dev/gallery`), M1-02 (EN/JP strings, IME guard, locale check), M1-03 (web platform). M0-04 in progress: staging on the CEO's Coolify (D-17), waiting for repo `sawariz0r/pasodrum-work` + Coolify resource. Next: M0-05 Element X test → M0-06 go/no-go → M1-04 (session + sync), M1-05 (shell + registry). Open design item: sign-in dark values need approval (INVENTORY).
+Status (2026-11-20): Plan approved (D-01…D-18). Design Batch A approved. Pushed to `sawariz0r/pasodrum-work` main. In ceo-review: M0-01…M0-03, M1-01…M1-03. M0-04 in progress: **production** on the CEO's Coolify (no staging, D-18) — waiting for the Coolify resource, the CEO's own admin account, and `dev/.env.production`. Next: M0-05 Element X test on production → M0-06 go/no-go → M1-04 (session + sync), M1-05 (shell + registry). Open design item: sign-in dark values need approval (INVENTORY).
 
 ---
 
@@ -95,10 +95,10 @@ Status (2026-11-20): Plan approved (D-01…D-17). Design Batch A approved. In ce
 - `pnpm dev:server` — local Continuwuity (server name `pasodrum.localhost`) + Mailpit + Caddy. API and `.well-known` at http://localhost:8008, mail UI at http://localhost:8025. `dev:server:logs`, `dev:server:stop`, `dev:server:reset` (wipes data). Needs `dev/.env` (copy `dev/.env.example`).
 - First account on a fresh server must use the one-time token printed in `pnpm dev:server:logs`; it becomes the server admin. After that the `REGISTRATION_TOKEN` from `dev/.env` works.
 - `pnpm dev:seed` — seeds the canvas workspace (password `pasodrum-dev-password` for all accounts). `pnpm probe` — server capability checks → `docs/probe-results.md`.
-- **Staging:** Coolify, Docker Compose from `deploy/docker-compose.yml`. Seed/probe it with `set -a; . dev/.env.staging; set +a; pnpm dev:seed && pnpm probe` (results in `docs/probe-results-<server>.md`).
+- **Production (no staging, D-18):** Coolify, Docker Compose from `deploy/docker-compose.yml`. Disposable until the CEO says otherwise. Seed/probe it with `set -a; . dev/.env.production; set +a; pnpm dev:seed && pnpm probe` (results in `docs/probe-results-<server>.md`).
 - `pnpm e2e` — Playwright on Chromium + WebKit against the seeded Docker server (`pnpm dev:server`).
 - CI also builds and smoke-tests with an **empty feature registry**.
-- Every milestone exit: `pnpm check` green, e2e green on both engines, manual Safari + Japanese IME pass, Element X smoke test on staging, screens match approved designs in EN/JP × light/dark.
+- Every milestone exit: `pnpm check` green, e2e green on both engines, manual Safari + Japanese IME pass, Element X smoke test on production, screens match approved designs in EN/JP × light/dark.
 - For UI work, exercise it in a browser before claiming done; if you can't, say so.
 
 ---

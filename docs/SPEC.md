@@ -176,7 +176,7 @@ Kept true by: CI with `features = []`; a fixture room with every feature's data 
 - **Browsers:** Chromium and WebKit parity (Safari is the stand-in for a future Tauri shell on macOS).
 - **Languages:** EN and JP from day one; IME-safe Enter everywhere; substring search; `Intl.*` for dates/lists/plurals/sorting.
 - **Fonts:** Inter + Space Grotesk self-hosted, then system Japanese fonts (Hiragino Sans, Yu Gothic UI, Meiryo, Noto Sans JP). No JP webfont download in v1.
-- **Performance budget:** `pnpm check` < ~1 min; first sync of a team-sized account feels instant (< 2 s on staging).
+- **Performance budget:** `pnpm check` < ~1 min; first sync of a team-sized account feels instant (< 2 s on production).
 - **Accessibility:** keyboard-complete, visible focus, WCAG AA contrast in both themes.
 - **Cost:** one small server box (Continuwuity + Caddy + invite service).
 
@@ -188,7 +188,7 @@ Sizes for one build stream: S ≈ 1 week, M ≈ 2, L ≈ 3. Every exit also need
 
 | # | Scope | Exit criteria | Designs needed |
 |---|---|---|---|
-| **M0** Server spike + repo (S) | Docker dev stack, `probe.ts`, staging with HTTPS, repo OS | Probe table pass/fail with fallbacks; Continuwuity go/no-go; Element X chats on staging; SDK crypto starts in Chrome + Safari | — |
+| **M0** Server spike + repo (S) | Docker dev stack, `probe.ts`, production on Coolify, repo OS | Probe table pass/fail with fallbacks; Continuwuity go/no-go; Element X chats on production; SDK crypto starts in Chrome + Safari | — |
 | **M1** Walking skeleton (M) | Sign in, shell, channel list, read/send text, unread, themes, i18n, platform/web, registry (`rail`, `channelTabs`) | Two people chat live in Chrome + Safari in EN and JP; Element X sees the same; `features=[]` CI test | Batch A |
 | **M2** Full timeline (L) | Formatting composer, mentions, reactions, edit/delete, files/images, grouping, join summary, typing, in-tab notifications, renderers for everything standard clients send | Room exercised from Element X renders with no blank rows; Safari scroll anchoring holds | Batch B |
 | **M3** Threads, Mentions, Drafts, DMs (M) | Thread panel + list, mentions, local drafts, DMs, group DMs | **Team switches to it for daily internal chat** | Batch C |
