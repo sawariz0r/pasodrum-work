@@ -62,23 +62,23 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ. Source copy in [desig
 | Desktop notification content (mentions + DMs) | DesktopNotification | approved 2026-11-20 |
 | Foundations: Messages section, Motion section (D-20), new tokens | Foundations | approved 2026-11-20 |
 
-## Batch C — for M3 (designed 2026-11-20, awaiting CEO approval)
+## Batch C — for M3 (approved 2026-11-20)
 
-**Navigation proposal (needs CEO decision):** the rail holds what spans everything — Home, DMs, Activity. The sidebar holds the space you're in — Threads, Drafts, channels, its DMs, client spaces. Mentions leaves the sidebar and becomes a filter in Activity (All · Mentions · Replies = what's aimed at you). Threads = what you follow; Drafts stay in the sidebar (per device). Only deliberate duplicate: the DM list (sidebar for quick switching, rail page in full). See NavigationM3.
+**Navigation (approved, D-23):** the rail holds what spans everything — Home, DMs, Activity. The sidebar holds the space you're in — Threads, Drafts, channels, its DMs, client spaces. Mentions leaves the sidebar and becomes a filter in Activity (All · Mentions · Replies = what's aimed at you). Threads = what you follow; Drafts stay in the sidebar (per device). Only deliberate duplicate: the DM list (sidebar for quick switching, rail page in full). See NavigationM3.
 
 | Screen / state | Artboard | Status |
 |---|---|---|
-| Navigation map and rules | NavigationM3 | designed |
-| Threads view (+ empty) | Threads, ThreadsJP, ThreadsDark, ThreadsEmpty | designed |
-| Thread panel: first reply, loading, error, composer | ThreadNew, ThreadLoading, ThreadError, ThreadErrorJP, ThreadComposer | designed |
-| Hover bar with Thread | MsgHoverM3 | designed |
-| Activity (All · Mentions · Replies) + empty | Activity, Mentions, ActivityJP, ActivityEmpty | designed |
-| Drafts (+ empty) | Drafts, DraftsJP, DraftsEmpty | designed |
-| DMs page, DM header and empty state | DMs, DMsJP, DMsDark, DMEmpty, DMEmptyJP | designed |
-| New message (DM / group DM) | NewMessage, NewMessageGroup, NewMessageJP | designed |
-| Profile card (name, local time, work email, Message) | ProfileCard, ProfileCardJP, ProfileCardDark | designed |
-| Client's view of DMs, new message, threads | ClientDMs, ClientNewMessage, ClientThread | designed |
-| Main refreshed to Batch B rules (hover bar, inline image, format bar) | Main | designed |
+| Navigation map and rules | NavigationM3 | approved 2026-11-20 |
+| Threads view (+ empty) | Threads, ThreadsJP, ThreadsDark, ThreadsEmpty | approved 2026-11-20 |
+| Thread panel: first reply, loading, error, composer | ThreadNew, ThreadLoading, ThreadError, ThreadErrorJP, ThreadComposer | approved 2026-11-20 |
+| Hover bar with Thread | MsgHoverM3 | approved 2026-11-20 |
+| Activity (All · Mentions · Replies) + empty | Activity, Mentions, ActivityJP, ActivityEmpty | approved 2026-11-20 |
+| Drafts (+ empty) | Drafts, DraftsJP, DraftsEmpty | approved 2026-11-20 |
+| DMs page, DM header and empty state | DMs, DMsJP, DMsDark, DMEmpty, DMEmptyJP | approved 2026-11-20 |
+| New message (DM / group DM) | NewMessage, NewMessageGroup, NewMessageJP | approved 2026-11-20 |
+| Profile card (name, local time, work email, Message) | ProfileCard, ProfileCardJP, ProfileCardDark | approved 2026-11-20 |
+| Client's view of DMs, new message, threads | ClientDMs, ClientNewMessage, ClientThread | approved 2026-11-20 |
+| Main refreshed to Batch B rules (hover bar, inline image, format bar) | Main | approved 2026-11-20 |
 | Narrow widths (1024/800) for the new views | — | needs design |
 
 ## Batch D — for M4

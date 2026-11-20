@@ -102,6 +102,11 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-23 · Navigation: rail = across everything, sidebar = the space you're in · Accepted · 2026-11-20
+- **Decision (Batch C, approved by CEO):** rail holds Home, DMs and Activity (across the workspace and all client spaces) plus space tiles. Sidebar holds the current space: Threads, Drafts, channels, its DMs, client spaces. Mentions is a filter inside Activity (All · Mentions · Replies = what's aimed at you). Threads = conversations you follow. Drafts stay in the sidebar (per device, grey count). Only deliberate duplicate: DMs (sidebar for switching, rail page in full).
+- **Behaviour:** opening a thread or Activity item marks it read; lists keep their order while open; DMs/Activity pages show a 340px list column in place of the sidebar; New message reuses an existing DM; client people get the amber corner badge; clients can DM only team people in their client space.
+- **Profile card:** name, local time (from the person's time zone on their profile), work email, Message button; never the Matrix ID.
+
 ### D-22 · M2 contract: rich messages, uploads, actions · Accepted · 2026-11-20
 - **Contract (matrix/types.ts):** `Message` gains optional `kind`, `html`, `media`, `replyTo`, `reactions`, `mentionsMe`, `system`; snapshot gains `typing` and `uploads`; store gains `send(Draft)`, `edit`, `remove`, `react`/`unreact`, `attach`/`retryUpload`/`removeUpload`, `setTyping`, `members`, `mediaUrl`, `messageLink`. The fake store implements them for UI work.
 - **HTML:** received `formatted_body` is sanitized in matrix/ to an allow-list (b, strong, i, em, s, del, code, pre, a[href http/https/mailto], ul, ol, li, blockquote, p, br, h1-h6 → rendered as bold text, span[data-mx-color] dropped, mx-reply stripped) and rendered in app/ by parsing to React elements — never `dangerouslySetInnerHTML`. Sent messages always carry `body` + `formatted_body` (D-05).
