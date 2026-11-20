@@ -102,6 +102,17 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-21 · The canvas is the visual source of truth; push to main = production · Accepted · 2026-11-20
+- **Canvas (CEO):** "Canvas should be the source of truth." Every visual decision (spacing, type, colour, components, states, motion) lives on the design canvas first; the app matches it. A visual change starts as a canvas change the CEO approves, then the code follows. `design/canvas/` in the repo mirrors the canvas and is re-copied after every canvas publish. When the app and canvas differ, the canvas wins; if the canvas is wrong or missing something, fix the canvas (small design task), not just the code. Motion (D-20) is specified in Foundations → Motion.
+- **Deploys (CEO):** Coolify deploys `main` automatically. Every push to `main` is a production release: run `pnpm check` (and the browser check for UI work) before pushing; don't push half-finished work.
+
+### D-20 · Motion: quick, quiet, everywhere · Accepted · 2026-11-20
+- **Context:** CEO after first use of the live M1: "it feels kinda basic still… micro animation polish and spacing between the items."
+- **Decision:** one motion system in `ui/tokens.css`, used by every component. Tokens: `--ease-out: cubic-bezier(0.2, 0.8, 0.2, 1)`, `--ease-in-out: cubic-bezier(0.4, 0, 0.2, 1)`; `--dur-1: 120ms` (hover, press, colour), `--dur-2: 180ms` (menus, popovers, message appear), `--dur-3: 240ms` (drawer, banners, panels).
+- **Where:** hover/active colour on every interactive row and button; press feedback (scale 0.97) on buttons and icon buttons; menus and dialogs scale 0.96→1 + fade from their origin; sidebar active state and rail tile active indicator animate; unread/mention badges pop when they grow; messages fade + rise 4px when they arrive (own sends from the composer); sending → sent eases opacity, failed eases to the danger colour; connection banners slide; drawer slides with a fading scrim; skeletons shimmer; composer focus ring and send button enable state transition; channel switch fades the timeline in.
+- **Never:** motion that delays reading or input, bounces, parallax, anything over 240ms, animating layout on every keystroke.
+- **Accessibility:** `prefers-reduced-motion: reduce` turns transforms off and keeps short opacity fades only.
+
 ### D-16 · Smaller decisions taken without escalation · Accepted · 2026-11-20
 - Newcomers see earlier history in channels they're added to (non-encrypted channels).
 - Any member can add guests/clients where they may add people; only Owner/Admin add Members and create client spaces.

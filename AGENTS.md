@@ -40,7 +40,7 @@ Status (2026-11-20): M1 walking skeleton built and tested against the local serv
 
 1. **No Matrix words in the UI.** Channel, not room. Add people, not invite. Workspace / client space, not space. No server names or IDs except in "Another app".
 2. **Cut taglines, helper text and secondary labels.** If a screen needs them to make sense, fix the layout instead. Elevate UX, DX and AX together, without breaking things.
-3. **Every screen is designed and approved first,** in EN and JP, light and dark. Nothing ships that isn't in the inventory as `approved`.
+3. **The canvas is the visual source of truth** ([[D-21]]). Every screen and visual change is designed and approved on the canvas first, in EN and JP, light and dark; the app matches `design/canvas/`. Nothing ships that isn't in the inventory as `approved`.
 4. **Nothing we send breaks standard clients.** Every human-readable message has a full `body`/`formatted_body`; our data rides as extra `work.pasodrum.*` keys. See [[D-05]].
 5. **Every feature is removable.** Deleting a feature's folder and its line in `features/index.ts` leaves the app working and old data readable. See [[D-04]].
 6. **Clients are kept out by the server, not the UI.** Isolation comes from space membership and restricted joins. See [[D-06]].
@@ -104,6 +104,8 @@ Status (2026-11-20): M1 walking skeleton built and tested against the local serv
 ---
 
 ## 6. Git
+
+- **Pushing to `main` deploys to production** (Coolify auto-deploy, [[D-21]]). `pnpm check` green and UI checked in a browser before every push.
 
 - Remote: `git@prpl.se:sawariz0r/pasodrum-work.git` (the `prpl.se` SSH alias authenticates as sawariz0r). Work on `main`; branch only when strictly necessary.
 
