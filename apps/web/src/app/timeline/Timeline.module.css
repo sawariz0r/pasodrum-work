@@ -1,0 +1,239 @@
+.view {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+}
+
+.scroller {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-anchor: none;
+}
+
+.content {
+  position: relative;
+  margin-top: auto;
+  padding: 12px 8px 8px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.skelRow {
+  display: flex;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.skelLines {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+  padding-top: 4px;
+}
+
+.empty {
+  max-width: 560px;
+  padding: 40px 20px 24px;
+}
+
+.emptyIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 15px;
+  background: var(--accentsoft);
+  color: var(--accent);
+}
+
+.emptyTitle {
+  margin: 18px 0 0;
+  font-family: var(--font-title);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  overflow-wrap: anywhere;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 12px 6px;
+}
+
+.rule {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.pill {
+  padding: 3px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: var(--lh);
+}
+
+.row {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  border-radius: 10px;
+}
+
+.row:hover {
+  background: var(--hover);
+}
+
+.head {
+  padding: 8px 12px 6px;
+}
+
+.cont {
+  padding: 2px 12px;
+}
+
+.gutter {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  width: 36px;
+}
+
+.avatar {
+  margin-top: 2px;
+}
+
+.hoverTime {
+  visibility: hidden;
+  color: var(--subtle);
+  font-size: 11px;
+  line-height: 23px;
+  white-space: nowrap;
+}
+
+.row:hover .hoverTime,
+.row:focus-within .hoverTime {
+  visibility: visible;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+.meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  line-height: 22px;
+}
+
+.name {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.time {
+  color: var(--subtle);
+  font-size: 12px;
+}
+
+.sending {
+  display: inline-flex;
+  align-self: center;
+  color: var(--subtle);
+}
+
+.body {
+  color: var(--ink);
+  font-size: 15px;
+  line-height: var(--lh);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.dim {
+  opacity: 0.55;
+}
+
+.link {
+  color: var(--link);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.failed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.failedIcon {
+  color: var(--dangertext);
+}
+
+.notSent {
+  color: var(--dangertext);
+  font-weight: 600;
+}
+
+.dot {
+  color: var(--subtle);
+}
+
+.dot::before {
+  content: '\00B7';
+}
+
+.retry,
+.discard {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.retry {
+  color: var(--link);
+}
+
+.discard {
+  color: var(--muted);
+}
+
+.retry:hover,
+.discard:hover {
+  text-decoration: underline;
+}

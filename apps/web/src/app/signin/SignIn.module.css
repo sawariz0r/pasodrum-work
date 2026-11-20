@@ -1,0 +1,266 @@
+/* Per SignIn / SignInJP / SignInWrongPassword / SignInServerDown / SessionExpired. */
+.page {
+  display: flex;
+  flex-wrap: wrap;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.about {
+  display: flex;
+  flex: 1 1 460px;
+  flex-direction: column;
+  gap: 40px;
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 44px 48px;
+  background: var(--rail);
+  color: #f3f2f6;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #0e7c66;
+}
+
+.wordmark {
+  font-family: var(--font-title);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.wordmark span {
+  color: #b4b2bd;
+  font-weight: 500;
+}
+
+.aboutBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 460px;
+}
+
+.sample {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #312f3a;
+  border-radius: 16px;
+  background: #22212a;
+}
+
+.sampleRow {
+  display: flex;
+  gap: 10px;
+}
+
+.sampleAvatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.sampleAvatar.cjk {
+  font-size: 13px;
+}
+
+.sampleText {
+  color: #dad8e0;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+:lang(ja) .sampleText {
+  line-height: 1.7;
+}
+
+.sampleText strong {
+  color: #ffffff;
+}
+
+.sampleText time {
+  margin-left: 4px;
+  color: #9a98a4;
+  font-size: 12px;
+}
+
+.formSide {
+  display: flex;
+  flex: 999 1 520px;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 32px 40px;
+}
+
+.center {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.title {
+  margin: 0 0 28px;
+  font-family: var(--font-title);
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+:lang(ja) .title {
+  font-size: 30px;
+}
+
+.titlePassword {
+  margin-bottom: 24px;
+}
+
+.field + .field {
+  margin-top: 16px;
+}
+
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 8px 8px 8px 12px;
+  border-radius: 11px;
+  background: var(--dangersoft);
+  color: #8a1c0e;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+:global([data-theme='dark']) .alert {
+  color: var(--dangertext);
+}
+
+.alert svg {
+  flex-shrink: 0;
+}
+
+.alert span {
+  flex: 1;
+  min-width: 0;
+}
+
+.alertAction {
+  flex-shrink: 0;
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-radius: 8px;
+  background: var(--bg);
+  color: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.submit {
+  margin-top: 16px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 22px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: var(--well);
+}
+
+.whoInitial {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--onaccent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.whoName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--link);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* Stacked (narrow window): the about panel shrinks to its content above the form. */
+@media (max-width: 979px) {
+  .about,
+  .formSide {
+    min-height: 0;
+  }
+}

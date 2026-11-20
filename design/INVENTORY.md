@@ -33,8 +33,9 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ. Source copy in [desig
 | Session expired | SessionExpired | approved 2026-11-20 |
 | Forgot password (request, sent, set new) | ForgotPassword, ForgotPasswordSent, ResetPassword | approved 2026-11-20 |
 | Narrow window (~1024: sidebar folds when thread opens; ~800: thread replaces conversation, sidebar drawer) | Window1024, Window800, Window800Sidebar | approved 2026-11-20 |
-| Sign-in in dark (input border #3A3A42, primary hover #5FE0B8, error ring #3B1D1A — values picked during M1-01, light-only on canvas) | SignIn | needs approval |
+| Sign-in in dark (input border #3A3A42, primary hover #5FE0B8, error ring #3B1D1A — values picked during M1-01, light-only on canvas) | SignIn | approved 2026-11-20 |
 | SSO button only when the server offers it (`sso` tweak, off by default) | SignIn | approved 2026-11-20 |
+| Sign-in failure that is neither wrong password nor unreachable (e.g. rate limited); M1 shows the "Can’t reach" alert for now | SignIn | needs design |
 | Rail "+" = New client space (links to CreateClientSpace) | Main | approved 2026-11-20 |
 
 ## Batch B — for M2

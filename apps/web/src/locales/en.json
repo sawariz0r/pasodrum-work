@@ -2,10 +2,20 @@
   "common": {
     "loading": "Loading",
     "channelName": "#{{name}}",
-    "addPeople": "Add people"
+    "addPeople": "Add people",
+    "brand": "pasodrum",
+    "brandSuffix": "work"
   },
   "signIn": {
     "about": "About Pasodrum work",
+    "sample": {
+      "firstName": "Jonas Berg",
+      "firstTime": "09:14",
+      "firstText": "Nordlys review moved to Thursday 14:00.",
+      "secondName": "Ingrid Holm",
+      "secondTime": "09:20",
+      "secondText": "Board and shared docs for them, nothing internal."
+    },
     "title": "Sign in",
     "workEmail": "Work email",
     "emailPlaceholder": "name@company.com",

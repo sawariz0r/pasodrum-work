@@ -2,18 +2,28 @@ import { lazy, StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import { initI18n } from './app/i18n';
+import { applyTheme } from './app/prefs';
 import './ui/tokens.css';
 
-const Gallery =
-  import.meta.env.DEV && location.pathname === '/dev/gallery' ? lazy(() => import('./dev/Gallery')) : null;
+const path = location.pathname;
+const Dev = !import.meta.env.DEV
+  ? null
+  : path === '/dev/gallery'
+    ? lazy(() => import('./dev/Gallery'))
+    : path === '/dev/timeline'
+      ? lazy(() => import('./dev/TimelineHarness'))
+      : path === '/dev/app' || path.startsWith('/dev/app/')
+        ? lazy(() => import('./dev/FakeApp'))
+        : null;
 
 initI18n();
+applyTheme();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {Gallery ? (
+    {Dev ? (
       <Suspense>
-        <Gallery />
+        <Dev />
       </Suspense>
     ) : (
       <App />

@@ -2,10 +2,20 @@
   "common": {
     "loading": "読み込み中",
     "channelName": "#{{name}}",
-    "addPeople": "メンバーを追加"
+    "addPeople": "メンバーを追加",
+    "brand": "pasodrum",
+    "brandSuffix": "work"
   },
   "signIn": {
     "about": "Pasodrum work について",
+    "sample": {
+      "firstName": "Jonas Berg",
+      "firstTime": "09:14",
+      "firstText": "Nordlys のレビューは木曜 14:00 に変更です。",
+      "secondName": "平野 いずみ",
+      "secondTime": "09:20",
+      "secondText": "先方にはボードと共有ドキュメントだけ。社内のものは見せません。"
+    },
     "title": "サインイン",
     "workEmail": "仕事用メールアドレス",
     "emailPlaceholder": "name@company.com",

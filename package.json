@@ -11,6 +11,7 @@
     "typecheck": "pnpm -r typecheck && tsc -p dev",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:matrix": "vitest run --root apps/web --config vitest.matrix.config.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm locales",
     "locales": "node scripts/check-locales.ts",
     "dev:server": "docker compose -f dev/docker-compose.yml --env-file dev/.env up -d",

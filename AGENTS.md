@@ -17,7 +17,7 @@ You start with **no memory of prior chats** — orient yourself like this:
 4. **To work a task:** move its file `todo/ → implementing/`, set `stage: implementing` + `owner`, do the work, then move to `ceo-review/` with the **Outcome** filled in. Full workflow in [tasks/README.md](tasks/README.md).
 5. **Record as you go:** new decisions/learnings → `docs/DECISIONS.md`; correct this file when a rule changes.
 
-Status (2026-11-20): Plan approved (D-01…D-18). Design Batch A approved. Pushed to `sawariz0r/pasodrum-work` main. In ceo-review: M0-01…M0-03, M1-01…M1-03. M0-04 in progress: **production** on the CEO's Coolify (no staging, D-18) — waiting for the Coolify resource, the CEO's own admin account, and `dev/.env.production`. Next: M0-05 Element X test on production → M0-06 go/no-go → M1-04 (session + sync), M1-05 (shell + registry). Open design item: sign-in dark values need approval (INVENTORY).
+Status (2026-11-20): M1 walking skeleton built and tested against the local server: sign-in (email or username), workspace + client spaces, channels with unread/mentions, timeline, plain-text composer, EN/JA, light/dark, connection states (D-19 lists what's shown). In ceo-review: M0-01…M0-03, M1-01…M1-06. M0-04: production live at https://pasodrum.work; the domain must move from `continuwuity` to `web` in Coolify for the app to show there. Run locally: `pnpm dev:server`, `pnpm dev:seed`, `pnpm dev` → http://localhost:5173 (or `/dev/app` on fake data). Next: M2 (full timeline) needs design Batch B.
 
 ---
 
