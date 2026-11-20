@@ -1,0 +1,97 @@
+.avatar {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  background: var(--avatar-bg);
+  color: #ffffff;
+  font-weight: 600;
+  line-height: 1;
+  user-select: none;
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.s20 {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.s20.cjk {
+  font-size: 11px;
+}
+
+.s22 {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.s22.cjk {
+  font-size: 11px;
+}
+
+.s32 {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.s32.cjk {
+  font-size: 14px;
+}
+
+.s36 {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  font-size: 13px;
+}
+
+.s36.cjk {
+  font-size: 15px;
+}
+
+.dot {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 0 2px var(--ring, var(--bg));
+}
+
+.s20 .dot,
+.s22 .dot {
+  width: 9px;
+  height: 9px;
+}
+
+.s36 .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+}
+
+.active {
+  background: var(--presence);
+}
+
+.away {
+  border: 2px solid var(--sidemuted);
+  background: var(--ring, var(--bg));
+}

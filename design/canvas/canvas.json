@@ -1,0 +1,328 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-20T10:00:00Z"
+  },
+  "title": "Pasodrum work — UI",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "Workspace — light",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Dark.dc.html": {
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "Workspace — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "AddPeople.dc.html": {
+      "x": 0,
+      "y": 1020,
+      "w": 1440,
+      "h": 900,
+      "title": "Add people (replaces Matrix invites)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SignIn.dc.html": {
+      "x": 1520,
+      "y": 1020,
+      "w": 1440,
+      "h": 900,
+      "title": "Sign in (no homeserver picker)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Foundations.dc.html": {
+      "x": 0,
+      "y": 2040,
+      "w": 1440,
+      "h": 3040,
+      "title": "Foundations & vocabulary"
+    },
+    "ClientSpace.dc.html": {
+      "x": 0,
+      "y": 5500,
+      "w": 1440,
+      "h": 900,
+      "title": "Client's view of their space",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "InviteLanding.dc.html": {
+      "x": 1520,
+      "y": 5500,
+      "w": 1440,
+      "h": 900,
+      "title": "Invite link landing (browser)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "CreateClientSpace.dc.html": {
+      "x": 3040,
+      "y": 5500,
+      "w": 1440,
+      "h": 900,
+      "title": "New client space",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MainJP.dc.html": {
+      "x": 0,
+      "y": 7100,
+      "w": 1440,
+      "h": 900,
+      "title": "Workspace — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SignInJP.dc.html": {
+      "x": 1520,
+      "y": 7100,
+      "w": 1440,
+      "h": 900,
+      "title": "Sign in — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "LanguageMenu.dc.html": {
+      "x": 3040,
+      "y": 7100,
+      "w": 1440,
+      "h": 900,
+      "title": "Profile menu: language switch",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "AppStart.dc.html": {
+      "x": 0,
+      "y": 8120,
+      "w": 1440,
+      "h": 900,
+      "title": "App start / first sync",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "TimelineLoading.dc.html": {
+      "x": 1520,
+      "y": 8120,
+      "w": 1440,
+      "h": 900,
+      "title": "Channel loading",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "OlderHistory.dc.html": {
+      "x": 3040,
+      "y": 8120,
+      "w": 1440,
+      "h": 900,
+      "title": "Loading older messages",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Offline.dc.html": {
+      "x": 0,
+      "y": 9140,
+      "w": 1440,
+      "h": 900,
+      "title": "Offline, message waiting",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Reconnecting.dc.html": {
+      "x": 1520,
+      "y": 9140,
+      "w": 1440,
+      "h": 900,
+      "title": "Reconnecting",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "BackOnline.dc.html": {
+      "x": 3040,
+      "y": 9140,
+      "w": 1440,
+      "h": 900,
+      "title": "Back online",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MessageSending.dc.html": {
+      "x": 0,
+      "y": 10160,
+      "w": 1440,
+      "h": 900,
+      "title": "Message sending",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "MessageFailed.dc.html": {
+      "x": 1520,
+      "y": 10160,
+      "w": 1440,
+      "h": 900,
+      "title": "Message not sent, retry",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NotAvailable.dc.html": {
+      "x": 3040,
+      "y": 10160,
+      "w": 1440,
+      "h": 900,
+      "title": "Page not available",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SignInWrongPassword.dc.html": {
+      "x": 0,
+      "y": 11180,
+      "w": 1440,
+      "h": 900,
+      "title": "Sign in — wrong password",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SignInServerDown.dc.html": {
+      "x": 1520,
+      "y": 11180,
+      "w": 1440,
+      "h": 900,
+      "title": "Sign in — server unreachable",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SessionExpired.dc.html": {
+      "x": 3040,
+      "y": 11180,
+      "w": 1440,
+      "h": 900,
+      "title": "Signed out on this device",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ForgotPassword.dc.html": {
+      "x": 0,
+      "y": 12200,
+      "w": 1440,
+      "h": 900,
+      "title": "Forgot password — email",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ForgotPasswordSent.dc.html": {
+      "x": 1520,
+      "y": 12200,
+      "w": 1440,
+      "h": 900,
+      "title": "Forgot password — check email",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ResetPassword.dc.html": {
+      "x": 3040,
+      "y": 12200,
+      "w": 1440,
+      "h": 900,
+      "title": "Forgot password — new password",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Window1024.dc.html": {
+      "x": 0,
+      "y": 13220,
+      "w": 1024,
+      "h": 900,
+      "title": "Window 1024 px — thread open",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Window800.dc.html": {
+      "x": 1104,
+      "y": 13220,
+      "w": 800,
+      "h": 900,
+      "title": "Window 800 px — thread open",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Window800Sidebar.dc.html": {
+      "x": 1984,
+      "y": 13220,
+      "w": 800,
+      "h": 900,
+      "title": "Window 800 px — sidebar drawer",
+      "expand": "fill",
+      "is_interactive": true
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Dark.dc.html",
+    "AddPeople.dc.html",
+    "SignIn.dc.html",
+    "Foundations.dc.html",
+    "ClientSpace.dc.html",
+    "InviteLanding.dc.html",
+    "CreateClientSpace.dc.html",
+    "MainJP.dc.html",
+    "SignInJP.dc.html",
+    "LanguageMenu.dc.html",
+    "AppStart.dc.html",
+    "TimelineLoading.dc.html",
+    "OlderHistory.dc.html",
+    "Offline.dc.html",
+    "Reconnecting.dc.html",
+    "BackOnline.dc.html",
+    "MessageSending.dc.html",
+    "MessageFailed.dc.html",
+    "NotAvailable.dc.html",
+    "SignInWrongPassword.dc.html",
+    "SignInServerDown.dc.html",
+    "SessionExpired.dc.html",
+    "ForgotPassword.dc.html",
+    "ForgotPasswordSent.dc.html",
+    "ResetPassword.dc.html",
+    "Window1024.dc.html",
+    "Window800.dc.html",
+    "Window800Sidebar.dc.html"
+  ],
+  "notes": {
+    "title": {
+      "x": 0,
+      "y": -300,
+      "text": "Pasodrum work — messaging UI",
+      "kind": "title1",
+      "maxW": 2960
+    },
+    "clients": {
+      "x": 0,
+      "y": 5200,
+      "text": "Client spaces & onboarding",
+      "kind": "title1",
+      "maxW": 4480
+    },
+    "batchA": {
+      "x": 0,
+      "y": 6800,
+      "text": "Batch A — states & Japanese",
+      "kind": "title1",
+      "maxW": 4480
+    }
+  },
+  "designSystems": []
+}

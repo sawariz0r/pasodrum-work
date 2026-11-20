@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pasodrum work — foundations</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.fd-root{--cjk:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,"Noto Sans JP"}
+</style>
+</helmet>
+<div class="fd-root" style="width: 1440px; min-height: {{minH}}; box-sizing: border-box; padding: 56px 64px; background: #FBFAF8; color: #1D1C22; font-family: Inter, var(--cjk), system-ui, sans-serif; display: flex; flex-direction: column; gap: 44px">
+
+  <header style="display: flex; align-items: flex-end; gap: 24px">
+    <div style="flex: 1">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px">
+        <span style="width: 34px; height: 34px; border-radius: 10px; background: #0E7C66; display: flex; align-items: center; justify-content: center"><svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="13" width="3.6" height="7" rx="1.8" fill="#FFFFFF"></rect><rect x="10.2" y="8.5" width="3.6" height="11.5" rx="1.8" fill="#FFFFFF"></rect><rect x="16.4" y="4" width="3.6" height="16" rx="1.8" fill="#FFFFFF"></rect></svg></span>
+        <span style="font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700">pasodrum <span style="font-weight: 500; color: #6E6C76">work</span></span>
+      </div>
+      <h1 style="margin: 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 44px; font-weight: 700; letter-spacing: -0.025em">Foundations</h1>
+      <p style="margin: 8px 0 0; max-width: 720px; font-size: 16px; line-height: 1.55; color: #55535C">Element’s layout (rail, room list, timeline, side panel) with Slack’s calm. The ink rail stays dark in both themes; everything else follows the theme. Moss green is the one accent.</p>
+    </div>
+    <div style="font-size: 13px; color: #6E6C76; text-align: right; line-height: 1.6">Inter for UI and messages<br>Space Grotesk for titles</div>
+  </header>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px">
+    <section style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 18px; padding: 24px 26px">
+      <h2 style="margin: 0 0 16px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700">Colour tokens</h2>
+      <div style="display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 0; font-size: 13px">
+        <div style="padding: 0 0 8px; font-weight: 600; color: #6E6C76">Token</div><div style="padding: 0 0 8px; font-weight: 600; color: #6E6C76">Light</div><div style="padding: 0 0 8px; font-weight: 600; color: #6E6C76">Dark</div>
+        <sc-for list="{{tokens}}" as="t" hint-placeholder-count="10">
+          <div style="padding: 7px 0; border-top: 1px solid #F0EEE9"><span style="font-weight: 600">{{t.name}}</span><span style="display: block; font-size: 12px; color: #6E6C76">{{t.use}}</span></div>
+          <div style="padding: 7px 0; border-top: 1px solid #F0EEE9; display: flex; align-items: center; gap: 8px"><span style="width: 28px; height: 28px; border-radius: 8px; background: {{t.light}}; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08)"></span><code style="font-size: 12px; color: #55535C">{{t.light}}</code></div>
+          <div style="padding: 7px 0; border-top: 1px solid #F0EEE9; display: flex; align-items: center; gap: 8px"><span style="width: 28px; height: 28px; border-radius: 8px; background: {{t.dark}}; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08)"></span><code style="font-size: 12px; color: #55535C">{{t.dark}}</code></div>
+        </sc-for>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-direction: column; gap: 32px">
+      <section style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 18px; padding: 24px 26px">
+        <h2 style="margin: 0 0 16px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700">Type</h2>
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; align-items: baseline; gap: 16px"><span style="width: 120px; flex-shrink: 0; font-size: 12px; color: #6E6C76">Title · SG 26/700</span><span style="font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.015em">Add people</span></div>
+          <div style="display: flex; align-items: baseline; gap: 16px"><span style="width: 120px; flex-shrink: 0; font-size: 12px; color: #6E6C76">Header · SG 18/700</span><span style="font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 18px; font-weight: 700"># design-studio</span></div>
+          <div style="display: flex; align-items: baseline; gap: 16px"><span style="width: 120px; flex-shrink: 0; font-size: 12px; color: #6E6C76">Name · Inter 15/700</span><span style="font-size: 15px; font-weight: 700">Ingrid Holm <span style="font-size: 12px; font-weight: 400; color: #6E6C76">09:31</span></span></div>
+          <div style="display: flex; align-items: baseline; gap: 16px"><span style="width: 120px; flex-shrink: 0; font-size: 12px; color: #6E6C76">Message · Inter 15/400</span><span style="font-size: 15px; line-height: 1.5">One line of copy, one clear action, no illustrations.</span></div>
+          <div style="display: flex; align-items: baseline; gap: 16px"><span style="width: 120px; flex-shrink: 0; font-size: 12px; color: #6E6C76">Sidebar · Inter 14.5</span><span style="font-size: 14.5px; color: #5F5D67">engineering · Direct messages</span></div>
+          <div style="display: flex; align-items: baseline; gap: 16px"><span style="width: 120px; flex-shrink: 0; font-size: 12px; color: #6E6C76">Meta · Inter 12–13</span><span style="font-size: 12.5px; color: #6E6C76">Last reply 12 min ago</span></div>
+        </div>
+      </section>
+
+      <section style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 18px; padding: 24px 26px">
+        <h2 style="margin: 0 0 16px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700">Components</h2>
+        <div style="display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+            <button style="height: 36px; padding: 0 16px; border: 0; border-radius: 9px; background: #0E7C66; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600">Add 2 people</button>
+            <button style="height: 36px; padding: 0 14px; border: 1px solid #E8E6E1; border-radius: 9px; background: #FFFFFF; color: #1D1C22; font-family: inherit; font-size: 14px; font-weight: 600">Cancel</button>
+            <button style="height: 36px; padding: 0 12px; border: 0; border-radius: 9px; background: transparent; color: #1D1C22; font-family: inherit; font-size: 14px; font-weight: 600">Copy invite link</button>
+            <span style="font-size: 10.5px; font-weight: 700; color: #0E7C66; background: #E2F2EC; border-radius: 5px; padding: 2px 6px">Soon</span>
+            <span style="font-size: 11px; font-weight: 700; color: #7A5300; background: #FCEBC0; border-radius: 4px; padding: 1px 5px">Guest</span>
+            <span style="font-size: 11px; font-weight: 600; color: #5F5D67; border: 1px solid #E8E6E1; border-radius: 5px; padding: 0 5px; line-height: 17px">External</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+            <div style="background: #F7F6F3; border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 1px">
+              <div style="display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px; border-radius: 7px; color: #5F5D67; font-size: 14.5px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"></path></svg>general</div>
+              <div style="display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px; border-radius: 7px; background: #0E7C66; color: #FFFFFF; font-size: 14.5px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"></path></svg>design-studio</div>
+              <div style="display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px; border-radius: 7px; color: #1D1C22; font-size: 14.5px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"></path></svg>engineering</div>
+              <div style="display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px; border-radius: 7px; color: #1D1C22; font-size: 14.5px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg><span style="flex: 1">leadership</span><span style="min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: #D4351C; color: #FFFFFF; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center">2</span></div>
+              <div style="font-size: 11.5px; color: #6E6C76; padding: 6px 10px 2px">Default · active · unread · mentions</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              <div style="display: flex; gap: 6px">
+                <span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border: 1px solid #E8E6E1; border-radius: 999px; background: #F4F3EF; color: #55535C; font-size: 13px; font-weight: 600"><span style="font-size: 14px">🙌</span>1</span>
+                <span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border: 1px solid #0E7C66; border-radius: 999px; background: #E2F2EC; color: #1D1C22; font-size: 13px; font-weight: 600"><span style="font-size: 14px">👍</span>3</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 16px; font-size: 13px; color: #55535C">
+                <span style="display: flex; align-items: center; gap: 8px"><span style="position: relative; width: 28px; height: 28px; border-radius: 8px; background: #C2410C; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">IH<span style="position: absolute; right: -3px; bottom: -3px; width: 10px; height: 10px; border-radius: 5px; background: #2BAC76; box-shadow: 0 0 0 2px #FFFFFF"></span></span>Active</span>
+                <span style="display: flex; align-items: center; gap: 8px"><span style="position: relative; width: 28px; height: 28px; border-radius: 8px; background: #7E22CE; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">ML<span style="position: absolute; right: -3px; bottom: -3px; width: 10px; height: 10px; box-sizing: border-box; border-radius: 5px; background: #FFFFFF; border: 2px solid #5F5D67; box-shadow: 0 0 0 2px #FFFFFF"></span></span>Away</span>
+              </div>
+              <div style="font-size: 12.5px; line-height: 1.5; color: #55535C">Avatars are rounded squares (9px radius at 36px), never circles, so people read differently from workspaces on the rail.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 18px; padding: 24px 26px">
+    <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px">
+      <h2 style="margin: 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700">What we call things</h2>
+      <span style="font-size: 13.5px; color: #6E6C76">Matrix stays under the hood. People never see these terms.</span>
+    </div>
+    <div style="display: grid; grid-template-columns: 1.1fr 1.3fr 1.6fr; font-size: 14px">
+      <div style="padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: #6E6C76; background: #F7F6F3; border-radius: 8px 0 0 8px">In Matrix</div>
+      <div style="padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: #6E6C76; background: #F7F6F3">In Pasodrum work</div>
+      <div style="padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: #6E6C76; background: #F7F6F3; border-radius: 0 8px 8px 0">How it shows up</div>
+      <sc-for list="{{vocab}}" as="v" hint-placeholder-count="10">
+        <div style="padding: 10px 12px; border-bottom: 1px solid #F0EEE9; color: #6E6C76"><code style="font-size: 13px">{{v.matrix}}</code></div>
+        <div style="padding: 10px 12px; border-bottom: 1px solid #F0EEE9; font-weight: 600">{{v.ours}}</div>
+        <div style="padding: 10px 12px; border-bottom: 1px solid #F0EEE9; color: #55535C; line-height: 1.45">{{v.where}}</div>
+      </sc-for>
+    </div>
+  </section>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px">
+    <section style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 18px; padding: 24px 26px">
+      <h2 style="margin: 0 0 18px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700">States</h2>
+      <div style="display: flex; flex-direction: column; gap: 20px">
+        <div>
+          <div style="font-size: 12px; color: #6E6C76; margin-bottom: 8px">Status banner · 36px, top of the conversation column</div>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <div style="height: 36px; border-radius: 9px; background: #FFF4D6; color: #6B4A00; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13.5px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 2 20 20"></path><path d="M8.5 16.5a5 5 0 0 1 7 0"></path><path d="M2 8.8a15 15 0 0 1 4.2-2.6"></path><path d="M10.7 5c4-.4 8.1.9 11.3 3.8"></path><path d="M16.9 11.3a10 10 0 0 1 2.2 1.7"></path><path d="M5 13a10 10 0 0 1 5.2-2.8"></path><path d="M12 20h.01"></path></svg>Offline</div>
+            <div style="height: 36px; border-radius: 9px; background: #FFF4D6; color: #6B4A00; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13.5px; font-weight: 600"><span style="display: inline-flex; gap: 3px"><span style="width: 5px; height: 5px; border-radius: 3px; background: currentColor; opacity: .4"></span><span style="width: 5px; height: 5px; border-radius: 3px; background: currentColor"></span><span style="width: 5px; height: 5px; border-radius: 3px; background: currentColor; opacity: .4"></span></span>Reconnecting<span style="margin-left: 6px; height: 24px; padding: 0 9px; border: 1px solid currentColor; border-radius: 7px; font-size: 12.5px; font-weight: 700; line-height: 22px; box-sizing: border-box">Try now</span></div>
+            <div style="height: 36px; border-radius: 9px; background: #E2F2EC; color: #0E7C66; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13.5px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Back online</div>
+          </div>
+          <div style="font-size: 12.5px; line-height: 1.5; color: #55535C; margin-top: 8px">Offline: no network. Reconnecting: network, no server. Back online hides after 2 s. The composer stays open; messages wait and send on reconnect.</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+          <div>
+            <div style="font-size: 12px; color: #6E6C76; margin-bottom: 8px">Skeleton · <code>skel</code>, 1.4 s pulse</div>
+            <div style="display: flex; gap: 10px; padding: 10px; border: 1px solid #F0EEE9; border-radius: 12px">
+              <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 8px; background: #E7E4DD"></span>
+              <span style="flex: 1; display: flex; flex-direction: column; gap: 8px; padding-top: 3px"><span style="width: 34%; height: 10px; border-radius: 6px; background: #E7E4DD"></span><span style="width: 92%; height: 8px; border-radius: 6px; background: #E7E4DD"></span><span style="width: 60%; height: 8px; border-radius: 6px; background: #E7E4DD"></span></span>
+            </div>
+            <div style="font-size: 12.5px; line-height: 1.5; color: #55535C; margin-top: 8px">Static chrome draws at once; only data areas pulse. No spinners, no loading text.</div>
+          </div>
+          <div>
+            <div style="font-size: 12px; color: #6E6C76; margin-bottom: 8px">Sending · not sent</div>
+            <div style="display: flex; flex-direction: column; gap: 10px; padding: 10px 12px; border: 1px solid #F0EEE9; border-radius: 12px; font-size: 13.5px">
+              <span style="display: flex; align-items: center; gap: 7px"><span style="opacity: .55">Empty states are in Figma.</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6C76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
+              <span style="display: flex; flex-direction: column; gap: 2px"><span>Empty states are in Figma.</span><span style="display: flex; align-items: center; gap: 6px; font-size: 12.5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4.5M12 16h.01"></path></svg><span style="font-weight: 600; color: #B42318">Not sent</span><span style="color: #6E6C76">·</span><span style="font-weight: 600; color: #0B6A86">Retry</span><span style="color: #6E6C76">·</span><span style="font-weight: 600; color: #55535C">Delete</span></span></span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+          <div>
+            <div style="font-size: 12px; color: #6E6C76; margin-bottom: 8px">Form alert · sign-in</div>
+            <div style="display: flex; align-items: center; gap: 8px; padding: 7px 7px 7px 11px; border-radius: 11px; background: #FDECEA; color: #8A1C0E; font-size: 13px; font-weight: 500"><span style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Can’t reach pasodrum.work</span><span style="flex-shrink: 0; height: 26px; padding: 0 9px; border: 1px solid rgba(138,28,14,.3); border-radius: 7px; background: #FFFFFF; font-size: 12px; font-weight: 600; line-height: 24px; box-sizing: border-box">Try again</span></div>
+          </div>
+          <div>
+            <div style="font-size: 12px; color: #6E6C76; margin-bottom: 8px">Field error</div>
+            <div style="height: 38px; box-sizing: border-box; border: 1.5px solid #B42318; border-radius: 10px; box-shadow: 0 0 0 4px #FDECEA; padding: 0 12px; display: flex; align-items: center; font-size: 15px; letter-spacing: 2px">••••••••</div>
+            <div style="margin-top: 6px; font-size: 12.5px; font-weight: 500; color: #B42318">Wrong password</div>
+          </div>
+        </div>
+
+        <div style="font-size: 12.5px; line-height: 1.5; color: #55535C; padding-top: 14px; border-top: 1px solid #F0EEE9">“This page isn’t available” covers a removed feature, a deleted channel and a channel you can’t see, so a link never confirms that a private channel exists. Signed out on this device: the sign-in page opens on the password step with the account filled in.</div>
+      </div>
+    </section>
+
+    <section lang="ja" style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 18px; padding: 24px 26px">
+      <h2 lang="en" style="margin: 0 0 18px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700">Japanese</h2>
+      <div style="display: flex; flex-direction: column; gap: 20px">
+        <div>
+          <div lang="en" style="font-size: 12px; color: #6E6C76; margin-bottom: 8px">Font stack · <code>--cjk</code> after Inter and Space Grotesk, <code>lang="ja"</code> on the root</div>
+          <code lang="en" style="display: block; padding: 10px 12px; border-radius: 10px; background: #F4F3EF; font-size: 12px; line-height: 1.6; color: #2F2E35">Inter, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, "Noto Sans JP", system-ui, sans-serif</code>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+          <div>
+            <div lang="en" style="font-size: 12px; color: #6E6C76; margin-bottom: 8px">Body · 15px, line height 1.5 → 1.7</div>
+            <div style="font-size: 15px; line-height: 1.7">コピーは一行、アクションはひとつ、イラストはなしでいきます。</div>
+          </div>
+          <div>
+            <div lang="en" style="font-size: 12px; color: #6E6C76; margin-bottom: 8px">Rail · 10px, one line, ≤ 6 characters</div>
+            <div style="display: flex; justify-content: space-between; padding: 10px 6px; border-radius: 12px; background: #18171D; color: #B4B2BD; font-size: 10px; text-align: center">
+              <span style="width: 64px; white-space: nowrap; color: #FFFFFF; font-weight: 600">ホーム</span><span style="width: 64px">DM</span><span style="width: 64px">通知</span><span style="width: 64px; white-space: nowrap">ドキュメント</span>
+            </div>
+            <div lang="en" style="font-size: 12.5px; line-height: 1.5; color: #55535C; margin-top: 8px">Never truncated. Too long means a shorter word: Activity is 通知, not アクティビティ.</div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+          <div>
+            <div lang="en" style="font-size: 12px; color: #6E6C76; margin-bottom: 8px">Avatar initials</div>
+            <div style="display: flex; gap: 14px; font-size: 13px; color: #55535C">
+              <span style="display: flex; flex-direction: column; align-items: center; gap: 6px"><span style="width: 36px; height: 36px; border-radius: 9px; background: #C2410C; color: #FFFFFF; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center">平</span>平野 いずみ</span>
+              <span style="display: flex; flex-direction: column; align-items: center; gap: 6px"><span style="width: 36px; height: 36px; border-radius: 9px; background: #7E22CE; color: #FFFFFF; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center">森</span>森 真由</span>
+              <span lang="en" style="display: flex; flex-direction: column; align-items: center; gap: 6px"><span style="width: 36px; height: 36px; border-radius: 9px; background: #1D4ED8; color: #FFFFFF; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center">JB</span>Jonas Berg</span>
+            </div>
+            <div lang="en" style="font-size: 12.5px; line-height: 1.5; color: #55535C; margin-top: 8px">Japanese names: first character of the family name, set 1.2× the Latin size. Latin names: first and last initial.</div>
+          </div>
+          <div>
+            <div lang="en" style="font-size: 12px; color: #6E6C76; margin-bottom: 8px">Writing</div>
+            <div lang="en" style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; line-height: 1.5; color: #55535C">
+              <span>Half-width space around Latin words and numbers: <span lang="ja" style="color: #1D1C22">Figma に上げました · 1.2 秒</span></span>
+              <span>No negative letter spacing on Japanese titles.</span>
+              <span>Language names in their own script: English · <span lang="ja">日本語</span>. Switch in the profile menu on the rail avatar.</span>
+              <span>Channel names stay as typed; dates and counts are localized.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 18px; padding: 24px 26px">
+    <h2 style="margin: 0 0 18px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700">Window widths</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+      <sc-for list="{{widths}}" as="w" hint-placeholder-count="3">
+        <div>
+          <div style="height: 110px; display: flex; gap: 4px; padding: 6px; box-sizing: border-box; border-radius: 12px; background: #F4F3EF">
+            <span style="width: 14px; border-radius: 5px; background: #18171D"></span>
+            <sc-if value="{{w.side}}" hint-placeholder-val="{{true}}"><span style="width: {{w.sideW}}; border-radius: 5px; background: #E8E6E1"></span></sc-if>
+            <span style="flex: 1; border-radius: 5px; background: #FFFFFF; border: 1px solid #E8E6E1"></span>
+            <sc-if value="{{w.thread}}" hint-placeholder-val="{{true}}"><span style="width: {{w.threadW}}; border-radius: 5px; background: #FFFFFF; border: 1px solid #E8E6E1; box-shadow: inset 3px 0 0 #0E7C66"></span></sc-if>
+          </div>
+          <div style="margin-top: 10px; font-size: 14px; font-weight: 700">{{w.title}}</div>
+          <div style="margin-top: 3px; font-size: 12.5px; line-height: 1.5; color: #55535C">{{w.rule}}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section>
+    <h2 style="margin: 0 0 14px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700">Room left for what’s next</h2>
+    <p style="margin: -6px 0 16px; max-width: 900px; font-size: 14px; line-height: 1.5; color: #55535C">Chat, threads, client spaces and Add people are standard Matrix that a Continuwuity server handles today. Docs and boards keep their place in the layout for later. Calls are out for now because they need a separate LiveKit server.</p>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px">
+      <div style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 16px; padding: 20px 22px">
+        <span style="width: 34px; height: 34px; border-radius: 10px; background: #E2F2EC; color: #0E7C66; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"></path><path d="M14 3v6h6M8 13h8M8 17h5"></path></svg></span>
+        <h3 style="margin: 12px 0 6px; font-size: 16px; font-weight: 700">Docs</h3>
+        <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #55535C">Rich multiplayer pages. They live in the rail’s Docs section and as a Docs tab on every channel, so a doc sits right next to the conversation about it.</p>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 16px; padding: 20px 22px">
+        <span style="width: 34px; height: 34px; border-radius: 10px; background: #E2F2EC; color: #0E7C66; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M8 7v7M12 7v4M16 7v9"></path></svg></span>
+        <h3 style="margin: 12px 0 6px; font-size: 16px; font-weight: 700">Boards</h3>
+        <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #55535C">Kanban boards in the rail’s Boards section, and as a channel tab. Clients see the board in their client space and nothing else that’s internal.</p>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 16px; padding: 20px 22px">
+        <span style="width: 34px; height: 34px; border-radius: 10px; background: #FCEBC0; color: #7A5300; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg></span>
+        <h3 style="margin: 12px 0 6px; font-size: 16px; font-weight: 700">Client spaces</h3>
+        <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #55535C">Their own tile on the rail, marked with the amber arrow, plus a sidebar section and a Client role in Add people. One look tells you a conversation leaves the company.</p>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3040}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      minH: '3040px',
+      widths: [
+        { title: '1280 px and wider', rule: 'Rail, sidebar, conversation and thread side by side.', side: true, sideW: '22%', thread: true, threadW: '28%' },
+        { title: '1000–1279 px', rule: 'Opening a thread folds the sidebar away; the header gets a sidebar button. Closing the thread brings it back.', side: false, sideW: '0', thread: true, threadW: '36%' },
+        { title: 'Under 1000 px', rule: 'The sidebar is a drawer over the conversation. A thread replaces the conversation, with a back arrow.', side: false, sideW: '0', thread: false, threadW: '0' }
+      ],
+      tokens: [
+        { name: 'bg', use: 'Timeline, dialogs', light: '#FFFFFF', dark: '#1B1B20' },
+        { name: 'side', use: 'Sidebar', light: '#F7F6F3', dark: '#141418' },
+        { name: 'rail', use: 'Workspace rail', light: '#18171D', dark: '#0D0D10' },
+        { name: 'ink', use: 'Primary text', light: '#1D1C22', dark: '#ECEBF0' },
+        { name: 'subtle', use: 'Meta text (4.5:1+)', light: '#6E6C76', dark: '#908E9A' },
+        { name: 'line', use: 'Borders, dividers', light: '#E8E6E1', dark: '#2C2C33' },
+        { name: 'accent', use: 'Primary action, active row', light: '#0E7C66', dark: '#3DD6A5' },
+        { name: 'accentsoft', use: 'Selected, your reactions', light: '#E2F2EC', dark: '#15382F' },
+        { name: 'mentionbg', use: 'Messages that mention you', light: '#FFF7DD', dark: '#33290F' },
+        { name: 'link', use: 'Links, @mentions', light: '#0B6A86', dark: '#7CC8F0' },
+        { name: 'danger', use: 'Unread counts', light: '#D4351C', dark: '#D4351C' },
+        { name: 'dangertext', use: 'Error text, Not sent', light: '#B42318', dark: '#FF8A7A' },
+        { name: 'warnbg / warnink', use: 'Offline, reconnecting banner', light: '#FFF4D6', dark: '#3A2E10' },
+        { name: 'skel', use: 'Skeleton blocks', light: '#E7E4DD', dark: '#28282F' }
+      ],
+      vocab: [
+        { matrix: 'Room', ours: 'Channel or direct message', where: 'Sidebar, channel header, “Message #channel”' },
+        { matrix: 'Space', ours: 'Workspace', where: 'Tiles on the rail and the workspace menu' },
+        { matrix: 'Space shared with another org', ours: 'Client space', where: 'Rail tile with amber arrow, “Client spaces” section, “External” tag' },
+        { matrix: 'Invite (membership: invite)', ours: 'Add people', where: 'Email-first dialog. Links join automatically, so there’s never an accept/decline step' },
+        { matrix: '@sam:pasodrum.work', ours: 'Name and work email', where: 'Profiles and chips. IDs never appear in the UI' },
+        { matrix: 'Homeserver', ours: 'Server address', where: 'Behind “Other server” on sign-in only' },
+        { matrix: 'Power levels', ours: 'Roles: Owner, Admin, Member, Guest, Client', where: 'Add people and channel settings. No numbers' },
+        { matrix: 'Join / leave / rename events', ours: 'One summary line', where: '“Maja, Lea and Erik joined the channel”' },
+        { matrix: 'E2EE, cross-signing, verification', ours: '“Confirm this device”', where: 'Once, at sign-in from a new device. No encryption labels anywhere; a lock only means private' },
+        { matrix: 'Redaction', ours: 'Delete message', where: 'Message “More” menu' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

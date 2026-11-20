@@ -1,0 +1,54 @@
+.button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled),
+.button[aria-expanded='true'] {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.button:disabled {
+  color: var(--subtle);
+  cursor: default;
+}
+
+.s24 {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+
+.s28 {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.s30 {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+}
+
+.s34 {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+}
+
+.outline {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--bg);
+  color: var(--ink);
+}

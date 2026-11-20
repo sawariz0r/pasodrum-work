@@ -1,0 +1,18 @@
+# Local dev server. Disposable: the server name can't change without wiping data (D-14).
+[global]
+server_name = "pasodrum.localhost"
+database_path = "/var/lib/continuwuity"
+address = "0.0.0.0"
+port = 6167
+
+allow_federation = false
+allow_registration = true
+allow_local_presence = true
+url_preview_domain_contains_allowlist = ["*"]
+
+[global.well_known]
+client = "http://localhost:8008"
+
+[global.smtp]
+connection_uri = "smtp://mailpit:1025"
+sender = "Pasodrum work <noreply@pasodrum.localhost>"

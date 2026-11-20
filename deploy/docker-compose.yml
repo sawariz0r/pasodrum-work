@@ -1,0 +1,25 @@
+# Staging/production on Coolify (Docker Compose build pack). Coolify's proxy terminates TLS.
+# In Coolify: set SERVER_NAME (e.g. staging.pasodrum.work) and give the continuwuity service the domain https://$SERVER_NAME.
+# SERVER_NAME can never change without wiping the volume (D-14).
+services:
+  continuwuity:
+    image: forgejo.ellis.link/continuwuation/continuwuity:latest
+    command: /sbin/conduwuit
+    restart: unless-stopped
+    environment:
+      - SERVICE_FQDN_CONTINUWUITY_6167
+      - CONTINUWUITY_SERVER_NAME=${SERVER_NAME:?}
+      - CONTINUWUITY_WELL_KNOWN__CLIENT=https://${SERVER_NAME}
+      - CONTINUWUITY_REGISTRATION_TOKEN=${SERVICE_PASSWORD_64_REGISTRATION}
+      - CONTINUWUITY_DATABASE_PATH=/var/lib/continuwuity
+      - CONTINUWUITY_ADDRESS=0.0.0.0
+      - CONTINUWUITY_PORT=6167
+      - CONTINUWUITY_ALLOW_FEDERATION=false
+      - CONTINUWUITY_ALLOW_REGISTRATION=true
+      - CONTINUWUITY_ALLOW_LOCAL_PRESENCE=true
+      - 'CONTINUWUITY_URL_PREVIEW_DOMAIN_CONTAINS_ALLOWLIST=["*"]'
+    volumes:
+      - continuwuity-data:/var/lib/continuwuity
+
+volumes:
+  continuwuity-data:

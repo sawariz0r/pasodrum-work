@@ -1,0 +1,31 @@
+name: pasodrum-dev
+
+services:
+  continuwuity:
+    image: forgejo.ellis.link/continuwuation/continuwuity:latest
+    command: /sbin/conduwuit
+    restart: unless-stopped
+    environment:
+      CONTINUWUITY_CONFIG: /etc/continuwuity.toml
+      CONTINUWUITY_REGISTRATION_TOKEN: ${REGISTRATION_TOKEN:?set REGISTRATION_TOKEN in dev/.env}
+    volumes:
+      - ./continuwuity.toml:/etc/continuwuity.toml:ro
+      - continuwuity-data:/var/lib/continuwuity
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "8008:8008"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on: [continuwuity]
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+
+volumes:
+  continuwuity-data:

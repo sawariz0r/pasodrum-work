@@ -1,0 +1,37 @@
+.badge {
+  display: inline-block;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  background: var(--danger);
+  color: #ffffff;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.md {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 11px;
+  line-height: 18px;
+}
+
+.sm {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  font-size: 10px;
+  line-height: 16px;
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--rail);
+  border-radius: 4px;
+  background: var(--attention);
+}

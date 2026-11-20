@@ -1,0 +1,117 @@
+{
+  "common": {
+    "loading": "Loading",
+    "channelName": "#{{name}}",
+    "addPeople": "Add people"
+  },
+  "signIn": {
+    "about": "About Pasodrum work",
+    "title": "Sign in",
+    "workEmail": "Work email",
+    "emailPlaceholder": "name@company.com",
+    "emailError": "Enter a full email address",
+    "serverAddress": "Server address",
+    "cantReach": "Can’t reach {{server}}",
+    "tryAgain": "Try again",
+    "continue": "Continue",
+    "or": "or",
+    "sso": "Continue with company SSO",
+    "otherServer": "Other server",
+    "change": "Change",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "wrongPassword": "Wrong password",
+    "signedOut": "You were signed out",
+    "reset": {
+      "title": "Reset password",
+      "sendLink": "Send reset link",
+      "backToSignIn": "Back to sign in",
+      "checkEmail": "Check your email",
+      "sendAgain": "Send again",
+      "sent": "Sent",
+      "newPassword": "New password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "save": "Save and sign in"
+    },
+    "footer": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "help": "Help"
+    }
+  },
+  "shell": {
+    "rail": {
+      "label": "Workspaces and sections",
+      "workspace": "{{name}} workspace",
+      "clientSpace": "{{name}}, client space",
+      "newClientSpace": "New client space",
+      "home": "Home",
+      "dms": "DMs",
+      "activity": "Activity",
+      "docs": "Docs",
+      "boards": "Boards",
+      "lightTheme": "Switch to light theme",
+      "darkTheme": "Switch to dark theme",
+      "profileActive": "Your profile: {{name}}, active",
+      "profileOffline": "Your profile: {{name}}, offline"
+    },
+    "sidebar": {
+      "label": "{{workspace}} navigation",
+      "toggle": "Sidebar",
+      "newMessage": "New message",
+      "search": "Search {{workspace}}",
+      "threads": "Threads",
+      "mentions": "Mentions",
+      "drafts": "Drafts",
+      "channels": "Channels",
+      "addChannel": "Add a channel",
+      "directMessages": "Direct messages",
+      "newDirectMessage": "New direct message",
+      "clientSpaces": "Client spaces"
+    },
+    "header": {
+      "members_one": "{{count}} member",
+      "members_other": "{{count}} members",
+      "pinned": "Pinned messages",
+      "details": "Channel details"
+    },
+    "tabs": {
+      "label": "Channel views",
+      "messages": "Messages",
+      "files": "Files",
+      "pins": "Pins",
+      "soon": "Soon",
+      "addTab": "Add a tab"
+    },
+    "connection": {
+      "offline": "Offline",
+      "reconnecting": "Reconnecting",
+      "backOnline": "Back online",
+      "tryNow": "Try now"
+    },
+    "profileMenu": {
+      "language": "Language",
+      "english": "English",
+      "japanese": "日本語",
+      "signOut": "Sign out"
+    },
+    "notAvailable": {
+      "title": "This page isn’t available",
+      "openChannel": "Open #{{channel}}"
+    }
+  },
+  "timeline": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "sending": "Sending",
+    "notSent": "Not sent",
+    "retry": "Retry",
+    "delete": "Delete"
+  },
+  "composer": {
+    "label": "Message {{channel}}",
+    "placeholder": "Message #{{channel}}",
+    "send": "Send message"
+  }
+}

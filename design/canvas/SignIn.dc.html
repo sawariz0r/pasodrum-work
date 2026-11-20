@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pasodrum work — sign in</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.si-root{--cjk:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,"Noto Sans JP"}
+.si-input::placeholder{color:#6E6C76}
+.si-input:focus{outline:none;border-color:#0E7C66!important;box-shadow:0 0 0 4px #E2F2EC}
+.si-err,.si-err:focus{border-color:#B42318!important;box-shadow:0 0 0 4px #FDECEA!important}
+.si-ghost:hover{background:#F0EEE9!important}
+.si-primary:hover{background:#0B6956!important}
+.si-link:hover{text-decoration:underline}
+.si-root :focus-visible{outline:2px solid #0E7C66;outline-offset:2px}
+.si-root button{font-family:inherit}
+.si-ja h1{font-size:30px!important;letter-spacing:0!important}
+.si-ja .si-body{line-height:1.7!important}
+</style>
+</helmet>
+<div class="si-root {{localeClass}}" lang="{{lang}}" style="display: flex; flex-wrap: wrap; width: 100%; min-height: 900px; background: #FFFFFF; color: #1D1C22; font-family: Inter, var(--cjk), system-ui, sans-serif; -webkit-font-smoothing: antialiased">
+
+  <section aria-label="{{txAbout}}" style="flex: 1 1 460px; min-height: 900px; box-sizing: border-box; background: #18171D; color: #F3F2F6; padding: 44px 48px; display: flex; flex-direction: column; gap: 40px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <span style="width: 34px; height: 34px; border-radius: 10px; background: #0E7C66; display: flex; align-items: center; justify-content: center"><svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="13" width="3.6" height="7" rx="1.8" fill="#FFFFFF"></rect><rect x="10.2" y="8.5" width="3.6" height="11.5" rx="1.8" fill="#FFFFFF"></rect><rect x="16.4" y="4" width="3.6" height="16" rx="1.8" fill="#FFFFFF"></rect></svg></span>
+      <span style="font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700; letter-spacing: -0.01em">pasodrum <span style="font-weight: 500; color: #B4B2BD">work</span></span>
+    </div>
+
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 28px; max-width: 460px">
+      <div aria-hidden="true" style="border-radius: 16px; background: #22212A; border: 1px solid #312F3A; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+        <sc-for list="{{sample}}" as="x" hint-placeholder-count="2">
+          <div style="display: flex; gap: 10px"><span style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 8px; background: {{x.color}}; color: #FFFFFF; font-size: {{x.fs}}; font-weight: 700; display: flex; align-items: center; justify-content: center">{{x.initials}}</span><span class="si-body" style="font-size: 13.5px; line-height: 1.45; color: #DAD8E0"><strong style="color: #FFFFFF">{{x.name}}</strong> <span style="color: #9A98A4; font-size: 12px">{{x.time}}</span><br>{{x.text}}</span></div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <main style="flex: 999 1 520px; min-height: 900px; box-sizing: border-box; display: flex; flex-direction: column; padding: 32px 40px">
+
+    <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 32px 0">
+      <div style="width: 100%; max-width: 400px">
+
+        <!-- Email -->
+        <sc-if value="{{stepEmail}}" hint-placeholder-val="{{true}}">
+          <h1 style="margin: 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.02em">{{txSignIn}}</h1>
+          <div style="height: 28px"></div>
+          <label for="si-email" style="display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 6px">{{txWorkEmail}}</label>
+          <input id="si-email" class="si-input" type="email" autocomplete="email" placeholder="name@company.com" value="{{email}}" onChange="{{onEmail}}" onKeyDown="{{onEmailKey}}" style="display: block; width: 100%; height: 46px; box-sizing: border-box; padding: 0 14px; border: 1.5px solid #D9D6CF; border-radius: 11px; background: #FFFFFF; color: #1D1C22; font-family: inherit; font-size: 15px">
+          <sc-if value="{{showError}}" hint-placeholder-val="{{false}}"><p role="alert" style="margin: 8px 0 0; font-size: 13px; color: #B42318">{{txEmailError}}</p></sc-if>
+
+          <sc-if value="{{showServer}}" hint-placeholder-val="{{false}}">
+            <div style="margin-top: 16px">
+              <label for="si-server" style="display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 6px">{{txServerAddress}}</label>
+              <input id="si-server" class="si-input" type="text" value="{{server}}" onChange="{{onServer}}" style="display: block; width: 100%; height: 46px; box-sizing: border-box; padding: 0 14px; border: 1.5px solid #D9D6CF; border-radius: 11px; background: #FFFFFF; color: #1D1C22; font-family: inherit; font-size: 15px">
+            </div>
+          </sc-if>
+
+          <sc-if value="{{serverDown}}" hint-placeholder-val="{{false}}">
+            <div role="alert" style="display: flex; align-items: center; gap: 10px; margin-top: 16px; padding: 8px 8px 8px 12px; border-radius: 11px; background: #FDECEA; color: #8A1C0E; font-size: 14px; font-weight: 500">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 2 20 20"></path><path d="M5.8 8.6A6 6 0 0 0 7 20h10"></path><path d="M10.2 4.3A6 6 0 0 1 17.5 9H18a4 4 0 0 1 3 6.7"></path></svg>
+              <span style="flex: 1; min-width: 0">{{txCantReach}}</span>
+              <button onClick="{{retry}}" style="height: 30px; flex-shrink: 0; padding: 0 11px; border: 1px solid rgba(138,28,14,.3); border-radius: 8px; background: #FFFFFF; color: #8A1C0E; font-size: 13px; font-weight: 600; cursor: pointer">{{txTryAgain}}</button>
+            </div>
+          </sc-if>
+
+          <button class="si-primary" onClick="{{next}}" style="margin-top: 16px; width: 100%; height: 46px; border: 0; border-radius: 11px; background: #0E7C66; color: #FFFFFF; font-size: 15px; font-weight: 600; cursor: pointer">{{txContinue}}</button>
+
+          <sc-if value="{{sso}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; align-items: center; gap: 12px; margin: 22px 0; font-size: 12.5px; color: #6E6C76"><span style="flex: 1; height: 1px; background: #E8E6E1"></span>{{txOr}}<span style="flex: 1; height: 1px; background: #E8E6E1"></span></div>
+            <button class="si-ghost" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 9px; height: 44px; border: 1px solid #D9D6CF; border-radius: 11px; background: #FFFFFF; color: #1D1C22; font-size: 14.5px; font-weight: 600; cursor: pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M14 9h1M9 13h1M14 13h1M10 21v-4h4v4"></path></svg>{{txSso}}</button>
+          </sc-if>
+
+          <button onClick="{{toggleServer}}" aria-expanded="{{serverExpanded}}" style="margin-top: 22px; display: flex; align-items: center; gap: 6px; padding: 4px 0; border: 0; background: transparent; color: #55535C; font-size: 13px; font-weight: 500; cursor: pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{chevron}}"></path></svg>{{txOtherServer}}</button>
+        </sc-if>
+
+        <!-- Password, wrong password, session expired -->
+        <sc-if value="{{stepPassword}}" hint-placeholder-val="{{false}}">
+          <h1 style="margin: 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.02em">{{passTitle}}</h1>
+          <div style="height: 24px"></div>
+          <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 11px; background: #F4F3EF; margin-bottom: 18px">
+            <span style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 8px; background: #0E7C66; color: #FFFFFF; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{initial}}</span>
+            <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{email}}</span>
+            <button class="si-link" onClick="{{back}}" style="border: 0; background: transparent; color: #0B6A86; font-size: 13.5px; font-weight: 600; cursor: pointer">{{txChange}}</button>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 6px"><label for="si-pass" style="font-size: 13.5px; font-weight: 600">{{txPassword}}</label><button class="si-link" onClick="{{toForgot}}" style="padding: 0; border: 0; background: transparent; font-size: 13px; color: #0B6A86; font-weight: 600; cursor: pointer">{{txForgot}}</button></div>
+          <input id="si-pass" class="si-input {{passCls}}" type="password" autocomplete="current-password" aria-invalid="{{passInvalid}}" aria-describedby="si-pass-err" value="{{password}}" onChange="{{onPassword}}" style="display: block; width: 100%; height: 46px; box-sizing: border-box; padding: 0 14px; border: 1.5px solid #D9D6CF; border-radius: 11px; background: #FFFFFF; color: #1D1C22; font-family: inherit; font-size: 15px">
+          <sc-if value="{{wrong}}" hint-placeholder-val="{{false}}"><p id="si-pass-err" role="alert" style="display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font-size: 13px; font-weight: 500; color: #B42318"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4.5M12 16h.01"></path></svg>{{txWrong}}</p></sc-if>
+          <button class="si-primary" style="margin-top: 16px; width: 100%; height: 46px; border: 0; border-radius: 11px; background: #0E7C66; color: #FFFFFF; font-size: 15px; font-weight: 600; cursor: pointer">{{txSignIn}}</button>
+        </sc-if>
+
+        <!-- Forgot password: enter email -->
+        <sc-if value="{{stepForgot}}" hint-placeholder-val="{{false}}">
+          <h1 style="margin: 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.02em">{{txResetTitle}}</h1>
+          <div style="height: 28px"></div>
+          <label for="si-forgot" style="display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 6px">{{txWorkEmail}}</label>
+          <input id="si-forgot" class="si-input" type="email" autocomplete="email" placeholder="name@company.com" value="{{email}}" onChange="{{onEmail}}" style="display: block; width: 100%; height: 46px; box-sizing: border-box; padding: 0 14px; border: 1.5px solid #D9D6CF; border-radius: 11px; background: #FFFFFF; color: #1D1C22; font-family: inherit; font-size: 15px">
+          <button class="si-primary" onClick="{{sendLink}}" style="margin-top: 16px; width: 100%; height: 46px; border: 0; border-radius: 11px; background: #0E7C66; color: #FFFFFF; font-size: 15px; font-weight: 600; cursor: pointer">{{txSendLink}}</button>
+          <button onClick="{{back}}" style="margin: 18px auto 0; display: flex; align-items: center; gap: 6px; padding: 4px 6px; border: 0; background: transparent; color: #55535C; font-size: 13.5px; font-weight: 600; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>{{txBack}}</button>
+        </sc-if>
+
+        <!-- Forgot password: check your email -->
+        <sc-if value="{{stepSent}}" hint-placeholder-val="{{false}}">
+          <span style="width: 52px; height: 52px; border-radius: 14px; background: #E2F2EC; color: #0E7C66; display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-10 6L2 7"></path></svg></span>
+          <h1 style="margin: 20px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.02em">{{txCheckEmail}}</h1>
+          <div style="height: 24px"></div>
+          <div style="display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 14px; box-sizing: border-box; border-radius: 11px; background: #F4F3EF; font-size: 15px; font-weight: 500">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#55535C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-10 6L2 7"></path></svg>
+            <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{email}}</span>
+          </div>
+          <button class="si-ghost" onClick="{{resend}}" disabled="{{resent}}" style="margin-top: 16px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border: 1px solid #D9D6CF; border-radius: 11px; background: #FFFFFF; color: {{resendColor}}; font-size: 15px; font-weight: 600; cursor: pointer"><sc-if value="{{resent}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>{{resendLabel}}</button>
+          <button onClick="{{back}}" style="margin: 18px auto 0; display: flex; align-items: center; gap: 6px; padding: 4px 6px; border: 0; background: transparent; color: #55535C; font-size: 13.5px; font-weight: 600; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>{{txBack}}</button>
+        </sc-if>
+
+        <!-- Forgot password: set a new one (opened from the email link) -->
+        <sc-if value="{{stepReset}}" hint-placeholder-val="{{false}}">
+          <h1 style="margin: 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.02em">{{txNewPassword}}</h1>
+          <div style="height: 24px"></div>
+          <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 11px; background: #F4F3EF; margin-bottom: 18px">
+            <span style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 8px; background: #0E7C66; color: #FFFFFF; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{initial}}</span>
+            <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{email}}</span>
+          </div>
+          <label for="si-new" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">{{txNewPassword}}</label>
+          <div style="position: relative">
+            <input id="si-new" class="si-input" type="{{newType}}" autocomplete="new-password" value="{{newPass}}" onChange="{{onNewPass}}" style="display: block; width: 100%; height: 46px; box-sizing: border-box; padding: 0 48px 0 14px; border: 1.5px solid #D9D6CF; border-radius: 11px; background: #FFFFFF; color: #1D1C22; font-family: inherit; font-size: 15px">
+            <button onClick="{{toggleShow}}" aria-label="{{showLabel}}" aria-pressed="{{shownPressed}}" style="position: absolute; right: 5px; top: 5px; width: 36px; height: 36px; border: 0; border-radius: 8px; background: transparent; color: #55535C; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+          </div>
+          <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-top: 8px">
+            <span style="height: 4px; border-radius: 2px; background: {{bar1}}"></span><span style="height: 4px; border-radius: 2px; background: {{bar2}}"></span><span style="height: 4px; border-radius: 2px; background: {{bar3}}"></span><span style="height: 4px; border-radius: 2px; background: {{bar4}}"></span>
+          </div>
+          <button onClick="{{save}}" disabled="{{saveDisabled}}" style="margin-top: 18px; width: 100%; height: 46px; border: 0; border-radius: 11px; background: {{saveBg}}; color: {{saveColor}}; font-size: 15px; font-weight: 600; cursor: pointer">{{txSave}}</button>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; font-size: 12.5px; color: #6E6C76"><a href="#" style="color: #55535C; text-decoration: none">{{txPrivacy}}</a><a href="#" style="color: #55535C; text-decoration: none">{{txTerms}}</a><a href="#" style="color: #55535C; text-decoration: none">{{txHelp}}</a></div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"locale":{"editor":"enum","options":["en","ja"],"default":"en"},"sso":{"editor":"boolean","default":false},"state":{"editor":"enum","options":["email","password","wrongPassword","serverDown","forgot","forgotSent","reset","expired"],"default":"email"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const st = props.state || 'email';
+    this.state = {
+      step: null, email: st === 'email' ? '' : 'sam@pasodrum.work', server: 'pasodrum.work', showServer: false, error: false,
+      password: st === 'wrongPassword' ? 'nordlys2026' : '', newPass: st === 'reset' ? 'harbour-lights-42' : '', shown: false, resent: false, locale: null
+    };
+  }
+
+  strings(ja) {
+    if (ja) return {
+      about: 'Pasodrum work について', signIn: 'サインイン', workEmail: '仕事用メールアドレス', emailError: 'メールアドレスを最後まで入力してください',
+      serverAddress: 'サーバーアドレス', cantReach: (h) => h + ' に接続できません', tryAgain: '再試行', continue: '続行', or: 'または',
+      sso: '会社の SSO で続行', otherServer: '別のサーバー', change: '変更', password: 'パスワード', forgot: 'パスワードをお忘れですか？',
+      wrong: 'パスワードが違います', signedOut: 'サインアウトされました', resetTitle: 'パスワードの再設定', sendLink: '再設定リンクを送信',
+      back: 'サインインに戻る', checkEmail: 'メールを確認してください', resend: 'もう一度送信', resent: '送信しました',
+      newPassword: '新しいパスワード', show: 'パスワードを表示', hide: 'パスワードを隠す', save: '保存してサインイン',
+      privacy: 'プライバシー', terms: '利用規約', help: 'ヘルプ',
+      sample: [
+        { name: 'Jonas Berg', initials: 'JB', color: '#1D4ED8', time: '09:14', text: 'Nordlys のレビューは木曜 14:00 に変更です。' },
+        { name: '平野 いずみ', initials: '平', color: '#C2410C', time: '09:20', text: '先方にはボードと共有ドキュメントだけ。社内のものは見せません。' }
+      ]
+    };
+    return {
+      about: 'About Pasodrum work', signIn: 'Sign in', workEmail: 'Work email', emailError: 'Enter a full email address',
+      serverAddress: 'Server address', cantReach: (h) => 'Can’t reach ' + h, tryAgain: 'Try again', continue: 'Continue', or: 'or',
+      sso: 'Continue with company SSO', otherServer: 'Other server', change: 'Change', password: 'Password', forgot: 'Forgot password?',
+      wrong: 'Wrong password', signedOut: 'You were signed out', resetTitle: 'Reset password', sendLink: 'Send reset link',
+      back: 'Back to sign in', checkEmail: 'Check your email', resend: 'Send again', resent: 'Sent',
+      newPassword: 'New password', show: 'Show password', hide: 'Hide password', save: 'Save and sign in',
+      privacy: 'Privacy', terms: 'Terms', help: 'Help',
+      sample: [
+        { name: 'Jonas Berg', initials: 'JB', color: '#1D4ED8', time: '09:14', text: 'Nordlys review moved to Thursday 14:00.' },
+        { name: 'Ingrid Holm', initials: 'IH', color: '#C2410C', time: '09:20', text: 'Board and shared docs for them, nothing internal.' }
+      ]
+    };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const locale = s.locale || this.props.locale || 'en';
+    const ja = locale === 'ja';
+    const T = this.strings(ja);
+    const step = s.step || this.props.state || 'email';
+    const valid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s.email.trim());
+    const next = () => {
+      if (!valid) { this.setState({ error: true }); return; }
+      this.setState({ step: 'password', error: false });
+    };
+    const len = s.newPass.length;
+    const score = len === 0 ? 0 : len < 8 ? 1 : len < 12 ? 2 : /[^A-Za-z0-9]/.test(s.newPass) || len >= 16 ? 4 : 3;
+    const on = score >= 3 ? '#0E7C66' : score === 2 ? '#C08A1E' : '#D4351C';
+    const bar = (i) => (score >= i ? on : '#E8E6E1');
+    const canSave = len >= 8;
+    const wrong = step === 'wrongPassword';
+    return {
+      lang: locale, localeClass: ja ? 'si-ja' : 'si-en',
+      sso: !!this.props.sso,
+      sample: T.sample.map((x) => Object.assign({}, x, { fs: /[぀-ヿ㐀-鿿]/.test(x.initials) ? '13px' : '11px' })),
+
+      stepEmail: step === 'email' || step === 'serverDown',
+      stepPassword: step === 'password' || step === 'wrongPassword' || step === 'expired',
+      stepForgot: step === 'forgot',
+      stepSent: step === 'forgotSent',
+      stepReset: step === 'reset',
+      serverDown: step === 'serverDown',
+      passTitle: step === 'expired' ? T.signedOut : T.signIn,
+
+      email: s.email,
+      onEmail: (e) => this.setState({ email: e.target.value, error: false }),
+      onEmailKey: (e) => { if (e.key === 'Enter' && !e.nativeEvent?.isComposing) { e.preventDefault(); next(); } },
+      showError: s.error,
+      next,
+      retry: () => this.setState({ step: 'password' }),
+      back: () => this.setState({ step: valid ? 'password' : 'email', resent: false }),
+      toForgot: () => this.setState({ step: 'forgot' }),
+      sendLink: () => { if (valid) this.setState({ step: 'forgotSent', resent: false }); },
+      resend: () => this.setState({ resent: true }),
+      resent: s.resent,
+      resendLabel: s.resent ? T.resent : T.resend,
+      resendColor: s.resent ? '#0E7C66' : '#1D1C22',
+      showServer: s.showServer,
+      serverExpanded: s.showServer ? 'true' : 'false',
+      chevron: s.showServer ? 'm6 9 6 6 6-6' : 'm9 6 6 6-6 6',
+      toggleServer: () => this.setState({ showServer: !s.showServer }),
+      server: s.server,
+      onServer: (e) => this.setState({ server: e.target.value }),
+      initial: (s.email.trim().charAt(0) || 'S').toUpperCase(),
+
+      password: s.password,
+      onPassword: (e) => this.setState({ password: e.target.value, step: wrong ? 'password' : step }),
+      wrong, passCls: wrong ? 'si-err' : '', passInvalid: wrong ? 'true' : 'false',
+
+      newPass: s.newPass,
+      onNewPass: (e) => this.setState({ newPass: e.target.value }),
+      newType: s.shown ? 'text' : 'password',
+      shownPressed: s.shown ? 'true' : 'false',
+      showLabel: s.shown ? T.hide : T.show,
+      toggleShow: () => this.setState({ shown: !s.shown }),
+      bar1: bar(1), bar2: bar(2), bar3: bar(3), bar4: bar(4),
+      save: () => { if (canSave) this.setState({ step: 'password', password: '' }); },
+      saveDisabled: !canSave,
+      saveBg: canSave ? '#0E7C66' : '#E8E6E1', saveColor: canSave ? '#FFFFFF' : '#6E6C76',
+
+      txAbout: T.about, txSignIn: T.signIn, txWorkEmail: T.workEmail, txEmailError: T.emailError,
+      txServerAddress: T.serverAddress, txCantReach: T.cantReach(s.server), txTryAgain: T.tryAgain,
+      txContinue: T.continue, txOr: T.or, txSso: T.sso, txOtherServer: T.otherServer,
+      txChange: T.change, txPassword: T.password, txForgot: T.forgot, txWrong: T.wrong,
+      txResetTitle: T.resetTitle, txSendLink: T.sendLink, txBack: T.back, txCheckEmail: T.checkEmail,
+      txNewPassword: T.newPassword, txSave: T.save,
+      txPrivacy: T.privacy, txTerms: T.terms, txHelp: T.help
+    };
+  }
+}
+</script>
+</body>
+</html>

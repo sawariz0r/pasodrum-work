@@ -1,0 +1,116 @@
+{
+  "common": {
+    "loading": "読み込み中",
+    "channelName": "#{{name}}",
+    "addPeople": "メンバーを追加"
+  },
+  "signIn": {
+    "about": "Pasodrum work について",
+    "title": "サインイン",
+    "workEmail": "仕事用メールアドレス",
+    "emailPlaceholder": "name@company.com",
+    "emailError": "メールアドレスを最後まで入力してください",
+    "serverAddress": "サーバーアドレス",
+    "cantReach": "{{server}} に接続できません",
+    "tryAgain": "再試行",
+    "continue": "続行",
+    "or": "または",
+    "sso": "会社の SSO で続行",
+    "otherServer": "別のサーバー",
+    "change": "変更",
+    "password": "パスワード",
+    "forgotPassword": "パスワードをお忘れですか？",
+    "wrongPassword": "パスワードが違います",
+    "signedOut": "サインアウトされました",
+    "reset": {
+      "title": "パスワードの再設定",
+      "sendLink": "再設定リンクを送信",
+      "backToSignIn": "サインインに戻る",
+      "checkEmail": "メールを確認してください",
+      "sendAgain": "もう一度送信",
+      "sent": "送信しました",
+      "newPassword": "新しいパスワード",
+      "showPassword": "パスワードを表示",
+      "hidePassword": "パスワードを隠す",
+      "save": "保存してサインイン"
+    },
+    "footer": {
+      "privacy": "プライバシー",
+      "terms": "利用規約",
+      "help": "ヘルプ"
+    }
+  },
+  "shell": {
+    "rail": {
+      "label": "ワークスペースとセクション",
+      "workspace": "{{name}} ワークスペース",
+      "clientSpace": "{{name}}（クライアントスペース）",
+      "newClientSpace": "新しいクライアントスペース",
+      "home": "ホーム",
+      "dms": "DM",
+      "activity": "通知",
+      "docs": "ドキュメント",
+      "boards": "ボード",
+      "lightTheme": "ライトテーマに切り替え",
+      "darkTheme": "ダークテーマに切り替え",
+      "profileActive": "プロフィール：{{name}}（アクティブ）",
+      "profileOffline": "プロフィール：{{name}}（オフライン）"
+    },
+    "sidebar": {
+      "label": "{{workspace}} のナビゲーション",
+      "toggle": "サイドバー",
+      "newMessage": "新規メッセージ",
+      "search": "{{workspace}} を検索",
+      "threads": "スレッド",
+      "mentions": "メンション",
+      "drafts": "下書き",
+      "channels": "チャンネル",
+      "addChannel": "チャンネルを追加",
+      "directMessages": "ダイレクトメッセージ",
+      "newDirectMessage": "新しいダイレクトメッセージ",
+      "clientSpaces": "クライアントスペース"
+    },
+    "header": {
+      "members_other": "メンバー {{count}} 人",
+      "pinned": "ピン留めしたメッセージ",
+      "details": "チャンネルの詳細"
+    },
+    "tabs": {
+      "label": "チャンネルのビュー",
+      "messages": "メッセージ",
+      "files": "ファイル",
+      "pins": "ピン留め",
+      "soon": "近日公開",
+      "addTab": "タブを追加"
+    },
+    "connection": {
+      "offline": "オフライン",
+      "reconnecting": "再接続しています",
+      "backOnline": "オンラインに戻りました",
+      "tryNow": "今すぐ再接続"
+    },
+    "profileMenu": {
+      "language": "言語",
+      "english": "English",
+      "japanese": "日本語",
+      "signOut": "サインアウト"
+    },
+    "notAvailable": {
+      "title": "このページは利用できません",
+      "openChannel": "#{{channel}} を開く"
+    }
+  },
+  "timeline": {
+    "today": "今日",
+    "yesterday": "昨日",
+    "sending": "送信中",
+    "notSent": "送信できませんでした",
+    "retry": "再送信",
+    "delete": "削除"
+  },
+  "composer": {
+    "label": "{{channel}} へのメッセージ",
+    "placeholder": "#{{channel}} へのメッセージ",
+    "send": "送信"
+  }
+}

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pasodrum work — new client space</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: relative; width: 100%; min-height: 900px; background: #FFFFFF">
+<dc-import name="Main" theme="light" perspective="team" show-thread="{{no}}" open-modal="none" hint-size="100%,900px"></dc-import>
+
+<sc-if value="{{open}}" hint-placeholder-val="{{true}}">
+<div class="pd-light" style="position: absolute; inset: 0; z-index: 40; background: rgba(12,11,18,.5); display: flex; justify-content: center; align-items: flex-start; padding: 88px 16px 16px; box-sizing: border-box; font-family: Inter, system-ui, sans-serif; color: var(--ink)">
+  <div role="dialog" aria-modal="true" aria-labelledby="cs-title" style="width: 100%; max-width: 720px; display: flex; flex-wrap: wrap; background: var(--raised); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden">
+
+    <div aria-hidden="true" style="flex: 1 0 150px; max-width: 180px; background: #18171D; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 28px 0">
+      <span style="width: 44px; height: 44px; border-radius: 12px; background: #0E7C66; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="4" y="13" width="3.6" height="7" rx="1.8" fill="#FFFFFF"></rect><rect x="10.2" y="8.5" width="3.6" height="11.5" rx="1.8" fill="#FFFFFF"></rect><rect x="16.4" y="4" width="3.6" height="16" rx="1.8" fill="#FFFFFF"></rect></svg></span>
+      <span style="width: 44px; height: 44px; border-radius: 12px; background: #7A4B2A; color: #FFFFFF; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px; display: flex; align-items: center; justify-content: center; opacity: .55">H</span>
+      <span style="position: relative; width: 56px; height: 56px; margin-top: 6px; border-radius: 15px; background: {{color}}; box-shadow: 0 0 0 3px #18171D, 0 0 0 5px #FFFFFF; color: #FFFFFF; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 24px; display: flex; align-items: center; justify-content: center">{{initial}}<span style="position: absolute; right: -4px; bottom: -4px; width: 20px; height: 20px; border-radius: 6px; background: #F2B544; border: 2px solid #18171D; display: flex; align-items: center; justify-content: center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#3A2A00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"></path></svg></span></span>
+    </div>
+
+    <div style="flex: 999 1 420px; min-width: 0; display: flex; flex-direction: column">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 22px 16px 0 26px">
+        <h2 id="cs-title" style="flex: 1; margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -0.015em">New client space</h2>
+        <button class="pd-ico" onClick="{{close}}" aria-label="Close" style="width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+      </div>
+
+      <div style="padding: 18px 26px 0; display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+          <label for="cs-name" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">Client name</label>
+          <input id="cs-name" class="pd-input" type="text" placeholder="Client name" value="{{name}}" onChange="{{onName}}" style="flex: 1 1 220px; min-width: 0; height: 46px; box-sizing: border-box; padding: 0 14px; border: 1.5px solid var(--accent); border-radius: 11px; background: var(--bg); color: var(--ink); font-family: inherit; font-size: 16px; font-weight: 600; box-shadow: 0 0 0 4px var(--accentsoft)">
+          <div role="radiogroup" aria-label="Color" style="display: flex; gap: 6px">
+            <sc-for list="{{swatches}}" as="w" hint-placeholder-count="5">
+              <button role="radio" aria-checked="{{w.checked}}" aria-label="{{w.label}}" onClick="{{w.pick}}" style="width: 28px; height: 28px; padding: 0; border: 0; border-radius: 8px; background: {{w.hex}}; box-shadow: {{w.ring}}; cursor: pointer"></button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div role="group" aria-label="Channels" style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{channels}}" as="c" hint-placeholder-count="3">
+            <button onClick="{{c.toggle}}" aria-pressed="{{c.pressed}}" style="display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 10px; border: 1.5px solid {{c.border}}; border-radius: 9px; background: {{c.bg}}; color: {{c.color}}; font-size: 14px; font-weight: 600; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"></path></svg>{{c.name}}</button>
+          </sc-for>
+          <button class="pd-ico" aria-label="Add a channel" style="width: 34px; height: 34px; border: 1.5px dashed var(--line); border-radius: 9px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+        </div>
+
+        <div role="group" aria-label="People from Pasodrum" style="display: flex; align-items: center; gap: 10px">
+          <span aria-hidden="true" style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: #0E7C66; display: flex; align-items: center; justify-content: center"><svg width="17" height="17" viewBox="0 0 24 24"><rect x="4" y="13" width="3.6" height="7" rx="1.8" fill="#FFFFFF"></rect><rect x="10.2" y="8.5" width="3.6" height="11.5" rx="1.8" fill="#FFFFFF"></rect><rect x="16.4" y="4" width="3.6" height="16" rx="1.8" fill="#FFFFFF"></rect></svg></span>
+          <div style="flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 6px; padding: 6px; border: 1px solid var(--line); border-radius: 11px; min-height: 44px; box-sizing: border-box">
+            <sc-for list="{{team}}" as="t" hint-placeholder-count="3">
+              <span style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 4px; border-radius: 8px; background: var(--well); font-size: 13.5px; font-weight: 500"><span style="width: 22px; height: 22px; border-radius: 6px; background: {{t.color}}; color: #FFFFFF; font-size: 9.5px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{t.initials}}</span>{{t.name}}</span>
+            </sc-for>
+            <button class="pd-ico" aria-label="Add someone from Pasodrum" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+          </div>
+        </div>
+
+        <div role="group" aria-label="People from the client" style="display: flex; align-items: center; gap: 10px">
+          <span aria-hidden="true" style="position: relative; width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: {{color}}; color: #FFFFFF; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{initial}}</span>
+          <div style="flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px; border: 1px solid var(--line); border-radius: 11px; min-height: 44px; box-sizing: border-box">
+            <sc-for list="{{clients}}" as="e" hint-placeholder-count="1">
+              <span style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 3px 0 10px; border-radius: 8px; background: var(--well); font-size: 13.5px; font-weight: 500">{{e.email}}<button onClick="{{e.remove}}" aria-label="Remove {{e.email}}" style="width: 22px; height: 22px; border: 0; border-radius: 6px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+            </sc-for>
+            <label for="cs-client" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">Client email</label>
+            <input id="cs-client" class="pd-input" type="email" placeholder="Client email" value="{{draft}}" onChange="{{onDraft}}" onKeyDown="{{onDraftKey}}" style="flex: 1; min-width: 150px; height: 30px; border: 0; background: transparent; color: var(--ink); font-family: inherit; font-size: 14px; padding: 0 4px">
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; padding: 14px 18px; border-top: 1px solid var(--line); background: var(--well)">
+        <button class="pd-btn2" onClick="{{close}}" style="height: 38px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">Cancel</button>
+        <button onClick="{{create}}" disabled="{{createDisabled}}" style="height: 38px; padding: 0 18px; border: 0; border-radius: 9px; background: {{createBg}}; color: {{createColor}}; font-size: 14px; font-weight: 600; cursor: pointer">Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{created}}" hint-placeholder-val="{{false}}">
+<div class="pd-light" role="status" style="position: absolute; left: 50%; bottom: 32px; transform: translateX(-50%); z-index: 40; display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 12px; border-radius: 14px; background: #18171D; color: #FFFFFF; font-family: Inter, system-ui, sans-serif; font-size: 14px; box-shadow: 0 12px 32px rgba(0,0,0,.25)">
+  <span style="width: 28px; height: 28px; border-radius: 8px; background: {{color}}; font-family: 'Space Grotesk', sans-serif; font-weight: 700; display: flex; align-items: center; justify-content: center">{{initial}}</span>
+  <span style="font-weight: 600">{{name}}</span>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3DD6A5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-label="Created" role="img"><path d="M20 6 9 17l-5-5"></path></svg>
+  <button onClick="{{reset}}" aria-label="Dismiss" style="width: 28px; height: 28px; border: 0; border-radius: 7px; background: transparent; color: #B4B2BD; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = this.initial();
+  }
+  initial() {
+    return {
+      open: true, created: false, name: 'Nordlys Energi', color: '#2F4A6D',
+      channels: { proj: true, q: true, review: false },
+      clients: ['henrik@nordlys.no'], draft: ''
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const sw = [['#2F4A6D', 'Slate blue'], ['#7A4B2A', 'Walnut'], ['#5B3E8C', 'Plum'], ['#1F6F5C', 'Pine'], ['#9A3B3B', 'Brick']];
+    const chDefs = [['proj', 'project-updates'], ['q', 'questions'], ['review', 'design-review']];
+    const addEmail = () => {
+      const v = s.draft.trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v) || s.clients.includes(v)) return;
+      this.setState({ clients: s.clients.concat([v]), draft: '' });
+    };
+    const ok = s.name.trim().length > 0;
+    return {
+      no: false,
+      open: s.open, created: s.created,
+      name: s.name, onName: (e) => this.setState({ name: e.target.value }),
+      initial: (s.name.trim().charAt(0) || '?').toUpperCase(),
+      color: s.color,
+      swatches: sw.map(([hex, label]) => ({
+        hex, label, checked: s.color === hex ? 'true' : 'false',
+        ring: s.color === hex ? '0 0 0 2px var(--raised), 0 0 0 4px ' + hex : 'none',
+        pick: () => this.setState({ color: hex })
+      })),
+      channels: chDefs.map(([id, name]) => {
+        const on = !!s.channels[id];
+        return {
+          name, pressed: on ? 'true' : 'false',
+          border: on ? 'var(--accent)' : 'var(--line)',
+          bg: on ? 'var(--accentsoft)' : 'transparent',
+          color: on ? 'var(--ink)' : 'var(--muted)',
+          toggle: () => this.setState({ channels: Object.assign({}, s.channels, { [id]: !on }) })
+        };
+      }),
+      team: [
+        { name: 'Jonas Berg', initials: 'JB', color: '#1D4ED8' },
+        { name: 'Maja Lind', initials: 'ML', color: '#7E22CE' },
+        { name: 'Sam Okafor', initials: 'SO', color: '#0E7C66' }
+      ],
+      clients: s.clients.map((email) => ({ email, remove: () => this.setState({ clients: s.clients.filter((x) => x !== email) }) })),
+      draft: s.draft,
+      onDraft: (e) => this.setState({ draft: e.target.value }),
+      onDraftKey: (e) => {
+        if ((e.key === 'Enter' || e.key === ',') && !e.nativeEvent?.isComposing) { e.preventDefault(); addEmail(); }
+        if (e.key === 'Backspace' && !s.draft && s.clients.length) this.setState({ clients: s.clients.slice(0, -1) });
+      },
+      close: () => this.setState({ open: false }),
+      create: () => { if (ok) this.setState({ open: false, created: true }); },
+      createDisabled: !ok,
+      createBg: ok ? 'var(--accent)' : 'var(--well)', createColor: ok ? 'var(--onaccent)' : 'var(--subtle)',
+      reset: () => this.setState(this.initial())
+    };
+  }
+}
+</script>
+</body>
+</html>
