@@ -79,26 +79,26 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ. Source copy in [desig
 | Profile card (name, local time, work email, Message) | ProfileCard, ProfileCardJP, ProfileCardDark | approved 2026-11-20 |
 | Client's view of DMs, new message, threads | ClientDMs, ClientNewMessage, ClientThread | approved 2026-11-20 |
 | Main refreshed to Batch B rules (hover bar, inline image, format bar) | Main | approved 2026-11-20 |
-| Narrow widths (1024/800): thread, Threads, Activity, DMs (800: list fills, item replaces with back arrow), New message, profile card | Thread1024/800, Threads1024/800, Threads1024Dark, Activity1024/800, DMs1024/800, DMs800JP, NewMessage800, ProfileCard800 | designed |
+| Narrow widths (1024/800): thread, Threads, Activity, DMs (800: list fills, item replaces with back arrow), New message, profile card | Thread1024/800, Threads1024/800, Threads1024Dark, Activity1024/800, DMs1024/800, DMs800JP, NewMessage800, ProfileCard800 | approved 2026-11-20 |
 
-## Batch D — for M4 (designed 2026-11-20, awaiting CEO approval)
+## Batch D — for M4 (approved 2026-11-20)
 
 **Link decision:** no shared "invite link" (accounts are per email, D-07). Channel details → **Copy link** = the channel's plain address (gives no access). A pending person's row → **Copy join link** = their single-use link (same as their email).
 
 | Screen / state | Artboard | Status |
 |---|---|---|
-| Rules: widths, roles, links, first run | RulesM4 | designed |
-| Workspace menu, channels "+" menu, profile menu → Settings | WorkspaceMenu, ChannelsPlusMenu, ProfileMenuSettings | designed |
-| Create channel (name, private, which space, name taken) | CreateChannel, CreateChannelSpace, CreateChannelTaken, CreateChannelJP | designed |
-| Browse channels | BrowseChannels, BrowseChannelsJP | designed |
-| Channel details: about, members, settings, leave | ChannelAbout, ChannelMembers(+JP/Dark), ChannelSettings, LeaveChannel | designed |
-| Role change, make owner (Owner only) | RoleChange, MakeOwner | designed |
-| Add people: member, client, errors | AddPeopleMember, AddPeopleClient, AddPeopleErrors(+JP) | designed |
-| Settings: profile (time zone), notifications, appearance, devices | SettingsProfile(+JP), SettingsNotifications, SettingsAppearance, SettingsDevices(+Dark) | designed |
-| Invite email EN/JP | InviteEmail | designed |
-| Join page: link used, wrong account | JoinUsed, JoinWrongAccount(+JP) | designed |
-| First sign-in (team, client) | FirstRunTeam, FirstRunClient(+JP) | designed |
-| Foundations: floating composer + no sideways scroll rules | Foundations | designed |
+| Rules: widths, roles, links, first run | RulesM4 | approved 2026-11-20 |
+| Workspace menu, channels "+" menu, profile menu → Settings | WorkspaceMenu, ChannelsPlusMenu, ProfileMenuSettings | approved 2026-11-20 |
+| Create channel (name, private, which space, name taken) | CreateChannel, CreateChannelSpace, CreateChannelTaken, CreateChannelJP | approved 2026-11-20 |
+| Browse channels | BrowseChannels, BrowseChannelsJP | approved 2026-11-20 |
+| Channel details: about, members, settings, leave | ChannelAbout, ChannelMembers(+JP/Dark), ChannelSettings, LeaveChannel | approved 2026-11-20 |
+| Role change, make owner — update to D-25 (Admins change Member↔Admin; Owners make Owners) | RoleChange, MakeOwner, RulesM4 | approved, canvas update pending |
+| Add people: member, client, errors | AddPeopleMember, AddPeopleClient, AddPeopleErrors(+JP) | approved 2026-11-20 |
+| Settings: profile (time zone), notifications, appearance, devices | SettingsProfile(+JP), SettingsNotifications, SettingsAppearance, SettingsDevices(+Dark) | approved 2026-11-20 |
+| Invite email EN/JP | InviteEmail | approved 2026-11-20 |
+| Join page: link used, wrong account | JoinUsed, JoinWrongAccount(+JP) | approved 2026-11-20 |
+| First sign-in (team, client) | FirstRunTeam, FirstRunClient(+JP) | approved 2026-11-20 |
+| Foundations: floating composer + no sideways scroll rules | Foundations | approved 2026-11-20 |
 
 ## Batch E — for M5
 

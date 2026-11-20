@@ -102,6 +102,11 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-25 · Roles and channel creation (Batch D answers) · Accepted · 2026-11-20
+- **Role changes:** Owners make or remove Owners. Owners and Admins change people between Member and Admin. Done from the profile card / channel members. (Supersedes the Owner-only rule drawn on RoleChange/RulesM4; canvas to be updated.)
+- **Channels in a client space:** Owners, Admins and the team members of that client space can create them; clients never can.
+- **Links:** no shared invite link. "Copy link" = a channel's plain address (no access); "Copy join link" on a pending person = their single-use link (D-07).
+
 ### D-24 · M3 contract; DMs start unencrypted until M6 · Accepted · 2026-11-20
 - **Contract (matrix/types.ts):** snapshot gains `dms`, `threads` (followed), `threadTimelines`, `activity`; `Message.thread` summary on roots; `Person.external`; `Draft.threadRootId`; store gains `openThread`, `loadOlderInThread`, `markThreadRead`, `markActivityRead`, `searchPeople`, `openDm`, `profile`. Fake store implements basics; drafts live in `app/drafts.ts` (local, per person, per device); profile card opens via `app/people/ProfileCardContext.tsx`.
 - **Activity** is built in matrix/ from synced history (mentions of me + replies to my messages, incl. thread replies to my roots); the server has no `/notifications` (D-13). Read state = my read receipt (threaded where applicable).
@@ -158,6 +163,8 @@ Format: **Date · short title** → what was discovered, why it matters, what ch
 - The invite service can claim and revoke accounts with the standard API alone: it holds the temporary password, so claim = `/account/password`, revoke = `/account/deactivate`. No admin-room scripting needed for that.
 - Custom profile fields work on the v3 endpoint (`work.pasodrum.email`), so we can store the real email on the profile.
 - Continuwuity appends an emoji to every new account's display name by default (`new_user_displayname_suffix`); set to empty in dev and production so clients get their plain name.
+- **M3-01:** Continuwuity accepts threaded read receipts but drops `thread_id`, so a room has one read position. Marking a channel read also marks its threads read up to that point; a thread read that would hide unread channel messages is kept on this device only. Revisit if the server adds threaded receipts.
+- **M3-01:** the server's user directory returns almost nobody, so `searchPeople` combines space and DM member lists with directory hits. Visibility still follows space membership (clients only share rooms with their client space's team).
 - Admin actions (issue tokens, deactivate users, reset passwords) are admin-room commands (`!admin users deactivate`, `!admin token issue`); no HTTP admin API documented. The invite service will drive these through the admin room.
 
 **2026-11-20 · Composer behaviour (M2-03)**
