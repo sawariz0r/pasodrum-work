@@ -1,0 +1,105 @@
+/* Thread panel per ThreadNew / Window1024 / Window800. ≥1280: 340–420 px; 1000–1279: 380 px; under 1000: replaces the conversation. */
+.panel {
+  position: relative;
+  display: flex;
+  flex: 1 0 340px;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 420px;
+  height: 100%;
+  border-left: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  animation: slide-in var(--dur-3) var(--ease-out) both;
+}
+
+.header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  height: 56px;
+  padding: 0 10px 0 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.back {
+  display: none;
+  margin-left: -10px;
+}
+
+.title {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.title > :first-child {
+  flex-shrink: 0;
+  font-family: var(--font-title);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.channel {
+  overflow: hidden;
+  color: var(--subtle);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 1279px) {
+  .panel {
+    flex: 0 0 380px;
+    width: 380px;
+    max-width: none;
+  }
+}
+
+/* Under 1000 px the sidebar is a drawer and the thread takes the conversation's place; the rail stays. */
+@media (max-width: 999px) {
+  .panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 68px;
+    z-index: 20;
+    width: auto;
+    border-left: 0;
+  }
+
+  .back {
+    display: inline-flex;
+  }
+
+  .close {
+    display: none;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    translate: 12px 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation-name: fade-in;
+  }
+}

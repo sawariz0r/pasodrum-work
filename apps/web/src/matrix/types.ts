@@ -98,6 +98,8 @@ export interface Dm {
   unread: number;
   mentions: number;
   lastTs: number;
+  /** Latest message in the conversation (for list previews). */
+  last?: Message;
   /** Spaces this DM belongs to in the sidebar: spaces all its people share with me. */
   spaceIds: string[];
 }
@@ -158,6 +160,8 @@ export interface Timeline {
   initialLoading: boolean;
   loadingOlder: boolean;
   hasOlder: boolean;
+  /** M3. The first page couldn't load (thread panel shows Retry; openThread again retries). */
+  failed?: boolean;
 }
 
 /** Immutable: a new object on every change; unchanged parts keep their identity. */

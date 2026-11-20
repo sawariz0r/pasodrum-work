@@ -1,19 +1,26 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink } from 'react-router';
 import { useWorkspace, type Space } from '../../matrix';
-import { AttentionDot, avatarColor } from '../../ui';
+import { AttentionDot, avatarColor, Badge } from '../../ui';
 import { ExternalIcon, LogoMark, MoonIcon, SunIcon } from '../icons';
 import { channelPath, spaceHome } from '../places';
 import { setTheme, useTheme } from '../prefs';
 import type { RailItem } from '../registry';
 import { useRegistry } from '../RegistryProvider';
+import { BellIcon, BubbleIcon, HomeIcon } from './icons';
 import { ProfileMenu } from './ProfileMenu';
+import { useMediaUrl } from '../timeline/Media';
 import s from './Shell.module.css';
 
-export function Rail({ activeSpaceId, onSignOut }: { activeSpaceId?: string; onSignOut: () => void }) {
+/** Which rail section the page belongs to (D-23): a space's sidebar (Home), DMs or Activity. */
+export type Section = 'home' | 'dms' | 'activity';
+
+export function Rail({ section, activeSpaceId, onSignOut }: { section: Section; activeSpaceId?: string; onSignOut: () => void }) {
   const { t } = useTranslation();
   const spaces = useWorkspace((x) => x.spaces);
+  const unreadDms = useWorkspace((x) => x.dms.filter((d) => d.unread > 0).length);
+  const unreadActivity = useWorkspace((x) => x.activity.filter((a) => a.unread).length);
   const { rail } = useRegistry();
   const theme = useTheme();
   const isTeam = spaces.some((x) => x.kind === 'workspace');
@@ -23,7 +30,10 @@ export function Rail({ activeSpaceId, onSignOut }: { activeSpaceId?: string; onS
       {spaces.map((space) => (
         <SpaceTile key={space.id} space={space} active={space.id === activeSpaceId} external={isTeam && space.kind === 'client'} />
       ))}
-      {rail.length > 0 && <div className={s.railDivider} />}
+      <div className={s.railDivider} />
+      <SectionLink to="/" label={t('shell.rail.home')} icon={<HomeIcon />} current={section === 'home'} />
+      <SectionLink to="/dms" label={t('shell.rail.dms')} icon={<BubbleIcon />} current={section === 'dms'} badge={unreadDms} />
+      <SectionLink to="/activity" label={t('shell.rail.activity')} icon={<BellIcon />} current={section === 'activity'} badge={unreadActivity} />
       {rail.map((item) => (
         <RailLink key={item.id} item={item} />
       ))}
@@ -47,8 +57,9 @@ function SpaceTile({ space, active, external }: { space: Space; active: boolean;
   const attention = useWorkspace((x) => !active && (x.channels[space.id] ?? []).some((c) => c.unread > 0 || c.mentions > 0));
   const isWorkspace = space.kind === 'workspace';
   const style = { '--tile-bg': isWorkspace ? '#0E7C66' : avatarColor(space.id) } as CSSProperties;
-  const content = space.avatarUrl ? (
-    <img src={space.avatarUrl} alt="" />
+  const avatar = useMediaUrl(space.avatarUrl, true);
+  const content = avatar ? (
+    <img src={avatar} alt="" />
   ) : isWorkspace ? (
     <LogoMark />
   ) : (
@@ -69,6 +80,22 @@ function SpaceTile({ space, active, external }: { space: Space; active: boolean;
         </span>
       )}
       {attention && <AttentionDot className={s.tileDot} />}
+    </Link>
+  );
+}
+
+function SectionLink({ to, label, icon, current, badge = 0 }: { to: string; label: string; icon: ReactNode; current: boolean; badge?: number }) {
+  const { t } = useTranslation();
+  return (
+    <Link
+      to={to}
+      className={s.railItem}
+      aria-current={current ? 'page' : undefined}
+      aria-label={badge > 0 ? t('shell.rail.unread', { label, count: badge }) : label}
+    >
+      <span className={s.railIcon}>{icon}</span>
+      {label}
+      <Badge count={badge} size="sm" className={s.railBadge} />
     </Link>
   );
 }

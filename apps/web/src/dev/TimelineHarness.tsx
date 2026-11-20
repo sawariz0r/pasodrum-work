@@ -1,5 +1,6 @@
 // Dev-only: /dev/timeline renders ChannelView on the fake store. ?theme=dark&lang=ja&ch=!long&loadMs=1500
 import { useEffect, useMemo, useState } from 'react';
+import { BrowserRouter } from 'react-router';
 import { setLanguage } from '../app/i18n';
 import { createFakeStore } from '../app/testing/fakeStore';
 import { ChannelView } from '../app/timeline/ChannelView';
@@ -98,9 +99,11 @@ export default function TimelineHarness() {
       </div>
       <div style={{ height: 96, flexShrink: 0, borderBottom: '1px solid var(--line)' }} />
       <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
-        <WorkspaceProvider store={store}>
-          <ChannelView channelId={channel} />
-        </WorkspaceProvider>
+        <BrowserRouter>
+          <WorkspaceProvider store={store}>
+            <ChannelView channelId={channel} />
+          </WorkspaceProvider>
+        </BrowserRouter>
       </div>
     </div>
   );

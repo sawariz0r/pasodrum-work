@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { connectionOf, loginCandidates, mediaOf, membershipSummary, reactionsOf, replyFallback, share, stripReplyFallback, workspaceOf, type RoomFacts } from './map';
+import {
+  connectionOf, emailFromId, loginCandidates, looksExternal, mediaOf, membershipSummary, reactionsOf, replyFallback, sameMembers, share, stripReplyFallback, threadStats, workspaceOf,
+  type RoomFacts,
+} from './map';
 
 const room = (id: string, extra: Partial<RoomFacts> = {}): RoomFacts => ({
   id, name: id, joined: true, isSpace: false, otherType: false, clientSpace: false, joinRule: 'restricted',
@@ -158,5 +161,37 @@ describe('membershipSummary', () => {
       ]),
     ).toEqual({ joined: [p('a'), p('b')], left: [p('c'), p('g')] });
     expect(membershipSummary([{ person: p('d'), prev: 'join', next: 'join' }])).toBeNull();
+  });
+});
+
+describe('emailFromId and looksExternal (D-07)', () => {
+  it('turns deterministic IDs back into emails; plain local parts use the server', () => {
+    expect(emailFromId('@henrik_nordlys.no:pasodrum.work')).toBe('henrik@nordlys.no');
+    expect(emailFromId('@anne_marie_acme.co.uk:pasodrum.work')).toBe('anne_marie@acme.co.uk');
+    expect(emailFromId('@jonas:pasodrum.work')).toBe('jonas@pasodrum.work');
+    expect(emailFromId('@first_last:pasodrum.work')).toBe('first_last@pasodrum.work');
+    expect(looksExternal('@lea_freelance.dev:pasodrum.work')).toBe(true);
+    expect(looksExternal('@first_last:pasodrum.work')).toBe(false);
+  });
+});
+
+describe('threadStats', () => {
+  const r = (id: string, ts: number, sender = '@a:s') => ({ id, ts, sender });
+  it('adds replies seen after the bundled summary to its count', () => {
+    expect(threadStats({ count: 5, latest: r('$5', 50, '@b:s') }, [r('$5', 50, '@b:s'), r('$6', 60)], false)).toEqual({
+      count: 6, lastTs: 60, latest: r('$6', 60), participants: ['@a:s', '@b:s'],
+    });
+  });
+  it('counts exactly when the thread is fully loaded, and is null without replies', () => {
+    expect(threadStats({ count: 9, latest: r('$2', 20) }, [r('$1', 10), r('$2', 20)], true)?.count).toBe(2);
+    expect(threadStats(undefined, [r('$1', 10, '@b:s')], false)).toMatchObject({ count: 1, participants: ['@b:s'] });
+    expect(threadStats(undefined, [], false)).toBeNull();
+  });
+});
+
+describe('sameMembers', () => {
+  it('ignores order and duplicates', () => {
+    expect(sameMembers(['@a:s', '@b:s'], ['@b:s', '@a:s', '@a:s'])).toBe(true);
+    expect(sameMembers(['@a:s'], ['@a:s', '@b:s'])).toBe(false);
   });
 });

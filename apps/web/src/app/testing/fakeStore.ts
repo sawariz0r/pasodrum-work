@@ -1,5 +1,5 @@
 // In-memory WorkspaceStore with the canvas workspace, for tests and /dev screens. No server.
-import type { Channel, ConnectionState, Media, Message, Person, Reaction, Space, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
+import type { ActivityItem, Channel, ConnectionState, Draft, Media, Message, Person, Reaction, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
 
 const people: Record<string, Person> = {
   so: { id: '@sofia:pasodrum.localhost', name: 'Sofia Olsen' },
@@ -10,6 +10,7 @@ const people: Record<string, Person> = {
   ek: { id: '@erik:pasodrum.localhost', name: 'Erik Kvam' },
   la: { id: '@lea:pasodrum.localhost', name: 'Lea Aune' },
   tr: { id: '@tove:pasodrum.localhost', name: 'Tove Rask' },
+  hd: { id: '@henrik_nordlys.no:pasodrum.localhost', name: 'Henrik Dahl', external: true },
 };
 
 const spaces: Space[] = [
@@ -143,7 +144,7 @@ function generalHistory(): Message[] {
 function engHistory(): Message[] {
   const e = '!eng';
   return [
-    rich(e, 'ek', at(0, 8, 40), { body: 'Sync rewrite is merged. Cold start is down to 1.2 s.' }),
+    rich(e, 'ek', at(0, 8, 40), { id: '$!eng-sync', body: 'Sync rewrite is merged. Cold start is down to 1.2 s.' }),
     rich(e, 'so', at(0, 8, 52), { body: 'Nice. I’ll check it on Safari.' }),
     rich(e, 'jb', at(0, 9, 30), { body: 'Staging deploy is green.' }),
     rich(e, 'ek', at(0, 9, 41), { body: 'Release notes are in the doc.' }),
@@ -151,9 +152,127 @@ function engHistory(): Message[] {
   ];
 }
 
+// Thread replies per root id (ThreadNew, ClientThread boards). Roots carry a matching `thread` summary.
+const reply = (rootId: string, channelId: string, who: keyof typeof people, ts: number, body: string): Message => ({
+  id: `${rootId}-t${seq++}`, channelId, sender: people[who]!, body, ts, status: 'sent',
+});
+const threadReplies: Record<string, () => Message[]> = {
+  '$!general-1': () => [
+    reply('$!general-1', '!general', 'ih', at(0, 9, 20), 'Yes, and in the UI it’s always a “client space”. Never a room, never an ID.'),
+    reply('$!general-1', '!general', 'so', at(0, 9, 26), 'Agreed. They join from an email link. No handle to copy, no server to pick.'),
+    reply('$!general-1', '!general', 'jb', at(0, 9, 41), 'Perfect. Board and shared docs for them; internal channels stay invisible.'),
+    reply('$!general-1', '!general', 'ml', at(0, 10, 8), 'I’ll draft the welcome note they see the first time they open it.'),
+  ],
+  '$!eng-sync': () => [
+    reply('$!eng-sync', '!eng', 'jb', at(0, 8, 47), 'Great news. Who should test sign-in on Safari?'),
+    reply('$!eng-sync', '!eng', 'ek', at(0, 9, 2), 'Sofia offered. I’ll send the build link.'),
+  ],
+};
+
+/** A root's summary from its replies; `unread` when someone else wrote after I last looked. */
+function withThread(m: Message, unread = false): Message {
+  const replies = threadReplies[m.id]?.();
+  if (!replies?.length) return m;
+  const participants = [...new Map(replies.map((r) => [r.sender.id, r.sender])).values()];
+  return { ...m, thread: { count: replies.length, lastTs: replies.at(-1)!.ts, participants, unread } };
+}
+
+// M3 (Batch C DMs, Threads, Activity boards): DMs with history, followed threads, mentions and replies to Sofia.
+const dmHistory: Record<string, () => Message[]> = {
+  '!dm-jonas': () => [
+    rich('!dm-jonas', 'jb', at(0, 9, 2), { body: 'Can you look at the client welcome copy today?' }),
+    rich('!dm-jonas', 'so', at(0, 9, 5), { body: 'Yes, right after standup.' }),
+    rich('!dm-jonas', 'so', at(0, 9, 5), { body: 'Drafting it in the thread so Maja sees it too.' }),
+    rich('!dm-jonas', 'jb', at(0, 10, 12), { body: 'Got a minute before the Nordlys call?' }),
+  ],
+  '!dm-henrik': () => [
+    rich('!dm-henrik', 'hd', at(0, 9, 40), { body: 'Morning! Where can I find the new screens?' }),
+    rich('!dm-henrik', 'so', at(0, 9, 58), { body: 'I’ll send the sign-in screens tomorrow.' }),
+  ],
+  '!dm-ingrid': () => [rich('!dm-ingrid', 'ih', at(0, 9, 40), { body: 'Lunch at 12?' })],
+  '!dm-erik-lea': () => [
+    rich('!dm-erik-lea', 'ek', at(1, 15, 2), { body: 'Is the M2 summary ready?' }),
+    rich('!dm-erik-lea', 'la', at(1, 15, 20), { body: 'Release notes are in the doc.' }),
+  ],
+  '!dm-maja': () => [rich('!dm-maja', 'so', at(4, 11, 0), { body: 'Thanks!' })],
+};
+
+function sampleDms() {
+  const dm = (id: string, who: (keyof typeof people)[], lastTs: number, spaceIds: string[], unread = 0) => ({
+    id, people: who.map((k) => people[k]!), unread, mentions: unread, lastTs, spaceIds,
+  });
+  return [
+    dm('!dm-jonas', ['jb'], at(0, 10, 12), ['!pasodrum', '!nordlys'], 1),
+    dm('!dm-henrik', ['hd'], at(0, 9, 58), ['!nordlys']),
+    dm('!dm-ingrid', ['ih'], at(0, 9, 40), ['!pasodrum', '!nordlys']),
+    dm('!dm-erik-lea', ['ek', 'la'], at(1, 15, 20), ['!pasodrum']),
+    dm('!dm-maja', ['ml'], at(4, 11, 0), ['!pasodrum', '!nordlys']),
+    dm('!dm-tove', ['tr'], at(9, 16, 0), ['!pasodrum']),
+  ];
+}
+
+function sampleThreads(): ThreadSummary[] {
+  const root = (channelId: string, id: string, who: keyof typeof people, ts: number, extra: Partial<Message>): Message => ({
+    id, channelId, sender: people[who]!, body: '', ts, status: 'sent', ...extra,
+  });
+  const general = threadReplies['$!general-1']!();
+  const eng = threadReplies['$!eng-sync']!();
+  return [
+    {
+      channelId: '!general', rootId: '$!general-1', count: general.length, unread: true, lastTs: general.at(-1)!.ts, lastReply: general.at(-1),
+      root: root('!general', '$!general-1', 'jb', at(0, 9, 14), { body: 'Nordlys review moved to Thursday 14:00.' }),
+    },
+    {
+      channelId: '!eng', rootId: '$!eng-sync', count: eng.length, unread: false, lastTs: eng.at(-1)!.ts, lastReply: eng.at(-1),
+      root: root('!eng', '$!eng-sync', 'ek', at(0, 8, 40), { body: 'Sync rewrite is merged. Cold start is down to 1.2 s.' }),
+    },
+    {
+      channelId: '!lead', rootId: '$!lead-q1', count: 3, unread: false, lastTs: at(1, 16, 40),
+      root: root('!lead', '$!lead-q1', 'ih', at(1, 7, 55), {
+        body: 'Q1 planning doc is up. Sofia Olsen Jonas Berg please add your team’s priorities by Friday.',
+        html: `Q1 planning doc is up. ${pill('so')} ${pill('jb')} please add your team’s priorities by Friday.`,
+      }),
+      lastReply: root('!lead', '$!lead-q1-r', 'jb', at(1, 16, 40), { body: 'Added ours. Hiring is the big one.' }),
+    },
+  ];
+}
+
+function sampleActivity(): ActivityItem[] {
+  const item = (id: string, kind: ActivityItem['kind'], channelId: string, who: keyof typeof people, ts: number, extra: Partial<Message>, more: Partial<ActivityItem> = {}): ActivityItem => ({
+    id, kind, channelId, unread: false, ...more,
+    message: { id: `$act-${id}`, channelId, sender: people[who]!, body: '', ts, status: 'sent', ...extra },
+  });
+  const mine = (body: string) => ({ id: '$mine', sender: people.so, body, found: true });
+  return [
+    item('a1', 'mention', '!general', 'ih', at(0, 9, 52), {
+      body: 'Sofia Olsen can you take a pass on the empty states for the channel list? The current ones feel loud.',
+      html: `${pill('so')} can you take a pass on the empty states for the channel list? The current ones feel loud.`, mentionsMe: true,
+    }, { unread: true }),
+    item('a2', 'reply', '!general', 'jb', at(0, 9, 50), {
+      body: 'Love it. Can the client space get the same treatment?', replyTo: mine('On it. One line of copy, one clear action.'),
+    }, { unread: true }),
+    item('a3', 'mention', '!general', 'ml', at(0, 9, 20), {
+      body: 'Sofia Olsen can you check the welcome note before I post it?',
+      html: `${pill('so')} can you check the welcome note before I post it?`, mentionsMe: true,
+    }, { threadRootId: '$!general-1' }),
+    item('a4', 'mention', '!eng', 'ek', at(0, 8, 22), {
+      body: 'Works for me. Sofia Olsen the invite email template is ready for copy whenever you are.',
+      html: `Works for me. ${pill('so')} the invite email template is ready for copy whenever you are.`, mentionsMe: true,
+    }),
+    item('a5', 'mention', '!lead', 'ih', at(0, 7, 55), {
+      body: 'Q1 planning doc is up. Sofia Olsen Jonas Berg please add your team’s priorities by Friday.',
+      html: `Q1 planning doc is up. ${pill('so')} ${pill('jb')} please add your team’s priorities by Friday.`, mentionsMe: true,
+    }),
+    item('a6', 'reply', '!general', 'la', at(3, 14, 5), {
+      body: 'I do. Left it at the front desk.', replyTo: mine('Who has the key for the meeting room?'),
+    }),
+  ];
+}
+
 const history: Record<string, () => Message[]> = {
-  '!general': generalHistory,
-  '!eng': engHistory,
+  '!general': () => generalHistory().map((m) => withThread(m, true)),
+  '!eng': () => engHistory().map((m) => withThread(m)),
+  ...dmHistory,
 };
 
 const ART: Record<string, [string, string, string]> = {
@@ -181,6 +300,8 @@ export interface FakeStoreOptions {
   mediaMs?: number;
   /** Time an upload takes, with progress; 0 = finished at once. */
   uploadMs?: number;
+  /** Thread replies fail to load (ThreadError); Retry loads them. */
+  threadFails?: boolean;
 }
 
 export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & { set(patch: Partial<WorkspaceSnapshot>): void } {
@@ -193,13 +314,10 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     sessionExpired: false,
     typing: { '!eng': [people.jb!] },
     uploads: {},
-    dms: [
-      { id: '!dm-ingrid', people: [people.ih!], unread: 1, mentions: 1, lastTs: Date.UTC(2026, 10, 20, 9, 40), spaceIds: ['!pasodrum', '!nordlys'] },
-      { id: '!dm-jonas-tanaka', people: [people.jb!, people.ty!], unread: 0, mentions: 0, lastTs: Date.UTC(2026, 10, 20, 8, 15), spaceIds: ['!pasodrum'] },
-    ],
-    threads: [],
+    dms: sampleDms(),
+    threads: sampleThreads(),
     threadTimelines: {},
-    activity: [],
+    activity: sampleActivity(),
   };
   const listeners = new Set<() => void>();
   let localId = 0;
@@ -224,6 +342,28 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     }
   };
   const messagesOf = (channelId: string) => snapshot.timelines[channelId]?.messages ?? [];
+  const setThread = (rootId: string, next: Partial<Timeline> & { failed?: boolean }) => {
+    const prev = snapshot.threadTimelines[rootId] ?? { messages: [], initialLoading: false, loadingOlder: false, hasOlder: false };
+    set({ threadTimelines: { ...snapshot.threadTimelines, [rootId]: { ...prev, ...next } } });
+  };
+  /** Where a draft lands: the thread's timeline, or the channel's. */
+  const listOf = (channelId: string, draft?: Pick<Draft, 'threadRootId'>) =>
+    draft?.threadRootId ? (snapshot.threadTimelines[draft.threadRootId]?.messages ?? []) : messagesOf(channelId);
+  const setList = (channelId: string, draft: Pick<Draft, 'threadRootId'> | undefined, messages: Message[]) =>
+    draft?.threadRootId ? setThread(draft.threadRootId, { messages }) : setTimeline(channelId, { messages });
+  /** Changes one message wherever it shows: the channel and any open thread. */
+  const patchMessage = (channelId: string, messageId: string, fn: (m: Message) => Message) => {
+    const map = (list: Message[]) => (list.some((x) => x.id === messageId) ? list.map((x) => (x.id === messageId ? fn(x) : x)) : list);
+    const threadTimelines = Object.fromEntries(
+      Object.entries(snapshot.threadTimelines).map(([k, tl]) => {
+        const messages = map(tl.messages);
+        return [k, messages === tl.messages ? tl : { ...tl, messages }];
+      }),
+    );
+    const tl = snapshot.timelines[channelId];
+    set({ threadTimelines, ...(tl ? { timelines: { ...snapshot.timelines, [channelId]: { ...tl, messages: map(tl.messages) } } } : {}) });
+  };
+  let failThreads = !!opts.threadFails;
   const finishLoad = (channelId: string) => setTimeline(channelId, { messages: history[channelId]?.() ?? [], initialLoading: false });
 
   return {
@@ -262,43 +402,50 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       const next = Object.fromEntries(
         Object.entries(list).map(([space, chans]) => [space, chans.map((c) => (c.id === channelId ? { ...c, unread: 0, mentions: 0 } : c))]),
       );
-      set({ channels: next });
+      set({ channels: next, dms: snapshot.dms.map((d) => (d.id === channelId && d.unread ? { ...d, unread: 0, mentions: 0 } : d)) });
     },
     reconnectNow() {
       set({ connection: 'online' });
     },
     async signOut() {},
     send(channelId, draft) {
-      const original = draft.replyTo ? messagesOf(channelId).find((x) => x.id === draft.replyTo) : undefined;
+      const original = draft.replyTo ? listOf(channelId, draft).find((x) => x.id === draft.replyTo) : undefined;
       const m: Message = {
         id: `~local${localId++}`, channelId, sender: snapshot.me, body: draft.body, html: draft.html, ts: Date.now(), status: 'sending',
         replyTo: original ? { id: original.id, sender: original.sender, body: original.body || original.media?.name || '', found: true } : undefined,
       };
-      if (draft.body) setTimeline(channelId, { messages: [...messagesOf(channelId), m] });
+      if (draft.body) setList(channelId, draft, [...listOf(channelId, draft), m]);
       const files = (snapshot.uploads[channelId] ?? []).filter((u) => u.status === 'done');
       const sentFiles: Message[] = files.map((u) => ({
         id: `~local${localId++}`, channelId, sender: snapshot.me, body: '', ts: Date.now(), status: 'sending',
         kind: u.mimetype.startsWith('image/') ? 'image' : u.mimetype.startsWith('video/') ? 'video' : u.mimetype.startsWith('audio/') ? 'audio' : 'file',
         media: { ref: u.previewUrl ?? `mxc://fake/${u.name}`, name: u.name, size: u.size, mimetype: u.mimetype },
       }));
-      if (files.length) set({ uploads: { ...snapshot.uploads, [channelId]: (snapshot.uploads[channelId] ?? []).filter((u) => u.status === 'uploading') }, timelines: { ...snapshot.timelines, [channelId]: { ...snapshot.timelines[channelId]!, messages: [...messagesOf(channelId), ...sentFiles] } } });
+      if (files.length) {
+        set({ uploads: { ...snapshot.uploads, [channelId]: (snapshot.uploads[channelId] ?? []).filter((u) => u.status === 'uploading') } });
+        setList(channelId, draft, [...listOf(channelId, draft), ...sentFiles]);
+      }
       const ids = new Set([m.id, ...sentFiles.map((x) => x.id)]);
-      setTimeout(() => {
-        setTimeline(channelId, {
-          messages: messagesOf(channelId).map((x) => (ids.has(x.id) ? { ...x, status: draft.body.includes('fail') ? 'failed' : 'sent' } : x)),
+      const root = draft.threadRootId;
+      if (root && (draft.body || files.length)) {
+        patchMessage(channelId, root, (x) => {
+          const t = x.thread ?? { count: 0, lastTs: 0, participants: [], unread: false };
+          const participants = t.participants.some((p) => p.id === snapshot.me.id) ? t.participants : [...t.participants, snapshot.me];
+          return { ...x, thread: { ...t, count: t.count + ids.size - (draft.body ? 0 : 1), lastTs: Date.now(), participants } };
         });
+      }
+      setTimeout(() => {
+        setList(channelId, draft, listOf(channelId, draft).map((x) => (ids.has(x.id) ? { ...x, status: draft.body.includes('fail') ? 'failed' : 'sent' } : x)));
       }, 300);
     },
     edit(channelId, messageId, draft) {
-      setTimeline(channelId, { messages: messagesOf(channelId).map((x) => (x.id === messageId ? { ...x, body: draft.body, html: draft.html, edited: true } : x)) });
+      patchMessage(channelId, messageId, (x) => ({ ...x, body: draft.body, html: draft.html, edited: true }));
     },
     remove(channelId, messageId) {
-      setTimeline(channelId, { messages: messagesOf(channelId).map((x) => (x.id === messageId ? { ...x, kind: 'deleted', body: '', html: undefined } : x)) });
+      patchMessage(channelId, messageId, (x) => ({ ...x, kind: 'deleted', body: '', html: undefined }));
     },
     react(channelId, messageId, key) {
-      setTimeline(channelId, {
-        messages: messagesOf(channelId).map((x) => {
-          if (x.id !== messageId) return x;
+      patchMessage(channelId, messageId, (x) => {
           const list = x.reactions ?? [];
           const hit = list.find((r) => r.key === key);
           if (hit?.mine) return x;
@@ -306,18 +453,14 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
             ? list.map((r) => (r.key === key ? { ...r, count: r.count + 1, mine: true, senders: [...r.senders, snapshot.me] } : r))
             : [...list, { key, count: 1, mine: true, senders: [snapshot.me] }];
           return { ...x, reactions: next };
-        }),
       });
     },
     unreact(channelId, messageId, key) {
-      setTimeline(channelId, {
-        messages: messagesOf(channelId).map((x) => {
-          if (x.id !== messageId) return x;
+      patchMessage(channelId, messageId, (x) => {
           const next = (x.reactions ?? [])
             .map((r) => (r.key === key && r.mine ? { ...r, count: r.count - 1, mine: false, senders: r.senders.filter((p) => p.id !== snapshot.me.id) } : r))
             .filter((r) => r.count > 0);
           return { ...x, reactions: next };
-        }),
       });
     },
     attach(channelId, files) {
@@ -346,15 +489,30 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       return opts.mediaMs ? new Promise((r) => setTimeout(() => r(url), opts.mediaMs)) : Promise.resolve(url);
     },
     messageLink: (channelId, messageId) => `https://pasodrum.work/m/${encodeURIComponent(channelId)}/${encodeURIComponent(messageId)}`,
-    // M3 — fuller fake data arrives with the M3 UI tasks.
+    // M3
     openThread(channelId, rootId) {
-      if (snapshot.threadTimelines[rootId]) return;
-      set({ threadTimelines: { ...snapshot.threadTimelines, [rootId]: { messages: [], initialLoading: false, loadingOlder: false, hasOlder: false } } });
-      void channelId;
+      const open = snapshot.threadTimelines[rootId] as (Timeline & { failed?: boolean }) | undefined;
+      if (open && !open.failed) return;
+      setThread(rootId, { initialLoading: true, failed: false });
+      const finish = () => {
+        if (failThreads) {
+          failThreads = false;
+          setThread(rootId, { initialLoading: false, failed: true });
+        } else {
+          // Like matrix/: the root (with its summary) first, then the replies.
+          const root = messagesOf(channelId).find((x) => x.id === rootId) ?? snapshot.threads.find((x) => x.rootId === rootId)?.root;
+          setThread(rootId, { messages: [...(root ? [root] : []), ...(threadReplies[rootId]?.() ?? [])], initialLoading: false });
+        }
+      };
+      if (opts.loadMs) setTimeout(finish, opts.loadMs);
+      else finish();
     },
     loadOlderInThread() {},
     markThreadRead(channelId, rootId) {
       set({ threads: snapshot.threads.map((t) => (t.rootId === rootId && t.channelId === channelId ? { ...t, unread: false } : t)) });
+      if (messagesOf(channelId).find((x) => x.id === rootId)?.thread?.unread) {
+        patchMessage(channelId, rootId, (x) => ({ ...x, thread: { ...x.thread!, unread: false } }));
+      }
     },
     markActivityRead(itemId) {
       set({ activity: snapshot.activity.map((a) => (a.id === itemId ? { ...a, unread: false } : a)) });
@@ -370,7 +528,9 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     },
     profile: (userId) => {
       const person = Object.values(people).find((p) => p.id === userId) ?? { id: userId, name: userId };
-      return Promise.resolve({ person, email: `${person.name.split(' ')[0]!.toLowerCase()}@pasodrum.work`, timeZone: person.name === '田中 由紀' ? 'Asia/Tokyo' : 'Europe/Oslo' });
+      const zones: Record<string, string> = { '田中 由紀': 'Asia/Tokyo', 'Tove Rask': 'Europe/Stockholm', 'Henrik Dahl': 'Europe/Oslo' };
+      const email = person.external ? 'henrik@nordlys.no' : `${person.name.split(' ')[0]!.toLowerCase()}@pasodrum.work`;
+      return Promise.resolve({ person, email, timeZone: zones[person.name] ?? 'Europe/Oslo' });
     },
   };
 }

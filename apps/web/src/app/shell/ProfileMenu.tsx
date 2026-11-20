@@ -3,6 +3,7 @@ import { useWorkspace } from '../../matrix';
 import { Avatar, avatarColor, Menu, MenuContent, MenuItem, MenuSegments, MenuSeparator, MenuTrigger } from '../../ui';
 import { currentLanguage, setLanguage, type Language } from '../i18n';
 import { GlobeIcon, SignOutIcon } from '../icons';
+import { useMediaUrl } from '../timeline/Media';
 import s from './Shell.module.css';
 
 export function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
@@ -10,6 +11,7 @@ export function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
   const me = useWorkspace((x) => x.me);
   const online = useWorkspace((x) => x.connection === 'online');
   const color = avatarColor(me.id);
+  const avatar = useMediaUrl(me.avatarUrl, true);
   const dot = <span className={[s.meDot, online && s.online].filter(Boolean).join(' ')} />;
 
   return (
@@ -20,14 +22,14 @@ export function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
           className={s.me}
           aria-label={t(online ? 'shell.rail.profileActive' : 'shell.rail.profileOffline', { name: me.name })}
         >
-          <Avatar name={me.name} color={color} src={me.avatarUrl} className={s.meAvatar} />
+          <Avatar name={me.name} color={color} src={avatar} className={s.meAvatar} />
           {dot}
         </button>
       </MenuTrigger>
       <MenuContent side="right" align="end" sideOffset={24} width={264} aria-label={me.name}>
         <div className={s.menuHead}>
           <span className={s.menuAvatar}>
-            <Avatar name={me.name} color={color} src={me.avatarUrl} className={s.meAvatar} />
+            <Avatar name={me.name} color={color} src={avatar} className={s.meAvatar} />
             {dot}
           </span>
           <span className={s.menuName}>{me.name}</span>

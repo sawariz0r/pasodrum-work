@@ -30,3 +30,28 @@ export function fallbackSpace(spaces: Space[], spaceId?: string): Space | undefi
   const last = lastPlace().space;
   return spaces.find((s) => s.id === spaceId) ?? spaces.find((s) => s.id === last) ?? spaces[0];
 }
+
+const enc = encodeURIComponent;
+
+/** A channel with its thread panel open (M3-03 reads `?thread`). */
+export function threadPath(spaceId: string, channelId: string, rootId: string) {
+  return `${channelPath(spaceId, channelId)}?thread=${enc(rootId)}`;
+}
+
+/** A DM opened from a space's sidebar: the sidebar stays. */
+export function spaceDmPath(spaceId: string, dmId: string) {
+  return `/w/${enc(spaceId)}/dm/${enc(dmId)}`;
+}
+
+/** A DM on the DMs page: the DM list replaces the sidebar. */
+export function dmPath(dmId: string) {
+  return `/dms/${enc(dmId)}`;
+}
+
+export function threadsPath(spaceId: string) {
+  return `/threads?space=${enc(spaceId)}`;
+}
+
+export function draftsPath(spaceId: string) {
+  return `/drafts?space=${enc(spaceId)}`;
+}

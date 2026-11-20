@@ -126,7 +126,7 @@ describe('shell', () => {
     expect(nordlys.getAttribute('aria-current')).toBeNull();
 
     const side = screen.getByRole('complementary', { name: 'Pasodrum navigation' });
-    const links = within(side).getAllByRole('link');
+    const links = within(side).getAllByRole('link').filter((l) => l.getAttribute('href')!.startsWith('/w/!pasodrum/c/'));
     expect(links.map((l) => l.textContent)).toEqual(['design', 'eng', 'general', 'lead2']);
     expect(links[0]!.getAttribute('aria-current')).toBe('page');
     expect(links[1]!.className).toMatch(/strong/);

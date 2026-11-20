@@ -1,0 +1,417 @@
+/* Batch C people: avatars, profile card, New message, DM intro. */
+.face {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  background: var(--face-bg);
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
+}
+
+.face img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.f20 {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  font-size: 9.5px;
+}
+
+.f26 {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  font-size: 10px;
+}
+
+.f30 {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  font-size: 11px;
+}
+
+.f32 {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.f34 {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  font-size: 12px;
+}
+
+.f36 {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.f38 {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.f72 {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.cjk.f20 {
+  font-size: 11px;
+}
+
+.cjk.f26,
+.cjk.f30 {
+  font-size: 13px;
+}
+
+.cjk.f32,
+.cjk.f34 {
+  font-size: 14px;
+}
+
+.cjk.f36,
+.cjk.f38 {
+  font-size: 15px;
+}
+
+.cjk.f72 {
+  font-size: 28px;
+}
+
+.groupCount {
+  background: #475569;
+}
+
+.single {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.pair {
+  position: relative;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+}
+
+.pair .pairA {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 8px;
+  font-size: 9.5px;
+}
+
+.pair .pairB {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  border-radius: 8px;
+  font-size: 9.5px;
+  box-shadow: 0 0 0 2px var(--ring, var(--side));
+}
+
+.corner {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 15px;
+  height: 15px;
+  border: 2px solid var(--ring, var(--side));
+  border-radius: 5px;
+  background: var(--attention);
+  color: #3a2a00;
+}
+
+/* Profile card */
+.card {
+  position: fixed;
+  z-index: 40;
+  box-sizing: border-box;
+  width: 296px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--raised);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  font-family: var(--font-ui);
+  animation: card-in var(--dur-2) var(--ease-out) both;
+}
+
+.card:focus {
+  outline: none;
+}
+
+.cardName {
+  margin: 14px 0 0;
+  font-family: var(--font-title);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: normal;
+}
+
+:lang(ja) .cardName {
+  letter-spacing: 0;
+}
+
+.cardFacts {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 18px;
+}
+
+.fact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.fact svg {
+  flex-shrink: 0;
+  color: var(--subtle);
+}
+
+.fact span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardAction {
+  margin-top: 16px;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: scale(var(--pop));
+  }
+}
+
+/* New message */
+.combo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  min-height: 46px;
+  padding: 7px 8px 7px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 11px;
+  background: var(--bg);
+  cursor: text;
+  transition:
+    border-color var(--dur-1) var(--ease-out),
+    box-shadow var(--dur-1) var(--ease-out);
+}
+
+.combo:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accentsoft);
+}
+
+.comboIcon {
+  display: flex;
+  color: var(--subtle);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 30px;
+  padding: 0 3px 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--well);
+  font-size: 13.5px;
+  animation: chip-in var(--dur-2) var(--ease-out);
+}
+
+.chip .face {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+}
+
+.chipName {
+  font-weight: 500;
+}
+
+.chipRemove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--subtle);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    color var(--dur-1) var(--ease-out);
+}
+
+.chipRemove:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.query {
+  flex: 1;
+  min-width: 140px;
+  height: 30px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+}
+
+.query::placeholder {
+  color: var(--subtle);
+}
+
+.query:focus {
+  outline: none;
+}
+
+.results {
+  padding: 8px 0 2px;
+  margin-bottom: -10px;
+}
+
+.result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  margin: 0 -10px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: var(--ink);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color var(--dur-1) var(--ease-out);
+  --ring: var(--raised);
+}
+
+.result:hover {
+  background: var(--hover);
+}
+
+.result[aria-selected='true'] {
+  background: var(--accentsoft);
+  --ring: var(--accentsoft);
+}
+
+.resultName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hit {
+  font-weight: 700;
+}
+
+.resultName .rest {
+  font-weight: 500;
+}
+
+.footerSpacer {
+  flex: 1;
+}
+
+@keyframes chip-in {
+  from {
+    opacity: 0;
+    transform: scale(var(--pop));
+  }
+}
+
+/* DM intro (DMEmpty) */
+.intro {
+  padding: 40px 20px 24px;
+  max-width: 560px;
+  animation: intro-in var(--dur-2) var(--ease-out);
+}
+
+.introName {
+  margin: 18px 0 0;
+  font-family: var(--font-title);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: normal;
+}
+
+:lang(ja) .introName {
+  letter-spacing: 0;
+}
+
+.introTime {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@keyframes intro-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .chip {
+    animation-name: intro-in;
+  }
+}

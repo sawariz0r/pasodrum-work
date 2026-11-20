@@ -1,31 +1,55 @@
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Navigate, Route, Routes, useParams } from 'react-router';
-import { useWorkspace, type Channel } from '../../matrix';
-import { IconButton } from '../../ui';
-import { HashIcon, LockIcon, SidebarIcon } from '../icons';
-import { channelPath, fallbackSpace, homeChannel, spaceHome } from '../places';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { Navigate, Route, Routes, useLocation, useParams, useSearchParams } from 'react-router';
+import { useWorkspace, type Channel, type Space } from '../../matrix';
+import { useDraftsFor } from '../drafts';
+import { HashIcon, LockIcon } from '../icons';
+import { ActivityColumn } from '../pages/Activity';
+import { DmConversation, DmsColumn } from '../pages/Dms';
+import { DraftsView } from '../pages/Drafts';
+import { ThreadsView } from '../pages/Threads';
+import { NewMessageProvider } from '../people/NewMessage';
+import { ProfileCardProvider } from '../people/ProfileCard';
+import { channelPath, dmPath, fallbackSpace, homeChannel, spaceHome } from '../places';
 import { rememberPlace } from '../prefs';
+import { ThreadPanel } from '../thread/ThreadPanel';
+import { useOpenThread, useThreadNav } from '../thread/useThread';
 import { noStoredTabs } from '../registry';
 import { AppStart } from './AppStart';
 import { ChannelTabs } from './ChannelTabs';
 import { ConnectionBanner } from './ConnectionBanner';
+import { DrawerContext, DrawerToggle, useNarrow } from './Drawer';
 import { NotAvailable } from './NotAvailable';
-import { Rail } from './Rail';
+import { Rail, type Section } from './Rail';
 import s from './Shell.module.css';
 import { Sidebar } from './Sidebar';
 
-/** Everything behind sign-in. The URL is the navigation state (D-19). */
+const SignOut = createContext<() => void>(() => {});
+
+/** Everything behind sign-in. The URL is the navigation state (D-19, D-23). */
 export function Workspace({ onSignOut }: { onSignOut: () => void }) {
   const starting = useWorkspace((x) => x.connection === 'starting');
+  const meId = useWorkspace((x) => x.me.id);
+  useDraftsFor(meId);
   if (starting) return <AppStart />;
   return (
-    <Routes>
-      <Route index element={<HomeRedirect />} />
-      <Route path="w/:spaceId" element={<SpaceRedirect onSignOut={onSignOut} />} />
-      <Route path="w/:spaceId/c/:channelId" element={<Shell onSignOut={onSignOut} />} />
-      <Route path="*" element={<Shell onSignOut={onSignOut} />} />
-    </Routes>
+    <SignOut.Provider value={onSignOut}>
+      <ProfileCardProvider>
+        <NewMessageProvider>
+          <Routes>
+            <Route index element={<HomeRedirect />} />
+            <Route path="w/:spaceId" element={<SpaceRedirect />} />
+            <Route path="w/:spaceId/c/:channelId" element={<ChannelRoute />} />
+            <Route path="w/:spaceId/dm/:dmId" element={<SpaceDmRoute />} />
+            <Route path="threads" element={<SpaceViewRoute view="threads" />} />
+            <Route path="drafts" element={<SpaceViewRoute view="drafts" />} />
+            <Route path="dms" element={<DmsRoute />} />
+            <Route path="dms/:dmId" element={<DmsRoute />} />
+            <Route path="activity" element={<ActivityRoute />} />
+            <Route path="*" element={<UnknownRoute />} />
+          </Routes>
+        </NewMessageProvider>
+      </ProfileCardProvider>
+    </SignOut.Provider>
   );
 }
 
@@ -36,62 +60,178 @@ function HomeRedirect() {
   return <Navigate to={channelPath(spaceId, home)} replace />;
 }
 
-function SpaceRedirect({ onSignOut }: { onSignOut: () => void }) {
+function SpaceRedirect() {
   const { spaceId = '' } = useParams();
   const home = useWorkspace((x) => spaceHome(x, spaceId)?.id);
-  if (!home) return <Shell onSignOut={onSignOut} />;
+  if (!home) return <UnknownRoute />;
   return <Navigate to={channelPath(spaceId, home)} replace />;
 }
 
-function Shell({ onSignOut }: { onSignOut: () => void }) {
+function useFallbackSpace(spaceId?: string): Space | undefined {
+  const spaces = useWorkspace((x) => x.spaces);
+  return fallbackSpace(spaces, spaceId);
+}
+
+function ChannelRoute() {
   const { spaceId, channelId } = useParams();
   const spaces = useWorkspace((x) => x.spaces);
   const channel = useWorkspace((x) => (spaceId && channelId ? x.channels[spaceId]?.find((c) => c.id === channelId) : undefined));
-  const space = channel ? spaces.find((x) => x.id === channel.spaceId) : fallbackSpace(spaces, spaceId);
-  const [drawer, setDrawer] = useState(false);
+  const fallback = useFallbackSpace(spaceId);
+  const space = channel ? spaces.find((x) => x.id === channel.spaceId) : fallback;
 
   useEffect(() => {
     if (channel) rememberPlace(channel.spaceId, channel.id);
   }, [channel]);
 
-  useEffect(() => {
-    if (!drawer) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setDrawer(false);
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [drawer]);
-
   return (
-    <div className={[s.shell, drawer && s.drawerOpen].filter(Boolean).join(' ')}>
-      <Rail activeSpaceId={space?.id} onSignOut={onSignOut} />
-      {space && <Sidebar space={space} activeChannelId={channel?.id} onNavigate={() => setDrawer(false)} />}
-      <div className={s.scrim} aria-hidden="true" onClick={() => setDrawer(false)} />
-      <main className={s.main}>
-        <ConnectionBanner />
-        {channel ? (
-          <ChannelPage channel={channel} drawer={drawer} onToggleDrawer={() => setDrawer(!drawer)} />
-        ) : (
-          <NotAvailable />
-        )}
-      </main>
-    </div>
+    <Frame section="home" space={space} column={space && <Sidebar space={space} active={channel ? { channelId: channel.id } : undefined} />}>
+      {channel ? <ChannelPage channel={channel} /> : <NotAvailable />}
+    </Frame>
   );
 }
 
-function ChannelPage({ channel, drawer, onToggleDrawer }: { channel: Channel; drawer: boolean; onToggleDrawer: () => void }) {
-  const { t } = useTranslation();
+function SpaceDmRoute() {
+  const { spaceId, dmId } = useParams();
+  const space = useFallbackSpace(spaceId);
+  const known = useWorkspace((x) => x.dms.some((d) => d.id === dmId));
+  return (
+    <Frame section="home" space={space} column={space && <Sidebar space={space} active={known && dmId ? { dmId } : undefined} />}>
+      {known && dmId ? <DmConversation dmId={dmId} /> : <NotAvailable />}
+    </Frame>
+  );
+}
+
+function SpaceViewRoute({ view }: { view: 'threads' | 'drafts' }) {
+  const [params] = useSearchParams();
+  const space = useFallbackSpace(params.get('space') ?? undefined);
+  const nav = useThreadNav();
+  const rootId = useOpenThread();
+  const open = useWorkspace((x) => (view === 'threads' && rootId ? x.threads.find((th) => th.rootId === rootId) : undefined));
+  const channelName = useWorkspace((x) => (open ? x.channels[space?.id ?? '']?.find((c) => c.id === open.channelId)?.name : undefined));
+  // Threads1024: the thread opens beside the list, as in a channel.
+  const aside = open && channelName !== undefined && (
+    <ThreadPanel key={open.rootId} channelId={open.channelId} channelName={channelName} rootId={open.rootId} onClose={nav.close} />
+  );
+  return (
+    <Frame section="home" space={space} column={space && <Sidebar space={space} active={{ view }} />} aside={aside}>
+      {!space ? <NotAvailable /> : view === 'threads' ? <ThreadsView space={space} /> : <DraftsView space={space} />}
+    </Frame>
+  );
+}
+
+function DmsRoute() {
+  const { dmId } = useParams();
+  const space = useFallbackSpace();
+  const known = useWorkspace((x) => (dmId ? x.dms.some((d) => d.id === dmId) : false));
+  const newest = useWorkspace((x) => x.dms[0]?.id);
+  const narrow = useNarrow();
+  if (!dmId && newest && !narrow) return <Navigate to={dmPath(newest)} replace />;
+  return (
+    <Frame section="dms" space={space} column={<DmsColumn activeId={dmId} />} list={{ back: '/dms', detail: !!dmId }}>
+      {known && dmId ? <DmConversation dmId={dmId} /> : dmId ? <NotAvailable /> : <HomePage />}
+    </Frame>
+  );
+}
+
+function ActivityRoute() {
+  const [params] = useSearchParams();
+  const space = useFallbackSpace();
+  const itemId = params.get('item') ?? undefined;
+  const item = useWorkspace((x) => (itemId ? x.activity.find((a) => a.id === itemId) : undefined));
+  const channel = useWorkspace((x) => {
+    if (!item) return undefined;
+    for (const list of Object.values(x.channels)) {
+      const c = list.find((ch) => ch.id === item.channelId);
+      if (c) return c;
+    }
+    return undefined;
+  });
+  const isDm = useWorkspace((x) => !!item && x.dms.some((d) => d.id === item.channelId));
+  return (
+    <Frame section="activity" space={space} column={<ActivityColumn selectedId={item?.id} />} list={{ back: '/activity', detail: !!item }}>
+      {channel ? <ChannelPage channel={channel} /> : isDm && item ? <DmConversation dmId={item.channelId} /> : <HomePage />}
+    </Frame>
+  );
+}
+
+function UnknownRoute() {
+  const space = useFallbackSpace();
+  return (
+    <Frame section="home" space={space} column={space && <Sidebar space={space} />}>
+      <NotAvailable />
+    </Frame>
+  );
+}
+
+/** The last channel, when a rail page has nothing picked. */
+function HomePage() {
+  const home = useWorkspace((x) => homeChannel(x));
+  return home ? <ChannelPage channel={home} /> : <NotAvailable />;
+}
+
+/** Rail + the left column (sidebar or a rail page's list) + main. Below 1000px the column is a drawer. */
+type FrameProps = {
+  section: Section;
+  space?: Space;
+  column: ReactNode;
+  children: ReactNode;
+  /** Beside main (the thread panel in the Threads view). */
+  aside?: ReactNode;
+  /** Rail pages with a list column (DMs, Activity): at ≤800px the list and the open item take turns. */
+  list?: { back: string; detail: boolean };
+};
+
+function Frame({ section, space, column, children, aside, list }: FrameProps) {
+  const onSignOut = useContext(SignOut);
+  const location = useLocation();
+  // The drawer belongs to the page it was opened on: any navigation closes it.
+  const [openAt, setOpenAt] = useState<string | null>(null);
+  const open = openAt === location.key;
+  const toggle = () => setOpenAt(open ? null : location.key);
+  const threadOpen = useOpenThread() !== null;
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpenAt(null);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  return (
+    <DrawerContext.Provider value={{ open, toggle, back: list?.back }}>
+      <div
+        className={[
+          s.shell,
+          open && s.drawerOpen,
+          open && 'drawer-open',
+          threadOpen && s.threadFold,
+          threadOpen && 'thread-fold',
+          list && s.listPage,
+          list && (list.detail ? 'pane-detail' : 'pane-list'),
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        <Rail section={section} activeSpaceId={space?.id} onSignOut={onSignOut} />
+        {column}
+        <div className={s.scrim} aria-hidden="true" onClick={() => setOpenAt(null)} />
+        <main className={s.main}>
+          <ConnectionBanner />
+          {children}
+        </main>
+        {aside}
+      </div>
+    </DrawerContext.Provider>
+  );
+}
+
+function ChannelPage({ channel }: { channel: Channel }) {
   return (
     <>
       <header className={s.header}>
-        <IconButton
-          className={s.drawerToggle}
-          label={t('shell.sidebar.toggle')}
-          icon={<SidebarIcon />}
-          aria-expanded={drawer}
-          onClick={onToggleDrawer}
-        />
+        <DrawerToggle />
         <h1 className={s.channelName}>
           {channel.private ? <LockIcon size={18} strokeWidth={2.1} /> : <HashIcon size={18} strokeWidth={2.1} />}
           <span>{channel.name}</span>

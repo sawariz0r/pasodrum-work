@@ -13,6 +13,8 @@ export interface TextMessage {
   /** Media messages: `body` is the file name. */
   file?: { url: string; info: Record<string, unknown> };
   replyTo?: { eventId: string; fallback?: { body: string; html: string } };
+  /** Send into a thread. Without replyTo, m.in_reply_to points at `latestId` as the fallback for clients without threads. */
+  thread?: { rootId: string; latestId: string };
   extra?: Record<`work.pasodrum.${string}`, unknown>;
 }
 
@@ -20,8 +22,11 @@ const HTML = 'org.matrix.custom.html';
 const formatted = (html: string | undefined) => (html ? { format: HTML, formatted_body: html } : {});
 
 export function contentOf(message: TextMessage): Record<string, unknown> {
-  const { body, html, file, replyTo, mentions } = message;
+  const { body, html, file, replyTo, mentions, thread } = message;
   const fallback = replyTo?.fallback;
+  const relation = thread
+    ? { rel_type: RelationType.Thread, event_id: thread.rootId, is_falling_back: !replyTo, 'm.in_reply_to': { event_id: replyTo?.eventId ?? thread.latestId } }
+    : replyTo && { 'm.in_reply_to': { event_id: replyTo.eventId } };
   return {
     ...message.extra,
     msgtype: message.msgtype ?? 'm.text',
@@ -29,7 +34,7 @@ export function contentOf(message: TextMessage): Record<string, unknown> {
     ...formatted(fallback ? fallback.html + (html ?? escapeHtml(body)) : html),
     ...(file ? { url: file.url, filename: body, info: file.info } : {}),
     ...(mentions ? { 'm.mentions': { user_ids: mentions } } : {}),
-    ...(replyTo ? { 'm.relates_to': { 'm.in_reply_to': { event_id: replyTo.eventId } } } : {}),
+    ...(relation ? { 'm.relates_to': relation } : {}),
   };
 }
 

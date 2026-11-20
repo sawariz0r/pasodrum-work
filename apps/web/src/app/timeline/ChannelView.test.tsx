@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { WorkspaceProvider, type Message, type Timeline } from '../../matrix';
 import { createFakeStore } from '../testing/fakeStore';
@@ -26,9 +27,11 @@ function seeded(messages: Message[], extra: Partial<Timeline> = {}) {
 
 function mount(store = createFakeStore(), channelId = '!general') {
   render(
-    <WorkspaceProvider store={store}>
-      <ChannelView channelId={channelId} />
-    </WorkspaceProvider>,
+    <MemoryRouter>
+      <WorkspaceProvider store={store}>
+        <ChannelView channelId={channelId} />
+      </WorkspaceProvider>
+    </MemoryRouter>,
   );
   return store;
 }

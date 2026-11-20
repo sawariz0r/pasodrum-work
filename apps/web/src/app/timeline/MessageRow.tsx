@@ -1,9 +1,9 @@
 import { memo, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore, type Message } from '../../matrix';
-import { Avatar, avatarColor } from '../../ui';
 import { AlertIcon } from '../../ui/icons';
 import { MessageEditor } from '../composer/MessageEditor';
+import { useProfileCard } from '../people/ProfileCardContext';
 import { formatList, formatTime } from '../format';
 import { BoxIcon, TrashIcon, UserPlusIcon } from '../icons';
 import { useTimeline } from './context';
@@ -13,6 +13,7 @@ import { Reactions } from './Reactions';
 import { PlainText, RichText } from './RichText';
 import r from './Rich.module.css';
 import s from './Timeline.module.css';
+import { PersonAvatar } from './PersonAvatar';
 
 type Props = {
   message: Message;
@@ -28,6 +29,8 @@ type Props = {
   flash?: boolean;
   onRetry: (id: string) => void;
   onDiscard: (id: string) => void;
+  /** Thread replies: 32px avatar, 14.5px text. */
+  compact?: boolean;
 };
 
 const longLines = 15;
@@ -102,7 +105,7 @@ function ReplyQuote({ reply, original }: { reply: NonNullable<Message['replyTo']
     : reply.body;
   const inner = (
     <>
-      {found && <Avatar size={16} name={sender!.name} color={avatarColor(sender!.id)} src={sender!.avatarUrl} />}
+      {found && <PersonAvatar size={16} person={sender!} />}
       {sender && <span className={r.replyName}>{sender.name}</span>}
       <span className={r.replyText}>{text}</span>
     </>
@@ -140,6 +143,21 @@ function Content({ m, group, tail }: { m: Message; group?: Message[]; tail?: Rea
       <BoxIcon />
       <span className={r.unsupportedText}>{m.body || t('timeline.cantShow')}</span>
     </div>
+  );
+}
+
+/** Under a thread root: who replied and how many (Main, ClientThread). */
+function ThreadSummary({ thread, onOpen }: { thread: NonNullable<Message['thread']>; onOpen: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <button type="button" className={s.threadSummary} onClick={onOpen}>
+      <span className={s.threadPeople}>
+        {thread.participants.slice(0, 3).map((p) => (
+          <PersonAvatar key={p.id} size={22} person={p} />
+        ))}
+      </span>
+      <span className={s.threadCount}>{t('thread.replies', { count: thread.count })}</span>
+    </button>
   );
 }
 
@@ -190,10 +208,12 @@ export const MessageRow = memo(function MessageRow({
   flash = false,
   onRetry,
   onDiscard,
+  compact = false,
 }: Props) {
   const { t } = useTranslation();
   const store = useStore();
   const tl = useTimeline();
+  const profile = useProfileCard();
   const [force, setForce] = useState(false);
   if (m.kind === 'deleted') return <DeletedRow m={m} />;
   if (m.kind === 'system') return <SystemRow m={m} />;
@@ -218,6 +238,7 @@ export const MessageRow = memo(function MessageRow({
   const cls = [
     s.row,
     head ? s.head : s.cont,
+    compact && s.compact,
     arrive && s.arrive,
     m.mentionsMe && s.mention,
     force && s.force,
@@ -229,7 +250,9 @@ export const MessageRow = memo(function MessageRow({
     <div className={cls} data-message-id={m.id} data-ids={ids}>
       <div className={s.gutter}>
         {head ? (
-          <Avatar className={s.avatar} name={m.sender.name} color={avatarColor(m.sender.id)} src={m.sender.avatarUrl} />
+          <button type="button" className={s.avatarButton} tabIndex={-1} aria-hidden="true" onClick={(e) => profile.open(m.sender.id, e.currentTarget)}>
+            <PersonAvatar size={compact ? 32 : 36} person={m.sender} />
+          </button>
         ) : (
           !sending && <span className={s.hoverTime}>{time}</span>
         )}
@@ -237,7 +260,9 @@ export const MessageRow = memo(function MessageRow({
       <div className={s.main}>
         {head && (
           <div className={s.meta}>
-            <span className={s.name}>{m.sender.name}</span>
+            <button type="button" className={s.name} aria-haspopup="dialog" onClick={(e) => profile.open(m.sender.id, e.currentTarget)}>
+              {m.sender.name}
+            </button>
             {sending ? (
               <span role="img" aria-label={t('timeline.sending')} className={s.sending}>
                 <ClockIcon />
@@ -270,6 +295,7 @@ export const MessageRow = memo(function MessageRow({
           </div>
         )}
         {m.reactions && m.reactions.length > 0 && <Reactions reactions={m.reactions} meId={meId} onToggle={toggle} onPick={pick} />}
+        {m.thread && m.thread.count > 0 && tl.openThread && <ThreadSummary thread={m.thread} onOpen={() => tl.openThread?.(m.id)} />}
       </div>
       {m.status === 'sent' && !editing && <MessageActions message={m} group={group} own={own} onOpenChange={setForce} />}
     </div>

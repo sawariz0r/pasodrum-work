@@ -167,8 +167,15 @@
   width: 36px;
 }
 
-.avatar {
+.avatarButton {
+  display: flex;
+  align-self: flex-start;
   margin-top: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  cursor: pointer;
 }
 
 .hoverTime {
@@ -203,9 +210,20 @@
 }
 
 .name {
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--ink);
+  font: inherit;
   font-size: 15px;
   font-weight: 700;
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.name:hover {
+  text-decoration: underline;
 }
 
 .time {
@@ -684,4 +702,141 @@
   from {
     color: var(--subtle);
   }
+}
+
+/* Thread summary under a root (Main, ClientThread) */
+.threadSummary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 0 -4px;
+  padding: 4px 10px 4px 4px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  line-height: normal;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    border-color var(--dur-1) var(--ease-out);
+}
+
+.threadSummary:hover {
+  border-color: var(--line);
+  background: var(--raised);
+}
+
+.threadPeople {
+  display: flex;
+  gap: 3px;
+}
+
+.threadCount {
+  color: var(--link);
+  font-weight: 700;
+}
+
+/* Thread panel (ThreadNew, ThreadLoading, ThreadError, ClientThread) */
+.threadContent {
+  margin-top: 0;
+  padding-top: 16px;
+}
+
+.threadRoot > .row {
+  padding: 4px 10px 10px;
+}
+
+.repliesRule {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 10px 8px;
+  color: var(--subtle);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.compact.head {
+  padding: 8px 10px;
+}
+
+.compact.cont {
+  padding: 2px 10px;
+}
+
+.compact .gutter {
+  width: 32px;
+}
+
+.compact .avatarButton {
+  border-radius: 8px;
+}
+
+.compact .meta {
+  line-height: 20px;
+}
+
+.compact .name,
+.compact .body {
+  font-size: 14.5px;
+}
+
+.skelSmall {
+  padding: 8px 10px;
+}
+
+.skelSmall > :last-child {
+  gap: 8px;
+  padding-top: 3px;
+}
+
+.threadError {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 6px 10px 0;
+  padding: 10px 10px 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--well);
+  font-size: 13.5px;
+  line-height: 20px;
+  animation: fade-in var(--dur-2) var(--ease-out) both;
+}
+
+.threadErrorIcon {
+  flex-shrink: 0;
+  color: var(--dangertext);
+}
+
+.threadErrorText {
+  flex: 1;
+  min-width: 0;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.threadRetry {
+  flex-shrink: 0;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--raised);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--dur-1) var(--ease-out);
+}
+
+.threadRetry:hover {
+  background: var(--hover);
+}
+
+.threadRetry:active {
+  transform: scale(var(--press));
 }

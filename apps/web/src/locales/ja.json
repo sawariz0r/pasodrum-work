@@ -64,7 +64,8 @@
       "lightTheme": "ライトテーマに切り替え",
       "darkTheme": "ダークテーマに切り替え",
       "profileActive": "プロフィール：{{name}}（アクティブ）",
-      "profileOffline": "プロフィール：{{name}}（オフライン）"
+      "profileOffline": "プロフィール：{{name}}（オフライン）",
+      "unread": "{{label}}（未読 {{count}} 件）"
     },
     "sidebar": {
       "label": "{{workspace}} のナビゲーション",
@@ -108,7 +109,8 @@
     "notAvailable": {
       "title": "このページは利用できません",
       "openChannel": "#{{channel}} を開く"
-    }
+    },
+    "back": "戻る"
   },
   "timeline": {
     "today": "今日",
@@ -141,7 +143,7 @@
     "you": "あなた",
     "reactedOthers": "{{names}} ほか {{count}} 人",
     "person": "{{name}}さん",
-    "joined": "{{names}}がチャンネルに参加しました",
+    "joined": "{{names}}が参加しました",
     "left": "{{names}}がチャンネルから退出しました",
     "viewer": "{{name}} さんの画像",
     "prevImage": "前の画像",
@@ -152,11 +154,13 @@
     "playVideo": "動画を再生",
     "play": "再生",
     "pause": "一時停止",
-    "downloadName": "{{name}} をダウンロード"
+    "downloadName": "{{name}} をダウンロード",
+    "replyInThread": "スレッドで返信"
   },
   "composer": {
     "label": "{{channel}} へのメッセージ",
     "placeholder": "#{{channel}} へのメッセージ",
+    "placeholderDm": "{{name}} さんへのメッセージ",
     "send": "送信",
     "formatting": "書式",
     "bold": "太字",
@@ -199,5 +203,60 @@
     "deleteTitle": "メッセージを削除しますか？",
     "delete": "削除",
     "close": "閉じる"
+  },
+  "thread": {
+    "title": "スレッド",
+    "close": "スレッドを閉じる",
+    "back": "#{{channel}} に戻る",
+    "replyLabel": "スレッドで返信",
+    "replyPlaceholder": "返信…",
+    "send": "返信を送信",
+    "replies_other": "{{count}} 件の返信",
+    "loadFailed": "返信を読み込めませんでした",
+    "retry": "再試行"
+  },
+  "people": {
+    "nameSeparator": "、",
+    "profile": "{{name}} のプロフィール",
+    "message": "メッセージ",
+    "localTime": "{{time}}・{{city}}",
+    "close": "閉じる",
+    "cancel": "キャンセル",
+    "search": "名前またはメールアドレス",
+    "remove": "{{name}} を外す",
+    "city": {
+      "tokyo": "東京",
+      "oslo": "オスロ",
+      "stockholm": "ストックホルム",
+      "copenhagen": "コペンハーゲン",
+      "helsinki": "ヘルシンキ",
+      "london": "ロンドン",
+      "berlin": "ベルリン",
+      "paris": "パリ",
+      "amsterdam": "アムステルダム",
+      "newYork": "ニューヨーク"
+    }
+  },
+  "pages": {
+    "activity": {
+      "all": "すべて",
+      "mentions": "メンション",
+      "replies": "返信",
+      "empty": "新しい通知はありません",
+      "mention": "メンション",
+      "reply": "あなたへの返信",
+      "unread": "未読"
+    },
+    "threads": {
+      "empty": "スレッドはまだありません"
+    },
+    "drafts": {
+      "empty": "下書きはありません",
+      "delete": "下書きを削除"
+    },
+    "dms": {
+      "you": "あなた：{{text}}",
+      "from": "{{name}}：{{text}}"
+    }
   }
 }

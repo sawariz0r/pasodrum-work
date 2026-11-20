@@ -12,6 +12,8 @@ export interface TimelineActions {
   /** Long messages stay expanded until you leave the channel. */
   isExpanded(messageId: string): boolean;
   expand(messageId: string): void;
+  /** Opens a root's thread; absent inside a thread panel. */
+  openThread?: (rootId: string) => void;
 }
 
 export const TimelineContext = createContext<TimelineActions | null>(null);

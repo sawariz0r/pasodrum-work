@@ -24,6 +24,20 @@ describe('contentOf (D-05)', () => {
     expect(contentOf({ body: 'x', replyTo: { eventId: '$e' } })).toEqual({ msgtype: 'm.text', body: 'x', 'm.relates_to': { 'm.in_reply_to': { event_id: '$e' } } });
   });
 
+  it('sends into a thread with the Element-style reply fallback, or as a real reply inside the thread', () => {
+    expect(contentOf({ body: 'x', thread: { rootId: '$root', latestId: '$last' } })).toEqual({
+      msgtype: 'm.text',
+      body: 'x',
+      'm.relates_to': { rel_type: 'm.thread', event_id: '$root', is_falling_back: true, 'm.in_reply_to': { event_id: '$last' } },
+    });
+    expect(contentOf({ body: 'x', thread: { rootId: '$root', latestId: '$last' }, replyTo: { eventId: '$q' } })['m.relates_to']).toEqual({
+      rel_type: 'm.thread',
+      event_id: '$root',
+      is_falling_back: false,
+      'm.in_reply_to': { event_id: '$q' },
+    });
+  });
+
   it('builds media messages', () => {
     expect(contentOf({ msgtype: 'm.image', body: 'a.png', file: { url: 'mxc://s/id', info: { mimetype: 'image/png', size: 3, w: 2, h: 1 } } })).toEqual({
       msgtype: 'm.image',

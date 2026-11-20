@@ -162,3 +162,48 @@ export function membershipSummary(changes: { person: Person; prev?: string; next
   }
   return joined.length || left.length ? { joined, left } : null;
 }
+
+const domainOf = (userId: string) => userId.slice(userId.indexOf(':') + 1);
+const localOf = (userId: string) => userId.slice(1, userId.includes(':') ? userId.indexOf(':') : undefined);
+
+/** D-07 deterministic IDs (`henrik_nordlys.no`) → the email they came from; a plain local part → local@server. */
+export function emailFromId(userId: string): string {
+  const local = localOf(userId);
+  const cut = local.lastIndexOf('_');
+  const domain = cut > 0 ? local.slice(cut + 1) : '';
+  return domain.includes('.') && !domain.startsWith('.') && !domain.endsWith('.') ? `${local.slice(0, cut)}@${domain}` : `${local}@${domainOf(userId)}`;
+}
+
+/** Without the workspace member list: an ID made from an outside email (D-07) is someone from outside. */
+export const looksExternal = (userId: string) => emailFromId(userId) !== `${localOf(userId)}@${domainOf(userId)}`;
+
+export interface ThreadReply {
+  id: string;
+  ts: number;
+  sender: string;
+}
+
+/**
+ * Thread summary from what we know: the server's bundled summary on the root (a snapshot) plus replies seen since
+ * (sync) or fetched (relations). Participants: most recent first.
+ */
+export function threadStats(
+  bundled: { count: number; latest?: ThreadReply } | undefined,
+  replies: ThreadReply[],
+  complete: boolean,
+): { count: number; lastTs: number; latest?: ThreadReply; participants: string[] } | null {
+  const known = new Map(replies.map((r) => [r.id, r]));
+  const all = [...known.values()];
+  if (bundled?.latest && !known.has(bundled.latest.id)) all.push(bundled.latest);
+  all.sort((a, b) => b.ts - a.ts);
+  const newer = bundled?.latest ? replies.filter((r) => r.ts > bundled.latest!.ts).length : replies.length;
+  const count = complete || !bundled ? known.size : Math.max(known.size, bundled.count + (bundled.latest ? newer : 0));
+  if (!count || !all.length) return null;
+  return { count, lastTs: all[0]!.ts, latest: all[0], participants: [...new Set(all.map((r) => r.sender))] };
+}
+
+export const sameMembers = (a: string[], b: string[]) => {
+  const x = new Set(a);
+  const y = new Set(b);
+  return x.size === y.size && [...x].every((id) => y.has(id));
+};

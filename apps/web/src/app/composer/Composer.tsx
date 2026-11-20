@@ -1,12 +1,14 @@
-// The channel composer (ComposerFormat, ComposerReply, EmojiPicker, MentionPicker, LinkDialog, Upload*, DropOverlay boards).
+// The channel and thread composer (ComposerFormat, ComposerReply, EmojiPicker, MentionPicker, LinkDialog, Upload*, DropOverlay, ThreadComposer boards).
+// Unsent text is kept per channel and per thread on this device (app/drafts.ts).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { EditorContent, useEditor, useEditorState, type Editor } from '@tiptap/react';
-import { useStore, useWorkspace, type Person, type Upload, type WorkspaceStore } from '../../matrix';
-import { Avatar, avatarColor, isImeEnter } from '../../ui';
+import { useStore, useWorkspace, type Draft, type Person, type Upload, type WorkspaceSnapshot, type WorkspaceStore } from '../../matrix';
+import { clearDraft, getDraft, setDraft, useDraftsFor } from '../drafts';
+import { isImeEnter } from '../../ui';
 import { useComposer } from './context';
-import { toDraft } from './draft';
+import { editableContent, toDraft } from './draft';
 import { EmojiPicker } from './EmojiPicker';
 import type { Emoji } from './emoji';
 import { extensions, linkRangeKey } from './extensions';
@@ -33,15 +35,26 @@ import { createSuggestStore } from './suggest';
 import { EmojiList, MentionList, useSuggest } from './SuggestList';
 import { UploadTray } from './UploadTray';
 import s from './Composer.module.css';
+import { PersonAvatar } from '../timeline/PersonAvatar';
 
 const NONE: Upload[] = [];
 const idle = { bold: false, italic: false, strike: false, link: false, orderedList: false, bulletList: false, blockquote: false, code: false, codeBlock: false, hasText: false };
 const blocked = (u: Upload) => u.status === 'failed' || u.status === 'too-large';
 const hasFiles = (e: DragEvent) => !!e.dataTransfer && Array.from(e.dataTransfer.types).includes('Files');
 
-function sendNow(editor: Editor, store: WorkspaceStore, channelId: string, replyToId: string | null, cancelReply: () => void) {
-  const draft = toDraft(editor.getJSON());
-  store.send(channelId, replyToId ? { ...draft, replyTo: replyToId } : draft);
+const draftSaveMs = 400;
+
+type Place = { channelId: string; threadRootId?: string };
+
+const messagesAt = (snap: WorkspaceSnapshot, { channelId, threadRootId }: Place) =>
+  (threadRootId ? snap.threadTimelines[threadRootId] : snap.timelines[channelId])?.messages;
+
+function sendNow(editor: Editor, store: WorkspaceStore, place: Place, replyToId: string | null, cancelReply: () => void) {
+  const draft: Draft = toDraft(editor.getJSON());
+  if (replyToId) draft.replyTo = replyToId;
+  if (place.threadRootId) draft.threadRootId = place.threadRootId;
+  store.send(place.channelId, draft);
+  clearDraft(place.channelId, place.threadRootId);
   editor.commands.clearContent(true);
   cancelReply();
 }
@@ -90,12 +103,21 @@ function useDismiss(open: boolean, onClose: () => void, ...inside: React.RefObje
   }, [open]);
 }
 
-export function Composer({ channelId, channelName }: { channelId: string; channelName: string }) {
+export function Composer({ channelId, channelName, threadRootId, isDm = false }: { channelId: string; channelName: string; threadRootId?: string; isDm?: boolean }) {
   const { t } = useTranslation();
   const store = useStore();
   const { replyToId, cancelReply, editingId, startEdit } = useComposer();
+  const place: Place = { channelId, threadRootId };
   const uploads = useWorkspace((snap) => snap.uploads[channelId] ?? NONE);
-  const reply = useWorkspace((snap) => (replyToId ? snap.timelines[channelId]?.messages.find((m) => m.id === replyToId) : undefined));
+  const reply = useWorkspace((snap) => (replyToId ? messagesAt(snap, place)?.find((m) => m.id === replyToId) : undefined));
+  const meId = useWorkspace((snap) => snap.me.id);
+  useDraftsFor(meId);
+  const [restored] = useState(() => {
+    const saved = getDraft(channelId, threadRootId);
+    return saved ? editableContent(saved) : undefined;
+  });
+  const pendingDraft = useRef<Draft | null>(null);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const [mentions] = useState(() => createSuggestStore<Person>((p) => ({ id: p.id, label: p.name })));
   const [emoji] = useState(() => createSuggestStore<Emoji>());
@@ -112,8 +134,8 @@ export function Composer({ channelId, channelName }: { channelId: string; channe
   const fileInput = useRef<HTMLInputElement>(null);
   const waiting = useRef(false);
 
-  const label = t('composer.label', { channel: t('common.channelName', { name: channelName }) });
-  const placeholder = t('composer.placeholder', { channel: channelName });
+  const label = threadRootId ? t('thread.replyLabel') : t('composer.label', { channel: t('common.channelName', { name: channelName }) });
+  const placeholder = threadRootId ? t('thread.replyPlaceholder') : isDm ? t('composer.placeholderDm', { name: channelName }) : t('composer.placeholder', { channel: channelName });
 
   const [exts] = useState(() =>
     extensions({
@@ -144,7 +166,7 @@ export function Composer({ channelId, channelName }: { channelId: string; channe
     }
     if (e.key === 'ArrowUp' && !e.shiftKey && !e.metaKey && !e.altKey && editor.isEmpty) {
       const snap = store.getSnapshot();
-      const own = snap.timelines[channelId]?.messages.findLast((m) => m.sender.id === snap.me.id && m.status === 'sent' && (m.kind ?? 'text') === 'text');
+      const own = messagesAt(snap, place)?.findLast((m) => m.sender.id === snap.me.id && m.status === 'sent' && (m.kind ?? 'text') === 'text');
       if (!own) return false;
       startEdit(own.id);
       return true;
@@ -161,15 +183,37 @@ export function Composer({ channelId, channelName }: { channelId: string; channe
   const editor = useEditor(
     {
       extensions: exts,
+      content: restored,
       autofocus: 'end',
       editorProps: {
         attributes: { role: 'textbox', 'aria-multiline': 'true', 'aria-label': label, 'aria-placeholder': placeholder, class: s.field ?? '' },
         handleKeyDown: (_view, e) => onKeyDown(e),
         handlePaste: (_view, e) => onPaste(e),
       },
-      onUpdate: ({ editor: ed }) => store.setTyping(channelId, ed.getText().trim().length > 0),
+      onUpdate: ({ editor: ed }) => {
+        store.setTyping(channelId, ed.getText().trim().length > 0);
+        pendingDraft.current = toDraft(ed.getJSON());
+        clearTimeout(saveTimer.current);
+        saveTimer.current = setTimeout(saveDraft, draftSaveMs);
+      },
     },
     [],
+  );
+
+  function saveDraft() {
+    const d = pendingDraft.current;
+    pendingDraft.current = null;
+    if (d) setDraft({ channelId, threadRootId, body: d.body, html: d.html, mentions: d.mentions });
+  }
+
+  // Leaving the channel or thread keeps what was typed, even inside the debounce window.
+  useEffect(
+    () => () => {
+      clearTimeout(saveTimer.current);
+      const d = pendingDraft.current;
+      if (d) setDraft({ channelId, threadRootId, body: d.body, html: d.html, mentions: d.mentions });
+    },
+    [channelId, threadRootId],
   );
 
   const ui = useEditorState({
@@ -193,7 +237,7 @@ export function Composer({ channelId, channelName }: { channelId: string; channe
 
   const doSend = () => {
     waiting.current = false;
-    sendNow(editor, store, channelId, replyToId, cancelReply);
+    sendNow(editor, store, place, replyToId, cancelReply);
   };
 
   const send = () => {
@@ -217,9 +261,9 @@ export function Composer({ channelId, channelName }: { channelId: string; channe
           return;
         }
         waiting.current = false;
-        sendNow(editor, store, channelId, replyToId, cancelReply);
+        sendNow(editor, store, { channelId, threadRootId }, replyToId, cancelReply);
       }),
-    [store, channelId, editor, replyToId, cancelReply],
+    [store, channelId, threadRootId, editor, replyToId, cancelReply],
   );
 
   useEffect(() => () => store.setTyping(channelId, false), [store, channelId]);
@@ -234,8 +278,11 @@ export function Composer({ channelId, channelName }: { channelId: string; channe
     wasEditing.current = editingId;
   }, [editor, editingId]);
 
-  // Drag files anywhere over the channel (the main area) to attach them.
-  const dockRef = useCallback((el: HTMLDivElement | null) => setMain(el ? ((el.closest('main') as HTMLElement | null) ?? el.parentElement) : null), []);
+  // Drag files anywhere over the channel (the main area) or the thread panel to attach them.
+  const dockRef = useCallback(
+    (el: HTMLDivElement | null) => setMain(el ? (el.closest<HTMLElement>(threadRootId ? 'aside' : 'main') ?? el.parentElement) : null),
+    [threadRootId],
+  );
   useEffect(() => {
     if (!main) return;
     let depth = 0;
@@ -322,7 +369,7 @@ export function Composer({ channelId, channelName }: { channelId: string; channe
   const toggle = (run: (c: ReturnType<Editor['chain']>) => ReturnType<Editor['chain']>) => () => run(editor.chain().focus()).run();
 
   return (
-    <div className={s.dock} ref={dockRef}>
+    <div className={threadRootId ? `${s.dock} ${s.threadDock}` : s.dock} ref={dockRef}>
       <div className={s.float} ref={floatRef}>
         {picker === 'emoji' && (
           <EmojiPicker
@@ -347,7 +394,7 @@ export function Composer({ channelId, channelName }: { channelId: string; channe
             <span className={s.replyIcon}>
               <ReplyIcon />
             </span>
-            <Avatar size={16} name={reply.sender.name} color={avatarColor(reply.sender.id)} src={reply.sender.avatarUrl} />
+            <PersonAvatar size={16} person={reply.sender} />
             <span className={s.replyName}>{reply.sender.name}</span>
             <span className={s.replyText}>{reply.body || reply.media?.name}</span>
             <button type="button" className={s.replyCancel} aria-label={t('composer.cancelReply')} onClick={cancelReply}>
@@ -408,7 +455,14 @@ export function Composer({ channelId, channelName }: { channelId: string; channe
             <MentionIcon />
           </button>
           <span className={s.spacer} />
-          <button type="button" className={s.send} onMouseDown={(e) => e.preventDefault()} onClick={send} disabled={!canSend} aria-label={t('composer.send')}>
+          <button
+            type="button"
+            className={s.send}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={send}
+            disabled={!canSend}
+            aria-label={threadRootId ? t('thread.send') : t('composer.send')}
+          >
             <SendIcon />
           </button>
         </div>

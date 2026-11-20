@@ -1,9 +1,10 @@
 // Delete confirm (MsgDeleteConfirm board): the message preview, Cancel, Delete.
 import { useTranslation } from 'react-i18next';
 import type { Message } from '../../matrix';
-import { Avatar, avatarColor, Button, Dialog } from '../../ui';
+import { Button, Dialog } from '../../ui';
 import { formatTime } from '../format';
 import s from './MessageEditor.module.css';
+import { PersonAvatar } from '../timeline/PersonAvatar';
 
 export function DeleteConfirm({ message, open, onCancel, onDelete }: { message: Message; open: boolean; onCancel: () => void; onDelete: () => void }) {
   const { t } = useTranslation();
@@ -29,7 +30,7 @@ export function DeleteConfirm({ message, open, onCancel, onDelete }: { message: 
       }
     >
       <div className={s.preview}>
-        <Avatar size={30} name={message.sender.name} color={avatarColor(message.sender.id)} src={message.sender.avatarUrl} />
+        <PersonAvatar size={30} person={message.sender} />
         <span className={s.previewMain}>
           <span className={s.previewMeta}>
             <span className={s.previewName}>{message.sender.name}</span>

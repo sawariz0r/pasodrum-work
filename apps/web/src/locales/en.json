@@ -64,7 +64,8 @@
       "lightTheme": "Switch to light theme",
       "darkTheme": "Switch to dark theme",
       "profileActive": "Your profile: {{name}}, active",
-      "profileOffline": "Your profile: {{name}}, offline"
+      "profileOffline": "Your profile: {{name}}, offline",
+      "unread": "{{label}}, {{count}} unread"
     },
     "sidebar": {
       "label": "{{workspace}} navigation",
@@ -109,7 +110,8 @@
     "notAvailable": {
       "title": "This page isn’t available",
       "openChannel": "Open #{{channel}}"
-    }
+    },
+    "back": "Back"
   },
   "timeline": {
     "today": "Today",
@@ -143,7 +145,7 @@
     "you": "you",
     "reactedOthers": "{{names}} and {{count}} others",
     "person": "{{name}}",
-    "joined": "{{names}} joined the channel",
+    "joined": "{{names}} joined",
     "left": "{{names}} left the channel",
     "viewer": "Image from {{name}}",
     "prevImage": "Previous image",
@@ -154,11 +156,13 @@
     "playVideo": "Play video",
     "play": "Play",
     "pause": "Pause",
-    "downloadName": "Download {{name}}"
+    "downloadName": "Download {{name}}",
+    "replyInThread": "Reply in thread"
   },
   "composer": {
     "label": "Message {{channel}}",
     "placeholder": "Message #{{channel}}",
+    "placeholderDm": "Message {{name}}",
     "send": "Send message",
     "formatting": "Formatting",
     "bold": "Bold",
@@ -201,5 +205,61 @@
     "deleteTitle": "Delete message?",
     "delete": "Delete",
     "close": "Close"
+  },
+  "thread": {
+    "title": "Thread",
+    "close": "Close thread",
+    "back": "Back to #{{channel}}",
+    "replyLabel": "Reply in thread",
+    "replyPlaceholder": "Reply…",
+    "send": "Send reply",
+    "replies_one": "{{count}} reply",
+    "replies_other": "{{count}} replies",
+    "loadFailed": "Couldn’t load replies",
+    "retry": "Retry"
+  },
+  "people": {
+    "nameSeparator": ", ",
+    "profile": "Profile: {{name}}",
+    "message": "Message",
+    "localTime": "{{time}} · {{city}}",
+    "close": "Close",
+    "cancel": "Cancel",
+    "search": "Name or email",
+    "remove": "Remove {{name}}",
+    "city": {
+      "tokyo": "Tokyo",
+      "oslo": "Oslo",
+      "stockholm": "Stockholm",
+      "copenhagen": "Copenhagen",
+      "helsinki": "Helsinki",
+      "london": "London",
+      "berlin": "Berlin",
+      "paris": "Paris",
+      "amsterdam": "Amsterdam",
+      "newYork": "New York"
+    }
+  },
+  "pages": {
+    "activity": {
+      "all": "All",
+      "mentions": "Mentions",
+      "replies": "Replies",
+      "empty": "Nothing new",
+      "mention": "Mention",
+      "reply": "Reply to you",
+      "unread": "Unread"
+    },
+    "threads": {
+      "empty": "No threads yet"
+    },
+    "drafts": {
+      "empty": "No drafts",
+      "delete": "Delete draft"
+    },
+    "dms": {
+      "you": "You: {{text}}",
+      "from": "{{name}}: {{text}}"
+    }
   }
 }

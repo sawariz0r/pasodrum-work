@@ -9,6 +9,10 @@
   pointer-events: auto;
 }
 
+.threadDock {
+  padding: 8px 16px 16px;
+}
+
 .float {
   position: relative;
   z-index: 12;

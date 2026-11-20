@@ -3,12 +3,12 @@ import * as RD from '@radix-ui/react-dialog';
 import { useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore, type Message } from '../../matrix';
-import { Avatar, avatarColor } from '../../ui';
 import { CloseIcon } from '../../ui/icons';
 import { formatTime } from '../format';
 import { ChevronLeftIcon, ChevronNextIcon, DownloadIcon } from '../icons';
 import { downloadMedia, useMediaUrl } from './Media';
 import s from './Viewer.module.css';
+import { PersonAvatar } from './PersonAvatar';
 
 function Picture({ message, actual, onToggle }: { message: Message; actual: boolean; onToggle: () => void }) {
   const { t } = useTranslation();
@@ -59,7 +59,7 @@ export function ImageViewer({ images, startId, onClose }: { images: Message[]; s
         <RD.Content className={s.viewer} aria-describedby={undefined} onKeyDown={onKeyDown}>
           <RD.Title className={s.srOnly}>{t('timeline.viewer', { name: current.sender.name })}</RD.Title>
           <div className={s.top}>
-            <Avatar size={32} name={current.sender.name} color={avatarColor(current.sender.id)} src={current.sender.avatarUrl} />
+            <PersonAvatar size={32} person={current.sender} />
             <span className={s.who}>
               <span className={s.name}>{current.sender.name}</span>
               <time className={s.time} dateTime={date.toISOString()}>{formatTime(date)}</time>

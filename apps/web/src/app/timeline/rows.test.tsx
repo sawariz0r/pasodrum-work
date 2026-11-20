@@ -113,11 +113,11 @@ describe('quiet rows', () => {
     expect(screen.getByText('Message deleted')).toBeTruthy();
     expect(screen.getByText('Where should the offsite be?')).toBeTruthy();
     expect(screen.getByText('This message can’t be shown')).toBeTruthy();
-    expect(screen.getByText('Maja Lind, Ingrid Holm and Jonas Berg joined the channel')).toBeTruthy();
+    expect(screen.getByText('Maja Lind, Ingrid Holm and Jonas Berg joined')).toBeTruthy();
     await act(() => setLanguage('ja'));
     expect(screen.getByText('メッセージは削除されました')).toBeTruthy();
     expect(screen.getByText('このメッセージは表示できません')).toBeTruthy();
-    expect(screen.getByText('Maja Lindさん、Ingrid Holmさん、Jonas Bergさんがチャンネルに参加しました')).toBeTruthy();
+    expect(screen.getByText('Maja Lindさん、Ingrid Holmさん、Jonas Bergさんが参加しました')).toBeTruthy();
   });
 });
 

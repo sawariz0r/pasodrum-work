@@ -102,6 +102,7 @@
 }
 
 .railItem {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -116,6 +117,12 @@
   text-decoration: none;
   cursor: pointer;
   transition: color var(--dur-1) var(--ease-out);
+}
+
+.railBadge {
+  position: absolute;
+  top: 0;
+  right: 10px;
 }
 
 .railToggle {
@@ -246,11 +253,14 @@
 .sideHead {
   display: flex;
   align-items: center;
+  gap: 8px;
   height: 34px;
   padding: 14px 12px 10px 16px;
 }
 
 .spaceName {
+  flex: 1;
+  min-width: 0;
   margin: 0;
   overflow: hidden;
   color: var(--ink);
@@ -270,6 +280,82 @@
   min-height: 0;
   padding: 2px 8px 16px;
   overflow-y: auto;
+}
+
+.sectionHead {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  margin: 14px 0 2px;
+  padding: 0 4px 0 6px;
+}
+
+.sectionToggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sidemuted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--dur-1) var(--ease-out);
+}
+
+.sectionToggle:hover {
+  color: var(--ink);
+}
+
+.sectionChevron {
+  transition: transform var(--dur-1) var(--ease-out);
+}
+
+.sectionToggle[aria-expanded='false'] .sectionChevron {
+  transform: rotate(-90deg);
+}
+
+.sidebar .sectionAction {
+  color: var(--sidemuted);
+}
+
+.quietCount {
+  color: var(--sidemuted);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.row[aria-current='page'] .quietCount {
+  color: var(--onsideactive);
+}
+
+.dmRow {
+  padding-left: 8px;
+}
+
+.spaceChip {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--tile-bg);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.spaceChip img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
 }
 
 .sectionLabel {
@@ -346,7 +432,7 @@
   border-bottom: 1px solid var(--line);
 }
 
-.header .drawerToggle {
+.shell .drawerToggle {
   display: none;
   margin-left: -4px;
 }
@@ -574,7 +660,7 @@
       visibility 0s linear var(--dur-3);
   }
 
-  .header .drawerToggle {
+  .shell .drawerToggle {
     display: inline-flex;
   }
 
@@ -610,6 +696,64 @@
   }
 }
 
+/* Window1024: while a thread is open at 1000–1279px, the sidebar folds into the drawer. */
+@media (min-width: 1000px) and (max-width: 1279px) {
+  .threadFold .rail {
+    position: relative;
+    z-index: 27;
+  }
+
+  .threadFold .sidebar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 68px;
+    z-index: 26;
+    width: 280px;
+    visibility: hidden;
+    transform: translateX(-100%);
+    transition:
+      transform var(--dur-3) var(--ease-out),
+      box-shadow var(--dur-3) var(--ease-out),
+      visibility 0s linear var(--dur-3);
+  }
+
+  .shell.threadFold .drawerToggle {
+    display: inline-flex;
+  }
+
+  .shell.threadFold.drawerOpen .sidebar {
+    visibility: visible;
+    transform: none;
+    box-shadow: var(--shadow);
+    transition:
+      transform var(--dur-3) var(--ease-out),
+      box-shadow var(--dur-3) var(--ease-out),
+      visibility 0s;
+  }
+
+  .threadFold .scrim {
+    position: absolute;
+    inset: 0 0 0 68px;
+    z-index: 24;
+    display: block;
+    visibility: hidden;
+    background: rgba(12, 11, 18, 0.42);
+    opacity: 0;
+    transition:
+      opacity var(--dur-3) var(--ease-out),
+      visibility 0s linear var(--dur-3);
+  }
+
+  .shell.threadFold.drawerOpen .scrim {
+    visibility: visible;
+    opacity: 1;
+    transition:
+      opacity var(--dur-3) var(--ease-out),
+      visibility 0s;
+  }
+}
+
 @media (max-width: 999px) and (prefers-reduced-motion: reduce) {
   .sidebar {
     transform: none;
@@ -630,5 +774,46 @@
 @keyframes fade-in {
   from {
     opacity: 0;
+  }
+}
+
+/* Rail pages (DMs, Activity): no sidebar drawer; at ≤800px a back arrow returns from the item to the list. */
+.back {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-left: -4px;
+  border-radius: 8px;
+  color: var(--muted);
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    color var(--dur-1) var(--ease-out);
+}
+
+.back:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.shell.listPage .drawerToggle {
+  display: none;
+}
+
+@media (min-width: 1000px) and (max-width: 1279px) {
+  .shell.listPage.threadFold .drawerToggle {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 800px) {
+  .shell.listPage:global(.pane-detail) .back {
+    display: inline-flex;
+  }
+
+  .shell.listPage:global(.pane-list) .main {
+    display: none;
   }
 }

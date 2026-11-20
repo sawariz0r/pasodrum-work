@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore, type Message, type Timeline as TimelineData } from '../../matrix';
 import { Skeleton } from '../../ui';
+import { AlertIcon } from '../../ui/icons';
 import { useComposer } from '../composer/context';
 import { ArrowDownIcon, CheckIcon } from '../icons';
 import { TimelineContext, type TimelineActions } from './context';
@@ -23,12 +24,12 @@ const skeletonRows: [string, string, string][] = [
   ['24%', '70%', '36%'], ['20%', '62%', ''], ['14%', '88%', '52%'],
 ];
 
-function Skeletons({ count }: { count: number }) {
+function Skeletons({ count, small = false }: { count: number; small?: boolean }) {
   return skeletonRows.slice(0, count).map(([head, w1, w2], i) => (
-    <div key={i} className={s.skelRow} aria-hidden="true">
-      <Skeleton width={36} height={36} radius={9} />
+    <div key={i} className={small ? `${s.skelRow} ${s.skelSmall}` : s.skelRow} aria-hidden="true">
+      {small ? <Skeleton width={32} height={32} radius={8} /> : <Skeleton width={36} height={36} radius={9} />}
       <div className={s.skelLines}>
-        <Skeleton width={head} height={11} />
+        <Skeleton width={head} height={small ? 10 : 11} />
         <Skeleton width={w1} height={9} />
         {w2 && <Skeleton width={w2} height={9} />}
       </div>
@@ -109,9 +110,17 @@ type Props = {
   meId: string;
   /** Unread count when the channel was opened: the New line goes above the first of these. */
   unreadAtOpen?: number;
+  /** Opens a root's thread (hover bar Thread, summary row). Absent inside a thread. */
+  onOpenThread?: (rootId: string) => void;
+  /** Thread panel: the root on top, its replies below, read and paging per thread. */
+  thread?: ThreadMode;
+  /** Shown in place of the channel's empty state (the start of a DM, Batch C DMEmpty). */
+  intro?: ReactNode;
 };
 
-export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen = 0 }: Props) {
+export type ThreadMode = { rootId: string; root?: Message; failed?: boolean; onRetry: () => void };
+
+export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen = 0, onOpenThread, thread, intro }: Props) {
   const { t } = useTranslation();
   const store = useStore();
   const composer = useComposer();
@@ -129,7 +138,10 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
   // The New line is placed once, when the history first arrives, and stays until you leave the channel.
   const [newFrom, setNewFrom] = useState<string | null | undefined>(undefined);
   if (newFrom === undefined && !initialLoading) setNewFrom(firstUnread(messages, unreadAtOpen, meId));
-  const items = useMemo(() => buildItems(messages, newFrom), [messages, newFrom]);
+  const items = useMemo(() => {
+    const all = buildItems(messages, newFrom);
+    return thread ? all.filter((x) => x.kind !== 'day') : all;
+  }, [messages, newFrom, thread]);
   const byId = useMemo(() => new Map(messages.map((m) => [m.id, m])), [messages]);
   const images = useMemo(() => messages.filter((m) => m.kind === 'image' && m.media), [messages]);
 
@@ -142,6 +154,7 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
   const { keyOf, arrived } = useRowKeys(messages, !initialLoading, loadingOlder);
   const now = new Date();
 
+  const rootId = thread?.rootId;
   const state = useRef({ initialLoading, loadingOlder, hasOlder, newestId: undefined as string | undefined });
   useLayoutEffect(() => {
     state.current = { initialLoading, loadingOlder, hasOlder, newestId: messages.at(-1)?.id };
@@ -156,10 +169,14 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
     if (atBottom.current) setSeenId(st.newestId ?? null);
     if (atBottom.current && markedId.current !== (st.newestId ?? null)) {
       markedId.current = st.newestId ?? null;
-      store.markRead(channelId);
+      if (rootId) store.markThreadRead(channelId, rootId);
+      else store.markRead(channelId);
     }
-    if (st.hasOlder && !st.loadingOlder && el.scrollTop < loadOlderWithinPx) store.loadOlder(channelId);
-  }, [store, channelId]);
+    if (st.hasOlder && !st.loadingOlder && el.scrollTop < loadOlderWithinPx) {
+      if (rootId) store.loadOlderInThread(channelId, rootId);
+      else store.loadOlder(channelId);
+    }
+  }, [store, channelId, rootId]);
 
   const stickToBottom = useCallback(() => {
     const el = scroller.current;
@@ -236,8 +253,9 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
       },
       isExpanded: (id) => expanded.current.has(id),
       expand: (id) => void expanded.current.add(id),
+      openThread: onOpenThread,
     }),
-    [channelId, meId],
+    [channelId, meId, onOpenThread],
   );
 
   // Messages from others that arrived below while scrolled up.
@@ -254,14 +272,42 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
     <TimelineContext.Provider value={actions}>
     <div className={s.pane}>
     <div ref={scroller} className={s.scroller} onScroll={check} aria-busy={busy}>
-      <div ref={content} className={s.content}>
+      <div ref={content} className={thread ? `${s.content} ${s.threadContent}` : s.content}>
         {busy && <span className={s.srOnly}>{t('common.loading')}</span>}
-        {initialLoading ? (
-          <Skeletons count={7} />
+        {thread?.root && (
+          <div className={s.threadRoot}>
+            <MessageRow
+              message={thread.root}
+              head
+              meId={meId}
+              editing={composer.editingId === thread.root.id}
+              onEditDone={stopEdit}
+              onRetry={onRetry}
+              onDiscard={onDiscard}
+            />
+          </div>
+        )}
+        {thread?.failed ? (
+          <div role="alert" className={s.threadError}>
+            <AlertIcon className={s.threadErrorIcon} size={16} strokeWidth={2.2} />
+            <span className={s.threadErrorText}>{t('thread.loadFailed')}</span>
+            <button type="button" className={s.threadRetry} onClick={thread.onRetry}>
+              {t('thread.retry')}
+            </button>
+          </div>
+        ) : initialLoading ? (
+          <Skeletons count={thread ? 3 : 7} small={!!thread} />
         ) : (
           <>
-            {loadingOlder && <Skeletons count={2} />}
-            {items.length === 0 && !hasOlder && (
+            {loadingOlder && <Skeletons count={2} small={!!thread} />}
+            {thread && messages.length > 0 && (
+              <div className={s.repliesRule}>
+                <span>{t('thread.replies', { count: Math.max(messages.length, thread.root?.thread?.count ?? 0) })}</span>
+                <span className={s.rule} />
+              </div>
+            )}
+            {!thread && items.length === 0 && !hasOlder && intro}
+            {!thread && items.length === 0 && !hasOlder && !intro && (
               <div className={s.empty}>
                 <div className={s.emptyIcon}>
                   <HashIcon />
@@ -269,7 +315,11 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
                 <h2 className={s.emptyTitle}>{t('common.channelName', { name: channelName })}</h2>
               </div>
             )}
-            <div role="log" aria-label={t('common.channelName', { name: channelName })} className={s.log}>
+            <div
+              role="log"
+              aria-label={thread ? t('thread.title') : t('common.channelName', { name: channelName })}
+              className={thread ? `${s.log} ${s.replies}` : s.log}
+            >
               {items.map((item) => {
                 if (item.kind === 'day') return <DayDivider key={item.key} day={item.day} now={now} />;
                 if (item.kind === 'new') {
@@ -291,6 +341,7 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
                     arrive={arrived.has(key)}
                     original={m.replyTo ? byId.get(m.replyTo.id) : undefined}
                     meId={meId}
+                    compact={!!thread}
                     editing={composer.editingId === m.id}
                     onEditDone={stopEdit}
                     flash={flash === m.id}

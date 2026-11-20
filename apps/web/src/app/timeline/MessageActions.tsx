@@ -1,10 +1,11 @@
-// Hover bar (React · Reply · More) and the More menu. M3 adds Thread at the left end; the bar is right-anchored.
+// Hover bar (Thread · React · Reply · More, MsgHoverM3) and the More menu. The bar is right-anchored; Thread is left out inside a thread.
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore, type Message } from '../../matrix';
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '../../ui';
 import { useComposer } from '../composer/context';
 import { CopyIcon, EditIcon, LinkIcon, MoreIcon, ReplyIcon, SmileIcon, TrashIcon } from '../icons';
+import { ThreadIcon } from '../thread/icons';
 import { useTimeline } from './context';
 import { ReactionPicker } from './ReactionPicker';
 import s from './Timeline.module.css';
@@ -38,6 +39,11 @@ export function MessageActions({
 
   return (
     <div className={s.actions}>
+      {tl.openThread && (
+        <button type="button" className={s.tool} aria-label={t('timeline.replyInThread')} onClick={() => tl.openThread?.(m.id)}>
+          <ThreadIcon />
+        </button>
+      )}
       <ReactionPicker onPick={react} onOpenChange={onOpenChange}>
         <button type="button" className={s.tool} aria-label={t('timeline.addReaction')}>
           <SmileIcon />
