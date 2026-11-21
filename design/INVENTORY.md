@@ -131,6 +131,21 @@ Words: "Confirm this device", "Not confirmed", "Not available on this device", "
 | Sign-out warning (last confirmed device), no backup | SignOutWarn(+JP), SignOutNoBackup | approved |
 | Settings → Devices: Not confirmed tag, Recovery key row, Confirm this device | SettingsDevicesM6(+JP, Dark), SettingsDevicesUnconfirmed | approved |
 
+## Side features
+
+### Translate a message (SIDE-01, D-32) — canvas page **Discovery**
+
+Team only; never where clients or guests are. Hover-bar icon only, shown when the message is in the other script from your language. Translated in place with one line under it; only you see it.
+
+| Screen / state | Artboard | Status |
+|---|---|---|
+| Rules | TranslateRules | approved 2026-11-21 |
+| Hover bar: Translate | Translate, TranslateJP | approved 2026-11-21 |
+| Translating | TranslateTranslating | approved 2026-11-21 |
+| Translated in place + Show original | Translated(+JP, Dark, JPDark) | approved 2026-11-21 |
+| Original again + Show translation | TranslateOriginal | approved 2026-11-21 |
+| Couldn’t translate · Retry | TranslateFailed | approved 2026-11-21 |
+
 ## Batch G — for M7
 
 Pins tab · Files tab (list, empty, loading) · add/remove tab · link card variants and loading · Docs "Soon" tab · Docs/Boards rail pages — all `needs design`.

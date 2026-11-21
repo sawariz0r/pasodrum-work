@@ -827,6 +827,12 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     async setArchived(spaceId, archived) {
       set({ spaces: snapshot.spaces.map((sp) => (sp.id === spaceId ? { ...sp, archived } : sp)).sort(spaceOrder) });
     },
+    // Keeps the ⟦n⟧ tokens where they were; a segment containing "fail" rejects so the failed state can be seen.
+    async translate(segments, to) {
+      await new Promise((r) => setTimeout(r, 700));
+      if (segments.some((x) => /fail/i.test(x))) throw new Error('failed');
+      return segments.map((x) => `[${to}] ${x}`);
+    },
     anotherApp: () => ({ server: 'pasodrum.work', username: snapshot.me.id.slice(1, snapshot.me.id.indexOf(':')) }),
     // M6: the other device answers by itself; it declines when the device name contains "decline", times out with "timeout", mismatches with "mismatch".
     requestConfirmation() {

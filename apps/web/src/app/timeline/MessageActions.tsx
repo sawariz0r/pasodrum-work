@@ -2,6 +2,8 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore, type Message } from '../../matrix';
+import type { MessageAction } from '../registry';
+import { useRegistry } from '../RegistryProvider';
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '../../ui';
 import { useComposer } from '../composer/context';
 import { CopyIcon, EditIcon, LinkIcon, MoreIcon, ReplyIcon, SmileIcon, TrashIcon } from '../icons';
@@ -12,6 +14,16 @@ import { ReactionPicker } from './ReactionPicker';
 import s from './Timeline.module.css';
 
 const editable = (m: Message) => !m.kind || m.kind === 'text' || m.kind === 'emote' || m.kind === 'notice';
+
+function FeatureTool({ action, message, own }: { action: MessageAction; message: Message; own: boolean }) {
+  const button = action.useButton(message, own);
+  if (!button) return null;
+  return (
+    <button type="button" className={s.tool} aria-label={button.label} aria-pressed={button.pressed} onClick={button.run}>
+      {button.icon}
+    </button>
+  );
+}
 
 function copy(text: string) {
   return navigator.clipboard?.writeText(text) ?? Promise.reject(new Error('no clipboard'));
@@ -30,6 +42,7 @@ export function MessageActions({
 }) {
   const { t } = useTranslation();
   const store = useStore();
+  const { messageActions } = useRegistry();
   const composer = useComposer();
   const tl = useTimeline();
   // Archived client space: read-only, so only the actions that don't write stay (thread, copy).
@@ -59,6 +72,9 @@ export function MessageActions({
           </button>
         </>
       )}
+      {messageActions.map((a) => (
+        <FeatureTool key={a.id} action={a} message={m} own={own} />
+      ))}
       <Menu modal={false} onOpenChange={onOpenChange}>
         <MenuTrigger asChild>
           <button type="button" className={s.tool} aria-label={t('timeline.more')}>

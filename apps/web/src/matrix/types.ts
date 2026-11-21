@@ -39,6 +39,8 @@ export interface Channel {
   memberCount: number;
   /** M5. Clients and guests who are members (joined or pending). Only filled for team people (Owner/Admin/Member); always absent for clients and guests. */
   outside?: Person[];
+  /** SIDE-01. Team only: the member list hasn't loaded yet, so `outside` may still be missing people. */
+  outsidePending?: boolean;
   /** M6. End-to-end encrypted (private channels, D-11): opening it on an unconfirmed device shows the confirm gate. */
   encrypted?: boolean;
 }
@@ -388,6 +390,8 @@ export interface WorkspaceStore {
   /** Archived = every channel read-only for everyone; nobody removed. Owners/Admins can undo. */
   setArchived(spaceId: string, archived: boolean): Promise<void>;
   anotherApp(): AnotherAppInfo;
+  /** SIDE-01. Our translation service: same number of segments back, in order. Rejects with Error('rate-limited' | 'unavailable' | 'failed'). */
+  translate(segments: string[], to: 'en' | 'ja'): Promise<string[]>;
   // M6 (D-31)
   /** New device: ask my other confirmed devices (phase 'waiting'). */
   requestConfirmation(): void;
