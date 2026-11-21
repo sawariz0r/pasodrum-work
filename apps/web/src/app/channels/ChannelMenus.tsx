@@ -7,7 +7,6 @@ import { Button, IconButton, Menu, MenuContent, MenuItem, MenuSeparator, MenuTri
 import { HashIcon, LockIcon } from '../icons';
 import { FindButton } from '../find/Switcher';
 import { Face } from '../people/Face';
-import { spaceHome } from '../places';
 import { rememberRecent } from '../prefs';
 import { ChevronDownIcon, PlusIcon as SmallPlusIcon } from '../shell/icons';
 import s from './Channels.module.css';
@@ -19,13 +18,6 @@ import { findChannel, SpaceMark, useRole, useSpace } from './shared';
 
 export function browsePath(spaceId: string) {
   return `/w/${encodeURIComponent(spaceId)}/channels`;
-}
-
-/** The channel the row under the channel list adds to: the one you're in (unless archived), else the space's home channel. */
-function useAddTarget(space: Space, channelId?: string): string | undefined {
-  const home = useWorkspace((x) => spaceHome(x, space.id)?.id);
-  const current = useWorkspace((x) => (channelId && findChannel(x, channelId)?.archived ? undefined : channelId));
-  return current ?? home;
 }
 
 /**
