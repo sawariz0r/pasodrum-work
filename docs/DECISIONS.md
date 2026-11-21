@@ -102,6 +102,12 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-32 · Translate (side feature), amends D-11/D-31 · Accepted · 2026-11-21
+- **CEO (via the design-discovery session):** Translate is approved and built now as `features/translate` (SIDE-01, branch `side/translate`, merged by the lead after M6-02).
+- **Amends D-11/D-31:** Translate also works in encrypted team conversations (team DMs, private channels). It's an internal staff tool: the person who asks sends that one message's text to the model and sees the translation only in their own client. Never in conversations with clients or guests (`Channel.outside` / `Person.external`).
+- **Provider:** OpenAI standard API terms with `store: false`. `OPENAI_API_KEY` and `TRANSLATE_MODEL` in Coolify (CEO adds them).
+- **Endpoint:** `/api/translate` beside the invite service; caller checked with `whoami` and must be joined to the workspace space (team only); mentions/code/links replaced by placeholders, never HTML to the model; cache keyed on a content hash; per-user limits plus a global daily budget.
+
 ### D-31 · M6 contract: encryption · Accepted · 2026-11-21
 - **Batch F approved** by the CEO 2026-11-21 (RulesM6 is the behaviour spec).
 - **Contract (`matrix/types.ts`):** snapshot `security` {device: starting|confirmed|unconfirmed, otherConfirmedDevices, needsRecoveryKey, confirmation?}; `Confirmation` {role new|approver, otherDevice?, phase waiting|asked|compare|matched|done|declined|timeout|mismatch, emoji? (SAS table index for EN/JP names)}; `Channel.encrypted`, `Dm.encrypted`, `Device.confirmed`, message kind `undecryptable` + `arriving`. Store: `requestConfirmation`, `acceptConfirmation`, `declineConfirmation`, `confirmEmoji`, `dismissConfirmation`, `useRecoveryKey`, `newRecoveryKey(password?)`, `resetEncryption(password)`, `signOutRisk()`.
