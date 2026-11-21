@@ -1,5 +1,5 @@
-import { escapeHtml } from './html';
-import type { Channel, ConnectionState, Media, Person, Reaction, Role, Space } from './types';
+import { escapeHtml, pillUser, urlsIn } from './html';
+import type { Channel, ConnectionState, LinkPreview, Media, Person, Reaction, Role, Space } from './types';
 
 export interface RoomFacts {
   id: string;
@@ -151,6 +151,44 @@ export function mediaOf(content: Record<string, unknown>, sticker = false): { me
   };
   for (const [k, v] of Object.entries(fields)) if (v !== undefined) (media as unknown as Record<string, unknown>)[k] = v;
   return { media, caption: filename && filename !== body && !sticker ? body : '' };
+}
+
+/**
+ * M7. Message.links: http(s) URLs in body order, each once. From the formatted body when there is one (`htmlLinks`:
+ * outside code, pills left out), else the plain body without its code. None in encrypted conversations (D-33).
+ */
+export function linksOf(body: string, htmlLinks: string[] | null, encrypted: boolean): string[] {
+  if (encrypted) return [];
+  const all = htmlLinks ?? urlsIn(body.replace(/```[\s\S]*?(?:```|$)/g, ' ').replace(/`[^`\n]*`/g, ' ')).filter((u) => !pillUser(u));
+  return [...new Set(all)];
+}
+
+/** M7. Event ids in `m.room.pinned_events`, newest pin first (pins are appended). */
+export function pinnedIdsOf(content: unknown): string[] {
+  const list = (content as { pinned?: unknown } | null | undefined)?.pinned;
+  return Array.isArray(list) ? [...new Set(list.filter((id): id is string => typeof id === 'string' && id.startsWith('$')))].reverse() : [];
+}
+
+/** M7. A preview_url response → LinkPreview; null without a title or description (the server answers 200 {} for a 404 page). `site` is the URL's host. */
+export function linkPreviewOf(url: string, og: Record<string, unknown>): LinkPreview | null {
+  const text = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
+  const title = text(og['og:title']);
+  const description = text(og['og:description']);
+  if (!title && !description) return null;
+  let host = '';
+  try {
+    host = new URL(url).hostname.replace(/^www\./, '');
+  } catch { /* not a URL */ }
+  // Always the real host: a page's og:site_name could claim to be someone else.
+  const site = host || undefined;
+  const image = text(og['og:image']);
+  return {
+    url,
+    ...(title ? { title } : {}),
+    ...(description ? { description } : {}),
+    ...(site ? { site } : {}),
+    ...(image?.startsWith('mxc://') ? { image } : {}),
+  };
 }
 
 /** Splits an Element-style reply fallback ("> <@user:server> quoted\n> more\n\nreply") off a plain body. */

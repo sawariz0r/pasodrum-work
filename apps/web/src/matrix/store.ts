@@ -37,16 +37,16 @@ import { translateSegments } from './translate';
 import { createInvite, InviteError, listInvites, normalizeEmail, resendInvite, revokeInvitesFor, revokeInvite } from './invites';
 import {
   connectionOf, emailFromId, hydra, looksExternal, mayChangeRole, mediaOf, membershipSummary, powerLevel, reactionsOf, replyFallback, roleOf, sameMembers, share,
-  knownSpacesOf, stripReplyFallback, threadStats, workspaceOf,
+  knownSpacesOf, linkPreviewOf, linksOf, pinnedIdsOf, stripReplyFallback, threadStats, workspaceOf,
   type PowerFacts, type RoomFacts, type ThreadReply,
 } from './map';
-import { archivedLevels, channelUsers, LEVEL, levelFor, powerLevels } from './levels';
+import { archivedLevels, channelUsers, dmLevels, LEVEL, levelFor, PINS, powerLevels } from './levels';
 import { defaultLevel, defaultOps, roomLevel, roomOps, type PushOp, type PushRules } from './push';
 import { send, sendEdit, sendReaction, type MsgType, type TextMessage } from './send';
 import { clearSession } from './session';
 import {
   PasswordRequired,
-  type ActivityItem, type AddPeopleResult, type Channel, type Dm, type JoinableChannel, type Media, type Member, type Message, type MessageKind, type Person, type Role, type Session, type Space,
+  type ActivityItem, type AddPeopleResult, type Channel, type Dm, type FilesPage, type JoinableChannel, type LinkPreview, type Media, type Member, type Message, type MessageKind, type Person, type Role, type Session, type Space,
   type ThreadInfo, type ThreadSummary, type Timeline, type Upload, type WorkspaceSnapshot, type WorkspaceStore,
 } from './types';
 
@@ -87,6 +87,11 @@ const NO_KEY_COMING = new Set<string>([
   DecryptionFailureCode.HISTORICAL_MESSAGE_USER_NOT_JOINED,
 ]);
 const SPACES = 'work.pasodrum.spaces';
+/** M7. Files tab: events per /messages request, and requests per page when scanning an encrypted conversation. */
+const FILES_PAGE = 30;
+const SCAN = 100;
+const SCAN_PAGES = 5;
+const NO_PINS = new Set<string>();
 const isMember = (room: Room | null | undefined, userId: string) => {
   const m = room?.getMember(userId)?.membership;
   return m === KnownMembership.Join || m === KnownMembership.Invite;
@@ -245,6 +250,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   const security = createSecurity(client, keys, session.userId, session.deviceId, () => schedule());
   let cryptoReady = false;
   const encrypting = new Set<string>();
+  /** M7. Rooms whose pin level openPins has handled (once per room). */
+  const lifted = new Set<string>();
   /** Encrypted media by its per-message ref (`mxc#eventId`): key, iv, hash and MIME type from that message. */
   const sealed = new Map<string, { file: SealedFile; mimetype?: string }>();
   /** When each undecryptable message was first seen (for `arriving`). */
@@ -256,6 +263,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   const trays = new Map<string, TrayItem[]>();
   const typingSent = new Map<string, { at: number; idle: ReturnType<typeof setTimeout> }>();
   const media = new Map<string, Promise<string>>();
+  const previews = new Map<string, Promise<LinkPreview | null>>();
+  const pinCache = new WeakMap<MatrixEvent, Set<string>>();
   // M3
   const known = new Map<string, MatrixEvent>();
   const threadStore = new Map<string, ThreadState>();
@@ -316,6 +325,15 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       (e) => !e.isRedacted() && e.status !== EventStatus.NOT_SENT && e.status !== EventStatus.CANCELLED,
     );
 
+  /** M7. Pinned event ids, newest pin first. */
+  const pinsOf = (room: Room): Set<string> => {
+    const ev = room.currentState.getStateEvents(PINS, '');
+    if (!ev) return NO_PINS;
+    let ids = pinCache.get(ev);
+    if (!ids) pinCache.set(ev, (ids = new Set(pinnedIdsOf(ev.getContent()))));
+    return ids;
+  };
+
   const fetchOnce = (room: Room, eventId: string) => {
     if (fetched.has(eventId)) return;
     fetched.set(eventId, null);
@@ -365,6 +383,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     }
     if (file) seal(file.media, content, base.id);
     const html = !file || file.caption ? htmlOf(content) : null;
+    const links = file || kind === 'unsupported' ? [] : linksOf(body, html?.links ?? null, room.hasEncryptionStateEvent() || ev.isEncrypted());
     const mentioned = (content['m.mentions'] as { user_ids?: unknown } | undefined)?.user_ids;
     const mentionsMe = senderId !== me.id && ((Array.isArray(mentioned) && mentioned.includes(me.id)) || !!html?.mentions.includes(me.id));
     const reactions = reactionsOf(
@@ -381,6 +400,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       ...(file ? { media: file.media } : {}),
       ...(mentionsMe ? { mentionsMe } : {}),
       ...(reactions.length ? { reactions } : {}),
+      ...(pinsOf(room).has(base.id) ? { pinned: true } : {}),
+      ...(links.length ? { links } : {}),
     };
     if (replyId && withReply) message.replyTo = replyOf(room, replyId, ev);
     return message;
@@ -816,6 +837,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
           last: lastMessageOf(room),
           spaceIds: spaceRooms.filter((s) => others.length && others.every((id) => s.getMember(id)?.membership === KnownMembership.Join)).map((s) => s.roomId),
           ...(room.hasEncryptionStateEvent() ? { encrypted: true } : {}),
+          ...(mayState(room, me.id, PINS) ? { canPin: true } : {}),
         };
       })
       .sort((a, b) => b.lastTs - a.lastTs);
@@ -902,6 +924,32 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     }
     acceptInvites();
     encryptRooms(direct);
+    openPins(direct);
+  };
+
+  /**
+   * M7 (D-33): rooms made before M7 let only Admins pin; lift pins to 0 once per room, where I may change levels.
+   * Archived rooms (events_default at Admin, D-28) keep pins at Admin; the server's copy decides.
+   */
+  const pinsOpen = (pl: Record<string, unknown>) => {
+    const level = (pl.events as Record<string, unknown> | undefined)?.[PINS];
+    return typeof level === 'number' && level <= LEVEL.member;
+  };
+  const archivedPl = (pl: Record<string, unknown>) => typeof pl.events_default === 'number' && pl.events_default >= LEVEL.admin;
+  const openPins = (direct: Map<string, string[]>) => {
+    for (const room of roomsJoined()) {
+      if (lifted.has(room.roomId) || discarded.has(room.roomId) || visiting.has(room.roomId)) continue;
+      const pl = room.currentState.getStateEvents(EventType.RoomPowerLevels, '')?.getContent() ?? {};
+      if (pinsOpen(pl) || archivedPl(pl) || channelArchived(room)) continue;
+      const created = room.currentState.getStateEvents(EventType.RoomCreate, '')?.getTs();
+      if (!created || Date.now() - created < ENCRYPT_AFTER) continue;
+      const space = spaceOf(room.roomId);
+      if (!(space ? spaceStateOf(space).archived !== true : isDirect(room, direct)) || !mayState(room, me.id, EventType.RoomPowerLevels)) continue;
+      lifted.add(room.roomId);
+      void writeState(room.roomId, EventType.RoomPowerLevels, (c) =>
+        pinsOpen(c) || archivedPl(c) ? c : { ...c, events: { ...((c.events as Record<string, unknown> | undefined) ?? {}), [PINS]: LEVEL.member } },
+      ).catch(noop);
+    }
   };
 
   /** D-11: every DM and every private workspace channel; client-space and public channels never. */
@@ -975,6 +1023,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       visibility: Visibility.Private,
       is_direct: true,
       invite: want,
+      power_level_content_override: dmLevels(),
       initial_state: [{ type: EventType.RoomEncryption, state_key: '', content: MEGOLM }],
     });
     await addDirect(room_id, want).catch(noop);
@@ -1022,7 +1071,14 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         list.map((c) => {
           const room = client.getRoom(c.id);
           if (!room) return c;
-          const flags = { ...(room.hasEncryptionStateEvent() ? { encrypted: true } : {}), ...(channelArchived(room) ? { archived: true } : {}), ...(manageable(room) ? { manageable: true } : {}) };
+          const archived = channelArchived(room);
+          const spaceArchived = spaceStateOf(client.getRoom(spaceId) ?? room).archived === true;
+          const flags = {
+            ...(room.hasEncryptionStateEvent() ? { encrypted: true } : {}),
+            ...(archived ? { archived: true } : {}),
+            ...(manageable(room) ? { manageable: true } : {}),
+            ...(!archived && !spaceArchived && mayState(room, me.id, PINS) ? { canPin: true } : {}),
+          };
           return Object.keys(flags).length ? { ...c, ...flags } : c;
         }),
       ]),
@@ -1225,6 +1281,11 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   client.on(ClientEvent.AccountData, schedule);
   client.on(RoomMemberEvent.Typing, schedule);
   client.on(RoomStateEvent.Members, schedule);
+  // M7: pins, levels and archive flags can arrive only in a gappy sync's state, with no timeline event.
+  const PIN_STATE = new Set<string>([PINS, EventType.RoomPowerLevels, CHANNEL_STATE, SPACE_STATE]);
+  client.on(RoomStateEvent.Events, (ev) => {
+    if (PIN_STATE.has(ev.getType())) schedule();
+  });
   client.on(HttpApiEvent.SessionLoggedOut, (e) => {
     sessionExpired = true;
     client.stopClient();
@@ -1332,6 +1393,46 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   const mayEditLevel = (room: Room, userId: string, level: number) => {
     const mine = levelIn(room, me.id);
     return room.currentState.maySendStateEvent(EventType.RoomPowerLevels, me.id) && level <= mine && (userId === me.id || levelIn(room, userId) < mine);
+  };
+
+  /** M7. An event fetched on its own (not in the timeline) gets its latest edit by the same sender. */
+  const applyLatestEdit = async (roomId: string, ev: MatrixEvent) => {
+    if (ev.isRedacted() || ev.replacingEventId()) return;
+    const res = await client.fetchRelations(roomId, ev.getId()!, RelationType.Replace, null, { dir: Direction.Backward, limit: 1 }).catch(() => null);
+    const raw = res?.chunk[0];
+    if (!raw || raw.sender !== ev.getSender()) return;
+    const edit = mapper({ ...raw, room_id: roomId });
+    await client.decryptEventIfNeeded(edit).catch(noop);
+    if (!edit.isDecryptionFailure()) ev.makeReplaced(edit);
+  };
+
+  /** M7. Pin or unpin, then wait (at most 10 s) until the change has synced. */
+  const setPinned = async (channelId: string, messageId: string, on: boolean) => {
+    await ready;
+    if (!messageId.startsWith('$')) throw new Error('not-sent');
+    const room = client.getRoom(channelId);
+    if (!room || !joined(room) || !mayState(room, me.id, PINS)) throw new Error('not-allowed');
+    await writeState(channelId, PINS, (content) => {
+      const ids = (Array.isArray(content.pinned) ? content.pinned : []).filter((id): id is string => typeof id === 'string');
+      if (ids.includes(messageId) === on) return content;
+      return { ...content, pinned: on ? [...ids, messageId] : ids.filter((id) => id !== messageId) };
+    }).catch((e: unknown) => Promise.reject(forbidden(e)));
+    await new Promise<void>((resolve, reject) => {
+      const finish = (error?: Error) => {
+        client.off(RoomStateEvent.Events, check);
+        clearTimeout(timer);
+        schedule();
+        if (error) reject(error);
+        else resolve();
+      };
+      const check = () => {
+        const r = client.getRoom(channelId);
+        if (!r || pinsOf(r).has(messageId) === on) finish();
+      };
+      const timer = setTimeout(() => finish(new Error('timeout')), 10_000);
+      client.on(RoomStateEvent.Events, check);
+      check();
+    });
   };
 
   /** D-27: a colleague (joined in the workspace) added to a client space joins its team: staff level (or their Owner/Admin level) where I may set it. */
@@ -2181,5 +2282,72 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     newRecoveryKey: (password) => security.newRecoveryKey(password),
     resetEncryption: (password) => security.resetEncryption(password),
     signOutRisk: () => security.signOutRisk(roomsJoined().some((r) => r.hasEncryptionStateEvent())),
+    // M7 (D-33)
+    async pins(channelId) {
+      await ready;
+      const room = client.getRoom(channelId);
+      if (!room) return [];
+      const found = await Promise.all(
+        [...pinsOf(room)].map(async (id) => {
+          const local = eventOf(room, id);
+          const ev = local ?? (await client.fetchRoomEvent(channelId, id).then((raw) => mapEvent(channelId, raw), () => null));
+          if (!ev) return null;
+          await client.decryptEventIfNeeded(ev).catch(noop);
+          if (!local) await applyLatestEdit(channelId, ev);
+          const m = messageOf(ev, room, false, true);
+          return m && m.kind !== 'deleted' ? m : null;
+        }),
+      );
+      return found.filter((m): m is Message => !!m);
+    },
+    pin: (channelId, messageId) => setPinned(channelId, messageId, true),
+    unpin: (channelId, messageId) => setPinned(channelId, messageId, false),
+    async files(channelId, from) {
+      await ready;
+      const room = client.getRoom(channelId);
+      if (!room) return { items: [] };
+      // The server can't see inside encrypted messages: fetch history, decrypt here, keep the media.
+      const encrypted = room.hasEncryptionStateEvent();
+      const filter = encrypted
+        ? { types: [EventType.RoomMessageEncrypted, EventType.RoomMessage, EventType.Sticker] }
+        : { types: [EventType.RoomMessage, EventType.Sticker], contains_url: true };
+      const page: FilesPage = { items: [] };
+      let token = from;
+      for (let i = 0; i < (encrypted ? SCAN_PAGES : 1); i++) {
+        const res = await client.http.authedRequest<{ chunk: IEvent[]; end?: string }>(Method.Get, `/rooms/${enc(channelId)}/messages`, {
+          dir: Direction.Backward,
+          limit: String(encrypted ? SCAN : FILES_PAGE),
+          filter: JSON.stringify(filter),
+          ...(token ? { from: token } : {}),
+        });
+        const events = res.chunk.map((raw) => room.findEventById(raw.event_id) ?? mapper({ ...raw, room_id: channelId }));
+        await Promise.all(events.map((ev) => client.decryptEventIfNeeded(ev).catch(noop)));
+        for (const ev of events) {
+          const m = messageOf(ev, room, false, true);
+          if (m?.media) page.items.push(m);
+        }
+        token = res.chunk.length && res.end && res.end !== token ? res.end : undefined;
+        if (!token || page.items.length >= FILES_PAGE) break;
+      }
+      if (token) page.next = token;
+      return page;
+    },
+    linkPreview(url) {
+      let preview = previews.get(url);
+      if (!preview) {
+        preview = client.http
+          .authedRequest<Record<string, unknown>>(Method.Get, '/media/preview_url', { url }, undefined, { prefix: ClientPrefix.V1 })
+          .then(
+            (og) => linkPreviewOf(url, og),
+            (e: unknown) => {
+              // Only a definitive "no preview" is kept; rate limits, server errors and dropped connections may work next time.
+              if (!(e instanceof MatrixError && (e.httpStatus === 400 || e.httpStatus === 404))) previews.delete(url);
+              return null;
+            },
+          );
+        previews.set(url, preview);
+      }
+      return preview;
+    },
   };
 }

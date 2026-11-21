@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { archivedLevels, channelUsers, levelFor, powerLevels } from './levels';
+import { archivedLevels, channelUsers, dmLevels, levelFor, powerLevels, withPins } from './levels';
 
 describe('D-27 power levels', () => {
   it('workspace: Admins manage levels, Owner/Admin invite, anyone links channels; channels let anyone invite', () => {
@@ -15,6 +15,15 @@ describe('D-27 power levels', () => {
 
   it('channels copy team and up from the space; creators become Owners; the channel creator is left out', () => {
     expect(channelUsers({ '@admin:x': 50, '@staff:x': 10, '@low:x': 5, '@me:x': 50, '@bad:x': 'x' }, ['@sofia:x'], '@me:x')).toEqual({ '@admin:x': 50, '@staff:x': 10, '@sofia:x': 100 });
+  });
+
+  it('anyone pins in channels and new DMs; archiving raises pins to Admin (M7, D-33)', () => {
+    expect(powerLevels('workspace', 'channel', {}).events).toMatchObject({ 'm.room.pinned_events': 0 });
+    expect(powerLevels('client', 'space', {}).events).not.toHaveProperty('m.room.pinned_events');
+    expect(dmLevels().events).toMatchObject({ 'm.room.pinned_events': 0, 'm.room.power_levels': 100, 'm.room.encryption': 100 });
+    expect(archivedLevels(powerLevels('client', 'channel', {}), 'client', true).events).toMatchObject({ 'm.room.pinned_events': 50 });
+    expect(withPins({ events_default: 0, events: { 'm.room.power_levels': 50 } }).events).toEqual({ 'm.room.power_levels': 50, 'm.room.pinned_events': 0 });
+    expect(withPins({ events_default: 50 }).events).toEqual({ 'm.room.pinned_events': 50 });
   });
 
   it('a role’s level per space kind', () => {

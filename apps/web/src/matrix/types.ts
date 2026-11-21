@@ -47,6 +47,8 @@ export interface Channel {
   archived?: boolean;
   /** E2. I may rename/archive it: Owner, Admin or its creator (what the server allows, D-27); never #general. */
   manageable?: boolean;
+  /** M7. I may pin and unpin here (anyone in the conversation, D-33); false while archived. */
+  canPin?: boolean;
 }
 
 export interface Message {
@@ -77,6 +79,10 @@ export interface Message {
   thread?: ThreadInfo;
   /** M6. kind 'undecryptable' only: a key may still arrive (backup, another device) — show the shimmer, not the quiet line. */
   arriving?: boolean;
+  /** M7. Pinned in its conversation. */
+  pinned?: boolean;
+  /** M7. Text messages: http(s) URLs in body order, each once (code and mentions left out); the card shows the first. Never set in encrypted conversations (D-33). */
+  links?: string[];
 }
 
 export interface ThreadInfo {
@@ -120,6 +126,8 @@ export interface Dm {
   spaceIds: string[];
   /** M6. End-to-end encrypted (every DM from M6 on, D-11). */
   encrypted?: boolean;
+  /** M7. I may pin and unpin here. */
+  canPin?: boolean;
 }
 
 /** M4. Owner/Admin come from power levels in the workspace (D-06); the rest from membership. */
@@ -217,6 +225,25 @@ export interface Media {
   height?: number;
   thumbnailRef?: string;
   durationMs?: number;
+}
+
+/** M7. One page of the Files tab, newest first. */
+export interface FilesPage {
+  /** image/video/audio/file messages with `media` (thread replies included). */
+  items: Message[];
+  /** Pass to files() for the next (older) page; absent = no more. */
+  next?: string;
+}
+
+/** M7. A link card (unencrypted conversations only, D-33). */
+export interface LinkPreview {
+  url: string;
+  title?: string;
+  description?: string;
+  /** The link's host without "www." (never the page's own claim). */
+  site?: string;
+  /** Media reference: turn it into a URL with store.mediaUrl(). */
+  image?: string;
 }
 
 export interface Reaction {
@@ -422,6 +449,16 @@ export interface WorkspaceStore {
   resetEncryption(password: string): Promise<string>;
   /** Before sign-out: 'last-device' = last confirmed device and the account has encrypted conversations; 'no-backup' = same but no working backup. */
   signOutRisk(): Promise<'none' | 'last-device' | 'no-backup'>;
+  // M7 (D-33)
+  /** Pinned messages, newest pin first; deleted or unreachable ones are left out. */
+  pins(channelId: string): Promise<Message[]>;
+  /** Rejects Error('not-allowed') when I may not pin here, Error('not-sent') for a message still sending, Error('timeout') when the change hasn't synced within 10 s. Resolves once it has (`Message.pinned` follows). */
+  pin(channelId: string, messageId: string): Promise<void>;
+  unpin(channelId: string, messageId: string): Promise<void>;
+  /** Files tab: newest first; `from` = the previous page's `next`. Encrypted conversations are scanned here after decrypting (a bounded amount per page), so a page can be short, even empty, while `next` is set. */
+  files(channelId: string, from?: string): Promise<FilesPage>;
+  /** First link of an unencrypted message → card data; null = no preview (or it failed). Cached for the session; concurrent calls share one request. Never call it for encrypted conversations. */
+  linkPreview(url: string): Promise<LinkPreview | null>;
 }
 
 export type SignInFailure = 'wrong-password' | 'unreachable' | 'other';

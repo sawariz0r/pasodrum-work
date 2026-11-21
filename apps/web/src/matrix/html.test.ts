@@ -60,4 +60,11 @@ describe('sanitizeHtml (D-22)', () => {
     expect(pillUser('https://matrix.to/#/!r:b')).toBeNull();
     expect(pillUser('https://example.com/#/@a:b')).toBeNull();
   });
+
+  it('collects links outside code and the reply fallback, leaving pills out (M7)', () => {
+    const input =
+      '<mx-reply><blockquote><a href="https://old.dev">old</a></blockquote></mx-reply>' +
+      '<a href="https://matrix.to/#/@a:s">A</a> read <a href="https://x.dev/doc">the doc</a> or https://y.dev/raw. <code>https://code.dev</code><pre><code>https://pre.dev</code></pre> <a href="mailto:a@b.c">m</a>';
+    expect(sanitizeHtml(input).links).toEqual(['https://x.dev/doc', 'https://y.dev/raw']);
+  });
 });

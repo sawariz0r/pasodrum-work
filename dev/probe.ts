@@ -1,6 +1,7 @@
 // Checks every API-testable row of the M0 probe table (SPEC §8). Run after pnpm dev:seed: pnpm probe
 import { readFileSync, writeFileSync } from 'node:fs';
 import { BASE, LOCAL, MAILPIT, PASSWORD, SEED_FILE, SERVER, enc, envToken, login, mx, ok, register, send, sleep, state, userId } from './lib.ts';
+import { PINS, channelUsers, dmLevels, powerLevels } from '../apps/web/src/matrix/levels.ts';
 
 const seed = JSON.parse(readFileSync(SEED_FILE, 'utf8'));
 const t: Record<string, string> = seed.tokens;
@@ -102,9 +103,36 @@ await probe('Presence', 'Hide presence dots', async () => {
   return [p.body?.presence === 'online', `status ${p.status}, presence=${p.body?.presence}`];
 });
 
-await probe('URL previews', 'Links stay plain', async () => {
-  const p = await mx(t.sofia!, 'GET', `/_matrix/client/v1/media/preview_url?url=${enc('https://example.com')}`);
-  return [p.status === 200 && !!p.body['og:title'], `status ${p.status}, og:title=${p.body?.['og:title'] ?? '—'}`];
+await probe('URL previews (link cards, authenticated media)', 'Links stay plain', async () => {
+  const p = await mx(t.sofia!, 'GET', `/_matrix/client/v1/media/preview_url?url=${enc('https://github.com')}`);
+  const image: string = p.body?.['og:image'] ?? '';
+  const keys = Object.keys(p.body ?? {}).join(', ');
+  const missing = await mx(t.sofia!, 'GET', `/_matrix/client/v1/media/preview_url?url=${enc('https://httpbin.org/status/404')}`);
+  const dns = await mx(t.sofia!, 'GET', `/_matrix/client/v1/media/preview_url?url=${enc('https://no-such-host.invalid/')}`);
+  const pass = p.status === 200 && !!p.body['og:title'] && image.startsWith('mxc://') && missing.status < 500 && !missing.body?.['og:title'];
+  return [pass, `github.com ${p.status} keys: ${keys} (og:image mxc: ${image.startsWith('mxc://')}); 404 page → ${missing.status} ${JSON.stringify(missing.body)}; unknown host → ${dns.status} ${dns.body?.errcode ?? ''}`];
+});
+
+await probe('Pins: a level-0 member pins with the M7 levels (D-33)', 'Pins only for Admins', async () => {
+  const levels = powerLevels('workspace', 'channel', channelUsers({ [userId('ingrid')]: 50 }, [], userId('sofia')));
+  const room = await ok(t.sofia!, 'POST', '/_matrix/client/v3/createRoom', { name: 'Probe pins', preset: 'private_chat', power_level_content_override: levels, invite: [userId('jonas')] });
+  const old = await ok(t.sofia!, 'POST', '/_matrix/client/v3/createRoom', { name: 'Probe pins (old levels)', preset: 'private_chat', power_level_content_override: { ...levels, events: { ...levels.events, [PINS]: undefined } }, invite: [userId('jonas')] });
+  const dm = await ok(t.sofia!, 'POST', '/_matrix/client/v3/createRoom', { preset: 'private_chat', is_direct: true, power_level_content_override: dmLevels(), invite: [userId('jonas')] });
+  const pinIn = async (roomId: string) => {
+    await ok(t.jonas!, 'POST', `/_matrix/client/v3/join/${enc(roomId)}`, {});
+    const id = await send(t.jonas!, roomId, { msgtype: 'm.text', body: 'pin me' });
+    return (await mx(t.jonas!, 'PUT', `/_matrix/client/v3/rooms/${enc(roomId)}/state/${PINS}/`, { pinned: [id] })).status;
+  };
+  const [now, before, inDm] = [await pinIn(room.room_id), await pinIn(old.room_id), await pinIn(dm.room_id)];
+  const dmLevelsBack = (await ok(t.sofia!, 'GET', `/_matrix/client/v3/rooms/${enc(dm.room_id)}/state/m.room.power_levels/`)).events ?? {};
+  for (const id of [room.room_id, old.room_id, dm.room_id]) {
+    for (const tok of [t.jonas!, t.sofia!]) {
+      await mx(tok, 'POST', `/_matrix/client/v3/rooms/${enc(id)}/leave`, {});
+      await mx(tok, 'POST', `/_matrix/client/v3/rooms/${enc(id)}/forget`, {});
+    }
+  }
+  const dmOk = dmLevelsBack['m.room.power_levels'] === 100 && dmLevelsBack['m.room.encryption'] === 100 && dmLevelsBack[PINS] === 0;
+  return [now === 200 && before === 403 && inDm === 200 && dmOk, `member pins in new channel ${now}, in old-levels channel ${before} (migration needed), in new DM ${inDm}; DM levels keep defaults: ${dmOk} (${JSON.stringify(dmLevelsBack)})`];
 });
 
 async function latestMail(subject: string, to: string): Promise<string> {
@@ -159,10 +187,15 @@ await probe('Message search incl. Japanese and partial words', 'Local substring 
 await probe('contains_url filter (Files tab)', 'Local scan for Files tab', async () => {
   const up = await fetch(`${BASE}/_matrix/media/v3/upload?filename=${enc('資料.pdf')}`, { method: 'POST', headers: { Authorization: `Bearer ${t.jonas}`, 'Content-Type': 'application/pdf' }, body: '%PDF-1.4 probe' }).then((x) => x.json());
   await send(t.jonas!, r.general!, { msgtype: 'm.file', body: '資料.pdf', filename: '資料.pdf', url: up.content_uri, info: { mimetype: 'application/pdf' } });
-  const m = await msgs(t.sofia!, r.general!, { contains_url: true });
+  await send(t.jonas!, r.general!, { msgtype: 'm.text', body: 'Text after the file' });
+  const filter = { contains_url: true, types: ['m.room.message', 'm.sticker'] };
+  const m = await msgs(t.sofia!, r.general!, filter);
   const chunk = m.body.chunk ?? [];
   const onlyFiles = chunk.length > 0 && chunk.every((e: any) => !!e.content?.url);
-  return [onlyFiles, `${chunk.length} events, all with url: ${onlyFiles}`];
+  const one = await mx(t.sofia!, 'GET', `/_matrix/client/v3/rooms/${enc(r.general!)}/messages?dir=b&limit=1&filter=${enc(JSON.stringify(filter))}`);
+  const next = one.body.end ? await mx(t.sofia!, 'GET', `/_matrix/client/v3/rooms/${enc(r.general!)}/messages?dir=b&limit=1&from=${enc(one.body.end)}&filter=${enc(JSON.stringify(filter))}`) : null;
+  const paged = !!next && next.status === 200 && (next.body.chunk ?? []).every((e: any) => !!e.content?.url && e.event_id !== one.body.chunk?.[0]?.event_id);
+  return [onlyFiles && paged, `${chunk.length} events, all with url: ${onlyFiles}; paging with end token: ${paged} (${next?.body.chunk?.length ?? 0} on page 2)`];
 });
 
 await probe('Key backup and cross-signing upload', 'Encrypted channels show no pre-join history', async () => {

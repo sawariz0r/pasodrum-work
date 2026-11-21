@@ -22,7 +22,8 @@
     "probe": "node dev/probe.ts",
     "test:invite": "node --test services/invite/test/*.integration.ts",
     "setup:prod": "bash scripts/setup-production-env.sh",
-    "add:staff": "node dev/add-staff.ts"
+    "add:staff": "node dev/add-staff.ts",
+    "migrate:pins": "node dev/migrate-pins.ts"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

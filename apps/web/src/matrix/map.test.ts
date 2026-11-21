@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  connectionOf, emailFromId, knownSpacesOf, loginCandidates, looksExternal, mediaOf, membershipSummary, reactionsOf, replyFallback, sameMembers, share, stripReplyFallback, threadStats, workspaceOf,
+  connectionOf, emailFromId, knownSpacesOf, linksOf, loginCandidates, looksExternal, mediaOf, membershipSummary, reactionsOf, replyFallback, sameMembers, share, stripReplyFallback, threadStats, workspaceOf,
   type RoomFacts,
 } from './map';
 
@@ -260,5 +260,24 @@ describe('sameMembers', () => {
   it('ignores order and duplicates', () => {
     expect(sameMembers(['@a:s', '@b:s'], ['@b:s', '@a:s', '@a:s'])).toBe(true);
     expect(sameMembers(['@a:s'], ['@a:s', '@b:s'])).toBe(false);
+  });
+});
+
+describe('linksOf (M7, D-33)', () => {
+  it('finds http(s) URLs in order, once, without code, mentions or trailing punctuation', () => {
+    const body = 'See https://a.dev/x, (https://b.dev/y_(z)) and `https://code.dev` then\n```\nhttps://block.dev\n```\nhttps://matrix.to/#/@jonas:pasodrum.work https://a.dev/x.';
+    expect(linksOf(body, null, false)).toEqual(['https://a.dev/x', 'https://b.dev/y_(z)']);
+  });
+
+  it('ends a URL where Japanese text starts', () => {
+    expect(linksOf('資料はhttps://pasodrum.work/spec/composerです。', null, false)).toEqual(['https://pasodrum.work/spec/composer']);
+  });
+
+  it('prefers the formatted body’s links', () => {
+    expect(linksOf('plain https://plain.dev', ['https://html.dev'], false)).toEqual(['https://html.dev']);
+  });
+
+  it('none in encrypted conversations', () => {
+    expect(linksOf('https://a.dev', ['https://a.dev'], true)).toEqual([]);
   });
 });

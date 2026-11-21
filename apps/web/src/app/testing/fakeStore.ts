@@ -1,6 +1,6 @@
 // In-memory WorkspaceStore with the canvas workspace, for tests and /dev screens. No server.
 import { PasswordRequired } from '../../matrix';
-import type { ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Draft, JoinableChannel, Media, Member, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, SasEmoji, Security, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
+import type { ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Draft, FilesPage, JoinableChannel, LinkPreview, Media, Member, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, SasEmoji, Security, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
 
 const people: Record<string, Person> = {
   so: { id: '@sofia:pasodrum.localhost', name: 'Sofia Olsen' },
@@ -39,7 +39,7 @@ const spaceOrder = (a: Space, b: Space) =>
   (a.kind === 'workspace' ? -1 : b.kind === 'workspace' ? 1 : 0) || Number(!!a.archived) - Number(!!b.archived) || a.name.localeCompare(b.name);
 
 const ch = (id: string, spaceId: string, name: string, extra: Partial<Channel> = {}): Channel => ({
-  id, spaceId, name, private: false, unread: 0, mentions: 0, memberCount: 4, manageable: name !== 'general', ...extra,
+  id, spaceId, name, private: false, unread: 0, mentions: 0, memberCount: 4, manageable: name !== 'general', canPin: true, ...extra,
 });
 
 const channels: Record<string, Channel[]> = {
@@ -107,7 +107,7 @@ function generalHistory(): Message[] {
   };
   add('ih', at(1, 16, 42), { body: 'Pushed onboarding v3 to Figma. Biggest change: we never ask people for a server address anymore. Their work email decides where they land.' });
   add('ih', at(1, 16, 50), { kind: 'system', system: { joined: [people.ml!, people.la!, people.ek!], left: [] } });
-  list.push({ ...msg(1, g, 'jb', 'Nordlys review moved to Thursday 14:00.', 0), ts: at(0, 9, 14), reactions: [reacted('👍', ['so', 'ih', 'ml']), reacted('🙌', ['ek'])] });
+  list.push({ ...msg(1, g, 'jb', 'Nordlys review moved to Thursday 14:00.', 0), ts: at(0, 9, 14), pinned: true, reactions: [reacted('👍', ['so', 'ih', 'ml']), reacted('🙌', ['ek'])] });
   list.push({ ...msg(2, g, 'jb', 'Agenda in the doc.', 0), ts: at(0, 9, 14) });
   const q = add('jb', at(0, 9, 15), { body: q1 });
   const a = add('ih', at(0, 9, 20), { body: a1, replyTo: { id: q.id, sender: q.sender, body: q1, found: true } });
@@ -125,6 +125,8 @@ function generalHistory(): Message[] {
   });
   add('ih', at(0, 9, 52), { kind: 'image', media: media('screen', 'empty-states.png', { width: 640, height: 400 }) });
   add('ml', at(0, 10, 2), {
+    pinned: true,
+    links: ['https://pasodrum.work/spec/composer'],
     body: 'Composer rules, final version: …',
     html: '<p>Composer rules, <strong>final</strong> version:</p><ol><li><strong>Enter</strong> sends, <code>Shift</code> + <code>Enter</code> adds a line</li><li>Paste a URL over selected text to make it a link</li><li>Drafts stay <del>in the cloud</del> <em>on this device</em></li></ol><blockquote>One line of copy, one clear action.</blockquote><p>Details in <a href="https://pasodrum.work/spec/composer">pasodrum.work/spec/composer</a></p>',
   });
@@ -143,12 +145,15 @@ function generalHistory(): Message[] {
   add('la', at(0, 10, 52), { body: 'Henrik’s interview, for the research notes.' });
   add('la', at(0, 10, 52), { kind: 'audio', media: media('interview', 'nordlys-interview-03.m4a', { durationMs: 728_000, mimetype: 'audio/mp4' }) });
   add('ih', at(0, 11, 1), { body: 'Signed contract from Nordlys.' });
-  add('ih', at(0, 11, 1), { kind: 'file', media: media('contract', 'Nordlys-contract-signed.pdf', { size: 2_400_000 }) });
+  add('ih', at(0, 11, 1), { kind: 'file', pinned: true, media: media('contract', 'Nordlys-contract-signed.pdf', { size: 2_400_000 }) });
   add('jb', at(0, 11, 10), { body: 'Everything for Thursday:' });
   for (const [name, size] of [['agenda-thursday.docx', 86_000], ['budget-2027.xlsx', 312_000], ['nordlys-kickoff.key', 18_200_000], ['brand-assets.zip', 64_900_000]] as const) {
     add('jb', at(0, 11, 10), { kind: 'file', media: media(name, name, { size }) });
   }
-  add('la', at(0, 11, 20), { body: 'M1 release notes …', html: release });
+  add('la', at(0, 11, 20), { body: 'M1 release notes …', html: release, links: ['https://pasodrum.work'] });
+  // M7: a link with a card, one whose page has no preview.
+  add('ml', at(0, 11, 22), { body: 'Onboarding v3 in Figma: https://www.figma.com/design/Onb0ardV3/Onboarding-v3', links: ['https://www.figma.com/design/Onb0ardV3/Onboarding-v3'] });
+  add('tr', at(0, 11, 23), { body: 'Call notes: https://notes.example.com/nordlys-call', links: ['https://notes.example.com/nordlys-call'] });
   add('ek', at(0, 11, 24), { body: 'Thanks Lea. Ship it.', reactions: [reacted('🚢', ['ih', 'ml', 'jb'])] });
   add('la', at(0, 11, 30), {
     body: 'Add people is live for everyone 🎉',
@@ -192,6 +197,8 @@ const threadReplies: Record<string, () => Message[]> = {
   '$!eng-sync': () => [
     reply('$!eng-sync', '!eng', 'jb', at(0, 8, 47), 'Great news. Who should test sign-in on Safari?'),
     reply('$!eng-sync', '!eng', 'ek', at(0, 9, 2), 'Sofia offered. I’ll send the build link.'),
+    // M7: a file in a thread shows in the Files tab too.
+    { ...reply('$!eng-sync', '!eng', 'ek', at(0, 9, 3), ''), kind: 'file', media: media('build', 'pasodrum-web-build.zip', { size: 8_400_000 }) },
   ],
 };
 
@@ -232,7 +239,7 @@ const ingridLast = rich('!dm-ingrid', 'ih', at(0, 9, 41), { kind: 'undecryptable
 // M6: every DM is end-to-end encrypted (D-11).
 function sampleDms() {
   const dm = (id: string, who: (keyof typeof people)[], lastTs: number, spaceIds: string[], unread = 0) => ({
-    id, people: who.map((k) => people[k]!), unread, mentions: unread, lastTs, spaceIds, encrypted: true,
+    id, people: who.map((k) => people[k]!), unread, mentions: unread, lastTs, spaceIds, encrypted: true, canPin: true,
   });
   return [
     dm('!dm-jonas', ['jb'], at(0, 10, 12), ['!pasodrum', '!nordlys'], 1),
@@ -306,6 +313,9 @@ function sampleActivity(): ActivityItem[] {
 function leadHistory(): Message[] {
   return [
     rich('!lead', 'ek', at(0, 7, 41), { kind: 'undecryptable' }),
+    // M7: files in an encrypted channel (the Files tab scans them after decrypting).
+    rich('!lead', 'ih', at(0, 7, 50), { kind: 'file', media: media('q1-plan', 'Q1-plan.pdf', { size: 420_000 }) }),
+    rich('!lead', 'ih', at(0, 7, 51), { kind: 'image', media: media('desk', 'offsite-venue.jpg', { width: 1200, height: 800 }) }),
     withThread(rich('!lead', 'ih', at(0, 7, 55), {
       id: '$!lead-q1',
       body: 'Q1 planning doc is up. Sofia Olsen Jonas Berg please add your team’s priorities by Friday.',
@@ -320,6 +330,15 @@ const history: Record<string, () => Message[]> = {
   '!lead': leadHistory,
   '!eng': () => engHistory().map((m) => withThread(m)),
   ...dmHistory,
+};
+
+// M7: link cards by URL; anything else has no preview.
+const PREVIEWS: Record<string, LinkPreview> = {
+  'https://pasodrum.work': { url: 'https://pasodrum.work', title: 'Pasodrum work', description: 'One workspace for the team and every client.', site: 'pasodrum.work' },
+  'https://pasodrum.work/spec/composer': { url: 'https://pasodrum.work/spec/composer', title: 'Composer rules', description: 'Enter sends, Shift + Enter adds a line, drafts stay on this device.', site: 'pasodrum.work' },
+  'https://www.figma.com/design/Onb0ardV3/Onboarding-v3': {
+    url: 'https://www.figma.com/design/Onb0ardV3/Onboarding-v3', title: 'Onboarding v3 – Figma', description: 'Created with Figma', site: 'Figma', image: 'mxc://fake/sketch',
+  },
 };
 
 const ART: Record<string, [string, string, string]> = {
@@ -524,7 +543,26 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
   const setSecurity = (patch: Partial<Security>) => set({ security: { ...snapshot.security, ...patch } });
   let backupReadable = !opts.backupUnreadable;
   const setConfirmation = (confirmation: Security['confirmation']) => setSecurity({ confirmation });
-  const finishLoad = (channelId: string) => setTimeline(channelId, { messages: history[channelId]?.() ?? [], initialLoading: false });
+  // One copy of each channel's history per store, so pins and files match the timeline.
+  const loaded: Record<string, Message[]> = {};
+  const historyOf = (channelId: string) => (loaded[channelId] ??= history[channelId]?.() ?? []);
+  const loadedReplies: Record<string, Message[]> = {};
+  const finishLoad = (channelId: string) => setTimeline(channelId, { messages: historyOf(channelId), initialLoading: false });
+  // M7: pinned ids per channel, newest pin first.
+  const pinned: Record<string, string[]> = {};
+  const pinsIn = (channelId: string) => (pinned[channelId] ??= historyOf(channelId).filter((m) => m.pinned).sort((a, b) => b.ts - a.ts).map((m) => m.id));
+  const findMessage = (channelId: string, id: string) =>
+    [...messagesOf(channelId), ...Object.values(snapshot.threadTimelines).flatMap((tl) => tl.messages), ...historyOf(channelId)].find((m) => m.id === id);
+  const canPinIn = (channelId: string) =>
+    !!Object.values(snapshot.channels).flat().find((c) => c.id === channelId)?.canPin || !!snapshot.dms.find((d) => d.id === channelId)?.canPin;
+  const setPinned = async (channelId: string, messageId: string, on: boolean) => {
+    if (!canPinIn(channelId)) throw new Error('not-allowed');
+    const rest = pinsIn(channelId).filter((id) => id !== messageId);
+    pinned[channelId] = on ? [messageId, ...rest] : rest;
+    loaded[channelId] = historyOf(channelId).map((m) => (m.id === messageId ? { ...m, pinned: on || undefined } : m));
+    patchMessage(channelId, messageId, (m) => ({ ...m, pinned: on || undefined }));
+  };
+  const previewMs = opts.loadMs ?? 0;
 
   return {
     set,
@@ -570,8 +608,11 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     async signOut() {},
     send(channelId, draft) {
       const original = draft.replyTo ? listOf(channelId, draft).find((x) => x.id === draft.replyTo) : undefined;
+      const encrypted = !!Object.values(snapshot.channels).flat().find((c) => c.id === channelId)?.encrypted || !!snapshot.dms.find((d) => d.id === channelId)?.encrypted;
+      const links = encrypted ? [] : [...new Set(draft.body.match(/https?:\/\/[A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]+[A-Za-z0-9/#=_-]/g) ?? [])];
       const m: Message = {
         id: `~local${localId++}`, channelId, sender: snapshot.me, body: draft.body, html: draft.html, ts: Date.now(), status: 'sending',
+        ...(links.length ? { links } : {}),
         replyTo: original ? { id: original.id, sender: original.sender, body: original.body || original.media?.name || '', found: true } : undefined,
       };
       if (draft.body) setList(channelId, draft, [...listOf(channelId, draft), m]);
@@ -864,7 +905,10 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       });
     },
     async setArchived(spaceId, archived) {
-      set({ spaces: snapshot.spaces.map((sp) => (sp.id === spaceId ? { ...sp, archived } : sp)).sort(spaceOrder) });
+      set({
+        spaces: snapshot.spaces.map((sp) => (sp.id === spaceId ? { ...sp, archived } : sp)).sort(spaceOrder),
+        channels: { ...snapshot.channels, [spaceId]: (snapshot.channels[spaceId] ?? []).map((c) => ({ ...c, canPin: !archived && !c.archived })) },
+      });
     },
     // Keeps the ⟦n⟧ tokens where they were; a segment containing "fail" rejects so the failed state can be seen.
     async translate(segments, to) {
@@ -927,8 +971,36 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       patchChannel(channelId, { name });
     },
     async setChannelArchived(channelId, archived) {
-      patchChannel(channelId, { archived });
+      patchChannel(channelId, { archived, canPin: !archived });
     },
     signOutRisk: () => Promise.resolve(opts.signOutRisk ?? 'none'),
+    // M7: #general has three pins, files in the history, cards for the URLs in PREVIEWS.
+    async pins(channelId) {
+      return pinsIn(channelId)
+        .map((id) => findMessage(channelId, id))
+        .filter((m): m is Message => !!m && m.kind !== 'deleted')
+        .map((m) => ({ ...m, pinned: true }));
+    },
+    pin: (channelId, messageId) => setPinned(channelId, messageId, true),
+    unpin: (channelId, messageId) => setPinned(channelId, messageId, false),
+    // Like the real store: thread replies included; an encrypted channel is scanned a bit at a time, so its first page
+    // comes back empty and later ones short, with `next` set.
+    async files(channelId, from) {
+      const replies = (loadedReplies[channelId] ??= Object.values(threadReplies).flatMap((f) => f()).filter((m) => m.channelId === channelId));
+      const all = [...messagesOf(channelId), ...historyOf(channelId), ...replies]
+        .filter((m, i, list) => !!m.media && m.status === 'sent' && list.findIndex((x) => x.id === m.id) === i)
+        .sort((a, b) => b.ts - a.ts);
+      const encrypted = !!Object.values(snapshot.channels).flat().find((c) => c.id === channelId)?.encrypted || !!snapshot.dms.find((d) => d.id === channelId)?.encrypted;
+      if (encrypted && from === undefined) return { items: [], next: '0' };
+      const size = encrypted ? 1 : 8;
+      const start = Number(from ?? 0);
+      const page: FilesPage = { items: all.slice(start, start + size) };
+      if (start + size < all.length) page.next = String(start + size);
+      return page;
+    },
+    async linkPreview(url) {
+      if (previewMs) await new Promise((r) => setTimeout(r, previewMs));
+      return PREVIEWS[url] ?? null;
+    },
   };
 }
