@@ -1,11 +1,15 @@
 import {
+  askForHelpByLink,
   claimInvite,
+  confirmDevice,
   createWorkspaceStore,
   defaultServer,
   loadSession,
+  previewConfirm,
   previewInvite,
   resolveServer,
   signIn,
+  type ConfirmLink,
   type InvitePreview,
   type Session,
   type WorkspaceStore,
@@ -22,6 +26,23 @@ export interface Backend {
   previewInvite(code: string): Promise<InvitePreview>;
   /** Resolves to the identifier to sign in with. Used or expired links reject (410). */
   claimInvite(code: string, name: string, password: string): Promise<string>;
+  /** D-38 confirm link page, before sign-in. Opening never confirms; rejects Error('unreachable'). */
+  previewConfirm(code: string): Promise<ConfirmLink>;
+  /** "Yes, it's me". Rejects Error('gone' | 'unreachable' | 'other'). */
+  confirmDevice(code: string): Promise<void>;
+  /** Tells the contact. Rejects Error('no-contact' | 'unreachable' | 'other'). */
+  askForHelpByLink(code: string): Promise<void>;
 }
 
-export const matrixBackend: Backend = { defaultServer, resolveServer, signIn, loadSession, createWorkspaceStore, previewInvite, claimInvite };
+export const matrixBackend: Backend = {
+  defaultServer,
+  resolveServer,
+  signIn,
+  loadSession,
+  createWorkspaceStore,
+  previewInvite,
+  claimInvite,
+  previewConfirm,
+  confirmDevice,
+  askForHelpByLink,
+};

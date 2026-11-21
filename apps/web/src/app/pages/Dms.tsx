@@ -5,7 +5,7 @@ import { Link } from 'react-router';
 import { useWorkspace, type Dm } from '../../matrix';
 import { Badge, Button, IconButton } from '../../ui';
 import { ChatIcon } from '../icons';
-import { DmFace, Face, others } from '../people/Face';
+import { DmFace, Face, others, SystemFace } from '../people/Face';
 import { useDmName, useShowExternal } from '../people/names';
 import { useNewMessage } from '../people/NewMessage';
 import { useProfileCard } from '../people/ProfileCardContext';
@@ -57,6 +57,7 @@ function DmRow({ dm, current }: { dm: Dm; current: boolean }) {
   const hidden = useHiddenText(dm.id);
   const unavailable = !!last && (hidden || last.kind === 'undecryptable');
   if (unavailable) preview = t('security.unavailable');
+  else if (last?.help) preview = t('security.helpCard.needs', { name: last.help.who.name });
   else if (last) {
     const text = previewText(last);
     if (last.sender.id === meId) preview = t('pages.dms.you', { text });
@@ -112,13 +113,18 @@ export function DmConversation({ dmId }: { dmId: string }) {
   if (!dm) return null;
   const list = others(dm, meId);
   const single = list.length === 1 ? list[0] : undefined;
-  const outside = showExternal ? list.filter((p) => p.external) : [];
+  const outside = showExternal && !dm.system ? list.filter((p) => p.external) : [];
 
   return (
     <>
       <header className={`${shell.header} ${s.dmHeader}`}>
         <DrawerToggle />
-        {single ? (
+        {dm.system ? (
+          <h1 className={s.dmTitle}>
+            <SystemFace size={26} />
+            <span>{name(dm)}</span>
+          </h1>
+        ) : single ? (
           <h1 className={s.dmHeading}>
             <button
               ref={title}

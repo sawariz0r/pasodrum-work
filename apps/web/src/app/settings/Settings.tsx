@@ -375,7 +375,8 @@ function DevicesPane() {
   // M6 (SettingsDevicesM6, SettingsDevicesUnconfirmed): this device follows the live state; others carry `confirmed`.
   const security = useSecurityUi();
   const unconfirmed = useWorkspace((x) => x.security.device === 'unconfirmed');
-  const confirmed = useWorkspace((x) => x.security.device === 'confirmed');
+  // D-38: clients and Externals have no Recovery key row.
+  const keyRow = useWorkspace((x) => x.security.device === 'confirmed' && x.security.confirmByEmail === false);
   const [keyFailed, setKeyFailed] = useState(false);
   const newKey = () => {
     if (security.keyBusy) return;
@@ -463,7 +464,7 @@ function DevicesPane() {
           {t('settings.devices.signOutOthers')}
         </button>
       )}
-      {confirmed && devices && (
+      {keyRow && devices && (
         <div className={s.recoveryKey}>
           <span className={s.deviceIcon}>
             <KeyIcon size={19} />

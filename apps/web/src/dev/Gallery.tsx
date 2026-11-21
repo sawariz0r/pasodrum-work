@@ -1,4 +1,12 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { MemoryRouter } from 'react-router';
+import { ConfirmPage } from '../app/confirm/ConfirmPage';
+import { EmailConfirmView, type EmailConfirmViewProps, type EmailScreen } from '../app/security/EmailConfirm';
+import gateStyles from '../app/security/Security.module.css';
+import { createFakeStore } from '../app/testing/fakeStore';
+import { createFakeBackend } from './fakeBackend';
+import { WorkspaceProvider } from '../matrix';
 import {
   AttentionDot,
   Avatar,
@@ -110,7 +118,34 @@ const SignOut = () => (
   </svg>
 );
 
+const noop = () => {};
+// D-38 boards: EmailConfirmGate, EmailConfirmGateOther, EmailConfirmSent, EmailConfirmDone, EmailConfirmHelp, EmailConfirmHelped.
+const emailScreens: { id: string; screen: EmailScreen; otherDevice?: boolean }[] = [
+  { id: 'gate', screen: 'gate' },
+  { id: 'gate-other', screen: 'gate', otherDevice: true },
+  { id: 'sent', screen: 'sent' },
+  { id: 'done', screen: 'done' },
+  { id: 'help', screen: 'help' },
+  { id: 'helped', screen: 'helped' },
+];
+const emailProps: Omit<EmailConfirmViewProps, 'screen' | 'otherDevice'> = {
+  email: 'henrik@nordlys.no',
+  contact: { id: '@jonas:pasodrum.localhost', name: 'Jonas Berg' },
+  canResend: true,
+  asking: false,
+  failed: false,
+  onEmail: noop,
+  onDevice: noop,
+  onHelp: noop,
+  onDidntGet: noop,
+  onBack: noop,
+  onStartFresh: noop,
+};
+
 export default function Gallery() {
+  const { i18n } = useTranslation();
+  const store = useMemo(() => createFakeStore(), []);
+  const linkBackend = useMemo(() => createFakeBackend(), []);
   const [theme, setTheme] = useState<Theme>(() => initial('theme', ['light', 'dark'] as const, 'light'));
   const [lang, setLang] = useState<Lang>(() => initial('lang', ['en', 'ja'] as const, 'en'));
   const [dialog, setDialog] = useState(false);
@@ -120,11 +155,12 @@ export default function Gallery() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.documentElement.lang = lang;
+    void i18n.changeLanguage(lang);
     const q = new URLSearchParams(location.search);
     q.set('theme', theme);
     q.set('lang', lang);
     history.replaceState(null, '', `${location.pathname}?${q}`);
-  }, [theme, lang]);
+  }, [theme, lang, i18n]);
 
   const [ih, ml, jb, so] = t.people as [string, string, string, string];
 
@@ -292,6 +328,25 @@ export default function Gallery() {
           </div>
         </Section>
       </div>
+
+      <WorkspaceProvider store={store}>
+        <div className={s.screens}>
+          {emailScreens.map((e) => (
+            <section key={e.id} className={s.screen} data-screen={`email-${e.id}`}>
+              <div className={gateStyles.gate}>
+                <EmailConfirmView {...emailProps} screen={e.screen} otherDevice={!!e.otherDevice} />
+              </div>
+            </section>
+          ))}
+          {['open', 'gone', 'nohelp', 'offline'].map((code) => (
+            <section key={code} className={s.screen} data-screen={`link-${code}`}>
+              <MemoryRouter>
+                <ConfirmPage backend={linkBackend} code={code} />
+              </MemoryRouter>
+            </section>
+          ))}
+        </div>
+      </WorkspaceProvider>
     </div>
   );
 }

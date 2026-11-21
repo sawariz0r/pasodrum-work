@@ -54,12 +54,14 @@ type SecurityUi = {
   signOut(): void;
   /** SIDE-03: profile card → Share earlier messages (1:1 DM with an outside person). */
   shareHistory(dmId: string, person: Person): void;
+  /** D-38: the email just confirmed this device; You're all set shows for 1.2 s before the conversation. */
+  emailDone: boolean;
 };
 
 const noop = () => {};
 // Views rendered on their own (component tests, /dev screens) work without the provider; nothing opens.
 const Ctx = createContext<SecurityUi>({
-  askDevice: noop, enterKey: noop, reset: noop, confirm: noop, newKey: () => Promise.resolve(true), keyBusy: false, ensureKey: noop, firstKey: 'idle', signOut: noop, shareHistory: noop,
+  askDevice: noop, enterKey: noop, reset: noop, confirm: noop, newKey: () => Promise.resolve(true), keyBusy: false, ensureKey: noop, firstKey: 'idle', signOut: noop, shareHistory: noop, emailDone: false,
 });
 
 export function useSecurityUi(): SecurityUi {
@@ -76,6 +78,7 @@ export function SecurityProvider({ onSignOut, children }: { onSignOut: () => voi
   const [keyBusy, setKeyBusy] = useState(false);
   const [share, setShare] = useState<Share>();
   const inFlight = useRef(false);
+  const emailDone = useEmailDone();
 
   /** Makes a recovery key and shows it (or the password step first). False = it failed. */
   const makeKey = useCallback(
@@ -111,7 +114,10 @@ export function SecurityProvider({ onSignOut, children }: { onSignOut: () => voi
       enterKey: () => setFlow({ step: 'key' }),
       reset: () => setFlow({ step: 'reset' }),
       confirm: () => {
-        if (store.getSnapshot().security.otherConfirmedDevices > 0) store.requestConfirmation();
+        const sec = store.getSnapshot().security;
+        if (sec.otherConfirmedDevices > 0) store.requestConfirmation();
+        // D-38: never the recovery key; the gate in any DM shows Check your email.
+        else if (sec.confirmByEmail) store.requestConfirmEmail().catch(noop);
         else setFlow({ step: 'key' });
       },
       newKey: () => makeKey(false),
@@ -126,8 +132,9 @@ export function SecurityProvider({ onSignOut, children }: { onSignOut: () => voi
         );
       },
       shareHistory: (dmId, person) => startShare(store, setShare, dmId, person),
+      emailDone,
     }),
-    [store, makeKey, keyBusy, firstKey, onSignOut],
+    [store, makeKey, keyBusy, firstKey, onSignOut, emailDone],
   );
 
   const close = () => {
@@ -141,6 +148,30 @@ export function SecurityProvider({ onSignOut, children }: { onSignOut: () => voi
       <SecurityDialog flow={flow} setFlow={setFlow} close={close} makeKey={makeKey} keyBusy={keyBusy} onSignOut={onSignOut} ui={ui} share={share} setShare={setShare} />
     </Ctx.Provider>
   );
+}
+
+/**
+ * D-38: true for 1.2 s once the email confirmed this device: the phase turns 'confirmed', or the device does while the
+ * page waits for the link. Set while rendering, so the conversation never shows before You're all set.
+ */
+function useEmailDone(): boolean {
+  const byEmail = useWorkspace((x) => !!x.security.confirmByEmail);
+  const device = useWorkspace((x) => x.security.device);
+  const phase = useWorkspace((x) => x.security.emailConfirm?.phase);
+  const [done, setDone] = useState(false);
+  const [prev, setPrev] = useState({ device, phase });
+  if (prev.device !== device || prev.phase !== phase) {
+    setPrev({ device, phase });
+    const tapped = phase === 'confirmed' && prev.phase !== 'confirmed' && prev.phase !== undefined;
+    const confirmedWaiting = device === 'confirmed' && prev.device === 'unconfirmed' && (phase === 'sent' || phase === 'confirmed');
+    if (byEmail && (tapped || confirmedWaiting)) setDone(true);
+  }
+  useEffect(() => {
+    if (!done) return;
+    const timer = setTimeout(() => setDone(false), doneMs);
+    return () => clearTimeout(timer);
+  }, [done]);
+  return done;
 }
 
 function SecurityDialog({
@@ -374,15 +405,27 @@ function useConfirmationView(c: Confirmation | undefined, store: WorkspaceStore,
     footer: (
       <>
         <span className={s.spacer} />
-        <Button
-          variant="secondary"
-          onClick={() => {
-            store.dismissConfirmation();
-            ui.enterKey();
-          }}
-        >
-          {t('security.useKey')}
-        </Button>
+        {store.getSnapshot().security.confirmByEmail ? (
+          <Button
+            variant="secondary"
+            onClick={() => {
+              store.dismissConfirmation();
+              store.requestConfirmEmail().catch(() => {});
+            }}
+          >
+            {t('security.email.emailMe')}
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            onClick={() => {
+              store.dismissConfirmation();
+              ui.enterKey();
+            }}
+          >
+            {t('security.useKey')}
+          </Button>
+        )}
         <Button
           onClick={() => {
             store.dismissConfirmation();
@@ -623,7 +666,9 @@ function useFlowView(
       };
     }
     case 'reset': {
-      const submit = () => run(() => store.resetEncryption(text).then((key) => setFlow({ step: 'save', key })), 'wrong-password');
+      // D-38: a client's new key goes to our server by itself; no save step.
+      const byEmail = !!store.getSnapshot().security.confirmByEmail;
+      const submit = () => run(() => store.resetEncryption(text).then((key) => setFlow(byEmail ? undefined : { step: 'save', key })), 'wrong-password');
       return {
         key: 'reset',
         title: t('security.resetTitle'),
@@ -767,6 +812,8 @@ function useFlowView(
         body: <div className={s.doneGap} />,
       };
     case 'signOut': {
+      // D-38: clients never see a recovery key.
+      const byEmail = !!store.getSnapshot().security.confirmByEmail;
       const out = () => {
         close();
         onSignOut();
@@ -794,9 +841,11 @@ function useFlowView(
               <Button variant="secondary" className={s.dangerText} onClick={out}>
                 {t('security.signOutAnyway')}
               </Button>
-              <Button onClick={toKey} aria-busy={keyBusy || undefined}>
-                {t('security.saveKey')}
-              </Button>
+              {!byEmail && (
+                <Button onClick={toKey} aria-busy={keyBusy || undefined}>
+                  {t('security.saveKey')}
+                </Button>
+              )}
             </>
           ),
         };
@@ -819,9 +868,11 @@ function useFlowView(
         ),
         footer: (
           <>
-            <button type="button" className={s.textButton} onClick={toKey} aria-busy={keyBusy || undefined}>
-              {t('security.newKey')}
-            </button>
+            {!byEmail && (
+              <button type="button" className={s.textButton} onClick={toKey} aria-busy={keyBusy || undefined}>
+                {t('security.newKey')}
+              </button>
+            )}
             <span className={s.spacer} />
             {cancelBtn}
             <Button variant="danger" onClick={out}>

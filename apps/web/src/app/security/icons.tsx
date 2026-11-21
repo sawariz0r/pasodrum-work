@@ -102,3 +102,19 @@ export const PersonIcon = icon(
   </>,
   { size: 27, strokeWidth: 1.9 },
 );
+/** D-38: Email me a link, Check your email, Didn't get the email? */
+export const MailIcon = icon(
+  <>
+    <rect x="3" y="5" width="18" height="14" rx="2.5" />
+    <path d="m3.5 7.5 8.5 6 8.5-6" />
+  </>,
+  { size: 18, strokeWidth: 2 },
+);
+export const SendIcon = icon(
+  <>
+    <path d="m22 2-7 20-4-9-9-4Z" />
+    <path d="M22 2 11 13" />
+  </>,
+  { size: 17, strokeWidth: 2 },
+);
+export const DoneIcon = icon(<path d="m5 12.5 4.5 4.5L19 7.5" />, { size: 32, strokeWidth: 2.6 });

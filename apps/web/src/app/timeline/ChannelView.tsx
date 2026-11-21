@@ -47,9 +47,11 @@ function Conversation({ channelId, fadeIn }: { channelId: string; fadeIn: boolea
   const name = channelName ?? (dm ? dmName(dm) : '');
   const privacy = usePrivacyText(channel ?? dm);
   const emptyAction = !dm && <EmptyChannelAddPeople channelId={channelId} />;
+  // D-38: the system sender's DM is one-way: no composer, no intro, no privacy line.
   // SIDE-02: an encrypted conversation's start says who can read it (PrivateDM, PrivateGroupDM, PrivateChannel).
   const start =
     privacy &&
+    !dm?.system &&
     (dm ? (
       <DmIntro dm={dm}>
         <PrivacyLine text={privacy} />
@@ -108,7 +110,7 @@ function Conversation({ channelId, fadeIn }: { channelId: string; fadeIn: boolea
           meId={meId}
           unreadAtOpen={unreadAtOpen}
           onOpenThread={threads.open}
-          intro={dm && <DmIntro dm={dm} />}
+          intro={dm && !dm.system && <DmIntro dm={dm} />}
           start={start}
           emptyAction={emptyAction}
         />
@@ -116,7 +118,7 @@ function Conversation({ channelId, fadeIn }: { channelId: string; fadeIn: boolea
           <TypingIndicator channelId={channelId} />
         </div>
         <div className={s.dockSlot} ref={dockRef}>
-          {archived ? <ArchivedBar archived={archived} /> : <Composer channelId={channelId} channelName={name} isDm={!!dm} />}
+          {archived ? <ArchivedBar archived={archived} /> : !dm?.system && <Composer channelId={channelId} channelName={name} isDm={!!dm} />}
         </div>
       </div>
       {threadId && row !== undefined && (
