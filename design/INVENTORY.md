@@ -176,15 +176,15 @@ Approved 2026-11-21 (CEO). Rules: RulesM7. PrivateChannel: no extra header lock 
 
 ## Batch H — M8 find, SIDE-03 share history, failed actions, leftovers
 
-Drawn 2026-11-21, awaiting CEO approval. Rules: RulesM8. Shortcuts sheet and desktop bits dropped (CEO; desktop → M9).
+Approved 2026-11-21 (CEO). Rules: RulesM8. Shortcuts sheet and desktop bits dropped (CEO; desktop → M9).
 
 | Screen / state | Boards | Status |
 |---|---|---|
-| ⌘K switcher (recent, results, empty) | Switcher(+JP, Dark), SwitcherResults, SwitcherEmpty | drawn |
-| Message search (results, searching, empty, unconfirmed device) | SearchResults(+JP, Dark), SearchSearching, SearchEmpty, SearchUnconfirmedDevice | drawn |
-| Share earlier messages (staff) | ShareHistoryEntry(+JP, Dark), ShareHistoryVerify, ShareHistoryConfirm, ShareHistoryProgress, ShareHistoryBlocked | drawn |
-| Confirm it's you + restored messages (client) | ConfirmPersonAsk(+JP), HistoryRestoredRow(+JP, Dark) | drawn |
-| Failed action (dialog line, toast) | ActionFailed(+JP) | drawn |
-| Sign-in other error, too many attempts | SignInOtherError, SignInTooMany | drawn |
-| No DMs yet | DmsEmpty | drawn |
-| States built without boards (M4) | BuiltStatesM4 | drawn |
+| ⌘K switcher (recent, results, empty) | Switcher(+JP, Dark), SwitcherResults, SwitcherEmpty | approved 2026-11-21 |
+| Message search (results, searching, empty, unconfirmed device) | SearchResults(+JP, Dark), SearchSearching, SearchEmpty, SearchUnconfirmedDevice | approved 2026-11-21 |
+| Share earlier messages (staff) | ShareHistoryEntry(+JP, Dark), ShareHistoryVerify, ShareHistoryConfirm, ShareHistoryProgress, ShareHistoryBlocked | approved 2026-11-21 |
+| Confirm it's you + restored messages (client) | ConfirmPersonAsk(+JP), HistoryRestoredRow(+JP, Dark) | approved 2026-11-21 |
+| Failed action (dialog line, toast) | ActionFailed(+JP) | approved 2026-11-21 |
+| Sign-in other error, too many attempts | SignInOtherError, SignInTooMany | approved 2026-11-21 |
+| No DMs yet | DmsEmpty | approved 2026-11-21 |
+| States built without boards (M4) | BuiltStatesM4 | approved 2026-11-21 |
