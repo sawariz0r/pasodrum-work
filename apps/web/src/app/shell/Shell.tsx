@@ -104,9 +104,10 @@ function ChannelRoute({ at }: { at?: { spaceId: string; channelId: string } }) {
   const fallback = useFallbackSpace(spaceId);
   const space = channel ? spaces.find((x) => x.id === channel.spaceId) : fallback;
 
+  // Only the real route remembers the place; the redirect's inline draw must not (it may be replaced at once).
   useEffect(() => {
-    if (channel) rememberPlace(channel.spaceId, channel.id);
-  }, [channel]);
+    if (channel && !at) rememberPlace(channel.spaceId, channel.id);
+  }, [channel, at]);
 
   return (
     <Frame section="home" space={space} column={space && <Sidebar space={space} active={channel ? { channelId: channel.id } : undefined} />}>
