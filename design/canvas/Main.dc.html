@@ -237,16 +237,6 @@ body{margin:0}
       </button>
     </sc-for>
 
-    <sc-if value="{{sideSpaces}}" hint-placeholder-val="{{true}}">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin: 14px 0 2px; padding: 0 4px 0 6px">
-      <button style="display: flex; align-items: center; gap: 4px; border: 0; background: transparent; padding: 4px; color: var(--sidemuted); font-size: 13px; font-weight: 600; cursor: pointer"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>{{txClientSpaces}}</button>
-      <sc-if value="{{railPlus}}" hint-placeholder-val="{{true}}"><a class="pd-ico" href="CreateClientSpace.dc.html" aria-label="{{txNewClientSpace}}" style="width: 24px; height: 24px; border: 0; border-radius: 6px; background: transparent; color: var(--sidemuted); display: flex; align-items: center; justify-content: center; text-decoration: none; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></a></sc-if>
-    </div>
-    <button class="pd-row" style="width: 100%; display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px 0 8px; border: 0; border-radius: 7px; background: transparent; color: var(--sidemuted); font-size: 14.5px; text-align: left; cursor: pointer">
-      <span style="width: 20px; height: 20px; flex-shrink: 0; border-radius: 6px; background: #2F4A6D; color: #FFFFFF; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center">N</span><span style="flex: 1">Nordlys Energi</span></button>
-    <button class="pd-row" style="width: 100%; display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px 0 8px; border: 0; border-radius: 7px; background: transparent; color: var(--sidemuted); font-size: 14.5px; text-align: left; cursor: pointer">
-      <span style="width: 20px; height: 20px; flex-shrink: 0; border-radius: 6px; background: #7A4B2A; color: #FFFFFF; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center">H</span><span style="flex: 1">Halden &amp; Co.</span></button>
-    </sc-if>
   </div>
   <sc-if value="{{notifyAsk}}" hint-placeholder-val="{{false}}">
   <div class="pd-rise" role="region" aria-label="{{txNotifications}}" style="margin: 0 10px 12px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--raised); box-shadow: 0 1px 2px rgba(0,0,0,.04)">
@@ -1519,7 +1509,7 @@ class Component extends DCLogic {
       profile: (n, on) => 'プロフィール：' + n + (on ? '（アクティブ）' : '（オフライン）'),
       sideAria: (w) => w + ' のナビゲーション', newMessage: '新規メッセージ', search: (w) => w + ' を検索',
       threads: 'スレッド', mentions: 'メンション', drafts: '下書き', channels: 'チャンネル', addChannel: 'チャンネルを追加',
-      addPeople: 'メンバーを追加', directMessages: 'ダイレクトメッセージ', newDM: '新しいダイレクトメッセージ', clientSpaces: 'クライアントスペース',
+      addPeople: 'メンバーを追加', directMessages: 'ダイレクトメッセージ', newDM: '新しいダイレクトメッセージ',
       members: (n) => 'メンバー ' + n + ' 人', pinned: 'ピン留めしたメッセージ', details: 'チャンネルの詳細',
       tabs: 'チャンネルのビュー', messages: 'メッセージ', soon: '近日公開', files: 'ファイル', pins: 'ピン留め', addTab: 'タブを追加',
       download: 'ダウンロード', addReaction: 'リアクションする', replies: (n) => n + ' 件の返信', replyInThread: 'スレッドで返信',
@@ -1549,7 +1539,7 @@ class Component extends DCLogic {
       profile: (n, on) => 'Your profile: ' + n + (on ? ', active' : ', offline'),
       sideAria: (w) => w + ' navigation', newMessage: 'New message', search: (w) => 'Search ' + w,
       threads: 'Threads', mentions: 'Mentions', drafts: 'Drafts', channels: 'Channels', addChannel: 'Add a channel',
-      addPeople: 'Add people', directMessages: 'Direct messages', newDM: 'New direct message', clientSpaces: 'Client spaces',
+      addPeople: 'Add people', directMessages: 'Direct messages', newDM: 'New direct message',
       members: (n) => n + ' members', pinned: 'Pinned messages', details: 'Channel details',
       tabs: 'Channel views', messages: 'Messages', soon: 'Soon', files: 'Files', pins: 'Pins', addTab: 'Add a tab',
       download: 'Download file', addReaction: 'Add reaction', replies: (n) => n + ' replies', replyInThread: 'Reply in thread',
@@ -2556,7 +2546,7 @@ class Component extends DCLogic {
       : inClientSpace && canManage ? { wsItems: [browse, item('plus', TD.newChannel, go({ sheet: 'create', dmenu: 'none', createName: null })), sep(), item('user', TD.addPeople, go({ dmenu: 'none', modal: 'invite' })), item('gear', E.spaceSettings, go({ sheet: 'spaceSettings', dmenu: 'none', spTab: 'general' }))] }
       : {};
     const over = !ee ? {} : Object.assign({}, wsOver,
-      isGuest ? { railClientTile: false, railPlus: false, sideSpaces: false, headAdd: false, actCount: false, threadsBadge: false, draftsPlain: true, draftsCounted: false } : {},
+      isGuest ? { railClientTile: false, railPlus: false, headAdd: false, actCount: false, threadsBadge: false, draftsPlain: true, draftsCounted: false } : {},
       inClientSpace ? { txSearch: T.search(spaceName), txSideAria: T.sideAria(spaceName) } : {},
       fresh ? { threadsBadge: false, draftsPlain: true, draftsCounted: false } : {},
       archived ? { headAdd: false, sbAddPeople: false, chanPlus: false, railNlOpacity: '; opacity: .5' } : {},
@@ -3293,7 +3283,7 @@ class Component extends DCLogic {
       lang: locale, localeClass: (ja ? 'pd-ja' : 'pd-en') + (floatC ? ' pd-float' : ''),
       wsName: inClientSpace ? 'Nordlys Energi' : 'Pasodrum',
       ringPd: inClientSpace && !isClient ? 'none' : '0 0 0 2px var(--rail), 0 0 0 4px #FFFFFF', ringNl: inClientSpace && !isClient ? '; box-shadow: 0 0 0 2px var(--rail), 0 0 0 4px #FFFFFF' : '',
-      railClientTile: !firstRun, railPlus: !firstRun && myRole !== 'member', sideSpaces: !isClient && !firstRun,
+      railClientTile: !firstRun, railPlus: !firstRun && myRole !== 'member',
       chanMenuLeft: '272px', openCreate2: VD.dd ? () => this.setState({ sheet: 'create' }) : null,
       mainPos: floatC ? '; position: relative' : '', tlX: floatC ? '; overflow-x: hidden' : '', tlPadB: floatC ? FLOAT_PAD : '8px',
       compWrap: floatC ? 'position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; padding: 0 20px 14px; pointer-events: none' : 'flex-shrink: 0; padding: 0 20px 14px',
@@ -3478,7 +3468,7 @@ class Component extends DCLogic {
       txSideAria: T.sideAria(isClient ? 'Nordlys Energi' : 'Pasodrum'), txNewMessage: T.newMessage,
       txSearch: T.search(isClient ? 'Nordlys Energi' : 'Pasodrum'),
       txThreads: T.threads, txMentions: T.mentions, txDrafts: T.drafts, txChannels: T.channels, txAddChannel: T.addChannel,
-      txAddPeople: T.addPeople, txDirectMessages: T.directMessages, txNewDM: T.newDM, txClientSpaces: T.clientSpaces,
+      txAddPeople: T.addPeople, txDirectMessages: T.directMessages, txNewDM: T.newDM,
       txMembers: T.members(cur.members), txPinned: T.pinned, txDetails: T.details,
       txTabs: T.tabs, txMessages: T.messages, txSoon: T.soon, txFiles: T.files, txPins: T.pins, txAddTab: T.addTab,
       txDownload: T.download, txAddReaction: T.addReaction, txReplies: T.replies(sumCount), txReplyInThread: T.replyInThread,

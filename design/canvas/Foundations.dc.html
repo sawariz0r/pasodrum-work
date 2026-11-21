@@ -242,7 +242,7 @@ body{margin:0}
       <div style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 16px; padding: 20px 22px">
         <span style="width: 34px; height: 34px; border-radius: 10px; background: #FCEBC0; color: #7A5300; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M6 21V4h12v17M10 21v-4h4v4M10 8h.01M14 8h.01M10 12h.01M14 12h.01"></path></svg></span>
         <h3 style="margin: 12px 0 6px; font-size: 16px; font-weight: 700">Client spaces</h3>
-        <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #55535C">Their own tile on the rail, marked with the amber building, plus a sidebar section and a Client role in Add people. One look tells you a conversation leaves the company.</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #55535C">Their own tile on the rail, marked with the amber building, and a Client role in Add people. One look tells you a conversation leaves the company.</p>
       </div>
     </div>
   </section>
@@ -371,7 +371,7 @@ class Component extends DCLogic {
       vocab: [
         { matrix: 'Room', ours: 'Channel or direct message', where: 'Sidebar, channel header, “Message #channel”' },
         { matrix: 'Space', ours: 'Workspace', where: 'Tiles on the rail and the workspace menu' },
-        { matrix: 'Space shared with another org', ours: 'Client space', where: 'Rail tile with amber building, “Client spaces” section, “External” tag' },
+        { matrix: 'Space shared with another org', ours: 'Client space', where: 'Rail tile with amber building, “External” tag' },
         { matrix: 'Invite (membership: invite)', ours: 'Add people', where: 'Email-first dialog. Links join automatically, so there’s never an accept/decline step' },
         { matrix: '@sam:pasodrum.work', ours: 'Name and work email', where: 'Profiles and chips. IDs never appear in the UI' },
         { matrix: 'Homeserver', ours: 'Server address', where: 'Behind “Other server” on sign-in only' },
