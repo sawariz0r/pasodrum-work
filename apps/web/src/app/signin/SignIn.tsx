@@ -2,6 +2,7 @@ import { useState, type FormEvent, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SignInError, type Session } from '../../matrix';
 import { Button, initialsOf, isCjk, isImeEnter, TextField } from '../../ui';
+import { AlertIcon } from '../../ui/icons';
 import type { Backend } from '../backend';
 import { ChevronRightIcon, CloudOffIcon, LogoMark } from '../icons';
 import s from './SignIn.module.css';
@@ -43,6 +44,8 @@ export function SignIn({
   const [invalid, setInvalid] = useState(false);
   const [serverDown, setServerDown] = useState(false);
   const [wrong, setWrong] = useState(false);
+  /** SignInOtherError / SignInTooMany: on the password step, the same alert as Can't reach. */
+  const [failed, setFailed] = useState<'other' | 'rate-limited' | null>(null);
   const [busy, setBusy] = useState(false);
 
   const id = identifier.trim();
@@ -67,20 +70,24 @@ export function SignIn({
     }
   }
 
-  async function submit(e: FormEvent) {
-    e.preventDefault();
+  async function submit(e?: FormEvent) {
+    e?.preventDefault();
     if (busy || !password) return;
     setBusy(true);
+    setFailed(null);
     try {
       const session = await backend.signIn(baseUrl, id, password);
       onSignedIn(session, id);
     } catch (err) {
       setBusy(false);
-      if (err instanceof SignInError && err.reason === 'wrong-password') {
+      const reason = err instanceof SignInError ? err.reason : 'other';
+      if (reason === 'wrong-password') {
         setWrong(true);
-      } else {
+      } else if (reason === 'unreachable') {
         setServerDown(true);
         setStep('email');
+      } else {
+        setFailed(reason);
       }
     }
   }
@@ -89,6 +96,7 @@ export function SignIn({
     setStep('email');
     setPassword('');
     setWrong(false);
+    setFailed(null);
     setSignedOut(false);
   }
 
@@ -206,6 +214,17 @@ export function SignIn({
                 }}
                 onKeyDown={guardImeEnter}
               />
+              {failed && (
+                <div role="alert" className={s.alert}>
+                  <AlertIcon size={18} strokeWidth={2} />
+                  <span>{t(failed === 'rate-limited' ? 'signIn.tooMany' : 'signIn.otherError')}</span>
+                  {failed === 'other' && (
+                    <button type="button" className={s.alertAction} onClick={() => void submit()}>
+                      {t('signIn.tryAgain')}
+                    </button>
+                  )}
+                </div>
+              )}
               <Button type="submit" size="lg" block className={s.submit} aria-busy={busy || undefined}>
                 {t('signIn.title')}
               </Button>

@@ -1,7 +1,7 @@
 import * as RD from '@radix-ui/react-dialog';
 import type { ReactNode } from 'react';
 import { IconButton } from './IconButton';
-import { CloseIcon } from './icons';
+import { AlertIcon, CloseIcon } from './icons';
 import s from './Dialog.module.css';
 import { useMenuReturnFocus } from './menuFocus';
 
@@ -24,9 +24,11 @@ export type DialogProps = {
   /** A decorative column beside header, body and footer (NewClientSpace preview). */
   aside?: ReactNode;
   busy?: boolean;
+  /** ActionFailed: the action didn't go through; the dialog stays and this line sits above the buttons. */
+  alert?: string;
 };
 
-export function Dialog({ open, onOpenChange, title, closeLabel, tile, children, footer, width = 540, top, role, className, bodyClassName, aside, busy }: DialogProps) {
+export function Dialog({ open, onOpenChange, title, closeLabel, tile, children, footer, width = 540, top, role, className, bodyClassName, aside, busy, alert }: DialogProps) {
   const returnFocus = useMenuReturnFocus(open);
   const column = (
     <>
@@ -46,6 +48,12 @@ export function Dialog({ open, onOpenChange, title, closeLabel, tile, children, 
         </div>
       )}
       {children && <div className={[s.body, bodyClassName].filter(Boolean).join(' ')}>{children}</div>}
+      {alert && (
+        <div role="alert" className={s.alert}>
+          <AlertIcon size={15} strokeWidth={2.2} />
+          <span>{alert}</span>
+        </div>
+      )}
       {footer && <div className={s.footer}>{footer}</div>}
     </>
   );

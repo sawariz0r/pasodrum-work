@@ -99,6 +99,23 @@
   padding: 18px 24px 20px;
 }
 
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: -6px 24px 20px;
+  color: var(--dangertext);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  animation: fade-in var(--dur-2) var(--ease-out);
+}
+
+.alert svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
 .footer {
   display: flex;
   flex-wrap: wrap;

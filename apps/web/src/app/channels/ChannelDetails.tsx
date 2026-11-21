@@ -11,6 +11,7 @@ import { useShowExternal } from '../people/names';
 import { roleEvents, useProfileCard } from '../people/ProfileCardContext';
 import { channelPath, dmPath, spaceHome } from '../places';
 import { BubbleIcon, MailIcon, SearchIcon } from '../shell/icons';
+import { firstName, useToast } from '../toast';
 import s from './Channels.module.css';
 import { AlertIcon, ArchiveIcon, CheckIcon, LeaveIcon, LinkIcon, PendingIcon, UnarchiveIcon, UserPlusIcon, XIcon } from './icons';
 import { addRoles, canManage, channelSlug } from './roles';
@@ -26,8 +27,10 @@ export function ChannelDetailsDialog({ open, channelId, tab: initialTab, onClose
   const [tab, setTab] = useState(initialTab);
   const [leaving, setLeaving] = useState(false);
   const [archiving, setArchiving] = useState(false);
+  const [failed, setFailed] = useState<'leave' | 'archive' | null>(null);
   const store = useStore();
   const navigate = useNavigate();
+  const toast = useToast();
 
   if (!channel) return null;
 
@@ -67,18 +70,38 @@ export function ChannelDetailsDialog({ open, channelId, tab: initialTab, onClose
           ))}
         </div>
         <div key={tab} role="tabpanel" aria-labelledby={`details-${tab}`} className={s.panel}>
-          {tab === 'about' && <About channel={channel} onLeave={() => (channel.private ? setLeaving(true) : void leave().catch(() => {}))} />}
+          {tab === 'about' && (
+            <About channel={channel} onLeave={() => (channel.private ? setLeaving(true) : void leave().catch(() => toast(t('failed.leave', { name: channel.name }))))} />
+          )}
           {tab === 'members' && <Members channel={channel} onAddPeople={onAddPeople} onLeave={onClose} />}
           {tab === 'settings' && <Settings channel={channel} onArchive={() => setArchiving(true)} />}
         </div>
       </Dialog>
-      {leaving && <LeaveDialog open={open} channel={channel} onCancel={onClose} onLeave={() => void leave().catch(() => {})} />}
+      {leaving && (
+        <LeaveDialog
+          open={open}
+          channel={channel}
+          alert={failed === 'leave' ? t('failed.leaveDialog', { name: channel.name }) : undefined}
+          onCancel={onClose}
+          onLeave={() => {
+            setFailed(null);
+            void leave().catch(() => setFailed('leave'));
+          }}
+        />
+      )}
       {archiving && (
         <ArchiveDialog
           open={open}
           channel={channel}
-          onCancel={() => setArchiving(false)}
-          onArchive={() => void store.setChannelArchived(channel.id, true).then(onClose, () => setArchiving(false))}
+          alert={failed === 'archive' ? t('failed.archiveChannel', { name: channel.name }) : undefined}
+          onCancel={() => {
+            setFailed(null);
+            setArchiving(false);
+          }}
+          onArchive={() => {
+            setFailed(null);
+            void store.setChannelArchived(channel.id, true).then(onClose, () => setFailed('archive'));
+          }}
         />
       )}
     </>
@@ -183,6 +206,7 @@ function Members({ channel, onAddPeople, onLeave }: { channel: Channel; onAddPeo
   const store = useStore();
   const navigate = useNavigate();
   const card = useProfileCard();
+  const toast = useToast();
   const meId = useWorkspace((x) => x.me.id);
   const role = useRole(channel.spaceId);
   const space = useSpace(channel.spaceId);
@@ -290,12 +314,15 @@ function Members({ channel, onAddPeople, onLeave }: { channel: Channel; onAddPeo
                         </MenuItem>
                       )}
                       {p && (
-                        <MenuItem icon={<MailIcon size={16} strokeWidth={1.9} />} onSelect={() => void store.resendInvite(p.code).catch(() => {})}>
+                        <MenuItem
+                          icon={<MailIcon size={16} strokeWidth={1.9} />}
+                          onSelect={() => void store.resendInvite(p.code).catch(() => toast(t('failed.resend', { name: r.label })))}
+                        >
                           {t('channels.sendAgain')}
                         </MenuItem>
                       )}
                       {p && <MenuSeparator />}
-                      <MenuItem icon={<XIcon />} className={s.danger} onSelect={() => void dropPending(r).catch(() => {})}>
+                      <MenuItem icon={<XIcon />} className={s.danger} onSelect={() => void dropPending(r).catch(() => toast(t('failed.remove', { name: r.label })))}>
                         {t('channels.removeFrom', { name: channel.name })}
                       </MenuItem>
                     </RowMenu>
@@ -327,11 +354,18 @@ function Members({ channel, onAddPeople, onLeave }: { channel: Channel; onAddPeo
               <span className={s.moreCell}>
                 {manage && !me && theirs !== 'owner' && (
                   <RowMenu label={t('channels.more', { name: person.name })}>
-                    <MenuItem icon={<BubbleIcon size={16} strokeWidth={1.9} />} onSelect={() => void message(person.id).catch(() => {})}>
+                    <MenuItem
+                      icon={<BubbleIcon size={16} strokeWidth={1.9} />}
+                      onSelect={() => void message(person.id).catch(() => toast(t('failed.message', { name: firstName(person.name) })))}
+                    >
                       {t('people.message')}
                     </MenuItem>
                     <MenuSeparator />
-                    <MenuItem icon={<XIcon />} className={s.danger} onSelect={() => void remove(person.id).catch(() => {})}>
+                    <MenuItem
+                      icon={<XIcon />}
+                      className={s.danger}
+                      onSelect={() => void remove(person.id).catch(() => toast(t('failed.remove', { name: firstName(person.name) })))}
+                    >
                       {t('channels.removeFrom', { name: channel.name })}
                     </MenuItem>
                   </RowMenu>
@@ -361,6 +395,7 @@ function RowMenu({ label, children, up }: { label: string; children: ReactNode; 
 function Settings({ channel, onArchive }: { channel: Channel; onArchive: () => void }) {
   const { t } = useTranslation();
   const store = useStore();
+  const toast = useToast();
   const [level, setLevel] = useState<NotifyLevel>(() => store.notifyLevel(channel.id));
   const levels: [NotifyLevel, string][] = [
     ['all', t('channels.notifyAll')],
@@ -390,7 +425,7 @@ function Settings({ channel, onArchive }: { channel: Channel; onArchive: () => v
       {channel.manageable && (
         <div className={`${s.box} ${s.actions}`}>
           {channel.archived ? (
-            <button type="button" className={s.action} onClick={() => void store.setChannelArchived(channel.id, false).catch(() => {})}>
+            <button type="button" className={s.action} onClick={() => void store.setChannelArchived(channel.id, false).catch(() => toast(t('failed.unarchive', { name: channel.name })))}>
               <span>
                 <UnarchiveIcon />
               </span>
@@ -512,7 +547,9 @@ function NameField({ channel }: { channel: Channel }) {
   );
 }
 
-function ArchiveDialog({ open, channel, onCancel, onArchive }: { open: boolean; channel: Channel; onCancel: () => void; onArchive: () => void }) {
+type ConfirmProps = { open: boolean; channel: Channel; alert?: string; onCancel: () => void };
+
+function ArchiveDialog({ open, channel, alert, onCancel, onArchive }: ConfirmProps & { onArchive: () => void }) {
   const { t } = useTranslation();
   const store = useStore();
   const faces = store.members(channel.id).slice(0, 4);
@@ -525,6 +562,7 @@ function ArchiveDialog({ open, channel, onCancel, onArchive }: { open: boolean; 
       top={168}
       title={t('channels.archiveTitle', { name: channel.name })}
       closeLabel={t('people.close')}
+      alert={alert}
       bodyClassName={s.spConfirmBody}
       footer={
         <>
@@ -551,7 +589,7 @@ function ArchiveDialog({ open, channel, onCancel, onArchive }: { open: boolean; 
   );
 }
 
-function LeaveDialog({ open, channel, onCancel, onLeave }: { open: boolean; channel: Channel; onCancel: () => void; onLeave: () => void }) {
+function LeaveDialog({ open, channel, alert, onCancel, onLeave }: ConfirmProps & { onLeave: () => void }) {
   const { t } = useTranslation();
   return (
     <Dialog
@@ -567,6 +605,7 @@ function LeaveDialog({ open, channel, onCancel, onLeave }: { open: boolean; chan
         </span>
       }
       closeLabel={t('people.close')}
+      alert={alert}
       bodyClassName={s.confirmGap}
       footer={
         <>

@@ -2,5 +2,6 @@
   "files": "Files",
   "noFiles": "No files yet",
   "today": "Today",
-  "meta": "{{name}} · {{when}}"
+  "meta": "{{name}} · {{when}}",
+  "downloadFailed": "Couldn’t download {{name}}"
 }

@@ -5,7 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useStore, type Person } from '../../matrix';
 import { Button, Dialog, isImeEnter } from '../../ui';
+import { formatList } from '../format';
 import { dmPath } from '../places';
+import { firstName } from '../toast';
 import { BubbleIcon, SearchIcon, SmallCloseIcon } from '../shell/icons';
 import { ExternalCorner, Face } from './Face';
 import { useShowExternal } from './names';
@@ -39,6 +41,7 @@ function NewMessageDialog({ open, onClose }: { open: boolean; onClose: () => voi
   const [found, setFound] = useState<Person[]>([]);
   const [active, setActive] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -73,10 +76,13 @@ function NewMessageDialog({ open, onClose }: { open: boolean; onClose: () => voi
   const go = async () => {
     if (!chosen.length || busy) return;
     setBusy(true);
+    setFailed(false);
     try {
       const id = await store.openDm(chosen.map((p) => p.id));
       onClose();
       navigate(dmPath(id));
+    } catch {
+      setFailed(true);
     } finally {
       setBusy(false);
     }
@@ -105,6 +111,7 @@ function NewMessageDialog({ open, onClose }: { open: boolean; onClose: () => voi
       onOpenChange={(o) => !o && onClose()}
       title={t('shell.sidebar.newMessage')}
       closeLabel={t('people.close')}
+      alert={failed ? t('failed.messageDialog', { name: formatList(chosen.map((p) => firstName(p.name))) }) : undefined}
       footer={
         <>
           <span className={s.footerSpacer} />

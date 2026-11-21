@@ -48,7 +48,9 @@
       "privacy": "Privacy",
       "terms": "Terms",
       "help": "Help"
-    }
+    },
+    "otherError": "Something went wrong",
+    "tooMany": "Too many attempts. Try again in a minute."
   },
   "shell": {
     "rail": {
@@ -69,7 +71,6 @@
       "label": "{{workspace}} navigation",
       "toggle": "Sidebar",
       "newMessage": "New message",
-      "search": "Search {{workspace}}",
       "threads": "Threads",
       "mentions": "Mentions",
       "drafts": "Drafts",
@@ -160,7 +161,11 @@
     "archivedByMe": "You archived the channel",
     "archivedBy": "{{name}} archived the channel",
     "unarchivedByMe": "You unarchived the channel",
-    "unarchivedBy": "{{name}} unarchived the channel"
+    "unarchivedBy": "{{name}} unarchived the channel",
+    "historyShared": "{{name}} shared earlier messages",
+    "historySharedByMe": "You shared earlier messages",
+    "restored": "Shared by {{name}}. We can’t confirm who sent it.",
+    "restoredAny": "We can’t confirm who sent it."
   },
   "composer": {
     "label": "Message {{channel}}",
@@ -262,7 +267,8 @@
     },
     "dms": {
       "you": "You: {{text}}",
-      "from": "{{name}}: {{text}}"
+      "from": "{{name}}: {{text}}",
+      "none": "No direct messages yet"
     }
   },
   "settings": {
@@ -517,6 +523,55 @@
     "elsewhereTitle": "Pasodrum work is open in another tab",
     "useHere": "Use here",
     "privacyOne": "Only you and {{name}} can read this conversation.",
-    "privacyMany": "Only the people here can read this conversation."
+    "privacyMany": "Only the people here can read this conversation.",
+    "share": {
+      "entry": "Share earlier messages",
+      "verifyTitle": "Call {{name}}, then compare emoji",
+      "waiting": "Waiting for {{name}}",
+      "noAnswer": "No answer from {{name}}",
+      "askTitle": "{{name}} wants to confirm it’s you",
+      "confirmTitle": "Share earlier messages with {{name}}?",
+      "confirmLine": "Only do this if you’ve confirmed it’s really {{name}}.",
+      "share": "Share",
+      "sharing": "Sharing…",
+      "shared": "Shared with {{name}}",
+      "again": "Share again",
+      "done": "Done",
+      "failed": "Couldn’t share",
+      "notConfirmed": "This device isn’t confirmed",
+      "notSetUp": "{{name}} hasn’t set up again yet",
+      "ok": "OK"
+    }
+  },
+  "find": {
+    "placeholder": "Search {{workspace}}",
+    "channels": "Channels",
+    "dms": "Direct messages",
+    "people": "People",
+    "searchFor": "Search messages for “{{query}}”",
+    "clear": "Clear",
+    "older": "Search older messages",
+    "searching": "Searching…",
+    "none": "No results for “{{query}}”",
+    "unconfirmed": "DMs and private channels aren’t searched until this device is confirmed.",
+    "confirm": "Confirm"
+  },
+  "failed": {
+    "leaveDialog": "Couldn’t leave #{{name}}. Try again.",
+    "archiveChannel": "Couldn’t archive #{{name}}. Try again.",
+    "archiveSpace": "Couldn’t archive {{name}}. Try again.",
+    "removeFromSpace": "Couldn’t remove {{name}}. Try again.",
+    "makeOwner": "Couldn’t make {{name}} an owner. Try again.",
+    "messageDialog": "Couldn’t message {{name}}. Try again.",
+    "leave": "Couldn’t leave #{{name}}",
+    "unarchive": "Couldn’t unarchive #{{name}}",
+    "join": "Couldn’t join #{{name}}",
+    "open": "Couldn’t open #{{name}}",
+    "remove": "Couldn’t remove {{name}}",
+    "resend": "Couldn’t send {{name}} the link again",
+    "message": "Couldn’t message {{name}}",
+    "role": "Couldn’t change {{name}}’s role",
+    "colour": "Couldn’t change the colour of {{name}}",
+    "unarchiveSpace": "Couldn’t unarchive {{name}}"
   }
 }

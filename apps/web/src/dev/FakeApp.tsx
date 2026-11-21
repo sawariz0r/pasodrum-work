@@ -6,6 +6,7 @@
 // | newkey (no recovery key yet: RecoveryKeySave on the first DM) · &password (the server asks for the password first)
 // · ?confirm=asked|declined|timeout|mismatch|done starts on that confirmation step (asked = Is this you? from Safari on Mac)
 // · ?security=elsewhere (open in another tab: Use here) · &unreadable (New key first asks for the current recovery key) · ?signout=last-device|no-backup (SignOutWarn / SignOutNoBackup). The recovery key is FAKE_RECOVERY_KEY; the password "wrong" is wrong.
+// SIDE-03: ?confirm=person (Sofia asks to confirm it's you; use with ?as=client) · ?notready (Henrik hasn't set up again: Share → blocked).
 // In the console, `fake.set({ connection: 'offline' })` changes the live store.
 import { App } from '../app/App';
 import type { Confirmation, ConnectionState, Role, Security } from '../matrix';
@@ -24,7 +25,11 @@ const security: Partial<Security> = {
   ...(sec === 'elsewhere' && { device: 'elsewhere' }),
   ...(confirm && {
     confirmation:
-      confirm === 'asked' ? { role: 'approver', phase: 'asked', otherDevice: 'Safari on Mac' } : { role: 'new', phase: confirm, otherDevice: 'Chrome on Mac' },
+      confirm === 'asked'
+        ? { role: 'approver', phase: 'asked', otherDevice: 'Safari on Mac' }
+        : (confirm as string) === 'person'
+          ? { role: 'person', phase: 'asked', person: { id: '@sofia:pasodrum.localhost', name: 'Sofia Olsen' } }
+          : { role: 'new', phase: confirm, otherDevice: 'Chrome on Mac' },
   }),
 };
 const backend = createFakeBackend({
@@ -38,6 +43,7 @@ const backend = createFakeBackend({
   security,
   keyNeedsPassword: q.has('password'),
   backupUnreadable: q.has('unreadable'),
+  ...(q.has('notready') && { notReadyPeople: ['@henrik_nordlys.no:pasodrum.localhost'] }),
   ...((signout === 'last-device' || signout === 'no-backup') && { signOutRisk: signout }),
 });
 

@@ -16,12 +16,13 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 | M5 client spaces + guests | done | yes |
 | M6 encryption | done | yes |
 | M7 tabs & cards | done (ceo-review) | yes |
-| M8 find & finish | Batch H not designed | — |
+| M8 find & finish | done (ceo-review) | yes |
 | M9 desktop shell | Batch H (desktop bits) not designed | — |
 
 ## Waiting on the CEO
 
-- Try M7 + SIDE-02 + second tab by hand (lists in `tasks/ceo-review/M7-01-*.md` and `SIDE-02-*.md`).
+- Try M7, M8, SIDE-02, SIDE-03 by hand (lists in `tasks/ceo-review/`).
+- Docs + Boards, people & access, device confirmation: in discovery sessions with the CEO.
 
 ## How we work (the loop that has worked)
 

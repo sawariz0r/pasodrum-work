@@ -148,3 +148,24 @@ describe('the first recovery key comes before the first private message (RulesM6
     expect(composer()).toBeNull();
   });
 });
+
+describe('share earlier messages (SIDE-03, D-35)', () => {
+  const cardButtons = async (path: string, opts: FakeBackendOptions) => {
+    renderApp(path, { security: { device: 'confirmed', otherConfirmedDevices: 1 }, ...opts });
+    await flush();
+    fireEvent.click(document.querySelector<HTMLButtonElement>('h1 button')!);
+    await flush();
+    const card = screen.getByRole('dialog', { name: /profile/i });
+    const names = within(card).queryAllByRole('button').map((b) => b.textContent);
+    cleanup();
+    return names;
+  };
+
+  it('is offered only to team people, in a 1:1 DM with an outside person', async () => {
+    expect(await cardButtons('/dms/!dm-henrik', {})).toEqual(['Share earlier messages']);
+    expect(await cardButtons('/dms/!dm-henrik', { roles: { '!pasodrum': 'member' } })).toEqual(['Share earlier messages']);
+    expect(await cardButtons('/dms/!dm-jonas', {})).toEqual(['Message']);
+    expect(await cardButtons('/dms/!dm-henrik', { perspective: 'client' })).toEqual(['Message']);
+    expect(await cardButtons('/dms/!dm-henrik', { roles: { '!pasodrum': 'guest' } })).toEqual(['Message']);
+  });
+});

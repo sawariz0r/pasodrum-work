@@ -3,13 +3,17 @@
 // (recovery key, reset, password, save the key, sign-out warning). No crypto words anywhere.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useLocation, useNavigate } from 'react-router';
-import { useStore, useWorkspace, type Confirmation, type Device, type WorkspaceStore } from '../../matrix';
+import { useStore, useWorkspace, type Confirmation, type Device, type Person, type WorkspaceStore } from '../../matrix';
 import { Button, Dialog, TextField, isImeEnter } from '../../ui';
-import { AlertIcon, CheckIcon } from '../../ui/icons';
+import { CheckIcon } from '../../ui/icons';
 import { LaptopIcon, PhoneIcon } from '../settings/icons';
 import { settingsState } from '../settings/SettingsRoute';
 import { CopyIcon, EyeOffIcon, KeyIcon, RefreshIcon } from './icons';
+import { Dots, FailTile, FieldError, OkTile, type View } from './parts';
+import { shareConfirmation, startShare, useShareView, type Share } from './share/ShareHistory';
+import { firstName } from '../toast';
 import { sasName } from './sasNames';
 import s from './Security.module.css';
 
@@ -48,12 +52,14 @@ type SecurityUi = {
   firstKey: FirstKey;
   /** Sign out, after the recovery-key reminder when this is the last confirmed device. */
   signOut(): void;
+  /** SIDE-03: profile card → Share earlier messages (1:1 DM with an outside person). */
+  shareHistory(dmId: string, person: Person): void;
 };
 
 const noop = () => {};
 // Views rendered on their own (component tests, /dev screens) work without the provider; nothing opens.
 const Ctx = createContext<SecurityUi>({
-  askDevice: noop, enterKey: noop, reset: noop, confirm: noop, newKey: () => Promise.resolve(true), keyBusy: false, ensureKey: noop, firstKey: 'idle', signOut: noop,
+  askDevice: noop, enterKey: noop, reset: noop, confirm: noop, newKey: () => Promise.resolve(true), keyBusy: false, ensureKey: noop, firstKey: 'idle', signOut: noop, shareHistory: noop,
 });
 
 export function useSecurityUi(): SecurityUi {
@@ -68,6 +74,7 @@ export function SecurityProvider({ onSignOut, children }: { onSignOut: () => voi
   const [flow, setFlow] = useState<Flow>();
   const [firstKey, setFirstKey] = useState<FirstKey>('idle');
   const [keyBusy, setKeyBusy] = useState(false);
+  const [share, setShare] = useState<Share>();
   const inFlight = useRef(false);
 
   /** Makes a recovery key and shows it (or the password step first). False = it failed. */
@@ -118,6 +125,7 @@ export function SecurityProvider({ onSignOut, children }: { onSignOut: () => voi
           () => setFlow({ step: 'signOut', risk: 'no-backup' }),
         );
       },
+      shareHistory: (dmId, person) => startShare(store, setShare, dmId, person),
     }),
     [store, makeKey, keyBusy, firstKey, onSignOut],
   );
@@ -130,22 +138,10 @@ export function SecurityProvider({ onSignOut, children }: { onSignOut: () => voi
   return (
     <Ctx.Provider value={ui}>
       {children}
-      <SecurityDialog flow={flow} setFlow={setFlow} close={close} makeKey={makeKey} keyBusy={keyBusy} onSignOut={onSignOut} ui={ui} />
+      <SecurityDialog flow={flow} setFlow={setFlow} close={close} makeKey={makeKey} keyBusy={keyBusy} onSignOut={onSignOut} ui={ui} share={share} setShare={setShare} />
     </Ctx.Provider>
   );
 }
-
-type View = {
-  key: string;
-  title: string;
-  tile?: ReactNode;
-  closeable: boolean;
-  alert?: boolean;
-  width: number;
-  body?: ReactNode;
-  footer?: ReactNode;
-  onClose: () => void;
-};
 
 function SecurityDialog({
   flow,
@@ -155,6 +151,8 @@ function SecurityDialog({
   keyBusy,
   onSignOut,
   ui,
+  share,
+  setShare,
 }: {
   flow?: Flow;
   setFlow: (f: Flow | undefined) => void;
@@ -163,16 +161,29 @@ function SecurityDialog({
   keyBusy: boolean;
   onSignOut: () => void;
   ui: SecurityUi;
+  share?: Share;
+  setShare: React.Dispatch<React.SetStateAction<Share | undefined>>;
 }) {
   const { t } = useTranslation();
   const store = useStore();
   const confirmation = useWorkspace((x) => x.security.confirmation);
+  const person = confirmation?.role === 'person';
+  /** SIDE-03: I asked (sharing with them); otherwise they asked me. */
+  const asker = !!shareConfirmation(share, confirmation);
+  const failedPhase = !!confirmation && ['declined', 'timeout', 'mismatch'].includes(confirmation.phase);
 
-  // The approver's side ends quietly when the new device declines, times out or sees different emoji.
-  const quietEnd = confirmation?.role === 'approver' && ['declined', 'timeout', 'mismatch'].includes(confirmation.phase);
+  // The approver's side ends quietly when the new device declines, times out or sees different emoji. A person
+  // confirmation ends quietly on a match (the share goes on to its question) and, on the asked side, when it fails.
+  const quietEnd = (confirmation?.role === 'approver' && failedPhase) || (person && (confirmation.phase === 'done' || (!asker && failedPhase)));
   useEffect(() => {
     if (quietEnd) store.dismissConfirmation();
   }, [quietEnd, store]);
+
+  // Asked to confirm it's me (ConfirmPersonAsk): the emoji show straight away, since we're on a call.
+  const autoAccept = person && confirmation.phase === 'asked';
+  useEffect(() => {
+    if (autoAccept) store.acceptConfirmation();
+  }, [autoAccept, store]);
 
   const done = confirmation?.phase === 'done' || flow?.step === 'done';
   useEffect(() => {
@@ -181,9 +192,10 @@ function SecurityDialog({
     return () => clearTimeout(timer);
   }, [done, confirmation?.phase, store, setFlow]);
 
-  const confirmView = useConfirmationView(confirmation && !quietEnd ? confirmation : undefined, store, ui);
+  const confirmView = useConfirmationView(confirmation && !quietEnd ? confirmation : undefined, store, ui, asker);
+  const shareView = useShareView(share, setShare, confirmation, store, ui.confirm);
   const flowView = useFlowView(flow, setFlow, close, makeKey, keyBusy, onSignOut, store);
-  const shown = confirmView ?? flowView;
+  const shown = confirmView ?? shareView ?? flowView;
   if (!shown) return null;
 
   return (
@@ -219,7 +231,7 @@ function SecurityDialog({
   );
 }
 
-function useConfirmationView(c: Confirmation | undefined, store: WorkspaceStore, ui: SecurityUi): View | undefined {
+function useConfirmationView(c: Confirmation | undefined, store: WorkspaceStore, ui: SecurityUi, asker: boolean): View | undefined {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -227,6 +239,7 @@ function useConfirmationView(c: Confirmation | undefined, store: WorkspaceStore,
   if (!c) return undefined;
   const lang = i18n.language;
   const cancel = () => store.declineConfirmation();
+  if (c.role === 'person') return personView(c, store, asker, t, lang);
 
   if (c.phase === 'waiting') {
     return {
@@ -380,6 +393,100 @@ function useConfirmationView(c: Confirmation | undefined, store: WorkspaceStore,
         </Button>
       </>
     ),
+  };
+}
+
+/**
+ * SIDE-03: comparing emoji with another person, on a call (ShareHistoryVerify, ConfirmPersonAsk). The M6 layout with its
+ * own titles; both sides can close it. 'done' and the asked side's failures end quietly (SecurityDialog).
+ */
+function personView(c: Confirmation, store: WorkspaceStore, asker: boolean, t: TFunction, lang: string): View {
+  const name = firstName(c.person?.name ?? '');
+  const cancel = () => store.declineConfirmation();
+  const title = asker ? t('security.share.verifyTitle', { name }) : t('security.share.askTitle', { name });
+  if (asker && ['declined', 'timeout', 'mismatch'].includes(c.phase)) {
+    return {
+      key: `person-failed-${c.phase}`,
+      title: c.phase === 'mismatch' ? t('security.mismatch') : t('security.share.noAnswer', { name }),
+      tile: <FailTile />,
+      closeable: true,
+      alert: true,
+      width: 440,
+      onClose: () => store.dismissConfirmation(),
+      body: <span />,
+      footer: (
+        <>
+          <span className={s.spacer} />
+          <Button variant="secondary" onClick={() => store.dismissConfirmation()}>
+            {t('security.cancel')}
+          </Button>
+          <Button
+            onClick={() => {
+              // Requesting again replaces the old request itself; dismissing first would empty the phase and drop the share.
+              if (c.person) store.requestPersonConfirmation(c.person.id);
+              else store.dismissConfirmation();
+            }}
+          >
+            {t('security.tryAgain')}
+          </Button>
+        </>
+      ),
+    };
+  }
+  if (c.phase === 'waiting') {
+    return {
+      key: 'person-waiting',
+      title,
+      closeable: true,
+      width: 500,
+      onClose: cancel,
+      body: <Dots label={t('security.share.waiting', { name })} centred />,
+      footer: (
+        <>
+          <span className={s.spacer} />
+          <Button variant="secondary" onClick={cancel}>
+            {t('security.cancel')}
+          </Button>
+        </>
+      ),
+    };
+  }
+  const ready = c.emoji?.length === 7;
+  return {
+    key: 'person-compare',
+    title,
+    closeable: true,
+    width: 500,
+    onClose: cancel,
+    body: (
+      <ul className={s.sas}>
+        {(c.emoji ?? []).map((e, i) => (
+          <li key={i} className={s.sasItem}>
+            <span className={s.sasEmoji} aria-hidden="true">
+              {e.emoji}
+            </span>
+            <span className={s.sasName}>{sasName(e.index, lang)}</span>
+          </li>
+        ))}
+      </ul>
+    ),
+    footer:
+      c.phase === 'matched' ? (
+        <>
+          <span className={s.spacer} />
+          <Dots label={t('security.share.waiting', { name })} />
+        </>
+      ) : (
+        <>
+          <span className={s.spacer} />
+          <Button variant="secondary" disabled={!ready} onClick={() => store.confirmEmoji(false)}>
+            {t('security.noMatch')}
+          </Button>
+          <Button disabled={!ready} onClick={() => store.confirmEmoji(true)}>
+            {t('security.match')}
+          </Button>
+        </>
+      ),
   };
 }
 
@@ -743,41 +850,5 @@ function DeviceLine({ name, meta }: { name: string; meta?: string }) {
         {meta && <span className={s.deviceMeta}>{meta}</span>}
       </span>
     </span>
-  );
-}
-
-function Dots({ label, centred = false }: { label: string; centred?: boolean }) {
-  return (
-    <span role="status" className={[s.dots, centred && s.dotsCentred].filter(Boolean).join(' ')}>
-      <span />
-      <span />
-      <span />
-      <span className={s.sr}>{label}</span>
-    </span>
-  );
-}
-
-function OkTile() {
-  return (
-    <span className={`${s.tile} ${s.okTile}`}>
-      <CheckIcon size={28} strokeWidth={2.6} />
-    </span>
-  );
-}
-
-function FailTile() {
-  return (
-    <span className={`${s.tile} ${s.failTile}`}>
-      <AlertIcon size={28} strokeWidth={2} />
-    </span>
-  );
-}
-
-function FieldError({ id, text }: { id: string; text: string }) {
-  return (
-    <p id={id} role="alert" className={s.error}>
-      <AlertIcon size={15} strokeWidth={2.2} />
-      {text}
-    </p>
   );
 }

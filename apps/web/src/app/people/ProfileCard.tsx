@@ -1,12 +1,16 @@
 // The profile card (Batch C ProfileCard): name, local time, work email, role (M4, D-25), Message. Never the ID.
+// SIDE-03: in a 1:1 DM, a team person sees Share earlier messages on an outside person's card instead (ShareHistoryEntry).
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { matchPath, useLocation, useNavigate } from 'react-router';
-import { useStore, useWorkspace, type Person, type Profile, type Role } from '../../matrix';
+import { useStore, useWorkspace, type Person, type Profile, type Role, type WorkspaceSnapshot } from '../../matrix';
 import { Button } from '../../ui';
 import { MakeOwnerDialog, RoleControl } from '../channels/RoleControl';
 import { dmPath } from '../places';
+import { HistoryIcon } from '../security/icons';
+import { useSecurityUi } from '../security/SecurityProvider';
+import { firstName, useToast } from '../toast';
 import { BubbleIcon, ClockIcon, MailIcon } from '../shell/icons';
 import { Face } from './Face';
 import { useLocalTime } from './localTime';
@@ -92,7 +96,12 @@ function Card({ profile, anchor, onClose, onMakeOwner }: CardProps) {
   const [first] = useState(() => place(anchor, 0));
   const { person, email } = profile;
   // Roles are read from the channel in view (its members list carries them).
-  const channelId = matchPath('/w/:spaceId/c/:channelId', useLocation().pathname)?.params.channelId;
+  const { pathname } = useLocation();
+  const channelId = matchPath('/w/:spaceId/c/:channelId', pathname)?.params.channelId;
+  const dmId = (matchPath('/dms/:dmId', pathname) ?? matchPath('/w/:spaceId/dm/:dmId', pathname))?.params.dmId;
+  const shareIn = useWorkspace((x) => (dmId && mayShareHistory(x, dmId, person.id) ? dmId : undefined));
+  const security = useSecurityUi();
+  const toast = useToast();
 
   useLayoutEffect(() => {
     const el = ref.current;
@@ -117,10 +126,17 @@ function Card({ profile, anchor, onClose, onMakeOwner }: CardProps) {
     };
   }, [anchor, onClose]);
 
-  const message = async () => {
-    const id = await store.openDm([person.id]);
+  const message = () =>
+    store.openDm([person.id]).then(
+      (id) => {
+        onClose();
+        navigate(dmPath(id));
+      },
+      () => toast(t('failed.message', { name: firstName(person.name) })),
+    );
+  const share = (dmId: string) => {
     onClose();
-    navigate(dmPath(id));
+    security.shareHistory(dmId, person);
   };
 
   return (
@@ -151,13 +167,32 @@ function Card({ profile, anchor, onClose, onMakeOwner }: CardProps) {
           {channelId && <RoleControl person={person} channelId={channelId} onMakeOwner={onMakeOwner} />}
         </div>
       )}
-      {person.id !== meId && (
-        <Button block className={s.cardAction} icon={<BubbleIcon size={16} strokeWidth={2} />} onClick={() => void message()}>
-          {t('people.message')}
+      {shareIn ? (
+        <Button block variant="secondary" className={s.cardAction} icon={<HistoryIcon />} onClick={() => share(shareIn)}>
+          {t('security.share.entry')}
         </Button>
+      ) : (
+        person.id !== meId && (
+          <Button block className={s.cardAction} icon={<BubbleIcon size={16} strokeWidth={2} />} onClick={() => void message()}>
+            {t('people.message')}
+          </Button>
+        )
       )}
     </div>
   );
+}
+
+/**
+ * SIDE-03, the store's rule (shareHistory): I'm team (Owner/Admin/Member of the workspace), and this is an encrypted 1:1 DM
+ * whose other person is outside the workspace.
+ */
+export function mayShareHistory(x: WorkspaceSnapshot, dmId: string, userId: string): boolean {
+  const workspace = x.spaces.find((sp) => sp.kind === 'workspace');
+  const role = workspace && x.myRoles[workspace.id];
+  if (role !== 'owner' && role !== 'admin' && role !== 'member') return false;
+  const dm = x.dms.find((d) => d.id === dmId);
+  const others = dm?.people.filter((p) => p.id !== x.me.id) ?? [];
+  return !!dm?.encrypted && others.length === 1 && others[0]!.id === userId && !!others[0]!.external;
 }
 
 /** Below the name, left-aligned; above it when there's no room; always inside the window. */

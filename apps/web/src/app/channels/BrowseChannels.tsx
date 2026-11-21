@@ -12,6 +12,7 @@ import s from './Channels.module.css';
 import { useChannels } from './ChannelsProvider';
 import { ArchiveIcon, CheckIcon, PlusIcon, UsersIcon } from './icons';
 import { canCreateIn } from './roles';
+import { useToast } from '../toast';
 import { useRole } from './shared';
 
 const noChannels: Channel[] = [];
@@ -23,6 +24,7 @@ export function BrowseChannels({ space }: { space: Space }) {
   const mine = useWorkspace((x) => x.channels[space.id] ?? noChannels);
   const channels = useChannels();
   const role = useRole(space.id);
+  const toast = useToast();
   const [list, setList] = useState<JoinableChannel[]>([]);
   const [query, setQuery] = useState('');
   const [joining, setJoining] = useState<Record<string, boolean>>({});
@@ -45,6 +47,7 @@ export function BrowseChannels({ space }: { space: Space }) {
       setList((l) => l.map((x) => (x.id === c.id ? { ...x, joined: true, memberCount: x.memberCount + 1 } : x)));
     } catch {
       // Stays joinable; the button is the retry.
+      toast(t('failed.join', { name: c.name }));
     } finally {
       setJoining((j) => ({ ...j, [c.id]: false }));
     }
@@ -129,7 +132,7 @@ export function BrowseChannels({ space }: { space: Space }) {
               <ArchiveIcon />
             </span>
             <span className={s.browseText}>
-              <button type="button" className={`${s.browseName} ${s.browseNameArchived}`} onClick={() => void open(c).catch(() => {})}>
+              <button type="button" className={`${s.browseName} ${s.browseNameArchived}`} onClick={() => void open(c).catch(() => toast(t('failed.open', { name: c.name })))}>
                 {c.name}
               </button>
               {c.topic && <span className={s.browseTopic}>{c.topic}</span>}
@@ -137,7 +140,7 @@ export function BrowseChannels({ space }: { space: Space }) {
             {count(c)}
             <span className={s.joinCell}>
               {mine.find((x) => x.id === c.id)?.manageable && (
-                <button type="button" className={s.joinButton} onClick={() => void store.setChannelArchived(c.id, false).catch(() => {})}>
+                <button type="button" className={s.joinButton} onClick={() => void store.setChannelArchived(c.id, false).catch(() => toast(t('failed.unarchive', { name: c.name })))}>
                   {t('channels.unarchive')}
                 </button>
               )}

@@ -570,6 +570,26 @@
   line-height: normal;
 }
 
+/* DmsEmpty: centred in the main column */
+.dmsEmpty {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px 120px;
+  text-align: center;
+  animation: fade-in var(--dur-2) var(--ease-out);
+}
+
+.dmsEmptyButton {
+  height: 40px;
+  margin-top: 22px;
+  padding: 0 18px 0 15px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
 /* DM header */
 .dmHeader {
   gap: 8px;

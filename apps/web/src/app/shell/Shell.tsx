@@ -6,8 +6,10 @@ import { BrowseChannels } from '../channels/BrowseChannels';
 import { ChannelHeaderBar } from '../channels/ChannelMenus';
 import { ChannelsProvider } from '../channels/ChannelsProvider';
 import { ActivityColumn } from '../pages/Activity';
-import { DmConversation, DmsColumn } from '../pages/Dms';
+import { DmConversation, DmsColumn, DmsEmpty } from '../pages/Dms';
 import { DraftsView } from '../pages/Drafts';
+import { FindProvider } from '../find/Switcher';
+import { SearchPage } from '../find/SearchPage';
 import { ThreadsView } from '../pages/Threads';
 import { NewMessageProvider } from '../people/NewMessage';
 import { ProfileCardProvider } from '../people/ProfileCard';
@@ -17,6 +19,7 @@ import { ThreadPanel } from '../thread/ThreadPanel';
 import { useOpenThread, useThreadNav } from '../thread/useThread';
 import { noStoredTabs } from '../registry';
 import { useRegistry } from '../RegistryProvider';
+import { ToastProvider } from '../toast';
 import { AppStart } from './AppStart';
 import { ChannelTabs } from './ChannelTabs';
 import { ConnectionBanner } from './ConnectionBanner';
@@ -37,6 +40,8 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
   if (starting) return <AppStart />;
   return (
     <SignOut.Provider value={onSignOut}>
+      <ToastProvider>
+      <FindProvider>
       <ProfileCardProvider>
         <NewMessageProvider>
           <ChannelsProvider>
@@ -51,6 +56,7 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
               <Route path="dms" element={<DmsRoute />} />
               <Route path="dms/:dmId" element={<DmsRoute />} />
               <Route path="activity" element={<ActivityRoute />} />
+              <Route path="search" element={<SearchRoute />} />
               {routes.map((r) => (
                 <Route key={r.path} path={r.path} element={<Frame section="feature" column={null}>{r.element}</Frame>} />
               ))}
@@ -59,6 +65,8 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
           </ChannelsProvider>
         </NewMessageProvider>
       </ProfileCardProvider>
+      </FindProvider>
+      </ToastProvider>
     </SignOut.Provider>
   );
 }
@@ -145,11 +153,12 @@ function DmsRoute() {
   const space = useFallbackSpace();
   const known = useWorkspace((x) => (dmId ? x.dms.some((d) => d.id === dmId) : false));
   const newest = useWorkspace((x) => x.dms[0]?.id);
+  const none = useWorkspace((x) => x.dms.length === 0);
   const narrow = useNarrow();
   if (!dmId && newest && !narrow) return <Navigate to={dmPath(newest)} replace />;
   return (
     <Frame section="dms" space={space} column={<DmsColumn activeId={dmId} />} list={{ back: '/dms', detail: !!dmId }}>
-      {known && dmId ? <DmConversation dmId={dmId} /> : dmId ? <NotAvailable /> : <HomePage />}
+      {known && dmId ? <DmConversation dmId={dmId} /> : dmId ? <NotAvailable /> : none ? <DmsEmpty /> : <HomePage />}
     </Frame>
   );
 }
@@ -171,6 +180,15 @@ function ActivityRoute() {
   return (
     <Frame section="activity" space={space} column={<ActivityColumn selectedId={item?.id} />} list={{ back: '/activity', detail: !!item }}>
       {channel ? <ChannelPage channel={channel} /> : isDm && item ? <DmConversation dmId={item.channelId} /> : <HomePage />}
+    </Frame>
+  );
+}
+
+function SearchRoute() {
+  const space = useFallbackSpace();
+  return (
+    <Frame section="home" space={space} column={space && <Sidebar space={space} />}>
+      <SearchPage />
     </Frame>
   );
 }

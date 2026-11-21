@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 import { useStore, type Message } from '../../matrix';
 import { Skeleton } from '../../ui';
 import { useListTime } from '../../app/pages/lists';
+import { useToast } from '../../app/toast';
 import { ImageViewer } from '../../app/timeline/ImageViewer';
 import { downloadMedia, tileOf, useMediaUrl } from '../../app/timeline/Media';
 import { useT } from './strings';
@@ -40,6 +41,7 @@ export function FilesTab({ channelId }: { channelId: string }) {
   const t = useT();
   const store = useStore();
   const listTime = useListTime();
+  const toast = useToast();
   const scroller = useRef<HTMLDivElement>(null);
   const busy = useRef(false);
   const [pages, setPages] = useState<Pages>({ items: [], started: false });
@@ -84,7 +86,7 @@ export function FilesTab({ channelId }: { channelId: string }) {
   const finished = pages.started && !pages.next;
   const images = pages.items.filter((m) => m.kind === 'image');
   const when = (ts: number) => (new Date(ts).toDateString() === new Date().toDateString() ? t('today') : listTime(ts));
-  const open = (m: Message) => (m.kind === 'image' ? setViewing(m.id) : void downloadMedia(store, m.media!).catch(() => {}));
+  const open = (m: Message) => (m.kind === 'image' ? setViewing(m.id) : void downloadMedia(store, m.media!).catch(() => toast(t('downloadFailed', { name: m.media!.name }))));
 
   return (
     <div ref={scroller} className={s.pane} aria-busy={loading || (!!pages.next && !pages.stalled)} onScroll={() => more(false)}>

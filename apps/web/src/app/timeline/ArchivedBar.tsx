@@ -5,6 +5,7 @@ import { useStore, useWorkspace, type Channel, type Space } from '../../matrix';
 import { Button } from '../../ui';
 import { ArchiveIcon } from '../channels/icons';
 import { canManage } from '../channels/roles';
+import { useToast } from '../toast';
 import s from './Timeline.module.css';
 
 export type Archived = { space: Space } | { channel: Channel };
@@ -34,7 +35,10 @@ export function ArchivedBar({ archived }: { archived: Archived }) {
   const spaceId = 'space' in archived ? archived.space.id : archived.channel.spaceId;
   const manageSpace = useWorkspace((x) => canManage(x.myRoles[spaceId]));
   const manage = 'space' in archived ? manageSpace : !!archived.channel.manageable;
+  const toast = useToast();
   const undo = () => ('space' in archived ? store.setArchived(archived.space.id, false) : store.setChannelArchived(archived.channel.id, false));
+  const failed = () =>
+    toast('space' in archived ? t('failed.unarchiveSpace', { name: archived.space.name }) : t('failed.unarchive', { name: archived.channel.name }));
   return (
     <div className={s.archivedWrap}>
       <div role="status" className={s.archived}>
@@ -45,7 +49,7 @@ export function ArchivedBar({ archived }: { archived: Archived }) {
           {'space' in archived ? t('spaces.archived', { name: archived.space.name }) : t('channels.archived', { name: archived.channel.name })}
         </span>
         {manage && (
-          <Button variant="secondary" className={s.archivedUndo} onClick={() => void undo().catch(() => {})}>
+          <Button variant="secondary" className={s.archivedUndo} onClick={() => void undo().catch(failed)}>
             {t('spaces.unarchive')}
           </Button>
         )}

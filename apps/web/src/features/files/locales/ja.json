@@ -2,5 +2,6 @@
   "files": "ファイル",
   "noFiles": "ファイルはまだありません",
   "today": "今日",
-  "meta": "{{name}} · {{when}}"
+  "meta": "{{name}} · {{when}}",
+  "downloadFailed": "{{name}} をダウンロードできませんでした"
 }

@@ -910,3 +910,43 @@
   height: 34px;
   background: var(--raised);
 }
+
+/* SIDE-03: restored message (HistoryRestoredRow); the sentence on hover and focus */
+.restored {
+  position: relative;
+  display: inline-flex;
+  align-self: center;
+  margin: -2px;
+  padding: 2px;
+  border-radius: 5px;
+  color: var(--subtle);
+}
+
+.restored:hover,
+.restored:focus-visible {
+  background: var(--hover);
+}
+
+.restoredTip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 30;
+  display: none;
+  padding: 6px 10px;
+  transform: translateX(-50%);
+  border-radius: 8px;
+  background: var(--tip);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  color: var(--ontip);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  animation: fade-in var(--dur-1) var(--ease-out);
+}
+
+.restored:hover .restoredTip,
+.restored:focus-visible .restoredTip {
+  display: block;
+}

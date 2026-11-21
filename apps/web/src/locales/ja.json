@@ -48,7 +48,9 @@
       "privacy": "プライバシー",
       "terms": "利用規約",
       "help": "ヘルプ"
-    }
+    },
+    "otherError": "問題が発生しました",
+    "tooMany": "試行回数が多すぎます。1 分後にもう一度お試しください。"
   },
   "shell": {
     "rail": {
@@ -69,7 +71,6 @@
       "label": "{{workspace}} のナビゲーション",
       "toggle": "サイドバー",
       "newMessage": "新規メッセージ",
-      "search": "{{workspace}} を検索",
       "threads": "スレッド",
       "mentions": "メンション",
       "drafts": "下書き",
@@ -158,7 +159,11 @@
     "archivedByMe": "チャンネルをアーカイブしました",
     "archivedBy": "{{name}}さんがチャンネルをアーカイブしました",
     "unarchivedByMe": "チャンネルのアーカイブを解除しました",
-    "unarchivedBy": "{{name}}さんがチャンネルのアーカイブを解除しました"
+    "unarchivedBy": "{{name}}さんがチャンネルのアーカイブを解除しました",
+    "historyShared": "{{name}} さんが以前のメッセージを共有しました",
+    "historySharedByMe": "以前のメッセージを共有しました",
+    "restored": "{{name}} さんが共有したメッセージです。送信者は確認できません。",
+    "restoredAny": "送信者は確認できません。"
   },
   "composer": {
     "label": "{{channel}} へのメッセージ",
@@ -259,7 +264,8 @@
     },
     "dms": {
       "you": "あなた：{{text}}",
-      "from": "{{name}}：{{text}}"
+      "from": "{{name}}：{{text}}",
+      "none": "ダイレクトメッセージはまだありません"
     }
   },
   "settings": {
@@ -511,6 +517,55 @@
     "elsewhereTitle": "Pasodrum work は別のタブで開いています",
     "useHere": "このタブで使う",
     "privacyOne": "この会話を読めるのは、あなたと {{name}} さんだけです。",
-    "privacyMany": "この会話を読めるのは、ここにいる人だけです。"
+    "privacyMany": "この会話を読めるのは、ここにいる人だけです。",
+    "share": {
+      "entry": "以前のメッセージを共有",
+      "verifyTitle": "{{name}} さんに電話して、絵文字を見比べてください",
+      "waiting": "{{name}} さんを待っています",
+      "noAnswer": "{{name}} さんから応答がありません",
+      "askTitle": "{{name}} さんがあなたの本人確認を求めています",
+      "confirmTitle": "{{name}} さんに以前のメッセージを共有しますか？",
+      "confirmLine": "本当に {{name}} さん本人だと確認できた場合だけ共有してください。",
+      "share": "共有",
+      "sharing": "共有しています…",
+      "shared": "{{name}} さんに共有しました",
+      "again": "もう一度共有",
+      "done": "完了",
+      "failed": "共有できませんでした",
+      "notConfirmed": "このデバイスは確認されていません",
+      "notSetUp": "{{name}} さんはまだ設定し直していません",
+      "ok": "OK"
+    }
+  },
+  "find": {
+    "placeholder": "{{workspace}} を検索",
+    "channels": "チャンネル",
+    "dms": "ダイレクトメッセージ",
+    "people": "メンバー",
+    "searchFor": "「{{query}}」でメッセージを検索",
+    "clear": "消去",
+    "older": "さらに前のメッセージを検索",
+    "searching": "検索しています…",
+    "none": "「{{query}}」に一致するメッセージはありません",
+    "unconfirmed": "このデバイスを確認するまで、DM と非公開チャンネルは検索されません。",
+    "confirm": "確認"
+  },
+  "failed": {
+    "leaveDialog": "#{{name}} から退出できませんでした。もう一度お試しください。",
+    "archiveChannel": "#{{name}} をアーカイブできませんでした。もう一度お試しください。",
+    "archiveSpace": "{{name}} をアーカイブできませんでした。もう一度お試しください。",
+    "removeFromSpace": "{{name}} さんを外せませんでした。もう一度お試しください。",
+    "makeOwner": "{{name}} さんをオーナーにできませんでした。もう一度お試しください。",
+    "messageDialog": "{{name}} さんにメッセージを送れませんでした。もう一度お試しください。",
+    "leave": "#{{name}} から退出できませんでした",
+    "unarchive": "#{{name}} のアーカイブを解除できませんでした",
+    "join": "#{{name}} に参加できませんでした",
+    "open": "#{{name}} を開けませんでした",
+    "remove": "{{name}} さんを外せませんでした",
+    "resend": "{{name}} さんにリンクを再送できませんでした",
+    "message": "{{name}} さんにメッセージを送れませんでした",
+    "role": "{{name}} さんの役割を変更できませんでした",
+    "colour": "{{name}} の色を変更できませんでした",
+    "unarchiveSpace": "{{name}} のアーカイブを解除できませんでした"
   }
 }

@@ -1,12 +1,14 @@
 // Sidebar entry points (WorkspaceMenu, ChannelsPlusMenu) and the channel header (Main m4).
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useStore, useWorkspace, type Channel, type Space } from '../../matrix';
 import { Button, IconButton, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '../../ui';
 import { HashIcon, LockIcon } from '../icons';
+import { FindButton } from '../find/Switcher';
 import { Face } from '../people/Face';
 import { spaceHome } from '../places';
+import { rememberRecent } from '../prefs';
 import { ChevronDownIcon, PlusIcon as SmallPlusIcon } from '../shell/icons';
 import s from './Channels.module.css';
 import { useChannels } from './ChannelsProvider';
@@ -164,6 +166,7 @@ export function ChannelHeaderBar({ channel }: { channel: Channel }) {
   const faces = useMemo(() => store.members(channel.id).slice(0, 3), [store, channel.id, channel.memberCount]); // eslint-disable-line react-hooks/exhaustive-deps
   const mayAdd = addRoles(space, role).length > 0 && !space?.archived && !channel.archived;
   const outside = useOutside(channel.id);
+  useEffect(() => rememberRecent(channel.id), [channel.id]);
   return (
     <>
       <h1 className={s.nameHeading}>
@@ -191,6 +194,7 @@ export function ChannelHeaderBar({ channel }: { channel: Channel }) {
       <span className={s.headIcons}>
         {mayAdd && <IconButton label={t('common.addPeople')} icon={<UserPlusIcon />} onClick={() => channels.addPeople(channel.id)} />}
         <IconButton label={t('shell.header.details')} icon={<InfoIcon />} onClick={() => channels.details(channel.id)} />
+        <FindButton />
       </span>
     </>
   );

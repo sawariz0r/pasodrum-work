@@ -6,6 +6,7 @@ import { useStore, useWorkspace, type Person, type Role } from '../../matrix';
 import { Button, Dialog } from '../../ui';
 import { Face } from '../people/Face';
 import { roleEvents } from '../people/ProfileCardContext';
+import { firstName, useToast } from '../toast';
 import s from './Channels.module.css';
 import { ArrowIcon, CheckIcon, ChevronIcon, PersonIcon } from './icons';
 import { roleChoices } from './roles';
@@ -20,6 +21,7 @@ export function RoleControl({ person, channelId, onMakeOwner }: { person: Person
   const workspaceId = useWorkspaceId();
   const mine = useWorkspace((x) => (workspaceId ? x.myRoles[workspaceId] : undefined));
   const self = useWorkspace((x) => x.me.id === person.id);
+  const toast = useToast();
   const [theirs, setTheirs] = useState<Role>();
   const [menu, setMenu] = useState(false);
   const box = useRef<HTMLSpanElement>(null);
@@ -69,7 +71,10 @@ export function RoleControl({ person, channelId, onMakeOwner }: { person: Person
     setTheirs(next);
     store.setRole(workspaceId, person.id, next).then(
       () => roleEvents.dispatchEvent(new Event('change')),
-      () => setTheirs(prev),
+      () => {
+        setTheirs(prev);
+        toast(t('failed.role', { name: firstName(person.name) }));
+      },
     );
   };
 
@@ -117,15 +122,18 @@ export function MakeOwnerDialog({ open, person, from, onClose }: { open: boolean
   const store = useStore();
   const workspaceId = useWorkspaceId();
   const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
   const confirm = async () => {
     if (!workspaceId) return;
     setBusy(true);
+    setFailed(false);
     try {
       await store.setRole(workspaceId, person.id, 'owner');
       roleEvents.dispatchEvent(new Event('change'));
       onClose();
     } catch {
       setBusy(false);
+      setFailed(true);
     }
   };
   return (
@@ -137,6 +145,7 @@ export function MakeOwnerDialog({ open, person, from, onClose }: { open: boolean
       top={168}
       title={t('channels.makeOwnerTitle', { name: person.name })}
       closeLabel={t('people.close')}
+      alert={failed ? t('failed.makeOwner', { name: person.name }) : undefined}
       bodyClassName={s.confirmBody}
       footer={
         <>

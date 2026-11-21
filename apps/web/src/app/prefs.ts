@@ -103,6 +103,23 @@ export function rememberPlace(spaceId: string, channelId: string) {
   write(placeKey, JSON.stringify({ space: spaceId, channels: { ...p.channels, [spaceId]: channelId } }));
 }
 
+const recentKey = 'pasodrum.recent';
+const recentMax = 12;
+
+/** ⌘K's recent conversations (channel and DM ids), most recent first. */
+export function recentConversations(): string[] {
+  try {
+    const list = JSON.parse(read(recentKey) ?? '[]') as unknown;
+    return Array.isArray(list) ? list.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+export function rememberRecent(id: string) {
+  write(recentKey, JSON.stringify([id, ...recentConversations().filter((x) => x !== id)].slice(0, recentMax)));
+}
+
 const identifierKey = 'pasodrum.identifier';
 
 export function lastIdentifier(): string {

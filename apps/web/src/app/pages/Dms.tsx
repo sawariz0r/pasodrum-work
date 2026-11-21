@@ -1,9 +1,10 @@
 // DMs (Batch C DMs / DMEmpty / ClientDMs): every DM, newest first, in a 340px column; the conversation beside it.
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useWorkspace, type Dm } from '../../matrix';
-import { Badge, IconButton } from '../../ui';
+import { Badge, Button, IconButton } from '../../ui';
+import { ChatIcon } from '../icons';
 import { DmFace, Face, others } from '../people/Face';
 import { useDmName, useShowExternal } from '../people/names';
 import { useNewMessage } from '../people/NewMessage';
@@ -13,6 +14,8 @@ import { noStoredTabs } from '../registry';
 import { ChannelTabs } from '../shell/ChannelTabs';
 import { ChevronDownIcon, ComposeIcon } from '../shell/icons';
 import { OutsideHeaderMark } from '../channels/OutsideMark';
+import { FindButton } from '../find/Switcher';
+import { rememberRecent } from '../prefs';
 import { PrivacyLock, usePrivacyText } from '../security/Privacy';
 import { DrawerToggle } from '../shell/Drawer';
 import shell from '../shell/Shell.module.css';
@@ -79,6 +82,23 @@ function DmRow({ dm, current }: { dm: Dm; current: boolean }) {
   );
 }
 
+/** DmsEmpty: the DMs page with none yet, in place of a conversation. */
+export function DmsEmpty() {
+  const { t } = useTranslation();
+  const newMessage = useNewMessage();
+  return (
+    <div className={s.dmsEmpty}>
+      <div className={s.pageEmptyIcon}>
+        <ChatIcon size={30} strokeWidth={1.8} />
+      </div>
+      <h2 className={s.emptyTitle}>{t('pages.dms.none')}</h2>
+      <Button className={s.dmsEmptyButton} icon={<ComposeIcon size={16} strokeWidth={2} />} onClick={newMessage}>
+        {t('shell.sidebar.newMessage')}
+      </Button>
+    </div>
+  );
+}
+
 /** A DM: its header (name opens the profile card for a 1:1) and the same conversation view as a channel. */
 export function DmConversation({ dmId }: { dmId: string }) {
   const dm = useWorkspace((x) => x.dms.find((d) => d.id === dmId));
@@ -88,6 +108,7 @@ export function DmConversation({ dmId }: { dmId: string }) {
   const card = useProfileCard();
   const title = useRef<HTMLButtonElement>(null);
   const privacy = usePrivacyText(dm);
+  useEffect(() => rememberRecent(dmId), [dmId]);
   if (!dm) return null;
   const list = others(dm, meId);
   const single = list.length === 1 ? list[0] : undefined;
@@ -119,6 +140,7 @@ export function DmConversation({ dmId }: { dmId: string }) {
         )}
         {privacy && <PrivacyLock text={privacy} gap={outside.length > 0} />}
         <OutsideHeaderMark people={outside} />
+        <FindButton />
       </header>
       <ChannelTabs key={dm.id} channelId={dm.id} stored={noStoredTabs} />
     </>

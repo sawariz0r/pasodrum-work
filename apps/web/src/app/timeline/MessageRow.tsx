@@ -1,6 +1,6 @@
 import { memo, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useStore, type Message } from '../../matrix';
+import { useStore, useWorkspace, type Message } from '../../matrix';
 import { AlertIcon } from '../../ui/icons';
 import { MessageEditor } from '../composer/lazy';
 import { useProfileCard } from '../people/ProfileCardContext';
@@ -17,6 +17,9 @@ import r from './Rich.module.css';
 import s from './Timeline.module.css';
 import { PersonAvatar } from './PersonAvatar';
 import { Undecryptable } from '../security/Undecryptable';
+import { HistoryIcon } from '../security/icons';
+import { others } from '../people/Face';
+import { firstName } from '../toast';
 import type { BodyOverride } from '../registry';
 import { useRegistry } from '../RegistryProvider';
 
@@ -200,6 +203,25 @@ function DeletedRow({ m }: { m: Message }) {
   );
 }
 
+/** SIDE-03 (HistoryRestoredRow): readable only because someone shared the history back; who sent it can't be proven. Only in a 1:1 DM, so the other person shared it. */
+function RestoredMark({ channelId, meId }: { channelId: string; meId: string }) {
+  const { t } = useTranslation();
+  const by = useWorkspace((x) => {
+    const dm = x.dms.find((d) => d.id === channelId);
+    const list = dm ? others(dm, meId) : [];
+    return list.length === 1 ? list[0]!.name : undefined;
+  });
+  const text = by ? t('timeline.restored', { name: firstName(by) }) : t('timeline.restoredAny');
+  return (
+    <span role="img" tabIndex={0} aria-label={text} className={s.restored}>
+      <HistoryIcon size={13} strokeWidth={2.1} />
+      <span className={s.restoredTip} aria-hidden="true">
+        {text}
+      </span>
+    </span>
+  );
+}
+
 function SystemRow({ m, meId }: { m: Message; meId: string }) {
   const { t } = useTranslation();
   const names = (list: { name: string }[]) => formatList(list.map((p) => t('timeline.person', { name: p.name })));
@@ -207,6 +229,18 @@ function SystemRow({ m, meId }: { m: Message; meId: string }) {
   const left = m.system?.left ?? [];
   const renamed = m.system?.renamed;
   const archived = m.system?.archived;
+  const shared = m.system?.historyShared;
+  if (shared) {
+    const me = shared.by.id === meId;
+    return (
+      <div className={s.systemRow} data-message-id={m.id} data-ids={m.id}>
+        <span className={s.systemIcon}>
+          <HistoryIcon />
+        </span>
+        <span>{me ? t('timeline.historySharedByMe') : t('timeline.historyShared', { name: firstName(shared.by.name) })}</span>
+      </div>
+    );
+  }
   if (renamed || archived) {
     const by = (renamed ?? archived)!.by;
     const me = by.id === meId;
@@ -318,6 +352,7 @@ export const MessageRow = memo(function MessageRow({
                 <PinIcon size={13} strokeWidth={2.2} />
               </span>
             )}
+            {m.restored && <RestoredMark channelId={m.channelId} meId={meId} />}
           </div>
         )}
         {m.replyTo && <ReplyQuote reply={m.replyTo} original={original} />}

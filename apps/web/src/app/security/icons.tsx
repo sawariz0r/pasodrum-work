@@ -78,3 +78,27 @@ export const TabIcon = icon(
   </>,
   { size: 30, strokeWidth: 1.8 },
 );
+/** SIDE-03: earlier messages shared back (profile card, the timeline row and mark). */
+export const HistoryIcon = icon(
+  <>
+    <path d="M3 12a9 9 0 1 0 2.6-6.4L3 8" />
+    <path d="M3 3v5h5" />
+    <path d="M12 7v5l3 2" />
+  </>,
+  { size: 16, strokeWidth: 2 },
+);
+export const PersonCheckIcon = icon(
+  <>
+    <circle cx="9" cy="8" r="4" />
+    <path d="M2 21a7 7 0 0 1 14 0" />
+    <path d="m16 11 2 2 4-4" />
+  </>,
+  { size: 16, strokeWidth: 2 },
+);
+export const PersonIcon = icon(
+  <>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21a8 8 0 0 1 16 0" />
+  </>,
+  { size: 27, strokeWidth: 1.9 },
+);

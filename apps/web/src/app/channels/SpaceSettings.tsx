@@ -9,6 +9,7 @@ import { ExternalIcon, HashIcon, LogoMark, MoreIcon } from '../icons';
 import { ExternalCorner, Face } from '../people/Face';
 import { dmPath } from '../places';
 import { BubbleIcon, MailIcon } from '../shell/icons';
+import { firstName, useToast } from '../toast';
 import s from './Channels.module.css';
 import { AlertIcon, ArchiveIcon, LeaveIcon, LinkIcon, PendingIcon, UserPlusIcon, XIcon } from './icons';
 import { Swatches } from './NewClientSpace';
@@ -26,6 +27,11 @@ export function SpaceSettingsDialog({ open, spaceId, tab: initialTab = 'general'
   const [tab, setTab] = useState<SpaceTab>(initialTab);
   const [members, setMembers] = useState<Member[]>([]);
   const [confirm, setConfirm] = useState<{ kind: 'archive' } | { kind: 'remove'; member: Member } | null>(null);
+  const [failed, setFailed] = useState(false);
+  const ask = (next: typeof confirm) => {
+    setFailed(false);
+    setConfirm(next);
+  };
 
   useEffect(() => {
     let live = true;
@@ -71,9 +77,9 @@ export function SpaceSettingsDialog({ open, spaceId, tab: initialTab = 'general'
         </div>
         <div key={tab} role="tabpanel" aria-labelledby={`space-${tab}`} className={s.panel}>
           {tab === 'general' ? (
-            <General space={space} onArchive={() => setConfirm({ kind: 'archive' })} />
+            <General space={space} onArchive={() => ask({ kind: 'archive' })} />
           ) : (
-            <People space={space} members={members} onAddPeople={onAddPeople} onRemove={(member) => setConfirm({ kind: 'remove', member })} onLeave={onClose} />
+            <People space={space} members={members} onAddPeople={onAddPeople} onRemove={(member) => ask({ kind: 'remove', member })} onLeave={onClose} />
           )}
         </div>
       </Dialog>
@@ -82,8 +88,12 @@ export function SpaceSettingsDialog({ open, spaceId, tab: initialTab = 'general'
           open={open}
           space={space}
           members={members}
-          onCancel={() => setConfirm(null)}
-          onArchive={() => void store.setArchived(space.id, true).then(onClose, () => setConfirm(null))}
+          alert={failed ? t('failed.archiveSpace', { name: space.name }) : undefined}
+          onCancel={() => ask(null)}
+          onArchive={() => {
+            setFailed(false);
+            void store.setArchived(space.id, true).then(onClose, () => setFailed(true));
+          }}
         />
       )}
       {confirm?.kind === 'remove' && (
@@ -91,16 +101,18 @@ export function SpaceSettingsDialog({ open, spaceId, tab: initialTab = 'general'
           open={open}
           space={space}
           member={confirm.member}
-          onCancel={() => setConfirm(null)}
-          onRemove={() =>
+          alert={failed ? t('failed.removeFromSpace', { name: confirm.member.person.name }) : undefined}
+          onCancel={() => ask(null)}
+          onRemove={() => {
+            setFailed(false);
             void store.removeFromSpace(space.id, confirm.member.person.id).then(
               () => {
                 setMembers((list) => list.filter((m) => m.person.id !== confirm.member.person.id));
                 setConfirm(null);
               },
-              () => setConfirm(null),
-            )
-          }
+              () => setFailed(true),
+            );
+          }}
         />
       )}
     </>
@@ -125,6 +137,7 @@ function SpaceTile({ space, size, name }: { space: Space; size: 'title' | 'field
 function General({ space, onArchive }: { space: Space; onArchive: () => void }) {
   const { t } = useTranslation();
   const store = useStore();
+  const toast = useToast();
   const spaces = useWorkspace((x) => x.spaces);
   const [name, setName] = useState(space.name);
   const [failed, setFailed] = useState<string | null>(null);
@@ -189,7 +202,7 @@ function General({ space, onArchive }: { space: Space; onArchive: () => void }) 
         <div id="space-colour" className={s.fieldLabel}>
           {t('spaces.colour')}
         </div>
-        <Swatches labelledBy="space-colour" value={spaceColour(space)} size={30} onPick={(colour) => void store.updateSpace(space.id, { colour }).catch(() => {})} />
+        <Swatches labelledBy="space-colour" value={spaceColour(space)} size={30} onPick={(colour) => void store.updateSpace(space.id, { colour }).catch(() => toast(t('failed.colour', { name: space.name })))} />
       </div>
       {!space.archived && (
         <div className={`${s.box} ${s.actions}`}>
@@ -211,6 +224,7 @@ function People({ space, members, onAddPeople, onRemove, onLeave }: PeopleProps)
   const { t } = useTranslation();
   const store = useStore();
   const navigate = useNavigate();
+  const toast = useToast();
   const meId = useWorkspace((x) => x.me.id);
   const workspace = useWorkspaceName();
   const mine = useRole(space.id);
@@ -276,13 +290,13 @@ function People({ space, members, onAddPeople, onRemove, onLeave }: PeopleProps)
                       </MenuItem>
                     )}
                     {invite && (
-                      <MenuItem icon={<MailIcon size={16} strokeWidth={1.9} />} onSelect={() => void store.resendInvite(invite.code).catch(() => {})}>
+                      <MenuItem icon={<MailIcon size={16} strokeWidth={1.9} />} onSelect={() => void store.resendInvite(invite.code).catch(() => toast(t('failed.resend', { name: firstName(person.name) })))}>
                         {t('channels.sendAgain')}
                       </MenuItem>
                     )}
                   </>
                 ) : (
-                  <MenuItem icon={<BubbleIcon size={16} strokeWidth={1.9} />} onSelect={() => void message(person.id).catch(() => {})}>
+                  <MenuItem icon={<BubbleIcon size={16} strokeWidth={1.9} />} onSelect={() => void message(person.id).catch(() => toast(t('failed.message', { name: firstName(person.name) })))}>
                     {t('people.message')}
                   </MenuItem>
                 )}
@@ -336,7 +350,9 @@ function People({ space, members, onAddPeople, onRemove, onLeave }: PeopleProps)
   );
 }
 
-function RemoveDialog({ open, space, member, onCancel, onRemove }: { open: boolean; space: Space; member: Member; onCancel: () => void; onRemove: () => void }) {
+type RemoveProps = { open: boolean; space: Space; member: Member; alert?: string; onCancel: () => void; onRemove: () => void };
+
+function RemoveDialog({ open, space, member, alert, onCancel, onRemove }: RemoveProps) {
   const { t } = useTranslation();
   const store = useStore();
   const { person } = member;
@@ -372,6 +388,7 @@ function RemoveDialog({ open, space, member, onCancel, onRemove }: { open: boole
       top={168}
       title={t('spaces.removeTitle', { person: person.name, name: space.name })}
       closeLabel={t('people.close')}
+      alert={alert}
       bodyClassName={s.spConfirmBody}
       footer={
         <>
@@ -421,7 +438,9 @@ function RemoveDialog({ open, space, member, onCancel, onRemove }: { open: boole
   );
 }
 
-function ArchiveDialog({ open, space, members, onCancel, onArchive }: { open: boolean; space: Space; members: Member[]; onCancel: () => void; onArchive: () => void }) {
+type ArchiveProps = { open: boolean; space: Space; members: Member[]; alert?: string; onCancel: () => void; onArchive: () => void };
+
+function ArchiveDialog({ open, space, members, alert, onCancel, onArchive }: ArchiveProps) {
   const { t } = useTranslation();
   const faces = members.filter((m) => !m.pending).slice(0, 4);
   return (
@@ -433,6 +452,7 @@ function ArchiveDialog({ open, space, members, onCancel, onArchive }: { open: bo
       top={168}
       title={t('spaces.archiveTitle', { name: space.name })}
       closeLabel={t('people.close')}
+      alert={alert}
       bodyClassName={s.spConfirmBody}
       footer={
         <>

@@ -1,5 +1,6 @@
 // A Backend on the in-memory fake store, for /dev/app and tests. No server.
-// Sign-in: a server address containing "down" can't be reached; the password "wrong" is wrong; anything else signs in.
+// Sign-in: a server address containing "down" can't be reached; the password "wrong" is wrong, "busy" is rate limited,
+// "oops" fails some other way; anything else signs in.
 // Join links (/join/:code), with matrix/'s error codes: "used", "expired" (also any unknown code on the real service),
 // "offline" (preview can't reach the service), "gone" (claim answers 410, then the link reads as used),
 // "weak" (claim refuses the password), "down" (claim can't reach the service); any other code is an open link to Nordlys.
@@ -54,6 +55,8 @@ export function createFakeBackend(opts: FakeBackendOptions = {}): Backend & { st
     async signIn(baseUrl, identifier, password) {
       await wait();
       if (password === 'wrong') throw new SignInError('wrong-password');
+      if (password === 'busy') throw new SignInError('rate-limited');
+      if (password === 'oops') throw new SignInError('other');
       current = { ...session, baseUrl, ...(identifier === 'henrik@nordlys.no' && { userId: henrik.id }) };
       return current;
     },
