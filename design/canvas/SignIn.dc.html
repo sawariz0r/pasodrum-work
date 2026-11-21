@@ -91,7 +91,7 @@ body{margin:0}
           <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 6px"><label for="si-pass" style="font-size: 13.5px; font-weight: 600">{{txPassword}}</label><button class="si-link" onClick="{{toForgot}}" style="padding: 0; border: 0; background: transparent; font-size: 13px; color: #0B6A86; font-weight: 600; cursor: pointer">{{txForgot}}</button></div>
           <input id="si-pass" class="si-input {{passCls}}" type="password" autocomplete="current-password" aria-invalid="{{passInvalid}}" aria-describedby="si-pass-err" value="{{password}}" onChange="{{onPassword}}" style="display: block; width: 100%; height: 46px; box-sizing: border-box; padding: 0 14px; border: 1.5px solid #D9D6CF; border-radius: 11px; background: #FFFFFF; color: #1D1C22; font-family: inherit; font-size: 15px">
           <sc-if value="{{wrong}}" hint-placeholder-val="{{false}}"><p id="si-pass-err" role="alert" style="display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font-size: 13px; font-weight: 500; color: #B42318"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4.5M12 16h.01"></path></svg>{{txWrong}}</p></sc-if>
-          <button class="si-primary" style="margin-top: 16px; width: 100%; height: 46px; border: 0; border-radius: 11px; background: #0E7C66; color: #FFFFFF; font-size: 15px; font-weight: 600; cursor: pointer">{{txSignIn}}</button>
+          <!-- Batch H: other sign-in failures (rate limited, anything else); same alert as Can’t reach --><sc-if value="{{failOn}}" hint-placeholder-val="{{false}}"><div role="alert" style="display: flex; align-items: center; gap: 10px; margin-top: 16px; padding: 8px 8px 8px 12px; min-height: 46px; box-sizing: border-box; border-radius: 11px; background: #FDECEA; color: #8A1C0E; font-size: 14px; font-weight: 500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4.5M12 16h.01"></path></svg><span style="flex: 1; min-width: 0; padding: 4px 0; line-height: 1.4">{{txFail}}</span><sc-if value="{{failRetry}}" hint-placeholder-val="{{true}}"><button onClick="{{retry}}" style="height: 30px; flex-shrink: 0; padding: 0 11px; border: 1px solid rgba(138,28,14,.3); border-radius: 8px; background: #FFFFFF; color: #8A1C0E; font-size: 13px; font-weight: 600; cursor: pointer">{{txTryAgain}}</button></sc-if></div></sc-if><button class="si-primary" style="margin-top: 16px; width: 100%; height: 46px; border: 0; border-radius: 11px; background: #0E7C66; color: #FFFFFF; font-size: 15px; font-weight: 600; cursor: pointer">{{txSignIn}}</button>
         </sc-if>
 
         <!-- Forgot password: enter email -->
@@ -142,14 +142,14 @@ body{margin:0}
   </main>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"locale":{"editor":"enum","options":["en","ja"],"default":"en"},"sso":{"editor":"boolean","default":false},"state":{"editor":"enum","options":["email","password","wrongPassword","serverDown","forgot","forgotSent","reset","expired"],"default":"email"},"$preview":{"width":1440,"height":900}}'>
+<script type="text/x-dc" data-dc-script data-props='{"locale":{"editor":"enum","options":["en","ja"],"default":"en"},"sso":{"editor":"boolean","default":false},"state":{"editor":"enum","options":["email","password","wrongPassword","serverDown","forgot","forgotSent","reset","expired","otherError","tooMany"],"default":"email"},"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     const st = props.state || 'email';
     this.state = {
       step: null, email: st === 'email' ? '' : 'sam@pasodrum.work', server: 'pasodrum.work', showServer: false, error: false,
-      password: st === 'wrongPassword' ? 'nordlys2026' : '', newPass: st === 'reset' ? 'harbour-lights-42' : '', shown: false, resent: false, locale: null
+      password: st === 'wrongPassword' || st === 'otherError' || st === 'tooMany' ? 'nordlys2026' : '', newPass: st === 'reset' ? 'harbour-lights-42' : '', shown: false, resent: false, locale: null
     };
   }
 
@@ -158,7 +158,7 @@ class Component extends DCLogic {
       about: 'Pasodrum work について', signIn: 'サインイン', workEmail: '仕事用メールアドレス', emailError: 'メールアドレスを最後まで入力してください',
       serverAddress: 'サーバーアドレス', cantReach: (h) => h + ' に接続できません', tryAgain: '再試行', continue: '続行', or: 'または',
       sso: '会社の SSO で続行', otherServer: '別のサーバー', change: '変更', password: 'パスワード', forgot: 'パスワードをお忘れですか？',
-      wrong: 'パスワードが違います', signedOut: 'サインアウトされました', resetTitle: 'パスワードの再設定', sendLink: '再設定リンクを送信',
+      wrong: 'パスワードが違います', otherError: '問題が発生しました', tooMany: '試行回数が多すぎます。1 分後にもう一度お試しください。', signedOut: 'サインアウトされました', resetTitle: 'パスワードの再設定', sendLink: '再設定リンクを送信',
       back: 'サインインに戻る', checkEmail: 'メールを確認してください', resend: 'もう一度送信', resent: '送信しました',
       newPassword: '新しいパスワード', show: 'パスワードを表示', hide: 'パスワードを隠す', save: '保存してサインイン',
       privacy: 'プライバシー', terms: '利用規約', help: 'ヘルプ',
@@ -171,7 +171,7 @@ class Component extends DCLogic {
       about: 'About Pasodrum work', signIn: 'Sign in', workEmail: 'Work email', emailError: 'Enter a full email address',
       serverAddress: 'Server address', cantReach: (h) => 'Can’t reach ' + h, tryAgain: 'Try again', continue: 'Continue', or: 'or',
       sso: 'Continue with company SSO', otherServer: 'Other server', change: 'Change', password: 'Password', forgot: 'Forgot password?',
-      wrong: 'Wrong password', signedOut: 'You were signed out', resetTitle: 'Reset password', sendLink: 'Send reset link',
+      wrong: 'Wrong password', otherError: 'Something went wrong', tooMany: 'Too many attempts. Try again in a minute.', signedOut: 'You were signed out', resetTitle: 'Reset password', sendLink: 'Send reset link',
       back: 'Back to sign in', checkEmail: 'Check your email', resend: 'Send again', resent: 'Sent',
       newPassword: 'New password', show: 'Show password', hide: 'Hide password', save: 'Save and sign in',
       privacy: 'Privacy', terms: 'Terms', help: 'Help',
@@ -205,7 +205,8 @@ class Component extends DCLogic {
       sample: T.sample.map((x) => Object.assign({}, x, { fs: /[぀-ヿ㐀-鿿]/.test(x.initials) ? '13px' : '11px' })),
 
       stepEmail: step === 'email' || step === 'serverDown',
-      stepPassword: step === 'password' || step === 'wrongPassword' || step === 'expired',
+      stepPassword: step === 'password' || step === 'wrongPassword' || step === 'expired' || step === 'otherError' || step === 'tooMany',
+      failOn: step === 'otherError' || step === 'tooMany', failRetry: step === 'otherError', txFail: step === 'tooMany' ? T.tooMany : T.otherError,
       stepForgot: step === 'forgot',
       stepSent: step === 'forgotSent',
       stepReset: step === 'reset',

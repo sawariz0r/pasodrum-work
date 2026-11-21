@@ -174,6 +174,17 @@ Approved 2026-11-21 (CEO). Rules: RulesM7. PrivateChannel: no extra header lock 
 | SIDE-02 privacy line + header lock | PrivateDM, PrivateDMTooltip, PrivateGroupDM, PrivateChannel, PrivateJP, PrivateDark | approved 2026-11-21 |
 | Open in another tab · Use here | OpenElsewhere, OpenElsewhereJP | approved 2026-11-21 |
 
-## Batch H — for M8–M9
+## Batch H — M8 find, SIDE-03 share history, failed actions, leftovers
 
-⌘K switcher · search results (empty, JP) · shortcuts · download, update prompt, tray/badge — all `needs design`.
+Drawn 2026-11-21, awaiting CEO approval. Rules: RulesM8. Shortcuts sheet and desktop bits dropped (CEO; desktop → M9).
+
+| Screen / state | Boards | Status |
+|---|---|---|
+| ⌘K switcher (recent, results, empty) | Switcher(+JP, Dark), SwitcherResults, SwitcherEmpty | drawn |
+| Message search (results, searching, empty, unconfirmed device) | SearchResults(+JP, Dark), SearchSearching, SearchEmpty, SearchUnconfirmedDevice | drawn |
+| Share earlier messages (staff) | ShareHistoryEntry(+JP, Dark), ShareHistoryVerify, ShareHistoryConfirm, ShareHistoryProgress, ShareHistoryBlocked | drawn |
+| Confirm it's you + restored messages (client) | ConfirmPersonAsk(+JP), HistoryRestoredRow(+JP, Dark) | drawn |
+| Failed action (dialog line, toast) | ActionFailed(+JP) | drawn |
+| Sign-in other error, too many attempts | SignInOtherError, SignInTooMany | drawn |
+| No DMs yet | DmsEmpty | drawn |
+| States built without boards (M4) | BuiltStatesM4 | drawn |
