@@ -1,0 +1,119 @@
+.wait {
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 20px;
+  animation: fade var(--dur-2) var(--ease-out) both;
+}
+
+.glyph {
+  flex-shrink: 0;
+  color: var(--subtle);
+}
+
+.glyphFail {
+  flex-shrink: 0;
+  color: var(--dangertext);
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--link);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.fail {
+  color: var(--dangertext);
+  font-weight: 600;
+}
+
+.dot {
+  color: var(--subtle);
+}
+
+.dot::before {
+  content: '\00B7';
+}
+
+.dots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--subtle);
+  animation: blink 1.2s infinite;
+}
+
+.dots i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dots i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wait {
+    animation: none;
+    opacity: 0.6;
+  }
+
+  .dots i {
+    animation: none;
+  }
+}

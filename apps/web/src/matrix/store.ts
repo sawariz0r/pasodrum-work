@@ -33,6 +33,7 @@ import { DecryptionFailureCode } from 'matrix-js-sdk/lib/crypto-api';
 import { decryptAttachment, encryptAttachment, sealedFileOf, type SealedFile } from './attachments';
 import { CRYPTO_DB, createSecurity, cryptoCallbacks, withTimeout, type KeyHolder } from './crypto';
 import { sanitizeHtml, type SanitizedHtml } from './html';
+import { translateSegments } from './translate';
 import { createInvite, InviteError, listInvites, normalizeEmail, resendInvite, revokeInvitesFor, revokeInvite } from './invites';
 import {
   connectionOf, emailFromId, hydra, looksExternal, mayChangeRole, mediaOf, membershipSummary, powerLevel, reactionsOf, replyFallback, roleOf, sameMembers, share,
@@ -967,11 +968,13 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         return [
           spaceId,
           list.map((c) => {
-            const outside = (client.getRoom(c.id)?.getMembers() ?? [])
+            const room = client.getRoom(c.id);
+            const pending = !room?.membersLoaded();
+            const outside = (room?.getMembers() ?? [])
               .filter((m) => m.userId !== me.id && (m.membership === KnownMembership.Join || m.membership === KnownMembership.Invite) && isExternal(m.userId))
               .map((m) => person(m.userId, m.name, m.getMxcAvatarUrl()))
               .sort(byName);
-            return outside.length ? { ...c, outside } : c;
+            return outside.length || pending ? { ...c, ...(outside.length ? { outside } : {}), ...(pending ? { outsidePending: true } : {}) } : c;
           }),
         ];
       }),
@@ -2067,6 +2070,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       }).catch((e: unknown) => Promise.reject(forbidden(e)));
       await settle(() => !!snapshot.spaces.find((s) => s.id === spaceId)?.archived === archived);
     },
+    translate: (segments, to) => translateSegments(session.accessToken, segments, to),
     anotherApp: () => ({ server: new URL(client.baseUrl).host, username: client.getUserId()!.slice(1, client.getUserId()!.indexOf(':')) }),
     // M6
     requestConfirmation: () => security.requestConfirmation(),

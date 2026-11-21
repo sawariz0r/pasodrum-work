@@ -461,6 +461,11 @@
   color: var(--ink);
 }
 
+.tool[aria-pressed='true'] {
+  background: var(--accentsoft);
+  color: var(--accent);
+}
+
 .tool:active {
   transform: scale(var(--press));
 }

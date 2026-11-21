@@ -16,6 +16,8 @@ import r from './Rich.module.css';
 import s from './Timeline.module.css';
 import { PersonAvatar } from './PersonAvatar';
 import { Undecryptable } from '../security/Undecryptable';
+import type { BodyOverride } from '../registry';
+import { useRegistry } from '../RegistryProvider';
 
 type Props = {
   message: Message;
@@ -123,6 +125,17 @@ function ReplyQuote({ reply, original }: { reply: NonNullable<Message['replyTo']
   );
 }
 
+/** A registered feature may swap the text (translate); without one this is the text as sent. */
+function TextBody({ m, tail }: { m: Message; tail?: ReactNode }) {
+  const Body = useRegistry().messageActions.find((a) => a.Body)?.Body;
+  const draw = (o?: BodyOverride) => {
+    const html = o ? o.html : m.html;
+    const text = html ? <RichText html={html} tail={tail} /> : <PlainText text={o?.text ?? m.body} tail={tail} />;
+    return <Long id={m.id}>{o?.lang ? <div lang={o.lang}>{text}</div> : text}</Long>;
+  };
+  return Body ? <Body message={m} render={draw} /> : draw();
+}
+
 function Content({ m, group, tail, compact }: { m: Message; group?: Message[]; tail?: ReactNode; compact?: boolean }) {
   const { t } = useTranslation();
   const tl = useTimeline();
@@ -140,9 +153,7 @@ function Content({ m, group, tail, compact }: { m: Message; group?: Message[]; t
       </>
     );
   }
-  if (kind === 'text' || kind === 'emote' || kind === 'notice') {
-    return <Long id={m.id}>{m.html ? <RichText html={m.html} tail={tail} /> : <PlainText text={m.body} tail={tail} />}</Long>;
-  }
+  if (kind === 'text' || kind === 'emote' || kind === 'notice') return <TextBody m={m} tail={tail} />;
   return (
     <div className={r.unsupported}>
       <BoxIcon />

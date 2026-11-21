@@ -16,12 +16,17 @@ function env(name: string, fallback?: string): string {
 }
 
 const serverName = env('SERVER_NAME');
+const { OPENAI_API_KEY, TRANSLATE_MODEL } = process.env;
+const translate = OPENAI_API_KEY ? { apiKey: OPENAI_API_KEY, model: TRANSLATE_MODEL || 'gpt-6-luna' } : null;
+const dailyLimit = Number(env('TRANSLATE_DAILY_LIMIT', '2000'));
 const app = createApp({
   cfg: {
     serverName,
     publicUrl: env('PUBLIC_URL', `https://${serverName}`).replace(/\/+$/, ''),
     registrationToken: env('REGISTRATION_TOKEN'),
     workspaceAlias: env('WORKSPACE_ALIAS', `#workspace:${serverName}`),
+    translate,
+    translateDailyLimit: Number.isFinite(dailyLimit) ? dailyLimit : 0,
   },
   store: openStore(env('DB_PATH', '/data/invites.db')),
   mx: matrixClient(env('MATRIX_URL', 'http://continuwuity:6167')),
@@ -35,6 +40,6 @@ const app = createApp({
 
 const port = Number(env('PORT', '8080'));
 const server = createServer(app).listen(port, () => {
-  console.log(`invite service on :${port} (${serverName}, mail via ${process.env.RESEND_API_KEY ? 'Resend' : 'Mailpit'})`);
+  console.log(`invite service on :${port} (${serverName}, mail via ${process.env.RESEND_API_KEY ? 'Resend' : 'Mailpit'}, translate ${translate ? `on, ${dailyLimit}/day` : 'off'})`);
 });
 for (const sig of ['SIGTERM', 'SIGINT'] as const) process.on(sig, () => server.close(() => process.exit(0)));
