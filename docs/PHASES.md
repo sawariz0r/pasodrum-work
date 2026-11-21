@@ -60,6 +60,13 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 
 - One-day spike each: Tauri and Electron against `platform/` (notify, badge, deep links, auth redirect, openExternal, persistStorage). Build the winner: installer, update prompt, tray/badge. Re-enable "Download app" buttons (hidden since M4).
 
+## Next session — pick up here (2026-11-21 end of day)
+- **Live:** M0–M6, Translate, channel rename/archive. Push = Coolify redeploys everything incl. the Matrix server (a few seconds' restart): batch docs-only commits with real changes.
+- **CEO checks pending:** E2 on production; Element X encrypted DM and the Element X link on a phone.
+- **Before a second real person joins:** remove/deactivate the seed test accounts on production (their shared password was shown in chat), wipe test rooms (D-18). Shiori may already have an account (`pnpm add:staff`).
+- **Backlog to pick from:** SIDE-02 privacy indicator (design first), SIDE-03 share history (1 h spike first), a "open in another tab" screen for the per-account tab lock (design), Batch G (M7 tabs & cards) design.
+- **Known gaps:** workspace Add people also suggests existing clients; the join page tile ignores the space colour; raw IDs show for nameless accounts in New message (test data); crypto store isn't encrypted at rest; Continuwuity to-device race (no upstream report, CEO).
+
 ## Open follow-ups (not blocking)
 
 - **Needs design (inventory rows):** sign-in failure that isn't wrong password/unreachable; M4-04 states built without boards (password prompt before device sign-out, join claim errors, link-not-found); Add people "Couldn't add {name}".
