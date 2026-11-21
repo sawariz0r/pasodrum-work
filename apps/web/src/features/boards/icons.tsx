@@ -29,7 +29,6 @@ export const PersonIcon = ({ size = 16, strokeWidth = 1.9 }: P) =>
     size,
     strokeWidth,
   );
-export const ChevronDownIcon = ({ size = 13, strokeWidth = 2.2 }: P) => line(<path d="m6 9 6 6 6-6" />, size, strokeWidth);
 export const ChevronRightIcon = ({ size = 15, strokeWidth = 2 }: P) => line(<path d="m9 6 6 6-6 6" />, size, strokeWidth);
 export const ChevronLeftIcon = ({ size = 15, strokeWidth = 2 }: P) => line(<path d="m15 6-6 6 6 6" />, size, strokeWidth);
 export const BoardViewIcon = ({ size = 15, strokeWidth = 1.9 }: P) =>

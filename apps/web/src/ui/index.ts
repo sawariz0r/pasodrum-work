@@ -19,6 +19,7 @@ export {
   type MenuSegmentsProps,
 } from './Menu';
 export { useMenuReturnFocus } from './menuFocus';
+export { SideHeading, sideRow, type SideHeadingProps } from './SideRow';
 export { Skeleton, type SkeletonProps } from './Skeleton';
 export { TextField, type TextFieldProps } from './TextField';
 export { Toast } from './Toast';

@@ -11,8 +11,8 @@ import { useShowExternal } from '../../app/people/names';
 import shell from '../../app/shell/Shell.module.css';
 import { useToast } from '../../app/toast';
 import { useDocsBoards, useStore, type PageNode, type Space } from '../../matrix';
-import { DropLine, IconButton, Skeleton } from '../../ui';
-import { ChevronDown, ChevronRight, PageIcon, Pencil, Plus, Search } from './icons';
+import { DropLine, IconButton, SideHeading, Skeleton, sideRow } from '../../ui';
+import { ChevronDown, ChevronRight, PageIcon, Pencil, PlusBold, Search } from './icons';
 import { flatten, locate, useScope } from './model';
 import { pagePath, useCreatePage } from './actions';
 import { useT } from './strings';
@@ -33,8 +33,8 @@ export function DocsColumn() {
   const canCreate = useDocsBoards((x) => !!selected && !!x.pages[selected.id]?.canCreate);
 
   return (
-    <aside aria-label={t('docs')} className={`${shell.sidebar} ${s.column}`}>
-      <div className={s.head}>
+    <aside aria-label={t('docs')} className={shell.sidebar}>
+      <div className={shell.sideHead}>
         <h1 className={s.title}>{t('docs')}</h1>
         {selected && canCreate && <IconButton outline label={t('newPage')} icon={<Pencil />} onClick={() => create({ spaceId: selected.id })} />}
       </div>
@@ -135,20 +135,17 @@ function Group(props: { space: Space; activeId?: string; query: string; closed: 
 
   return (
     <div role="group" aria-label={space.name}>
-      <div className={s.groupHead}>
-        <button type="button" className={s.groupToggle} aria-expanded={!folded} onClick={() => setFolded(!folded)}>
-          <span className={s.groupChevron}>
-            <ChevronDown />
-          </span>
-          {space.kind === 'client' && showExternal && <CompanyTile space={space} size={14} />}
-          <span className={s.groupName}>{space.name}</span>
-        </button>
-        {pages?.canCreate && (
-          <button type="button" className={s.groupAdd} aria-label={t('newPage')} onClick={() => create({ spaceId: space.id })}>
-            <Plus size={14} />
-          </button>
-        )}
-      </div>
+      <SideHeading
+        open={!folded}
+        onToggle={() => setFolded(!folded)}
+        lead={space.kind === 'client' && showExternal && <CompanyTile space={space} size={14} />}
+        label={space.name}
+        action={
+          pages?.canCreate && (
+            <IconButton size={24} className={sideRow.sectionAction} label={t('newPage')} icon={<PlusBold size={14} />} onClick={() => create({ spaceId: space.id })} />
+          )
+        }
+      />
       {!folded &&
         (pages ? (
           rows.map((r) => (
@@ -238,27 +235,25 @@ function Row(props: {
   }, [canMove, node.id, node.spaceId, node.children.length, open, title, ancestryKey]);
 
   const nest = drop === 'nest';
-  const pad = 8 + depth * 18;
+  const pad = 10 + depth * 18;
   return (
     <div ref={ref} className={s.item}>
       {drop && !nest && <DropLine edge="top" offset={drop === 'before' ? 2 : -29} inset={drop === 'child' ? pad + 18 : pad} />}
       <div
-        className={[s.row, active && !nest && s.active, nest && s.nest, lifted && s.lifted, node.pending && s.pending].filter(Boolean).join(' ')}
+        className={[sideRow.row, active && !nest && sideRow.current, nest && s.nest, lifted && s.lifted, node.pending && s.pending].filter(Boolean).join(' ')}
         style={{ paddingLeft: pad }}
       >
-        {hasChildren ? (
-          <button type="button" className={s.chevron} aria-label={title} aria-expanded={open} onClick={() => toggle(node.id)}>
+        <Link to={pagePath(node.id)} className={sideRow.link} aria-current={active ? 'page' : undefined} draggable={false}>
+          <span className={sideRow.icon}>
+            <PageIcon size={16} />
+          </span>
+          <span className={sideRow.name}>{title}</span>
+        </Link>
+        {hasChildren && (
+          <button type="button" className={sideRow.chevron} aria-label={title} aria-expanded={open} onClick={() => toggle(node.id)}>
             {open ? <ChevronDown /> : <ChevronRight />}
           </button>
-        ) : (
-          <span className={s.spacer} />
         )}
-        <Link to={pagePath(node.id)} className={s.link} aria-current={active ? 'page' : undefined} draggable={false}>
-          <span className={s.rowIcon}>
-            <PageIcon />
-          </span>
-          <span className={s.label}>{title}</span>
-        </Link>
       </div>
     </div>
   );

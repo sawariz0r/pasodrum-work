@@ -4418,6 +4418,38 @@
    "title": "Confirm by email: gaps",
    "is_interactive": false,
    "page": "confirm-email"
+  },
+  "SidebarRowRules.dc.html": {
+   "x": 0,
+   "y": 18240,
+   "w": 1440,
+   "h": 1500,
+   "title": "Sidebar rows — rules",
+   "page": "overview"
+  },
+  "SidebarRowsHome.dc.html": {
+   "x": 1520,
+   "y": 18240,
+   "w": 1440,
+   "h": 1380,
+   "title": "Sidebar rows — Home, before / after",
+   "page": "overview"
+  },
+  "SidebarRowsDocs.dc.html": {
+   "x": 3040,
+   "y": 18240,
+   "w": 1440,
+   "h": 1380,
+   "title": "Sidebar rows — Docs, before / after",
+   "page": "overview"
+  },
+  "SidebarRowsBoards.dc.html": {
+   "x": 4560,
+   "y": 18240,
+   "w": 1440,
+   "h": 1380,
+   "title": "Sidebar rows — Boards, before / after",
+   "page": "overview"
   }
  },
  "order": [
@@ -4869,7 +4901,11 @@
   "ClientMarkPlaces.dc.html",
   "BoardsBuiltStates.dc.html",
   "DocsFileBlock.dc.html",
-  "EmailConfirmBuiltStates.dc.html"
+  "EmailConfirmBuiltStates.dc.html",
+  "SidebarRowRules.dc.html",
+  "SidebarRowsHome.dc.html",
+  "SidebarRowsDocs.dc.html",
+  "SidebarRowsBoards.dc.html"
  ],
  "notes": {
   "overview-Foundations--workspace": {
@@ -5328,6 +5364,15 @@
    "page": "confirm-email",
    "size": "l",
    "maxW": 9040
+  },
+  "overview-Sidebar-rows": {
+   "x": 0,
+   "y": 18000,
+   "text": "Sidebar rows (DES-01, approved 2026-11-21)",
+   "kind": "title1",
+   "page": "overview",
+   "size": "l",
+   "maxW": 5920
   }
  },
  "designSystems": []

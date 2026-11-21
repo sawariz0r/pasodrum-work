@@ -2,14 +2,14 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useWorkspace, type Channel, type Dm, type Space } from '../../matrix';
-import { Badge, IconButton } from '../../ui';
+import { Badge, IconButton, SideHeading, sideRow } from '../../ui';
 import { useDrafts } from '../drafts';
 import { HashIcon, LockIcon } from '../icons';
 import { DmFace } from '../people/Face';
 import { useDmName } from '../people/names';
 import { useNewMessage } from '../people/NewMessage';
 import { channelPath, draftsPath, spaceDmPath, threadsPath } from '../places';
-import { ChevronDownIcon, ComposeIcon, PlusIcon, SendIcon, ThreadIcon } from './icons';
+import { ComposeIcon, PlusIcon, SendIcon, ThreadIcon } from './icons';
 import s from './Shell.module.css';
 import { useSpaceDrafts } from './spaceRooms';
 import { ChannelsPlusMenu, WorkspaceMenu } from '../channels/ChannelMenus';
@@ -45,17 +45,17 @@ export function Sidebar({ space, active }: { space: Space; active?: SidebarActiv
           strong={unreadThreads > 0}
           icon={<ThreadIcon />}
           name={t('shell.sidebar.threads')}
-          end={<Badge count={unreadThreads} />}
+          end={!is('view', 'threads') && <Badge count={unreadThreads} />}
         />
         <NavRow
           to={draftsPath(space.id)}
           current={is('view', 'drafts')}
           icon={<SendIcon />}
           name={t('shell.sidebar.drafts')}
-          end={drafts.length > 0 && <span className={s.quietCount}>{drafts.length}</span>}
+          end={drafts.length > 0 && <span className={sideRow.count}>{drafts.length}</span>}
         />
 
-        <Section label={t('shell.sidebar.channels')} action={<ChannelsPlusMenu space={space} className={s.sectionAction} />}>
+        <Section label={t('shell.sidebar.channels')} action={<ChannelsPlusMenu space={space} className={sideRow.sectionAction} />}>
           {channels.map((c) => {
             const current = is('channelId', c.id);
             return (
@@ -74,7 +74,7 @@ export function Sidebar({ space, active }: { space: Space; active?: SidebarActiv
 
         <Section
           label={t('shell.sidebar.directMessages')}
-          action={<IconButton size={24} className={s.sectionAction} label={t('shell.sidebar.newDirectMessage')} icon={<PlusIcon size={14} strokeWidth={2.2} />} onClick={newMessage} />}
+          action={<IconButton size={24} className={sideRow.sectionAction} label={t('shell.sidebar.newDirectMessage')} icon={<PlusIcon size={14} strokeWidth={2.2} />} onClick={newMessage} />}
         >
           {dms.map((d) => (
             <DmRow key={d.id} dm={d} spaceId={space.id} current={is('dmId', d.id)} />
@@ -90,10 +90,10 @@ function NavRow({ to, current, strong, icon, name, end, dm }: { to: string; curr
     <Link
       to={to}
       aria-current={current ? 'page' : undefined}
-      className={[s.row, dm && s.dmRow, !current && strong && s.strong].filter(Boolean).join(' ')}
+      className={[sideRow.row, dm && sideRow.dm, !current && strong && sideRow.strong].filter(Boolean).join(' ')}
     >
       {icon}
-      <span className={s.rowName}>{name}</span>
+      <span className={sideRow.name}>{name}</span>
       {end}
     </Link>
   );
@@ -119,13 +119,7 @@ function Section({ label, action, children }: { label: string; action?: ReactNod
   const [open, setOpen] = useState(true);
   return (
     <>
-      <div className={s.sectionHead}>
-        <button type="button" className={s.sectionToggle} aria-expanded={open} onClick={() => setOpen(!open)}>
-          <ChevronDownIcon className={s.sectionChevron} />
-          {label}
-        </button>
-        {action}
-      </div>
+      <SideHeading open={open} onToggle={() => setOpen(!open)} label={label} action={action} />
       {open && children}
     </>
   );

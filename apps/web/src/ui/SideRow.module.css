@@ -1,0 +1,153 @@
+/* One sidebar row and section heading for Home, Docs and Boards (D-41). Home's row is the reference. */
+.row {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+  color: var(--sidemuted);
+  font-size: 14.5px;
+  font-weight: 400;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    color var(--dur-1) var(--ease-out);
+}
+
+.row svg {
+  flex-shrink: 0;
+}
+
+.row:not([aria-current='page']):not(.current):hover {
+  background: var(--hover);
+}
+
+.row.strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.row[aria-current='page'],
+.row.current {
+  background: var(--sideactive);
+  color: var(--onsideactive);
+  font-weight: 600;
+}
+
+.dm {
+  padding-left: 8px;
+}
+
+.icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.count {
+  color: var(--sidemuted);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.row[aria-current='page'] .count,
+.row.current .count {
+  color: var(--onsideactive);
+}
+
+.link {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+  -webkit-user-drag: none;
+}
+
+.link:focus-visible {
+  outline-offset: -2px;
+  border-radius: 7px;
+}
+
+.chevron {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--subtle);
+  cursor: pointer;
+}
+
+.current .chevron {
+  color: inherit;
+}
+
+.sectionHead {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  margin: 14px 0 2px;
+  padding: 0 4px 0 6px;
+}
+
+.sectionToggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sidemuted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--dur-1) var(--ease-out);
+}
+
+.sectionToggle:hover {
+  color: var(--ink);
+}
+
+.sectionChevron {
+  flex-shrink: 0;
+  transition: transform var(--dur-1) var(--ease-out);
+}
+
+.sectionToggle[aria-expanded='false'] .sectionChevron {
+  transform: rotate(-90deg);
+}
+
+.sectionName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sectionAction.sectionAction {
+  color: var(--sidemuted);
+}

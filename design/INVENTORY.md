@@ -266,3 +266,14 @@ Approved 2026-11-21 (CEO). Boards on the canvas page **Confirm by email** (moved
 | Clients and Externals: sign-out from the last device without the recovery key line; Reset and start fresh? as built (never named the key) | EmailConfirmBuiltStates | approved 2026-11-21 |
 
 Components: `EmailConfirm`, `EmailConfirmLink`, `EmailConfirmStaff`. For clients these replace ConfirmGate/ConfirmGateNoDevice, RecoveryKeySave, RecoveryKeyEnter and the Recovery key row in Settings → Devices; staff and the team keep those (RulesM6).
+
+## Sidebar rows (DES-01)
+
+Approved 2026-11-21 (CEO). One row component for the Home, Docs and Boards columns (and Settings' nav for the selected colour); Home's row is the reference. Boards on the canvas page **Overview & foundations**, section "Sidebar rows". These rules win over row styling drawn in older boards (Main, DocsPage, BoardsPage and their variants). Docs/Boards fold headings (SIDE-07) follow the same heading rule.
+
+| Screen | Boards | Status |
+|---|---|---|
+| Rules: one sidebar row (spacing, type, icon slot, rest/hover/unread/current, counts, sub-pages, headings, column); selected row = quiet grey (option B) | SidebarRowRules | approved 2026-11-21 |
+| Home sidebar (reference; only the selected row turns quiet grey) — EN/JP × light/dark | SidebarRowsHome | approved 2026-11-21 |
+| Docs sidebar on Home's row: icons and names line up, sub-page chevron at the end, column 248 — EN/JP × light/dark | SidebarRowsDocs | approved 2026-11-21 |
+| Boards sidebar on Home's row: My issues a normal row with a quiet count, swatch in the icon column, column 248 — EN/JP × light/dark | SidebarRowsBoards | approved 2026-11-21 |

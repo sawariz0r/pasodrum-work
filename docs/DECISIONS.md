@@ -102,6 +102,11 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-41 · One sidebar row for Home, Docs and Boards; selected row is quiet grey · Accepted (CEO approved the boards) · 2026-11-21
+- **Context:** DES-01. Rows under section headings differed per column: names started at 44 / 56 / 41 px, text 14.5 vs 14, Docs/Boards rows a darker grey at rest (everything looked unread), Docs chevron in front of the page icon, My issues taller and bold, headings and + buttons sized differently, Docs/Boards columns 260 wide on big screens vs Home 248.
+- **Decision:** Home's row is the one row (board SidebarRowRules): 30 high, 10 px each side, 16 px icon slot, name 10 after (starts at 44), 14.5 regular, rest `--sidemuted`, unread `--ink` semibold + badge, quiet counts 12.5 semibold. Docs sub-page chevron sits at the end of the row; nesting indents 18 px per level. Boards: My issues is a normal row; the project swatch is centred in the icon slot. Section headings use Home's heading (13 semibold, chevron 12, add button 24). Column 248 everywhere. Selected row (option B): quiet grey fill (`--sideactive` light `#E4E1DA`, dark `#303037`) with `--ink` text, also in Settings' nav.
+- **Code:** one shared `ui/` row style used by the three columns; the duplicated row styles in docs/boards are gone. SidebarRowRules wins over row styling drawn in older boards (Main, DocsPage, BoardsPage).
+
 ### D-40 · Client and External marks: company tile, grey ↗, one composer line; amends D-28 · Accepted (CEO approved the boards) · 2026-11-21
 - **Context:** the amber building mark (learning 2026-11-21, "Outside mark glyph") is unreadable at 9–10 px, especially on Windows, and it sat in many places at once. The CEO looked at Slack, Google Chat, Teams and Basecamp: leave the rail, sidebar, lists and header alone; mark people with their company; warn once, in the composer, only when there's a risk.
 - **Decision:**

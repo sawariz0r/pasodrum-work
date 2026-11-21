@@ -1,6 +1,5 @@
 import shell from '../../app/shell/Shell.module.css';
 import { useT } from './strings';
-import s from './DocsColumn.module.css';
 
 export function DocsIcon({ size = 19, strokeWidth = 1.9 }: { size?: number; strokeWidth?: number }) {
   return (
@@ -17,5 +16,5 @@ export function useDocsLabel() {
 
 /** The column's frame while its code loads, so the page doesn't shift. */
 export function DocsColumnFallback() {
-  return <aside className={`${shell.sidebar} ${s.column}`} aria-hidden="true" />;
+  return <aside className={shell.sidebar} aria-hidden="true" />;
 }

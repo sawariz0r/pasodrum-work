@@ -5,8 +5,8 @@ import shell from '../../app/shell/Shell.module.css';
 import { CompanyTile } from '../../app/people/Face';
 import { useShowExternal } from '../../app/people/names';
 import { myIssues, useDocsBoards, useWorkspace, type Project, type Space } from '../../matrix';
-import { Badge, IconButton } from '../../ui';
-import { ChevronDownIcon, PencilIcon, PersonIcon, PlusIcon } from './icons';
+import { Badge, IconButton, SideHeading, sideRow } from '../../ui';
+import { PencilIcon, PersonIcon, PlusIcon } from './icons';
 import { boardsPath, minePath, openNewProject, useBoardsRoute, useIsTeam, useScope } from './model';
 import s from './Boards.module.css';
 import { useT } from './strings';
@@ -25,17 +25,17 @@ export function BoardsColumn() {
 
   return (
     <aside aria-label={t('boards')} className={`${shell.sidebar} ${s.column}`}>
-      <div className={s.colHead}>
+      <div className={shell.sideHead}>
         <h1 className={s.colTitle}>{t('boards')}</h1>
         {team && selected && <IconButton outline label={t('newProject')} icon={<PencilIcon />} onClick={() => openNewProject(selected.id)} />}
       </div>
       <nav className={s.nav}>
-        <Link to={minePath()} className={`${s.navRow} ${s.mineRow}`} aria-current={route.mine ? 'page' : undefined}>
-          <span>
+        <Link to={minePath()} className={sideRow.row} aria-current={route.mine ? 'page' : undefined}>
+          <span className={sideRow.icon}>
             <PersonIcon />
           </span>
-          <span className={s.navName}>{t('myIssues')}</span>
-          {mine > 0 && <span className={s.mineCount}>{mine}</span>}
+          <span className={sideRow.name}>{t('myIssues')}</span>
+          {mine > 0 && <span className={sideRow.count}>{mine}</span>}
         </Link>
         {scope.map((space) => (
           <SpaceGroup key={space.id} space={space} team={team} activeId={route.mine ? undefined : route.projectId} />
@@ -52,20 +52,13 @@ function SpaceGroup({ space, team, activeId }: { space: Space; team: boolean; ac
   const projects = useDocsBoards((x) => x.projects[space.id] ?? none);
   return (
     <>
-      <div className={s.group}>
-        <button type="button" className={s.groupToggle} aria-expanded={open} onClick={() => setOpen(!open)}>
-          <span>
-            <ChevronDownIcon />
-          </span>
-          {space.kind === 'client' && showExternal && <CompanyTile space={space} size={14} label={t('outside')} />}
-          <span className={s.groupName}>{space.name}</span>
-        </button>
-        {team && (
-          <button type="button" className={s.groupAdd} aria-label={t('newProject')} onClick={() => openNewProject(space.id)}>
-            <PlusIcon size={14} />
-          </button>
-        )}
-      </div>
+      <SideHeading
+        open={open}
+        onToggle={() => setOpen(!open)}
+        lead={space.kind === 'client' && showExternal && <CompanyTile space={space} size={14} label={t('outside')} />}
+        label={space.name}
+        action={team && <IconButton size={24} className={sideRow.sectionAction} label={t('newProject')} icon={<PlusIcon size={14} strokeWidth={2.2} />} onClick={() => openNewProject(space.id)} />}
+      />
       {open &&
         projects.map((p) => <ProjectRow key={p.id} project={p} current={p.id === activeId} />)}
     </>
@@ -76,10 +69,12 @@ function SpaceGroup({ space, team, activeId }: { space: Space; team: boolean; ac
 function ProjectRow({ project, current }: { project: Project; current: boolean }) {
   const unread = useProjectUnread(project.id);
   return (
-    <Link to={boardsPath(project.id)} className={[s.navRow, !current && unread > 0 && s.navStrong].filter(Boolean).join(' ')} aria-current={current ? 'page' : undefined}>
-      <span className={s.swatch} style={{ background: project.colour }} />
-      <span className={s.navName}>{project.name}</span>
-      {!current && <Badge count={unread} className={s.navBadge} />}
+    <Link to={boardsPath(project.id)} className={[sideRow.row, !current && unread > 0 && sideRow.strong].filter(Boolean).join(' ')} aria-current={current ? 'page' : undefined}>
+      <span className={sideRow.icon}>
+        <span className={s.swatch} style={{ background: project.colour }} />
+      </span>
+      <span className={sideRow.name}>{project.name}</span>
+      {!current && <Badge count={unread} />}
     </Link>
   );
 }
