@@ -18,7 +18,7 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 | M7 tabs & cards | done | yes |
 | M8 find & finish | done | yes |
 | Side: people & access (D-36), Docs & Boards (D-37), confirm by email (D-38), live relay (D-39), client/External marks (D-40) | done | yes |
-| M9 desktop shell | Batch H (desktop bits) not designed | — |
+| M9 desktop shell | desktop boards approved (DES-03, canvas page "Desktop app"); shell spike next | — |
 
 ## Waiting on the CEO
 

@@ -598,6 +598,17 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [BoardsAllJP](canvas/BoardsAllJP.dc.html) — Boards — All issues, Japanese `#artboard-BoardsAllJP`
 - [BoardsAllDark](canvas/BoardsAllDark.dc.html) — Boards — All issues, dark `#artboard-BoardsAllDark`
 
+## Desktop app · `desktop` · 6 artboards
+
+**Desktop app (DES-03, approved 2026-11-22)**
+
+- [DesktopRules](canvas/DesktopRules.dc.html) — Desktop app — rules `#artboard-DesktopRules`
+- [DesktopDownload](canvas/DesktopDownload.dc.html) — Desktop app — Download app `#artboard-DesktopDownload`
+- [DesktopWindow](canvas/DesktopWindow.dc.html) — Desktop app — window and title bar `#artboard-DesktopWindow`
+- [DesktopUpdate](canvas/DesktopUpdate.dc.html) — Desktop app — update ready `#artboard-DesktopUpdate`
+- [DesktopBadge](canvas/DesktopBadge.dc.html) — Desktop app — Dock, taskbar, tray `#artboard-DesktopBadge`
+- [DesktopOffline](canvas/DesktopOffline.dc.html) — Desktop app — can’t reach `#artboard-DesktopOffline`
+
 ## Discovery · `discovery` · 14 artboards
 
 - [SwitcherSpaces](canvas/SwitcherSpaces.dc.html) — ⌘K across spaces: the space under each channel `#artboard-SwitcherSpaces`

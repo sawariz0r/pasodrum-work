@@ -290,3 +290,16 @@ Approved 2026-11-21 (CEO). Boards on the canvas page **Client spaces & guests**,
 |---|---|---|
 | Client space settings → People: "Main contact" tag; ⋯ Make main contact / Remove as main contact (Owner, Admin; Staff rows incl. your own) | SpaceContacts, SpaceContactsJP, SpaceContactsDark, SpaceContactsJPDark | approved 2026-11-21 |
 | Client's help pill names the main contact (EmailConfirm unchanged otherwise) | ContactHelpPill | approved 2026-11-21 |
+
+## Desktop app (DES-03, M9)
+
+Approved 2026-11-22 (CEO). Boards on the canvas page **Desktop app**. Shell-neutral (Tauri or Electron). Reused unchanged: DesktopNotification, Offline/Reconnecting/BackOnline, SignIn, Window1024/Window800, device confirmation.
+
+| Screen / state | Artboard | Status |
+|---|---|---|
+| Rules: window, closing, links (no screen), badge, updates, device name, where Download shows | DesktopRules | approved 2026-11-22 |
+| Download for Mac / Windows: profile menu row (browser only); InviteLanding header + join done buttons back on, label per OS | DesktopDownload | approved 2026-11-22 |
+| App window + our own title bar (rail colour, ← →, search field (no shortcut hint); Mac lights inset, Windows controls drawn); empty before sign-in | DesktopWindow | approved 2026-11-22 |
+| Update ready: sidebar card → Restart; Mac app menu (Restart to Update / Check for Updates…) | DesktopUpdate | approved 2026-11-22 |
+| Dock badge, Windows taskbar overlay + tray menu (Open / Quit) | DesktopBadge | approved 2026-11-22 |
+| Can't reach Pasodrum work (window can't load the app) | DesktopOffline | approved 2026-11-22 |
