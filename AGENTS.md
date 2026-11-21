@@ -17,7 +17,7 @@ You start with **no memory of prior chats** — orient yourself like this:
 4. **To work a task:** move its file `todo/ → implementing/`, set `stage: implementing` + `owner`, do the work, then move to `ceo-review/` with the **Outcome** filled in. Full workflow in [tasks/README.md](tasks/README.md).
 5. **Record as you go:** new decisions/learnings → `docs/DECISIONS.md`; correct this file when a rule changes.
 
-Status (2026-11-21): M5 (client spaces, guests, outside mark, archive/remove, Another app, phone hand-off; invite service hardened per D-28 review) built, browser-tested locally and pushed. In ceo-review: M0–M5 tasks. Design: Batch F (M6 encryption) drawn, awaiting CEO approval. A design-discovery session explores new features on the canvas. Next: M6 after Batch F approval.
+Status (2026-11-21): M6 (encryption: device confirmation, recovery key + backup, encrypted DMs/private channels) and Translate (SIDE-01) are live. In ceo-review: M0–M6, SIDE-01. Design: Batch E2 (channel rename/archive) approved, next to build (E2-01). Batches G (M7) and H (M8–M9) not designed.
 
 ---
 

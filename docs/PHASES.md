@@ -14,14 +14,14 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 | M3 threads, Activity, drafts, DMs | done (ceo-review) | yes |
 | M4 channels, people, invites, settings | done (ceo-review) | yes — invite mail needs `RESEND_API_KEY` |
 | M5 client spaces + guests | done (ceo-review) | yes — production needs the `#workspace` alias (`pnpm dev:seed` against prod once) |
-| M6 encryption | **Batch F drawn, awaits CEO approval** | — |
+| M6 encryption | done (ceo-review) | yes — Element X encrypted DM check on a phone still open |
 | M7 tabs & cards | Batch G not designed | — |
 | M8 find & finish | Batch H not designed | — |
 | M9 desktop shell | Batch H (desktop bits) not designed | — |
 
 ## Waiting on the CEO
 
-1. **Approve Batch F** (M6 encryption) on the canvas.
+1. **Element X encrypted DM:** from a phone, DM a team account and check both sides read it.
 2. **Element X on a real phone:** open `https://mobile.element.io/element/?account_provider=pasodrum.work` once on iOS and Android and confirm the server is pre-filled.
 3. Review the `tasks/ceo-review/` pile (M0–M4) when convenient.
 
