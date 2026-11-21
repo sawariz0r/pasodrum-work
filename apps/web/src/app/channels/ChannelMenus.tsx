@@ -14,7 +14,7 @@ import s from './Channels.module.css';
 import { useChannels } from './ChannelsProvider';
 import { ChevronIcon, GearIcon, InfoIcon, PlusIcon, SpacesIcon, UserPlusIcon } from './icons';
 import { OutsideHeaderMark, useOutside } from './OutsideMark';
-import { addRoles, canBrowse, canCreateIn, canManage } from './roles';
+import { canAddPeople, canBrowse, canCreateIn, canManage } from './roles';
 import { findChannel, SpaceMark, useRole, useSpace } from './shared';
 
 export function browsePath(spaceId: string) {
@@ -29,8 +29,8 @@ function useAddTarget(space: Space, channelId?: string): string | undefined {
 }
 
 /**
- * The space name opens its menu (RulesM5): Browse, New channel, Add people (to the space), and for Owners/Admins New client space
- * (workspace) or Client space settings (client space). Clients only browse; guests get a plain heading.
+ * The space name opens its menu (RulesM5, D-36): Browse, New channel, Add people (to the space), and for Owners/Admins New client space
+ * and Workspace settings (workspace) or Client space settings (client space). Clients only browse; Externals get a plain heading.
  */
 export function WorkspaceMenu({ space, className }: { space: Space; className?: string }) {
   const { t } = useTranslation();
@@ -41,9 +41,10 @@ export function WorkspaceMenu({ space, className }: { space: Space; className?: 
   const manage = canManage(role);
   const browse = canBrowse(role);
   const create = open && canCreateIn(role);
-  const add = open && addRoles(space, role).length > 0 && (manage || space.kind === 'client');
+  const add = open && canAddPeople(space, role) && (manage || space.kind === 'client');
   const newSpace = manage && space.kind === 'workspace';
   const settings = manage && space.kind === 'client';
+  const workspaceSettings = manage && space.kind === 'workspace';
   if (!browse && !create && !add && !newSpace && !settings) return <h2 className={className}>{space.name}</h2>;
   return (
     <div className={s.spaceMenu}>
@@ -79,6 +80,11 @@ export function WorkspaceMenu({ space, className }: { space: Space; className?: 
         {newSpace && (
           <MenuItem icon={<SpacesIcon />} onSelect={() => channels.newClientSpace()}>
             {t('spaces.newClientSpace')}
+          </MenuItem>
+        )}
+        {workspaceSettings && (
+          <MenuItem icon={<GearIcon />} onSelect={() => channels.workspaceSettings()}>
+            {t('spaces.workspaceSettings')}
           </MenuItem>
         )}
         {settings && (
@@ -123,13 +129,17 @@ export function ChannelsPlusMenu({ space, className }: { space: Space; className
   );
 }
 
-/** "Add people" under the channel list, for anyone who may add people here. */
+/**
+ * "Add people" under the channel list, for anyone who may add people here (D-36): Owners/Admins get the typed dialog for the space,
+ * Staff add clients to a client space, or colleagues to the channel they're in.
+ */
 export function SidebarAddPeople({ space, channelId }: { space: Space; channelId?: string }) {
   const { t } = useTranslation();
   const channels = useChannels();
   const role = useRole(space.id);
-  const target = useAddTarget(space, channelId);
-  if (!target || !addRoles(space, role).length || space.archived) return null;
+  const channelTarget = useAddTarget(space, channelId);
+  const target = canManage(role) || space.kind === 'client' ? space.id : channelTarget;
+  if (!target || !canAddPeople(space, role) || space.archived) return null;
   return (
     <button type="button" className={s.addRow} onClick={() => channels.addPeople(target)}>
       <span className={s.addRowIcon}>
@@ -148,7 +158,7 @@ export function EmptyChannelAddPeople({ channelId }: { channelId: string }) {
   const archived = useWorkspace((x) => !!findChannel(x, channelId)?.archived);
   const space = useSpace(spaceId);
   const role = useRole(spaceId);
-  if (!addRoles(space, role).length || space?.archived || archived) return null;
+  if (!canAddPeople(space, role) || space?.archived || archived) return null;
   return (
     <Button className={s.emptyAdd} icon={<UserPlusIcon size={16} strokeWidth={2} />} onClick={() => channels.addPeople(channelId)}>
       {t('common.addPeople')}
@@ -164,7 +174,7 @@ export function ChannelHeaderBar({ channel }: { channel: Channel }) {
   const space = useWorkspace((x) => x.spaces.find((sp) => sp.id === channel.spaceId));
   const role = useRole(channel.spaceId);
   const faces = useMemo(() => store.members(channel.id).slice(0, 3), [store, channel.id, channel.memberCount]); // eslint-disable-line react-hooks/exhaustive-deps
-  const mayAdd = addRoles(space, role).length > 0 && !space?.archived && !channel.archived;
+  const mayAdd = canAddPeople(space, role) && !space?.archived && !channel.archived;
   const outside = useOutside(channel.id);
   useEffect(() => rememberRecent(channel.id), [channel.id]);
   return (

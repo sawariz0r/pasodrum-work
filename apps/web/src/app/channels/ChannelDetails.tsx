@@ -14,7 +14,7 @@ import { BubbleIcon, MailIcon, SearchIcon } from '../shell/icons';
 import { firstName, useToast } from '../toast';
 import s from './Channels.module.css';
 import { AlertIcon, ArchiveIcon, CheckIcon, LeaveIcon, LinkIcon, PendingIcon, UnarchiveIcon, UserPlusIcon, XIcon } from './icons';
-import { addRoles, canManage, channelSlug } from './roles';
+import { canAddPeople, canManage, channelSlug } from './roles';
 import { channelLink, copyText, isInviteFor, useChannel, useCopy, useRole, useSpace } from './shared';
 
 export type DetailsTab = 'about' | 'members' | 'settings';
@@ -211,7 +211,7 @@ function Members({ channel, onAddPeople, onLeave }: { channel: Channel; onAddPeo
   const role = useRole(channel.spaceId);
   const space = useSpace(channel.spaceId);
   const manage = canManage(role);
-  const mayAdd = addRoles(space, role).length > 0;
+  const mayAdd = canAddPeople(space, role);
   const showExternal = useShowExternal();
   const [members, setMembers] = useState<Member[]>([]);
   const [pending, setPending] = useState<PendingInvite[]>([]);
@@ -242,13 +242,15 @@ function Members({ channel, onAddPeople, onLeave }: { channel: Channel; onAddPeo
   }, [store, channel.id, mayAdd, tick]);
 
   const q = query.trim().toLowerCase();
-  const order = { owner: 0, admin: 1, member: 2, client: 3, guest: 4 } as const;
+  const order = { owner: 0, admin: 1, staff: 2, client: 3, external: 4 } as const;
+  // D-36: a client sees Externals as part of the team, untagged (PeopleClientSeesTeam).
+  const seen = (r: Member['role']): Member['role'] => (role === 'client' && r === 'external' ? 'staff' : r);
   // Someone added by email shows as a pending member; the invite (if the service answers) adds their link.
   const waiting = members.filter((m) => m.pending);
   const rows: Row[] = [
     ...members
       .filter((m) => !m.pending)
-      .sort((a, b) => order[a.role] - order[b.role])
+      .sort((a, b) => order[seen(a.role)] - order[seen(b.role)])
       .map((member) => ({ kind: 'member' as const, member })),
     ...waiting.map((m) => {
       const invite = pending.find((p) => isInviteFor(p, m));
@@ -274,7 +276,7 @@ function Members({ channel, onAddPeople, onLeave }: { channel: Channel; onAddPeo
     onLeave();
     navigate(dmPath(id));
   };
-  const tagOf = (r: Member['role']) => (r === 'member' ? null : r);
+  const tagOf = (r: Member['role']) => (seen(r) === 'staff' ? null : seen(r));
 
   return (
     <div className={s.membersPanel}>
@@ -350,7 +352,7 @@ function Members({ channel, onAddPeople, onLeave }: { channel: Channel; onAddPeo
                 </button>
                 {me && <span className={s.you}>{t('channels.you')}</span>}
               </span>
-              {tag && <span className={[s.tag, (tag === 'guest' || tag === 'client') && s.tagGuest].filter(Boolean).join(' ')}>{t(`channels.tags.${tag}`)}</span>}
+              {tag && <span className={[s.tag, (tag === 'external' || tag === 'client') && s.tagGuest].filter(Boolean).join(' ')}>{t(`channels.tags.${tag}`)}</span>}
               <span className={s.moreCell}>
                 {manage && !me && theirs !== 'owner' && (
                   <RowMenu label={t('channels.more', { name: person.name })}>

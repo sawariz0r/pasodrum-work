@@ -3,7 +3,7 @@ import { renderInvite, type Locale } from './email.ts';
 import { isCode, localpartFor, localpartOf, newCode, newPassword, normalizeEmail } from './ids.ts';
 import type { SendMail } from './mail.ts';
 import { MatrixError, type Matrix } from './matrix.ts';
-import { ADMIN_LEVEL, ROLES, TTL_MS, canInvite, canManage, isGenuine, rateLimiter, spaceInfo, stateOf, teamOf, type Role, type SpaceInfo } from './rules.ts';
+import { ADMIN_LEVEL, TTL_MS, canInvite, canManage, isGenuine, normalizeRole, rateLimiter, spaceInfo, stateOf, teamOf, type SpaceInfo } from './rules.ts';
 import { seal, unseal } from './secret.ts';
 import type { Invite, Store } from './store.ts';
 import { parseRequest, translate as callTranslate, type TranslateConfig } from './translate.ts';
@@ -84,6 +84,37 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
     return isGenuine(spaceId, space, workspaceId, state && spaceInfo(state));
   }
 
+  /**
+   * D-36: an External's invite is filed under the workspace and its `channelIds` may name workspace channels, client
+   * spaces and their channels. Each must be one the caller is in, and a child of the workspace, a genuine client space,
+   * or a child of one.
+   */
+  async function mayGrant(token: string, userId: string, roomIds: string[], workspaceId: string, workspace: SpaceInfo) {
+    const infos = new Map<string, SpaceInfo | null>();
+    const info = async (id: string) => {
+      if (!infos.has(id)) infos.set(id, await mx.roomState(token, id).then((s) => s && spaceInfo(s)));
+      return infos.get(id)!;
+    };
+    const clientSpace = async (id: string) => {
+      const s = await info(id);
+      return !!s && s.kind === 'client' && isGenuine(id, s, workspaceId, workspace);
+    };
+    for (const id of roomIds) {
+      const room = await info(id);
+      if (!room?.joined.has(userId)) return false;
+      if (workspace.children.has(id) || (await clientSpace(id))) continue;
+      let inClientSpace = false;
+      for (const p of room.parents) {
+        if ((await info(p))?.children.has(id) && (await clientSpace(p))) {
+          inClientSpace = true;
+          break;
+        }
+      }
+      if (!inClientSpace) return false;
+    }
+    return true;
+  }
+
   function invite(code: string): Invite {
     const i = isCode(code) ? store.get(code) : undefined;
     if (!i) throw fail(404, 'not-found');
@@ -93,9 +124,10 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
   async function create(req: IncomingMessage, body: Record<string, unknown>) {
     const c = await caller(req);
     limit(`create:${c.userId}`, 60, HOUR);
-    const { role, spaceId, channelIds = [], locale = 'en', name } = body;
+    const { spaceId, channelIds = [], locale = 'en', name } = body;
+    const role = normalizeRole(body.role);
     if (
-      !ROLES.includes(role as Role) ||
+      !role ||
       typeof spaceId !== 'string' || !spaceId.startsWith('!') ||
       !Array.isArray(channelIds) || channelIds.length > 100 || !channelIds.every((id) => typeof id === 'string' && id.startsWith('!')) ||
       (locale !== 'en' && locale !== 'ja') ||
@@ -106,7 +138,9 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
 
     const state = await mx.roomState(c.token, spaceId);
     const space = state && spaceInfo(state);
-    if (!space || !canInvite(role as Role, space, c.userId) || !(await genuine(c.token, spaceId, space))) throw fail(403, 'not-allowed');
+    if (!space || !canInvite(role, space, c.userId) || !(await genuine(c.token, spaceId, space))) throw fail(403, 'not-allowed');
+    // genuine() above: an External's space is the workspace.
+    if (role === 'external' && !(await mayGrant(c.token, c.userId, channelIds as string[], spaceId, space))) throw fail(403, 'not-allowed');
 
     const localpart = localpartFor(email, cfg.serverName);
     const userId = `@${localpart}:${cfg.serverName}`;
@@ -149,7 +183,7 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
       code: newCode(),
       email,
       name: displayName,
-      role: role as Role,
+      role,
       userId,
       spaceId,
       spaceName: space.name,
@@ -203,9 +237,16 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
       const temp = unseal(key, i.secret);
       const token = await mx.login(localpart, temp);
       await mx.setDisplayName(token, i.userId, name);
-      // A guest joins channels only and can't read the space itself, so the app takes its name from here.
-      await mx.mergeAccountData(token, i.userId, 'work.pasodrum.spaces', { [i.spaceId]: { name: i.spaceName, kind: i.spaceKind } })
+      // An External never joins the workspace, so the app takes its name from here.
+      await mx.updateAccountData(token, i.userId, 'work.pasodrum.spaces', (prev) => ({ ...prev, [i.spaceId]: { name: i.spaceName, kind: i.spaceKind } }))
         .catch((e: unknown) => console.error(`spaces account data failed: ${(e as Error).message}`));
+      // `work.pasodrum.invited` = { rooms: string[] }: the only rooms a fresh account auto-accepts (D-36), since anyone who
+      // knows its ID could invite it before it was claimed. Externals never join the workspace, so it isn't listed.
+      const invited = i.role === 'external' ? i.rooms.filter((r) => r !== i.spaceId) : i.rooms;
+      await mx.updateAccountData(token, i.userId, 'work.pasodrum.invited', (prev) => {
+        const had = Array.isArray(prev.rooms) ? prev.rooms.filter((r): r is string => typeof r === 'string') : [];
+        return { ...prev, rooms: [...new Set([...had, ...invited])] };
+      }).catch((e: unknown) => console.error(`invited account data failed: ${(e as Error).message}`));
       await mx.changePassword(token, localpart, temp, password);
       await mx.logout(token);
       store.claim(code, i.userId, now());
@@ -252,6 +293,17 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
     const space = state && spaceInfo(state);
     if (!space || !space.joined.has(c.userId) || space.powerOf(c.userId) < ADMIN_LEVEL) throw fail(403, 'not-allowed');
     return new Reply(200, { revoked: store.revokeForUser(userId, spaceId, now()) });
+  }
+
+  // D-36 remove a person: their open codes in every space stop working. Owners and Admins of the workspace only.
+  async function revokeAll(req: IncomingMessage, userId: string | null) {
+    const c = await caller(req);
+    if (!userId?.startsWith('@')) throw fail(400, 'bad-request');
+    const workspaceId = await mx.resolveAlias(c.token, cfg.workspaceAlias);
+    const state = workspaceId && (await mx.roomState(c.token, workspaceId));
+    const workspace = state && spaceInfo(state);
+    if (!workspace || !workspace.joined.has(c.userId) || workspace.powerOf(c.userId) < ADMIN_LEVEL) throw fail(403, 'not-allowed');
+    return new Reply(200, { revoked: store.revokeAllForUser(userId, now()) });
   }
 
   async function list(req: IncomingMessage, roomId: string | null) {
@@ -326,6 +378,7 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
       if (m === 'GET' && is('list')) return list(req, url.searchParams.get('roomId'));
       if (m === 'DELETE' && is('revoke-person')) return revokePerson(req, url.searchParams.get('spaceId'), url.searchParams.get('userId'));
     } else if (!action) {
+      if (code === 'person' && m === 'DELETE' && is('revoke-all')) return revokeAll(req, url.searchParams.get('userId'));
       if (m === 'GET' && is('preview')) {
         limit(`preview:${ip}`, 60, MINUTE);
         return preview(code);

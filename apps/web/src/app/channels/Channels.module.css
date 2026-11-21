@@ -1157,10 +1157,6 @@ button.personButton:hover {
 }
 
 /* Add people */
-.addBody {
-  padding: 18px 24px 0;
-}
-
 .tokens {
   display: flex;
   flex-wrap: wrap;
@@ -1356,12 +1352,221 @@ button.personButton:hover {
   font-weight: 700;
 }
 
-.roles {
-  padding: 12px 0 20px;
+/* Add people by type (D-36 PeopleAdd* boards) */
+.apBody {
+  padding: 0;
 }
 
-.noRoles {
-  height: 16px;
+.apTypes {
+  padding: 16px 24px 0;
+}
+
+.apField {
+  padding: 14px 24px 0;
+}
+
+.apFieldTop {
+  padding: 18px 24px 0;
+}
+
+.apFieldChannel {
+  padding: 18px 24px 18px;
+}
+
+.apSection {
+  padding: 20px 24px 0;
+}
+
+.apSectionLast {
+  padding: 20px 24px 22px;
+}
+
+.apSectionChannels {
+  padding: 18px 24px 22px;
+}
+
+.apEnd {
+  height: 22px;
+}
+
+.apLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.apChips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.apChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 12px 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    border-color var(--dur-1) var(--ease-out);
+}
+
+.apChip:hover {
+  border-color: var(--subtle);
+}
+
+.apChip[aria-pressed='true'] {
+  border: 1.5px solid var(--accent);
+  background: var(--accentsoft);
+}
+
+.apChipCheck {
+  display: flex;
+  color: var(--accent);
+}
+
+.apDot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.apTile {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--tile-bg);
+  color: #ffffff;
+  font-family: var(--font-title);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.apNewRole {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 12px;
+  border: 1.5px dashed var(--line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--dur-1) var(--ease-out);
+}
+
+.apNewRole:hover,
+.apAddChannel:hover,
+.apPick:hover {
+  background: var(--hover);
+}
+
+.apChannel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 4px 0 9px;
+  border-radius: 8px;
+  background: var(--well);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.apChannelIcon {
+  display: flex;
+  color: var(--muted);
+}
+
+.apAddChannel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1.5px dashed var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.apMenu {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.apPick {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  min-width: 240px;
+  height: 40px;
+  padding: 0 10px 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.apPick > svg {
+  color: var(--muted);
+}
+
+.apPickName {
+  flex: 1;
+  text-align: left;
+}
+
+.apPending {
+  margin: 0;
+  padding: 10px 24px 14px;
+  list-style: none;
+}
+
+.apPendingTop {
+  margin: 0;
+  padding: 6px 24px 18px;
+  list-style: none;
+}
+
+.apPendingFace {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
 }
 
 @keyframes fade {
@@ -1410,6 +1615,16 @@ button.personButton:hover {
   color: var(--accent);
   font-size: 12px;
   font-weight: 700;
+}
+
+.roleTagExternal {
+  background: #fcebc0;
+  color: #7a5300;
+}
+
+:global([data-theme='dark']) .roleTagExternal {
+  background: var(--warnbg);
+  color: var(--warnink);
 }
 
 .roleButton {
@@ -2431,4 +2646,82 @@ button.personButton:hover {
 
 .browseNameArchived:hover {
   text-decoration: underline;
+}
+
+/* Client space settings → People: the invite field (D-36 PeopleSpaceInvite) */
+.spInvite {
+  padding: 6px 10px 4px;
+}
+
+.spInviteRow {
+  display: flex;
+  gap: 8px;
+}
+
+.spInviteField {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  min-width: 0;
+  height: 42px;
+  padding: 0 6px 0 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 11px;
+  background: var(--bg);
+  color: var(--subtle);
+  cursor: text;
+  transition:
+    border-color var(--dur-1) var(--ease-out),
+    box-shadow var(--dur-1) var(--ease-out);
+}
+
+.spInviteField:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accentsoft);
+}
+
+.spInviteField > svg {
+  flex-shrink: 0;
+}
+
+.spInviteField:has([aria-invalid='true']) {
+  border-color: var(--danger);
+}
+
+.spInviteInput {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14.5px;
+  outline: none;
+}
+
+.spInviteInput:focus,
+.spInviteInput:focus-visible {
+  outline: none;
+}
+
+.spInviteInput::placeholder {
+  color: var(--subtle);
+}
+
+.spInviteAdd {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 11px;
+}
+
+.spInviteError {
+  margin-left: 2px;
+}
+
+.spInviteFound {
+  padding: 6px 2px 0;
 }

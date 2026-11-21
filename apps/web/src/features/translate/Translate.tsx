@@ -20,7 +20,7 @@ export function LanguagesIcon({ size = 16, className }: { size?: number; classNa
 }
 
 const textKinds = new Set(['text', 'emote', 'notice']);
-const team = (role: string | undefined) => role === 'owner' || role === 'admin' || role === 'member';
+const team = (role: string | undefined) => role === 'owner' || role === 'admin' || role === 'staff';
 
 /**
  * Team only, and never where clients or guests are: only channels of the workspace I'm on the team of (an unjoined

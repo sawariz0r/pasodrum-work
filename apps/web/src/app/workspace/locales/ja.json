@@ -1,0 +1,56 @@
+{
+  "workspaceSettings": {
+    "title": "ワークスペースの設定",
+    "tabs": {
+      "people": "メンバー",
+      "access": "アクセス"
+    },
+    "search": "検索",
+    "filters": {
+      "label": "表示",
+      "all": "すべて",
+      "staff": "スタッフ",
+      "external": "外部"
+    },
+    "you": "あなた",
+    "tags": {
+      "owner": "オーナー",
+      "admin": "管理者",
+      "external": "外部",
+      "pending": "参加待ち"
+    },
+    "roles": "ロール",
+    "removeFrom": "{{workspace}} から外す",
+    "removeTitle": "{{name}} を {{workspace}} から外しますか？",
+    "removeButton": "外す",
+    "loses": "外れる場所",
+    "newRole": "新しいロール",
+    "roleList": "ロール",
+    "name": "名前",
+    "colour": "色",
+    "channels": "チャンネル",
+    "clientSpaces": "クライアントスペース",
+    "earlier": "過去のメッセージも見えます",
+    "people": "メンバー",
+    "add": "追加",
+    "deleteRole": "ロールを削除",
+    "notApplied": "未適用",
+    "apply": "適用",
+    "removePerson": "{{name}} を外す",
+    "swatches": {
+      "teal": "ティール",
+      "amber": "アンバー",
+      "blue": "ブルー",
+      "purple": "パープル",
+      "pink": "ピンク",
+      "slate": "スレート"
+    },
+    "failed": {
+      "save": "{{name}} を保存できませんでした。もう一度お試しください。",
+      "delete": "{{name}} を削除できませんでした。もう一度お試しください。",
+      "people": "{{names}} のアクセスを更新できませんでした。もう一度お試しください。",
+      "access": "{{name}} さんのアクセスを変更できませんでした",
+      "remove": "{{name}} さんをすべての場所から外せませんでした。もう一度お試しください。"
+    }
+  }
+}

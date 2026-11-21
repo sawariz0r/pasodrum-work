@@ -74,7 +74,8 @@ export async function claimInvite(code: string, name: string, password: string):
 export interface NewInvite {
   email: string;
   name?: string;
-  role: 'member' | 'guest' | 'client';
+  /** D-36. staff/external: `spaceId` = the workspace (Owner/Admin); external: `channelIds` = every room granted. client: the client space (its team). */
+  role: 'staff' | 'external' | 'client';
   spaceId: string;
   channelIds: string[];
   locale: 'en' | 'ja';
@@ -82,20 +83,23 @@ export interface NewInvite {
 
 export const createInvite = (token: string, invite: NewInvite) => call<{ code: string; userId: string; link: string }>('POST', '', { token, body: invite });
 
-export async function listInvites(token: string, roomId: string): Promise<PendingInvite[]> {
+/** Pending codes that include this room; `userId` is the account each claims. */
+export async function listInvites(token: string, roomId: string): Promise<(PendingInvite & { userId?: string })[]> {
   const raw = await call<unknown>('GET', `?roomId=${encodeURIComponent(roomId)}`, { token });
   return (Array.isArray(raw) ? (raw as Record<string, unknown>[]) : [])
     .filter((i) => typeof i.code === 'string' && typeof i.email === 'string')
     .map((i) => {
       const name = str(i.name);
       const link = str(i.link);
+      const userId = str(i.userId);
       return {
         code: i.code as string,
         email: i.email as string,
         ...(name ? { name } : {}),
-        role: i.role === 'member' || i.role === 'client' ? i.role : 'guest',
+        role: i.role === 'member' || i.role === 'staff' ? 'staff' : i.role === 'client' ? 'client' : 'external',
         createdTs: typeof i.createdTs === 'number' ? i.createdTs : 0,
         ...(link ? { link } : {}),
+        ...(userId ? { userId } : {}),
       };
     });
 }
@@ -105,3 +109,5 @@ export const revokeInvite = (token: string, code: string) => call<unknown>('DELE
 /** Remove from space: every open code for this person in this space stops working. */
 export const revokeInvitesFor = (token: string, spaceId: string, userId: string) =>
   call<unknown>('DELETE', `?spaceId=${encodeURIComponent(spaceId)}&userId=${encodeURIComponent(userId)}`, { token }).then(() => undefined);
+/** D-36 remove an External: every open code for this person, in any space, stops working (Owners/Admins of the workspace). */
+export const revokeAllFor = (token: string, userId: string) => call<unknown>('DELETE', `/person?userId=${encodeURIComponent(userId)}`, { token }).then(() => undefined);

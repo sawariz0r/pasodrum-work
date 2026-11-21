@@ -39,7 +39,7 @@ const childrenOf = async (token: string, spaceId: string) => {
 const spaceNamed = (s: WorkspaceSnapshot, name: string) => s.spaces.find((x) => x.name === name);
 const mayInvite = async () => {
   if (!inviteServiceUp) return false;
-  const probe = await createInvite(ingrid.session.accessToken, { email: 'not an email', role: 'guest', spaceId: pasodrum, channelIds: [], locale: 'en' }).catch((e: Error) => e.message);
+  const probe = await createInvite(ingrid.session.accessToken, { email: 'not an email', role: 'external', spaceId: pasodrum, channelIds: [], locale: 'en' }).catch((e: Error) => e.message);
   return probe !== 'rate-limited';
 };
 
@@ -129,7 +129,7 @@ describe('client spaces', () => {
     }
 
     await until(jonas.store, (s) => s.channels[spaceId]?.length === 2 && s);
-    expect(jonas.store.getSnapshot().myRoles[spaceId]).toBe('member');
+    expect(jonas.store.getSnapshot().myRoles[spaceId]).toBe('staff');
     expect(spaceNamed(jonas.store.getSnapshot(), name)?.colour).toBe('#7A3E9D');
 
     if (clientEmail) {
@@ -176,7 +176,7 @@ describe('client spaces', () => {
     const members = await ingrid.store.spaceMembers(spaceId);
     expect(members.map((m) => [m.person.id, m.role, !!m.pending])).toEqual([
       [INGRID, 'admin', false],
-      [JONAS, 'member', false],
+      [JONAS, 'staff', false],
       ...(clientId ? [[clientId, 'client', true]] : []),
     ]);
   });

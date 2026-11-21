@@ -1,6 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 import type { Locale } from './email.ts';
-import type { Person, Role, SpaceKind } from './rules.ts';
+import { normalizeRole, type Person, type Role, type SpaceKind } from './rules.ts';
 
 export type Invite = {
   code: string;
@@ -52,7 +52,8 @@ export function openStore(path: string) {
   db.exec(SCHEMA);
   const toInvite = (r: unknown): Invite => {
     const row = r as Record<string, unknown>;
-    return { ...row, team: JSON.parse(String(row.team)), rooms: JSON.parse(String(row.rooms)) } as Invite;
+    // Rows from before D-36 say member/guest; they're read as staff/external, never rewritten.
+    return { ...row, role: normalizeRole(row.role) ?? row.role, team: JSON.parse(String(row.team)), rooms: JSON.parse(String(row.rooms)) } as Invite;
   };
   const q = {
     insert: db.prepare(`INSERT INTO invites VALUES ($code, $email, $name, $role, $userId, $spaceId, $spaceName, $spaceKind,
@@ -69,6 +70,7 @@ export function openStore(path: string) {
     claim: db.prepare('UPDATE invites SET claimedTs = ?, secret = NULL WHERE code = ? AND claimedTs IS NULL'),
     revoke: db.prepare('UPDATE invites SET revokedTs = ? WHERE code = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
     revokeForUser: db.prepare('UPDATE invites SET revokedTs = ? WHERE userId = ? AND spaceId = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
+    revokeAllForUser: db.prepare('UPDATE invites SET revokedTs = ? WHERE userId = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
   };
   return {
     insert(i: Invite) {
@@ -103,6 +105,10 @@ export function openStore(path: string) {
     /** Every open code for this person in this space; returns how many. */
     revokeForUser(userId: string, spaceId: string, ts: number): number {
       return Number(q.revokeForUser.run(ts, userId, spaceId).changes);
+    },
+    /** Every open code for this person, in every space; returns how many. */
+    revokeAllForUser(userId: string, ts: number): number {
+      return Number(q.revokeAllForUser.run(ts, userId).changes);
     },
     close: () => db.close(),
   };

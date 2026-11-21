@@ -78,7 +78,7 @@ describe('new client space', () => {
   });
 
   it('is only offered to Owners and Admins', () => {
-    renderApp('/w/!pasodrum/c/!design', { roles: { '!pasodrum': 'member', '!nordlys': 'member' } });
+    renderApp('/w/!pasodrum/c/!design', { roles: { '!pasodrum': 'staff', '!nordlys': 'staff' } });
     expect(screen.queryByRole('button', { name: 'New client space' })).toBeNull();
   });
 });
@@ -102,7 +102,7 @@ describe('client space settings', () => {
   it('removes a person from the space after asking once, showing the channels they leave', async () => {
     renderApp('/w/!nordlys/c/!project-updates');
     await flush();
-    expect(within(header()).getByRole('button', { name: 'Includes people outside Pasodrum: Henrik Dahl' })).toBeTruthy();
+    expect(within(header()).getByRole('button', { name: 'Includes people outside Pasodrum: Henrik Dahl, Ola Fjell' })).toBeTruthy();
     openMenu(screen.getByRole('button', { name: 'Nordlys' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Client space settings' }));
     fireEvent.click(within(dialog()).getByRole('tab', { name: /People/ }));
@@ -116,7 +116,7 @@ describe('client space settings', () => {
     fireEvent.click(within(ask).getByRole('button', { name: 'Remove' }));
     await flush();
     expect(within(dialog()).queryByText('Henrik Dahl')).toBeNull();
-    expect(within(header()).queryByRole('button', { name: /outside Pasodrum/, hidden: true })).toBeNull();
+    expect(within(header()).getByRole('button', { name: 'Includes people outside Pasodrum: Ola Fjell', hidden: true })).toBeTruthy();
   });
 
   it('archives the space: the composer becomes one quiet bar with Unarchive', async () => {
@@ -138,10 +138,10 @@ describe('client space settings', () => {
 });
 
 describe('outside mark', () => {
-  it('marks a workspace channel with a guest in the sidebar, header and beside Send; the header opens Members', async () => {
+  it('marks a workspace channel with an External in the sidebar, header and beside Send; the header opens Members', async () => {
     renderApp('/w/!pasodrum/c/!design');
     await flush();
-    const label = 'Includes people outside Pasodrum: Ola Fjell';
+    const label = 'Includes people outside Pasodrum: Lea Aune, Ola Fjell';
     const row = screen.getByRole('link', { name: /^design/ });
     expect(within(row).getByRole('img', { name: label })).toBeTruthy();
     expect(screen.getAllByRole('button', { name: label })).toHaveLength(2);

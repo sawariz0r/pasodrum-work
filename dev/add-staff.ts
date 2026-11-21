@@ -1,13 +1,13 @@
-// Adds a team account to the workspace (no email needed): pnpm add:staff <username> "<Display name>" [admin|member]
+// Adds a team account to the workspace (no email needed): pnpm add:staff <username> "<Display name>" [admin|staff]
 // Production: set -a; . dev/.env.production; set +a; pnpm add:staff shiori "Shiori" admin
 // The password is asked for and never echoed.
 import { readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { SEED_FILE, SERVER, enc, envToken, login, mx, ok, userId } from './lib.ts';
 
-const [localpart, name, role = 'member'] = process.argv.slice(2);
-if (!localpart || !name || !['admin', 'member'].includes(role)) {
-  console.error('Usage: pnpm add:staff <username> "<Display name>" [admin|member]');
+const [localpart, name, role = 'staff'] = process.argv.slice(2);
+if (!localpart || !name || !['admin', 'staff'].includes(role)) {
+  console.error('Usage: pnpm add:staff <username> "<Display name>" [admin|staff]');
   process.exit(1);
 }
 
@@ -60,21 +60,23 @@ const seeded = JSON.parse(readFileSync(SEED_FILE, 'utf8')) as { rooms: { workspa
 const workspace = seeded.rooms.workspace;
 const owner = await login('sofia');
 
+// D-36: Staff 10, Admin 50, in the workspace and each of its channels.
+const level = role === 'admin' ? 50 : 10;
 const setLevel = async (roomId: string) => {
   const pl = await ok(owner, 'GET', `/_matrix/client/v3/rooms/${enc(roomId)}/state/m.room.power_levels/`);
-  await ok(owner, 'PUT', `/_matrix/client/v3/rooms/${enc(roomId)}/state/m.room.power_levels/`, { ...pl, users: { ...pl.users, [id]: 50 } });
+  await ok(owner, 'PUT', `/_matrix/client/v3/rooms/${enc(roomId)}/state/m.room.power_levels/`, { ...pl, users: { ...pl.users, [id]: level } });
 };
 
 await ok(owner, 'POST', `/_matrix/client/v3/rooms/${enc(workspace)}/invite`, { user_id: id });
 await ok(me, 'POST', `/_matrix/client/v3/join/${enc(workspace)}`, {});
-if (role === 'admin') await setLevel(workspace);
+await setLevel(workspace);
 
 // Join every channel of the workspace that's open to its members (restricted to the space).
 const hierarchy = await ok(me, 'GET', `/_matrix/client/v1/rooms/${enc(workspace)}/hierarchy?max_depth=1`);
 for (const room of hierarchy.rooms as { room_id: string; join_rule?: string; name?: string }[]) {
   if (room.room_id === workspace || room.join_rule !== 'restricted') continue;
   await ok(me, 'POST', `/_matrix/client/v3/join/${enc(room.room_id)}`, {});
-  if (role === 'admin') await setLevel(room.room_id).catch(() => console.warn(`  couldn't set Admin in #${room.name}`));
+  await setLevel(room.room_id).catch(() => console.warn(`  couldn't set ${role === 'admin' ? 'Admin' : 'Staff'} in #${room.name}`));
   console.log(`  joined #${room.name}`);
 }
-console.log(`${name} (@${localpart}:${SERVER}) is in the workspace as ${role === 'admin' ? 'Admin' : 'Member'}. Sign in with "${localpart}".`);
+console.log(`${name} (@${localpart}:${SERVER}) is in the workspace as ${role === 'admin' ? 'Admin' : 'Staff'}. Sign in with "${localpart}".`);

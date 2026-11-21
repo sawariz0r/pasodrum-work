@@ -13,7 +13,10 @@ export interface Person {
   id: string;
   name: string;
   avatarUrl?: string;
-  /** M3. Not a member of the company workspace (client or guest): amber corner badge. */
+  /**
+   * M3/D-36. Show the outside mark. Team viewers (Owner/Admin/Staff, and Externals): clients and Externals are outside.
+   * Client viewers: only clients are (Externals are part of the team to them; level ≥ 1 where we meet = team).
+   */
   external?: boolean;
 }
 
@@ -37,7 +40,7 @@ export interface Channel {
   unread: number;
   mentions: number;
   memberCount: number;
-  /** M5. Clients and guests who are members (joined or pending). Only filled for team people (Owner/Admin/Member); always absent for clients and guests. */
+  /** M5/D-36. Clients and Externals who are members (joined or pending). Only filled for Owner/Admin/Staff; always absent for clients and Externals. */
   outside?: Person[];
   /** SIDE-01. Team only: the member list hasn't loaded yet, so `outside` may still be missing people. */
   outsidePending?: boolean;
@@ -139,15 +142,67 @@ export interface Dm {
   canPin?: boolean;
 }
 
-/** M4. Owner/Admin come from power levels in the workspace (D-06); the rest from membership. */
-export type Role = 'owner' | 'admin' | 'member' | 'client' | 'guest';
+/**
+ * M4/D-36. Owner 100, Admin 50, Staff 10 (joined to the workspace), External 1 (not in the workspace, level 1 where they
+ * are), Client 0 (joined to one client space). Owner/Admin come from workspace power levels; the rest from membership/levels.
+ */
+export type Role = 'owner' | 'admin' | 'staff' | 'external' | 'client';
 
 export interface Member {
   person: Person;
   role: Role;
   /** Added but hasn't joined yet (invited by email or not yet signed in). */
   pending?: boolean;
+  /** D-36. Pending rows added by email: the address (shown instead of a name). */
+  email?: string;
+  /** D-36. Externals only, and only for team viewers: their access role ids. */
+  roles?: string[];
 }
+
+/** D-36. A named set of workspace channels and whole client spaces, given to Externals (work.pasodrum.access_role). */
+export interface AccessRole {
+  id: string;
+  name: string;
+  /** One of the client-space tile colours (hex). */
+  colour: string;
+  /** Workspace channel ids. */
+  channels: string[];
+  /** Client space ids (all or nothing). */
+  spaces: string[];
+}
+
+/** D-36. What an External should reach (work.pasodrum.external), and whether their real rooms match. */
+export interface ExternalAccess {
+  person: Person;
+  email?: string;
+  pending?: boolean;
+  /** Access role ids. */
+  roles: string[];
+  /** One-off workspace channel ids (added straight to a channel). */
+  channels: string[];
+  /** Their joined/invited rooms differ from roles ∪ one-offs (either direction), or a level isn't 1: show "Not applied" + Apply. */
+  notApplied?: boolean;
+  /** Rooms that differ but I can't fix (I'm not in them, or lack the level): left out of Apply. */
+  stuck?: string[];
+  /** Where they are now (for the remove dialog): workspace channel ids and client space ids, joined or invited. */
+  rooms: { channels: string[]; spaces: string[] };
+}
+
+/** D-36. Result of making membership follow access. Empty `failed` = applied. */
+export interface AccessChange {
+  failed: { userId: string; roomId: string }[];
+}
+
+/** D-36. addPeople by type. Staff/External target the workspace; Client a client space; 'channel' a channel. */
+export type AddPeopleRequest =
+  /** Owner/Admin. Joined to the workspace at Staff 10, and put on these client spaces (team, level 10). */
+  | { type: 'staff'; userIds: string[]; emails: string[]; spaces: string[] }
+  /** Owner/Admin. Gets these access roles and one-off channels; membership follows. */
+  | { type: 'external'; userIds: string[]; emails: string[]; roles: string[]; channels: string[] }
+  /** Team of that client space (Owner/Admin/Staff on it). */
+  | { type: 'client'; userIds: string[]; emails: string[] }
+  /** Any team member: colleagues and existing Externals by id. Emails (new Externals, one-off for this channel) need Owner/Admin, else `not-allowed`. */
+  | { type: 'channel'; userIds: string[]; emails: string[] };
 
 export interface JoinableChannel {
   id: string;
@@ -165,7 +220,7 @@ export interface PendingInvite {
   code: string;
   email: string;
   name?: string;
-  role: 'member' | 'guest' | 'client';
+  role: 'staff' | 'external' | 'client';
   createdTs: number;
   /** Their single-use join link ("Copy join link"), only for people allowed to add people here. */
   link?: string;
@@ -363,6 +418,10 @@ export interface WorkspaceSnapshot {
   myRoles: Record<string, Role>;
   /** M6. */
   security: Security;
+  /** D-36. Access roles by name; empty unless I'm joined to the workspace (Staff read them, Owners/Admins edit). */
+  accessRoles: AccessRole[];
+  /** D-36. External records by user id (roles + one-off channels); empty unless I'm joined to the workspace. */
+  externals: Record<string, { roles: string[]; channels: string[] }>;
 }
 
 export interface WorkspaceStore {
@@ -412,12 +471,13 @@ export interface WorkspaceStore {
   leaveChannel(channelId: string): Promise<void>;
   setTopic(channelId: string, topic: string): Promise<void>;
   channelMembers(channelId: string): Promise<Member[]>;
-  /** D-25: Owners make/remove Owners; Owners and Admins change Member↔Admin. */
-  setRole(spaceId: string, userId: string, role: 'owner' | 'admin' | 'member'): Promise<void>;
+  /** D-25: Owners make/remove Owners; Owners and Admins change Staff↔Admin. */
+  setRole(spaceId: string, userId: string, role: 'owner' | 'admin' | 'staff'): Promise<void>;
   removeFromChannel(channelId: string, userId: string): Promise<void>;
   /** Existing people get a normal invite (auto-accepted by our app); new emails go through the invite service (D-07, D-26). */
   /** `targetId` is a channel, or a space: then they're added to the space and its home channel (workspace: #general, else the first public channel; client space: its first channel). */
-  addPeople(targetId: string, req: { userIds: string[]; emails: string[]; role: 'member' | 'guest' | 'client' }): Promise<AddPeopleResult>;
+  /** D-36: `req.type` decides the rules (see AddPeopleRequest). */
+  addPeople(targetId: string, req: AddPeopleRequest): Promise<AddPeopleResult>;
   pendingInvites(channelId: string): Promise<PendingInvite[]>;
   resendInvite(code: string): Promise<void>;
   revokeInvite(code: string): Promise<void>;
@@ -500,6 +560,21 @@ export interface WorkspaceStore {
    * again yet (no device signed by their current identity), and nothing is posted. Safe to repeat.
    */
   shareHistory(dmId: string, userId: string): Promise<void>;
+  // D-36 people and access (Owners/Admins edit; membership follows in the editor's app, no background job)
+  /** Workspace settings → People: Staff, Admins, Owners and Externals (joined or pending), Externals with `roles`. Never clients. */
+  workspacePeople(): Promise<Member[]>;
+  /** Externals with their access, drift and current rooms; one person when `userId` is given. */
+  externalAccess(userId?: string): Promise<ExternalAccess[]>;
+  /** Create (no id) or update a role, then make every holder's membership follow. Resolves with its id and what failed. */
+  saveAccessRole(role: Omit<AccessRole, 'id'> & { id?: string }): Promise<AccessChange & { id: string }>;
+  /** Delete a role; holders lose what nothing else covers. */
+  deleteAccessRole(id: string): Promise<AccessChange>;
+  /** Replace an External's roles (one-offs kept), then make membership follow. */
+  setExternalRoles(userId: string, roles: string[]): Promise<AccessChange>;
+  /** "Apply": make this External's membership match their access again. */
+  applyAccess(userId: string): Promise<AccessChange>;
+  /** Out of every client space (space first, then its channels) and workspace channel I can reach, levels cleared, join codes revoked, record deleted. Rejects Error('partial') when some room couldn't be left. */
+  removeExternal(userId: string): Promise<void>;
 }
 
 export type SignInFailure = 'wrong-password' | 'unreachable' | 'rate-limited' | 'other';

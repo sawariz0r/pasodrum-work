@@ -2,13 +2,15 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import en from '../locales/en.json';
 import ja from '../locales/ja.json';
+import workspaceEn from './workspace/locales/en.json';
+import workspaceJa from './workspace/locales/ja.json';
 
 export const languages = ['en', 'ja'] as const;
 export type Language = (typeof languages)[number];
 
 export const resources = {
-  en: { translation: en },
-  ja: { translation: ja },
+  en: { translation: { ...en, ...workspaceEn } },
+  ja: { translation: { ...ja, ...workspaceJa } },
 } as const;
 
 declare module 'i18next' {

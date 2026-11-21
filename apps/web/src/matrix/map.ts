@@ -1,5 +1,5 @@
 import { escapeHtml, pillUser, urlsIn } from './html';
-import type { Channel, ConnectionState, LinkPreview, Media, Person, Reaction, Role, Space } from './types';
+import type { AccessRole, Channel, ConnectionState, LinkPreview, Media, Person, Reaction, Role, Space } from './types';
 
 export interface RoomFacts {
   id: string;
@@ -309,11 +309,30 @@ export function powerLevel(f: PowerFacts, userId: string): number {
 export function roleOf(level: number, home: 'workspace' | 'client' | 'none'): Role {
   if (level >= 100) return 'owner';
   if (level >= 50) return 'admin';
-  return home === 'workspace' ? 'member' : home === 'client' ? 'client' : 'guest';
+  return home === 'workspace' ? 'staff' : home === 'client' ? 'client' : 'external';
 }
 
-/** D-25: Owners make or remove Owners; Owners and Admins move people between Member and Admin. Matrix adds: nobody changes someone at or above their own level, except themselves. */
-export function mayChangeRole(mine: number, theirs: number, role: 'owner' | 'admin' | 'member', self: boolean): boolean {
+/** D-25: Owners make or remove Owners; Owners and Admins move people between Staff and Admin. Matrix adds: nobody changes someone at or above their own level, except themselves. */
+export function mayChangeRole(mine: number, theirs: number, role: 'owner' | 'admin' | 'staff', self: boolean): boolean {
   if (!self && theirs >= mine) return false;
   return role === 'owner' || theirs >= 100 ? mine >= 100 : mine >= 50;
+}
+
+const ids = (v: unknown) => (Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === 'string' && x.startsWith('!')))] : []);
+
+/** D-36. `work.pasodrum.access_role` content; empty content (a deleted role) or no name = absent. */
+export function accessRoleOf(id: string, content: unknown): AccessRole | null {
+  const c = (content && typeof content === 'object' ? content : {}) as Record<string, unknown>;
+  if (typeof c.name !== 'string' || !c.name.trim()) return null;
+  return { id, name: c.name, colour: typeof c.colour === 'string' ? c.colour : '', channels: ids(c.channels), spaces: ids(c.spaces) };
+}
+
+export type ExternalRecord = { roles: string[]; channels: string[] };
+
+/** D-36. `work.pasodrum.external` content; empty content (removed) = absent. */
+export function externalRecordOf(content: unknown): ExternalRecord | null {
+  if (!content || typeof content !== 'object' || !Object.keys(content).length) return null;
+  const c = content as Record<string, unknown>;
+  const roles = Array.isArray(c.roles) ? [...new Set(c.roles.filter((x): x is string => typeof x === 'string' && !!x))] : [];
+  return { roles, channels: ids(c.channels) };
 }

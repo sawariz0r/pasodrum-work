@@ -2,7 +2,7 @@
 // Local: pnpm dev:seed. Other server: MATRIX_BASE=https://… MATRIX_SERVER=… REGISTRATION_TOKEN=… BOOTSTRAP_TOKEN=… pnpm dev:seed
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { PASSWORD, SEED_FILE, SERVER, bootstrapToken, envToken, login, mx, ok, register, send, state, userId } from './lib.ts';
-import { channelUsers, powerLevels, type SpaceKind } from '../apps/web/src/matrix/levels.ts';
+import { EXTERNAL, LEVEL, channelUsers, externalKey, powerLevels, type SpaceKind } from '../apps/web/src/matrix/levels.ts';
 
 // The invite service only trusts the workspace this alias points at (D-06).
 const WORKSPACE_ALIAS = `#workspace:${SERVER}`;
@@ -22,10 +22,10 @@ if (existsSync(SEED_FILE)) {
 const people = {
   sofia: { name: 'Sofia Olsen' },            // first account → server admin, workspace Owner
   ingrid: { name: 'Ingrid Holm' },           // workspace Admin, assigned to Nordlys
-  jonas: { name: 'Jonas Berg' },             // Member
-  tanaka: { name: '田中 由紀' },               // Member with a Japanese name
+  jonas: { name: 'Jonas Berg' },             // Staff
+  tanaka: { name: '田中 由紀' },               // Staff with a Japanese name
   'henrik_nordlys.no': { name: 'Henrik Dahl' }, // Client (henrik@nordlys.no → deterministic ID, D-07)
-  'lea_freelance.dev': { name: 'Lea Fischer' }, // Guest
+  'lea_freelance.dev': { name: 'Lea Fischer' }, // External (D-36): #design as a one-off channel
 } as const;
 type Who = keyof typeof people;
 
@@ -45,8 +45,12 @@ for (const who of Object.keys(people) as Who[]) {
 const t = tokens;
 const via = { via: [SERVER] };
 
-// D-27 levels; Sofia creates everything, so (room version 12) she outranks everyone and isn't listed.
-const spaceUsers = { [userId('ingrid')]: 50 };
+// D-27/D-36 levels; Sofia creates everything, so (room version 12) she outranks everyone and isn't listed. Staff sit at
+// 10 in the workspace and its channels; client spaces carry only their team (Ingrid).
+const usersOf: Record<SpaceKind, Record<string, number>> = {
+  workspace: { [userId('ingrid')]: LEVEL.admin, [userId('jonas')]: LEVEL.staff, [userId('tanaka')]: LEVEL.staff },
+  client: { [userId('ingrid')]: LEVEL.admin },
+};
 const kinds = new Map<string, SpaceKind>();
 
 async function space(name: string, kind: SpaceKind, extraState: object[] = []): Promise<string> {
@@ -54,14 +58,14 @@ async function space(name: string, kind: SpaceKind, extraState: object[] = []): 
     name,
     preset: 'private_chat',
     creation_content: { type: 'm.space' },
-    power_level_content_override: powerLevels(kind, 'space', spaceUsers),
+    power_level_content_override: powerLevels(kind, 'space', usersOf[kind]),
     initial_state: extraState,
   });
   kinds.set(b.room_id, kind);
   return b.room_id;
 }
 
-async function channel(parent: string, name: string, opts: { restricted?: boolean; encrypted?: boolean; topic?: string } = {}): Promise<string> {
+async function channel(parent: string, name: string, opts: { restricted?: boolean; encrypted?: boolean; topic?: string; users?: Record<string, number> } = {}): Promise<string> {
   const initial_state: object[] = [
     { type: 'm.space.parent', state_key: parent, content: { ...via, canonical: true } },
     { type: 'm.room.history_visibility', state_key: '', content: { history_visibility: 'shared' } },
@@ -72,7 +76,7 @@ async function channel(parent: string, name: string, opts: { restricted?: boolea
     name,
     topic: opts.topic,
     preset: 'private_chat',
-    power_level_content_override: powerLevels(kinds.get(parent)!, 'channel', channelUsers(spaceUsers, [userId('sofia')], userId('sofia'))),
+    power_level_content_override: powerLevels(kinds.get(parent)!, 'channel', { ...channelUsers(usersOf[kinds.get(parent)!], [userId('sofia')], userId('sofia')), ...opts.users }),
     initial_state,
   });
   await state(t.sofia, parent, 'm.space.child', b.room_id, { ...via, suggested: true });
@@ -93,12 +97,14 @@ const workspace = await space('Pasodrum', 'workspace');
 await ok(t.sofia, 'PUT', aliasPath, { room_id: workspace });
 await addTo(workspace, ['ingrid', 'jonas', 'tanaka']);
 const general = await channel(workspace, 'general', { restricted: true });
-const design = await channel(workspace, 'design', { restricted: true });
+const design = await channel(workspace, 'design', { restricted: true, users: { [userId('lea_freelance.dev')]: LEVEL.external } });
 const lead = await channel(workspace, 'lead', { encrypted: true });
 await joinRestricted(general, ['ingrid', 'jonas', 'tanaka']);
 await joinRestricted(design, ['ingrid', 'jonas', 'tanaka']);
 await addTo(lead, ['ingrid']);
-await addTo(design, ['lea_freelance.dev']); // guest: invited to one channel, not in the workspace
+// External: invited to one channel (level 1 there), never in the workspace; the record says what she should reach.
+await addTo(design, ['lea_freelance.dev']);
+await state(t.sofia, workspace, EXTERNAL, externalKey(userId('lea_freelance.dev')), { roles: [], channels: [design] });
 
 // Client space "Nordlys"
 const nordlys = await space('Nordlys', 'client', [{ type: 'work.pasodrum.space', state_key: '', content: { kind: 'client' } }]);

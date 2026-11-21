@@ -67,14 +67,14 @@ describe('roles', () => {
   it('myRoles per space from workspace power levels and membership', async () => {
     expect(await until(sofia.store, (s) => s.myRoles[nordlys] && s.myRoles)).toEqual({ [pasodrum]: 'owner', [nordlys]: 'owner' });
     expect(ingrid.store.getSnapshot().myRoles).toEqual({ [pasodrum]: 'admin', [nordlys]: 'admin' });
-    expect(jonas.store.getSnapshot().myRoles).toEqual({ [pasodrum]: 'member' });
+    expect(jonas.store.getSnapshot().myRoles).toEqual({ [pasodrum]: 'staff' });
     expect(henrik.store.getSnapshot().myRoles).toEqual({ [nordlys]: 'client' });
   });
 
   it('channel members carry roles; a client sees roles from their client space', async () => {
     const design = channel(sofia.store.getSnapshot(), 'Pasodrum', 'design')!.id;
     const roles = Object.fromEntries((await sofia.store.channelMembers(design)).map((m) => [m.person.id, m.role]));
-    expect(roles).toMatchObject({ [SOFIA]: 'owner', [INGRID]: 'admin', [JONAS]: 'member', [TANAKA]: 'member', [LEA]: 'guest' });
+    expect(roles).toMatchObject({ [SOFIA]: 'owner', [INGRID]: 'admin', [JONAS]: 'staff', [TANAKA]: 'staff', [LEA]: 'external' });
 
     const updates = channel(henrik.store.getSnapshot(), 'Nordlys', 'project-updates')!.id;
     const seen = Object.fromEntries((await henrik.store.channelMembers(updates)).map((m) => [m.person.id, m.role]));
@@ -92,28 +92,29 @@ describe('roles', () => {
       await sofia.store.setRole(pasodrum, TANAKA, 'owner');
       await until(tanaka.store, (s) => s.myRoles[pasodrum] === 'owner');
       // Another Owner can't be changed by an Admin or a Member.
-      expect((await rejection(ingrid.store.setRole(pasodrum, TANAKA, 'member')))?.message).toBe('not-allowed');
+      expect((await rejection(ingrid.store.setRole(pasodrum, TANAKA, 'staff')))?.message).toBe('not-allowed');
     } finally {
-      await sofia.store.setRole(pasodrum, TANAKA, 'member');
+      await sofia.store.setRole(pasodrum, TANAKA, 'staff');
     }
-    await until(tanaka.store, (s) => s.myRoles[pasodrum] === 'member');
-    expect(((await state(sofia.session.accessToken, general, 'm.room.power_levels')).users as Record<string, number>)[TANAKA]).toBeUndefined();
+    await until(tanaka.store, (s) => s.myRoles[pasodrum] === 'staff');
+    // D-36: Staff sit at 10 in workspace channels.
+    expect(((await state(sofia.session.accessToken, general, 'm.room.power_levels')).users as Record<string, number>)[TANAKA]).toBe(10);
   });
 
   it('setRole: an Admin switches Member↔Admin but never touches Owners or peers; Members can’t (D-25, D-27)', async () => {
     const general = channel(ingrid.store.getSnapshot(), 'Pasodrum', 'general')!.id;
-    await expect.poll(async () => (await ingrid.store.channelMembers(general)).find((m) => m.person.id === TANAKA)?.role, { timeout: 15_000 }).toBe('member');
+    await expect.poll(async () => (await ingrid.store.channelMembers(general)).find((m) => m.person.id === TANAKA)?.role, { timeout: 15_000 }).toBe('staff');
     try {
       await ingrid.store.setRole(pasodrum, TANAKA, 'admin');
       expect((await state(ingrid.session.accessToken, pasodrum, 'm.room.power_levels')).users).toMatchObject({ [TANAKA]: 50 });
       // Matrix: an Admin can't lower another Admin.
-      expect((await rejection(ingrid.store.setRole(pasodrum, TANAKA, 'member')))?.message).toBe('not-allowed');
+      expect((await rejection(ingrid.store.setRole(pasodrum, TANAKA, 'staff')))?.message).toBe('not-allowed');
     } finally {
-      await sofia.store.setRole(pasodrum, TANAKA, 'member');
+      await sofia.store.setRole(pasodrum, TANAKA, 'staff');
     }
     expect((await rejection(jonas.store.setRole(pasodrum, TANAKA, 'admin')))?.message).toBe('not-allowed');
     expect((await rejection(ingrid.store.setRole(pasodrum, TANAKA, 'owner')))?.message).toBe('not-allowed');
-    expect((await rejection(ingrid.store.setRole(pasodrum, SOFIA, 'member')))?.message).toBe('not-allowed');
+    expect((await rejection(ingrid.store.setRole(pasodrum, SOFIA, 'staff')))?.message).toBe('not-allowed');
   });
 });
 
@@ -126,7 +127,7 @@ describe('channels', () => {
     expect(await state(token, id, 'm.room.join_rules')).toEqual({ join_rule: 'restricted', allow: [{ type: 'm.room_membership', room_id: pasodrum }] });
     expect(await state(token, id, 'm.space.parent', pasodrum)).toMatchObject({ canonical: true });
     expect((await state(token, pasodrum, 'm.space.child', id)).via).toEqual(['pasodrum.localhost']);
-    expect(await state(token, id, 'm.room.power_levels')).toMatchObject({ users: { [SOFIA]: 100 }, invite: 0, events: { 'm.room.power_levels': 50 } });
+    expect(await state(token, id, 'm.room.power_levels')).toMatchObject({ users: { [SOFIA]: 100, [JONAS]: 10 }, invite: 10, events: { 'm.room.power_levels': 50 } });
     expect(await mx(token, 'GET', `/_matrix/client/v3/rooms/${E(id)}/state/m.room.encryption/`)).toMatchObject({ status: 404 });
 
     expect((await rejection(ingrid.store.createChannel({ spaceId: pasodrum, name: made.name.toUpperCase(), private: false })))?.message).toBe('taken');
@@ -163,14 +164,14 @@ describe('channels', () => {
 describe('people', () => {
   it('adds an existing person: their app accepts on its own; remove takes them out', async () => {
     const id = await createChannel(ingrid.store, pasodrum, { private: true });
-    const result = await ingrid.store.addPeople(id, { userIds: [JONAS], emails: [], role: 'member' });
+    const result = await ingrid.store.addPeople(id, { type: 'channel', userIds: [JONAS], emails: [] });
     expect(result).toEqual({ added: [JONAS], invited: [], failed: [] });
     await until(jonas.store, (s) => s.channels[pasodrum]?.some((c) => c.id === id));
     await expect.poll(async () => (await ingrid.store.channelMembers(id)).find((m) => m.person.id === JONAS), { timeout: 15_000 }).toEqual({
       person: { id: JONAS, name: 'Jonas Berg' },
-      role: 'member',
+      role: 'staff',
     });
-    expect(await ingrid.store.addPeople(id, { userIds: [JONAS], emails: [], role: 'member' })).toEqual({ added: [], invited: [], failed: [{ who: JONAS, reason: 'already-member' }] });
+    expect(await ingrid.store.addPeople(id, { type: 'channel', userIds: [JONAS], emails: [] })).toEqual({ added: [], invited: [], failed: [{ who: JONAS, reason: 'already-member' }] });
 
     await ingrid.store.removeFromChannel(id, JONAS);
     await until(jonas.store, (s) => !s.channels[pasodrum]?.some((c) => c.id === id));
@@ -180,14 +181,14 @@ describe('people', () => {
     const id = await createChannel(ingrid.store, nordlys);
     const token = sofia.session.accessToken;
     try {
-      expect(await ingrid.store.addPeople(id, { userIds: [JONAS], emails: [], role: 'member' })).toMatchObject({ added: [JONAS] });
+      expect(await ingrid.store.addPeople(id, { type: 'channel', userIds: [JONAS], emails: [] })).toMatchObject({ added: [JONAS] });
       await until(jonas.store, (s) => s.channels[nordlys]?.some((c) => c.id === id));
       expect((await state(token, nordlys, 'm.room.power_levels')).users).toMatchObject({ [JONAS]: 10 });
       expect(await state(ingrid.session.accessToken, id, 'm.room.power_levels')).toMatchObject({ users: { [JONAS]: 10 }, invite: 10 });
-      expect(jonas.store.getSnapshot().myRoles[nordlys]).toBe('member');
-      await ingrid.store.addPeople(id, { userIds: [HENRIK], emails: [], role: 'client' });
+      expect(jonas.store.getSnapshot().myRoles[nordlys]).toBe('staff');
+      await ingrid.store.addPeople(id, { type: 'client', userIds: [HENRIK], emails: [] });
       await until(henrik.store, (s) => s.channels[nordlys]?.some((c) => c.id === id));
-      await expect.poll(async () => (await henrik.store.channelMembers(id)).find((m) => m.person.id === JONAS)?.role, { timeout: 15_000 }).toBe('member');
+      await expect.poll(async () => (await henrik.store.channelMembers(id)).find((m) => m.person.id === JONAS)?.role, { timeout: 15_000 }).toBe('staff');
 
       await until(jonas.store, (s) => s.channels[nordlys] !== undefined);
       await createChannel(jonas.store, nordlys);
@@ -202,20 +203,19 @@ describe('people', () => {
 
   it('a client added to a client-space channel joins it on their own', async () => {
     const id = await createChannel(ingrid.store, nordlys);
-    expect(await ingrid.store.addPeople(id, { userIds: [HENRIK], emails: [], role: 'client' })).toMatchObject({ added: [HENRIK] });
+    expect(await ingrid.store.addPeople(id, { type: 'client', userIds: [HENRIK], emails: [] })).toMatchObject({ added: [HENRIK] });
     await until(henrik.store, (s) => s.channels[nordlys]?.some((c) => c.id === id));
   });
 
   it('a guest (in no space) added by someone from their channel joins on their own; a Member can’t add Members to the workspace', async () => {
     const id = await createChannel(ingrid.store, pasodrum, { private: true });
     const lea = await openGuest('lea_freelance.dev');
-    expect(await ingrid.store.addPeople(id, { userIds: [LEA], emails: [], role: 'guest' })).toMatchObject({ added: [LEA] });
+    expect(await ingrid.store.addPeople(id, { type: 'channel', userIds: [LEA], emails: [] })).toMatchObject({ added: [LEA] });
     await expect.poll(() => joinedRooms(lea.session.accessToken), { timeout: 15_000 }).toContain(id);
-    expect((await ingrid.store.channelMembers(id)).find((m) => m.person.id === LEA)?.role).toBe('guest');
+    expect((await ingrid.store.channelMembers(id)).find((m) => m.person.id === LEA)?.role).toBe('external');
     await mx(lea.session.accessToken, 'POST', `/_matrix/client/v3/rooms/${E(id)}/leave`);
 
-    const general = channel(jonas.store.getSnapshot(), 'Pasodrum', 'general')!.id;
-    expect(await jonas.store.addPeople(general, { userIds: [HENRIK], emails: [], role: 'member' })).toEqual({ added: [], invited: [], failed: [{ who: HENRIK, reason: 'not-allowed' }] });
+    expect(await jonas.store.addPeople(pasodrum, { type: 'staff', userIds: [HENRIK], emails: [], spaces: [] })).toEqual({ added: [], invited: [], failed: [{ who: HENRIK, reason: 'not-allowed' }] });
   });
 });
 
@@ -306,22 +306,23 @@ describe('profile, devices, notifications, settings', () => {
 describe.skipIf(!inviteServiceUp)('invites by email (invite service)', () => {
   // The service allows 60 invites per hour per caller; repeated local runs can use them up.
   const skipIfLimited = async (ctx: { skip: () => never }) => {
-    const probe = await createInvite(ingrid.session.accessToken, { email: 'not an email', role: 'guest', spaceId: pasodrum, channelIds: [], locale: 'en' }).catch((e: Error) => e.message);
+    const probe = await createInvite(ingrid.session.accessToken, { email: 'not an email', role: 'external', spaceId: pasodrum, channelIds: [], locale: 'en' }).catch((e: Error) => e.message);
     if (probe === 'rate-limited') ctx.skip();
   };
 
   it('adds a new email: account, pending invite with link, preview, claim, first sign-in joins on its own', async (ctx) => {
     await skipIfLimited(ctx);
-    const id = await createChannel(ingrid.store, pasodrum);
+    // D-36: Staff go into the workspace and its home channel (#general).
+    const id = channel(ingrid.store.getSnapshot(), 'Pasodrum', 'general')!.id;
     const email = `m4-${stamp()}@example.org`;
-    const result = await ingrid.store.addPeople(id, { userIds: [], emails: [email, 'not an email'], role: 'member' });
+    const result = await ingrid.store.addPeople(pasodrum, { type: 'staff', userIds: [], emails: [email, 'not an email'], spaces: [] });
     expect(result).toEqual({ added: [], invited: [email], failed: [{ who: 'not an email', reason: 'invalid-email' }] });
-    // Not in the workspace until they join, so they show as a pending guest.
-    await expect.poll(async () => (await ingrid.store.channelMembers(id)).find((m) => m.pending), { timeout: 15_000 }).toMatchObject({ role: 'guest', pending: true });
+    // Invited to the workspace, so pending Staff (with the address on Workspace settings → People).
+    await expect.poll(async () => (await ingrid.store.workspacePeople()).find((m) => m.email === email), { timeout: 15_000 }).toMatchObject({ role: 'staff', pending: true });
 
     const pending = await ingrid.store.pendingInvites(id);
     const invite = pending.find((p) => p.email === email)!;
-    expect(invite).toMatchObject({ role: 'member' });
+    expect(invite).toMatchObject({ role: 'staff' });
     expect(invite.link).toContain(invite.code);
     expect(await previewInvite(invite.code)).toMatchObject({ email, spaceName: 'Pasodrum', spaceKind: 'workspace', state: 'open' });
     await ingrid.store.resendInvite(invite.code);
@@ -331,38 +332,42 @@ describe.skipIf(!inviteServiceUp)('invites by email (invite service)', () => {
     expect((await previewInvite(invite.code)).state).toBe('used');
     const fresh = await openGuest(identifier, 'a-new-password-123');
     await until(fresh.store, (s) => s.spaces.some((x) => x.id === pasodrum) && s.channels[pasodrum]?.some((c) => c.id === id));
-    expect(fresh.store.getSnapshot().myRoles[pasodrum]).toBe('member');
+    expect(fresh.store.getSnapshot().myRoles[pasodrum]).toBe('staff');
     expect((await ingrid.store.pendingInvites(id)).some((p) => p.email === email)).toBe(false);
     // Leave the seeded workspace as it was.
-    await mx(fresh.session.accessToken, 'POST', `/_matrix/client/v3/rooms/${E(pasodrum)}/leave`);
+    for (const roomId of [id, pasodrum]) await mx(fresh.session.accessToken, 'POST', `/_matrix/client/v3/rooms/${E(roomId)}/leave`);
   });
 
-  it('a guest by email sees the workspace by name with only their channel', async (ctx) => {
+  it('an External by email sees the workspace by name with only their channel; Staff can’t add new emails (D-36)', async (ctx) => {
     await skipIfLimited(ctx);
-    const id = await createChannel(jonas.store, pasodrum);
+    const id = await createChannel(ingrid.store, pasodrum);
+    await jonas.store.joinChannel(id);
     const email = `m4-${stamp()}@example.org`;
-    expect((await jonas.store.addPeople(id, { userIds: [], emails: [email], role: 'guest' })).invited).toEqual([email]);
-    const invite = (await jonas.store.pendingInvites(id)).find((p) => p.email === email)!;
+    expect(await jonas.store.addPeople(id, { type: 'channel', userIds: [], emails: [email] })).toEqual({ added: [], invited: [], failed: [{ who: email, reason: 'not-allowed' }] });
+    expect((await ingrid.store.addPeople(id, { type: 'channel', userIds: [], emails: [email] })).invited).toEqual([email]);
+    const invite = (await ingrid.store.pendingInvites(id)).find((p) => p.email === email)!;
     const identifier = await claimInvite(invite.code, 'Guest Person', 'a-new-password-123').catch((e: Error) => (e.message === 'rate-limited' ? ctx.skip() : Promise.reject(e)));
     const guest = await openGuest(identifier, 'a-new-password-123');
     await until(guest.store, (s) => s.channels[pasodrum]?.some((c) => c.id === id));
     const snap = guest.store.getSnapshot();
     expect(snap.spaces).toEqual([{ id: pasodrum, name: 'Pasodrum', kind: 'workspace' }]);
     expect(snap.channels[pasodrum]!.map((c) => c.id)).toEqual([id]);
-    expect(snap.myRoles).toEqual({ [pasodrum]: 'guest' });
+    expect(snap.myRoles).toEqual({ [pasodrum]: 'external' });
     expect(await joinedRooms(guest.session.accessToken)).not.toContain(pasodrum);
   });
 
   it('an existing account’s email just gets the invite; revoke removes a pending one', async (ctx) => {
     await skipIfLimited(ctx);
     const id = await createChannel(ingrid.store, pasodrum, { private: true });
-    expect(await ingrid.store.addPeople(id, { userIds: [], emails: ['henrik@nordlys.no'], role: 'guest' })).toEqual({ added: [HENRIK], invited: [], failed: [] });
+    expect(await ingrid.store.addPeople(id, { type: 'channel', userIds: [], emails: ['henrik@nordlys.no'] })).toEqual({ added: [HENRIK], invited: [], failed: [] });
+    // D-36: that made the client an External with this channel as a one-off; the seeded client stays a client.
+    await mx(sofia.session.accessToken, 'PUT', `/_matrix/client/v3/rooms/${E(pasodrum)}/state/work.pasodrum.external/${E(HENRIK.slice(1))}`, {});
 
     const email = `m4-${stamp()}@example.org`;
-    expect((await ingrid.store.addPeople(id, { userIds: [], emails: [email], role: 'guest' })).invited).toEqual([email]);
+    expect((await ingrid.store.addPeople(id, { type: 'channel', userIds: [], emails: [email] })).invited).toEqual([email]);
     const first = (await ingrid.store.pendingInvites(id)).find((p) => p.email === email)!;
     // Adding a still-pending email again issues a fresh code (the old one dies) and keeps their Matrix invite.
-    expect(await ingrid.store.addPeople(id, { userIds: [], emails: [email], role: 'guest' })).toEqual({ added: [], invited: [email], failed: [] });
+    expect(await ingrid.store.addPeople(id, { type: 'channel', userIds: [], emails: [email] })).toEqual({ added: [], invited: [email], failed: [] });
     const invite = (await ingrid.store.pendingInvites(id)).find((p) => p.email === email)!;
     expect(invite.code).not.toBe(first.code);
     expect((await previewInvite(first.code)).state).toBe('used');

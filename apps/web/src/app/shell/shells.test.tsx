@@ -38,7 +38,7 @@ describe('rail tiles (M5)', () => {
     await act(() => store().createClientSpace({ name: 'Aker', colour: '#1F6F5C', channels: ['general'], team: [], clientEmails: [] }));
     await act(() => store().setArchived('!nordlys', true));
     const names = within(rail()).getAllByRole('link', { name: /client space$/ }).map((a) => a.getAttribute('aria-label'));
-    expect(names).toEqual(['Aker, client space', 'Nordlys, client space']);
+    expect(names).toEqual(['Aker, client space', 'Kumo, client space', 'Nordlys, client space']);
   });
 });
 
@@ -57,14 +57,14 @@ describe('client shell (RulesM5)', () => {
   });
 });
 
-describe('guest shell (RulesM5)', () => {
+describe('External shell (RulesM5, D-36)', () => {
   it('shows the workspace name as a heading and only the channels they were added to', async () => {
-    renderApp('/w/!pasodrum/c/!design', { perspective: 'guest' });
+    renderApp('/w/!pasodrum/c/!design', { perspective: 'external' });
     await flush();
     const side = screen.getByRole('complementary', { name: 'Pasodrum navigation' });
     expect(within(side).getByRole('heading', { level: 2, name: 'Pasodrum' })).toBeTruthy();
     expect(within(side).queryByRole('button', { name: 'Pasodrum' })).toBeNull();
-    expect(within(side).getAllByRole('link', { name: /^(design|launch-site)$/ })).toHaveLength(2);
+    expect(within(side).getAllByRole('link', { name: /^(design|launch-site)$/ }).map((l) => l.textContent)).toEqual(['design']);
     expect(within(side).queryByRole('link', { name: 'general' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Add a channel' })).toBeNull();
     expect(screen.queryByRole('img', { name: /outside/ })).toBeNull();

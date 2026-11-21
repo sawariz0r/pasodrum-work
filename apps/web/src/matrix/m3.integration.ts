@@ -1,4 +1,5 @@
 // M3 (D-24) against the seeded local server: pnpm dev:server && pnpm dev:seed && pnpm test:matrix
+import { readFileSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { signIn, type Message, type WorkspaceStore } from './index';
 import { BASE, channel, mx, open, PASSWORD, sendRaw, setupIntegration, until } from './integration.helpers';
@@ -9,7 +10,6 @@ const JONAS = '@jonas:pasodrum.localhost';
 const INGRID = '@ingrid:pasodrum.localhost';
 const TANAKA = '@tanaka:pasodrum.localhost';
 const HENRIK = '@henrik_nordlys.no:pasodrum.localhost';
-const LEA = '@lea_freelance.dev:pasodrum.localhost';
 const E = encodeURIComponent;
 
 type Account = Awaited<ReturnType<typeof open>>;
@@ -216,19 +216,25 @@ describe('DMs', () => {
     expect(await jonas.store.openDm([INGRID])).not.toBe(a);
   });
 
-  it('leaves an invite from someone I share no space with pending, until I open that DM', async () => {
-    const lea = await signIn(BASE, 'lea@freelance.dev', PASSWORD);
-    const { body } = await mx(lea.accessToken, 'POST', '/_matrix/client/v3/createRoom', { preset: 'private_chat', is_direct: true, invite: [JONAS] });
+  it('leaves an invite from someone I share no room with pending, until I open that DM (D-36)', async () => {
+    // A fresh account shares no space or channel with Jonas (Lea would: she's in #design).
+    const username = `m3stranger${Date.now()}${Math.random().toString(36).slice(2, 5)}`;
+    const token = process.env.REGISTRATION_TOKEN ?? readFileSync(new URL('../../../../dev/.env', import.meta.url), 'utf8').match(/^REGISTRATION_TOKEN=(.+)$/m)![1]!.trim();
+    const register = (body: object) => fetch(`${BASE}/_matrix/client/v3/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then((r) => r.json() as Promise<Record<string, unknown>>);
+    const first = await register({ username, password: PASSWORD });
+    const stranger = await register({ username, password: PASSWORD, auth: { type: 'm.login.registration_token', token, session: first.session } });
+    const strangerId = stranger.user_id as string;
+    const { body } = await mx(stranger.access_token as string, 'POST', '/_matrix/client/v3/createRoom', { preset: 'private_chat', is_direct: true, invite: [JONAS] });
     const roomId = body.room_id as string;
-    created.push({ token: () => jonas.session.accessToken, roomId }, { token: () => lea.accessToken, roomId });
+    created.push({ token: () => jonas.session.accessToken, roomId }, { token: () => stranger.access_token as string, roomId });
     await new Promise((r) => setTimeout(r, 1500));
     expect(await joinedRooms(jonas.session.accessToken)).not.toContain(roomId);
     expect(jonas.store.getSnapshot().dms.some((d) => d.id === roomId)).toBe(false);
 
-    expect(await jonas.store.openDm([LEA])).toBe(roomId);
+    expect(await jonas.store.openDm([strangerId])).toBe(roomId);
     expect(await joinedRooms(jonas.session.accessToken)).toContain(roomId);
     const dm = await until(jonas.store, (s) => s.dms.find((d) => d.id === roomId));
-    expect(dm).toMatchObject({ people: [{ id: LEA, external: true }], spaceIds: [] });
+    expect(dm).toMatchObject({ people: [{ id: strangerId, external: true }], spaceIds: [] });
   });
 });
 

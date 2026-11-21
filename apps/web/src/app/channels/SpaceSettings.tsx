@@ -1,9 +1,10 @@
 // Client space settings (SpaceSettings, SpacePeople, RemoveFromSpace, ArchiveSpace). Owners and Admins, from the space menu.
-// General: name, colour (saves as it changes), Archive. People: the team on top, the client below, pending with the clock.
+// General: name, colour (saves as it changes), Archive. People (D-36 PeopleSpaceInvite): an invite field for clients on top, then the
+// team (Externals tagged), then the client, pending with the clock.
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { useStore, useWorkspace, type Member, type PendingInvite, type Space } from '../../matrix';
+import { useStore, useWorkspace, type Member, type PendingInvite, type Person, type Space } from '../../matrix';
 import { Button, Dialog, IconButton, isImeEnter, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '../../ui';
 import { ExternalIcon, HashIcon, LogoMark, MoreIcon } from '../icons';
 import { ExternalCorner, Face } from '../people/Face';
@@ -13,14 +14,14 @@ import { firstName, useToast } from '../toast';
 import s from './Channels.module.css';
 import { AlertIcon, ArchiveIcon, LeaveIcon, LinkIcon, PendingIcon, UserPlusIcon, XIcon } from './icons';
 import { Swatches } from './NewClientSpace';
-import { canManage, canRemoveFromSpace } from './roles';
+import { canAddPeople, canManage, canRemoveFromSpace } from './roles';
 import { copyText, isInviteFor, spaceColour, useRole, useSpace, useWorkspaceName } from './shared';
 
 export type SpaceTab = 'general' | 'people';
 
-type Props = { open: boolean; spaceId: string; tab?: SpaceTab; onClose: () => void; onAddPeople: (spaceId: string) => void };
+type Props = { open: boolean; spaceId: string; tab?: SpaceTab; onClose: () => void };
 
-export function SpaceSettingsDialog({ open, spaceId, tab: initialTab = 'general', onClose, onAddPeople }: Props) {
+export function SpaceSettingsDialog({ open, spaceId, tab: initialTab = 'general', onClose }: Props) {
   const { t } = useTranslation();
   const store = useStore();
   const space = useSpace(spaceId);
@@ -28,6 +29,7 @@ export function SpaceSettingsDialog({ open, spaceId, tab: initialTab = 'general'
   const [members, setMembers] = useState<Member[]>([]);
   const [confirm, setConfirm] = useState<{ kind: 'archive' } | { kind: 'remove'; member: Member } | null>(null);
   const [failed, setFailed] = useState(false);
+  const [tick, setTick] = useState(0);
   const ask = (next: typeof confirm) => {
     setFailed(false);
     setConfirm(next);
@@ -42,7 +44,7 @@ export function SpaceSettingsDialog({ open, spaceId, tab: initialTab = 'general'
     return () => {
       live = false;
     };
-  }, [store, spaceId]);
+  }, [store, spaceId, tick]);
 
   if (!space) return null;
   const tabs: [SpaceTab, string][] = [
@@ -79,7 +81,7 @@ export function SpaceSettingsDialog({ open, spaceId, tab: initialTab = 'general'
           {tab === 'general' ? (
             <General space={space} onArchive={() => ask({ kind: 'archive' })} />
           ) : (
-            <People space={space} members={members} onAddPeople={onAddPeople} onRemove={(member) => ask({ kind: 'remove', member })} onLeave={onClose} />
+            <People space={space} members={members} tick={tick} onAdded={() => setTick((n) => n + 1)} onRemove={(member) => ask({ kind: 'remove', member })} onLeave={onClose} />
           )}
         </div>
       </Dialog>
@@ -218,9 +220,9 @@ function General({ space, onArchive }: { space: Space; onArchive: () => void }) 
   );
 }
 
-type PeopleProps = { space: Space; members: Member[]; onAddPeople: (spaceId: string) => void; onRemove: (m: Member) => void; onLeave: () => void };
+type PeopleProps = { space: Space; members: Member[]; tick: number; onAdded: () => void; onRemove: (m: Member) => void; onLeave: () => void };
 
-function People({ space, members, onAddPeople, onRemove, onLeave }: PeopleProps) {
+function People({ space, members, tick, onAdded, onRemove, onLeave }: PeopleProps) {
   const { t } = useTranslation();
   const store = useStore();
   const navigate = useNavigate();
@@ -240,10 +242,10 @@ function People({ space, members, onAddPeople, onRemove, onLeave }: PeopleProps)
     return () => {
       live = false;
     };
-  }, [store, space.id, manage]);
+  }, [store, space.id, manage, tick]);
 
-  const team = members.filter((m) => m.role !== 'client' && m.role !== 'guest');
-  const clients = members.filter((m) => m.role === 'client' || m.role === 'guest');
+  const team = members.filter((m) => m.role !== 'client');
+  const clients = members.filter((m) => m.role === 'client');
   const message = async (userId: string) => {
     const id = await store.openDm([userId]);
     onLeave();
@@ -255,7 +257,7 @@ function People({ space, members, onAddPeople, onRemove, onLeave }: PeopleProps)
     const me = person.id === meId;
     const invite = m.pending ? pending.find((p) => isInviteFor(p, m)) : undefined;
     const mayRemove = canRemoveFromSpace(mine, m.role, me);
-    const tag = m.pending ? 'pending' : m.role === 'owner' || m.role === 'admin' ? m.role : null;
+    const tag = m.pending ? 'pending' : m.role === 'owner' || m.role === 'admin' || m.role === 'external' ? m.role : null;
     const label = t('channels.more', { name: person.name });
     return (
       <li key={person.id} className={s.memberRow}>
@@ -274,7 +276,7 @@ function People({ space, members, onAddPeople, onRemove, onLeave }: PeopleProps)
           <span>{person.name}</span>
           {me && <span className={s.you}>{t('channels.you')}</span>}
         </span>
-        {tag && <span className={[s.tag, tag === 'pending' && s.tagPending].filter(Boolean).join(' ')}>{t(`channels.tags.${tag}`)}</span>}
+        {tag && <span className={[s.tag, tag === 'pending' && s.tagPending, tag === 'external' && s.tagGuest].filter(Boolean).join(' ')}>{t(`channels.tags.${tag}`)}</span>}
         <span className={s.moreCell}>
           {manage && !me && (mayRemove || !m.pending || invite) && (
             <Menu>
@@ -318,14 +320,7 @@ function People({ space, members, onAddPeople, onRemove, onLeave }: PeopleProps)
 
   return (
     <div className={s.spPeople}>
-      {manage && !space.archived && (
-        <button type="button" className={s.addPeopleRow} onClick={() => onAddPeople(space.id)}>
-          <span className={s.addPeopleIcon}>
-            <UserPlusIcon size={17} />
-          </span>
-          {t('common.addPeople')}
-        </button>
-      )}
+      {canAddPeople(space, mine) && !space.archived && <InviteField space={space} members={members} onAdded={onAdded} />}
       <div className={s.spGroup}>
         <span className={s.spGroupTile} aria-hidden="true">
           <LogoMark size={12} />
@@ -345,6 +340,120 @@ function People({ space, members, onAddPeople, onRemove, onLeave }: PeopleProps)
             {clients.map(row)}
           </ul>
         </>
+      )}
+    </div>
+  );
+}
+
+const emailShape = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+/** PeopleSpaceInvite: a client by email (or an existing client account by name), added to this space at once. */
+function InviteField({ space, members, onAdded }: { space: Space; members: Member[]; onAdded: () => void }) {
+  const { t } = useTranslation();
+  const store = useStore();
+  const externals = useWorkspace((x) => x.externals);
+  const [value, setValue] = useState('');
+  const [found, setFound] = useState<Person[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const text = value.trim();
+  const isEmail = text.includes('@');
+
+  useEffect(() => {
+    if (!text || isEmail) return;
+    let live = true;
+    store.searchPeople(text).then(
+      (list) => live && setFound(list),
+      () => live && setFound([]),
+    );
+    return () => {
+      live = false;
+    };
+  }, [store, text, isEmail]);
+
+  // Clients are the only ones invited here; Staff and Externals come from Add people and Access.
+  const inSpace = new Set(members.map((m) => m.person.id));
+  const people = (!text || isEmail ? [] : found).filter((p) => p.external && !externals[p.id] && !inSpace.has(p.id)).slice(0, 5);
+
+  const send = async (who: { person?: Person; email?: string }) => {
+    if (busy) return;
+    if (who.email !== undefined && !emailShape.test(who.email)) {
+      setError(t('channels.notEmail', { email: who.email }));
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await store.addPeople(space.id, { type: 'client', userIds: who.person ? [who.person.id] : [], emails: who.email ? [who.email] : [] });
+      const failed = result.failed.find((f) => f.reason !== 'already-member');
+      if (failed) {
+        setError(failed.reason === 'invalid-email' ? t('channels.notEmail', { email: failed.who }) : t('channels.couldNotAdd', { name: who.person?.name ?? failed.who }));
+        return;
+      }
+      setValue('');
+      onAdded();
+    } catch {
+      setError(t('channels.couldNotAdd', { name: who.person?.name ?? who.email ?? '' }));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const submit = () => {
+    if (!text) return;
+    if (isEmail) void send({ email: text });
+    else {
+      const hit = people[0];
+      if (hit) void send({ person: hit });
+    }
+  };
+
+  return (
+    <div className={s.spInvite}>
+      <div className={s.spInviteRow}>
+        <label className={s.spInviteField}>
+          <UserPlusIcon size={17} />
+          <input
+            className={s.spInviteInput}
+            autoComplete="off"
+            aria-label={t('people.search')}
+            placeholder={t('people.search')}
+            value={value}
+            aria-invalid={!!error || undefined}
+            onChange={(e) => {
+              setValue(e.target.value);
+              setError(null);
+            }}
+            onKeyDown={(e) => {
+              if (isImeEnter(e)) {
+                e.preventDefault();
+                submit();
+              }
+            }}
+          />
+          {isEmail && <span className={s.tokenTag}>{t('channels.tags.client')}</span>}
+        </label>
+        <Button className={s.spInviteAdd} disabled={!text || busy || (!isEmail && !people.length)} onClick={submit}>
+          {t('channels.add')}
+        </Button>
+      </div>
+      {error && (
+        <p role="alert" className={`${s.error} ${s.spInviteError}`}>
+          <AlertIcon />
+          {error}
+        </p>
+      )}
+      {people.length > 0 && (
+        <ul className={`${s.suggestions} ${s.spInviteFound}`} aria-label={t('channels.suggestions')}>
+          {people.map((p) => (
+            <li key={p.id} className={s.suggestion}>
+              <Face person={p} size={30} />
+              <span className={s.suggestionName}>{p.name}</span>
+              <button type="button" className={s.addButton} aria-label={t('channels.addName', { name: p.name })} onClick={() => void send({ person: p })}>
+                {t('channels.add')}
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

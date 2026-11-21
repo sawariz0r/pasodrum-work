@@ -4,7 +4,8 @@ import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { before, describe, it } from 'node:test';
-import { BASE, SEED_FILE, SERVER, login, mx } from '../../../dev/lib.ts';
+import { BASE, SEED_FILE, SERVER, login, mx, ok as mxOk } from '../../../dev/lib.ts';
+import { powerLevels } from '../../../apps/web/src/matrix/levels.ts';
 import { keyFrom, unseal } from '../src/secret.ts';
 
 const MAILPIT = 'http://localhost:8025';
@@ -47,20 +48,39 @@ async function mailTo(email: string): Promise<{ Subject: string; HTML: string; T
   throw new Error(`no mail to ${email}`);
 }
 
-const spacesPath = (userId: string) => `/_matrix/client/v3/user/${encodeURIComponent(userId)}/account_data/work.pasodrum.spaces`;
+const accountData = (type: string) => (userId: string) => `/_matrix/client/v3/user/${encodeURIComponent(userId)}/account_data/${type}`;
+const spacesPath = accountData('work.pasodrum.spaces');
+const invitedPath = accountData('work.pasodrum.invited');
+const enc = encodeURIComponent;
 
 const loginStatus = async (localpart: string, password: string) =>
   (await mx(null, 'POST', '/_matrix/client/v3/login', { type: 'm.login.password', identifier: { type: 'm.id.user', user: localpart }, password }));
 
 let sofia = '', ingrid = '', jonas = '', henrik = '';
+// A client space of our own (marked by Sofia, so genuine) with Jonas as Staff at 10, and one channel in it.
+let kumo = '', kumoChat = '';
 before(async () => {
   [sofia, ingrid, jonas, henrik] = await Promise.all([login('sofia'), login('ingrid'), login('jonas'), login('henrik_nordlys.no')]);
+  kumo = (await mxOk(sofia, 'POST', '/_matrix/client/v3/createRoom', {
+    preset: 'private_chat', name: 'Kumo', creation_content: { type: 'm.space' },
+    power_level_content_override: powerLevels('client', 'space', { [`@jonas:${SERVER}`]: 10 }),
+    initial_state: [{ type: 'work.pasodrum.space', state_key: '', content: { kind: 'client' } }],
+  })).room_id;
+  kumoChat = (await mxOk(sofia, 'POST', '/_matrix/client/v3/createRoom', {
+    preset: 'private_chat', name: 'chat',
+    initial_state: [{ type: 'm.space.parent', state_key: kumo, content: { via: [SERVER], canonical: true } }],
+  })).room_id;
+  await mxOk(sofia, 'PUT', `/_matrix/client/v3/rooms/${enc(kumo)}/state/m.space.child/${enc(kumoChat)}`, { via: [SERVER] });
+  for (const room of [kumo, kumoChat]) {
+    await mxOk(sofia, 'POST', `/_matrix/client/v3/rooms/${enc(room)}/invite`, { user_id: `@jonas:${SERVER}` });
+    await mxOk(jonas, 'POST', `/_matrix/client/v3/join/${enc(room)}`, {});
+  }
 });
 
 describe('invite service', () => {
   it('create → email → preview → claim → sign in; second claim is 410', async () => {
     const email = freshEmail();
-    const r = await api(sofia, 'POST', '', { email, name: 'Test Person', role: 'member', spaceId: rooms.workspace, channelIds: [rooms.general], locale: 'en' });
+    const r = await api(sofia, 'POST', '', { email, name: 'Test Person', role: 'staff', spaceId: rooms.workspace, channelIds: [rooms.general], locale: 'en' });
     assert.equal(r.status, 201, JSON.stringify(r.body));
     assert.equal(r.body.userId, `@${email.replace('@', '_')}:${SERVER}`);
     assert.equal(r.body.emailed, true);
@@ -84,7 +104,7 @@ describe('invite service', () => {
 
     const list = await api(ingrid, 'GET', `?roomId=${encodeURIComponent(rooms.general)}`);
     assert.equal(list.status, 200);
-    assert.ok(list.body.some((i: any) => i.code === r.body.code && i.email === email && i.role === 'member'));
+    assert.ok(list.body.some((i: any) => i.code === r.body.code && i.email === email && i.role === 'staff'));
 
     const c = await api(null, 'POST', `/${r.body.code}/claim`, { name: 'Tess Person', password: 'a-good-long-password' });
     assert.equal(c.status, 200, JSON.stringify(c.body));
@@ -93,6 +113,7 @@ describe('invite service', () => {
     const token = await login(c.body.identifier, 'a-good-long-password');
     const profile = await mx(token, 'GET', `/_matrix/client/v3/profile/${encodeURIComponent(r.body.userId)}/displayname`);
     assert.equal(profile.body.displayname, 'Tess Person');
+    assert.deepEqual((await mx(token, 'GET', invitedPath(r.body.userId))).body, { rooms: [rooms.workspace, rooms.general] });
 
     assert.equal((await api(null, 'POST', `/${r.body.code}/claim`, { name: 'X', password: 'another-password' })).status, 410);
     assert.equal((await api(null, 'GET', `/${r.body.code}`)).body.state, 'used');
@@ -100,20 +121,22 @@ describe('invite service', () => {
   });
 
   it('409 when the account exists, 400 for a bad email, 401 without a token', async () => {
-    const r = await api(sofia, 'POST', '', { email: 'Jonas@pasodrum.localhost', role: 'member', spaceId: rooms.workspace, channelIds: [] });
+    const r = await api(sofia, 'POST', '', { email: 'Jonas@pasodrum.localhost', role: 'staff', spaceId: rooms.workspace, channelIds: [] });
     assert.deepEqual([r.status, r.body], [409, { error: 'exists', userId: `@jonas:${SERVER}` }]);
-    const bad = await api(sofia, 'POST', '', { email: 'not an email', role: 'guest', spaceId: rooms.workspace, channelIds: [] });
+    const bad = await api(sofia, 'POST', '', { email: 'not an email', role: 'external', spaceId: rooms.workspace, channelIds: [] });
     assert.deepEqual([bad.status, bad.body], [400, { error: 'invalid-email' }]);
-    assert.equal((await api(null, 'POST', '', { email: freshEmail(), role: 'guest', spaceId: rooms.workspace })).status, 401);
-    assert.equal((await api('nope', 'POST', '', { email: freshEmail(), role: 'guest', spaceId: rooms.workspace })).status, 401);
+    assert.equal((await api(null, 'POST', '', { email: freshEmail(), role: 'external', spaceId: rooms.workspace })).status, 401);
+    assert.equal((await api('nope', 'POST', '', { email: freshEmail(), role: 'external', spaceId: rooms.workspace })).status, 401);
   });
 
-  it('enforces D-25: Members cannot add Members; clients cannot add clients; the team can', async () => {
-    const m = await api(jonas, 'POST', '', { email: freshEmail(), role: 'member', spaceId: rooms.workspace, channelIds: [] });
-    assert.deepEqual([m.status, m.body], [403, { error: 'not-allowed' }]);
+  it('enforces D-36: Staff add no Staff or Externals; clients cannot add clients; the team can', async () => {
+    for (const role of ['staff', 'external', 'member', 'guest']) {
+      const m = await api(jonas, 'POST', '', { email: freshEmail(), role, spaceId: rooms.workspace, channelIds: [] });
+      assert.deepEqual([m.status, m.body], [403, { error: 'not-allowed' }], role);
+    }
     const c = await api(henrik, 'POST', '', { email: freshEmail('nordlys.no'), role: 'client', spaceId: rooms.nordlys, channelIds: [] });
     assert.equal(c.status, 403);
-    const outsider = await api(henrik, 'POST', '', { email: freshEmail(), role: 'guest', spaceId: rooms.workspace, channelIds: [] });
+    const outsider = await api(henrik, 'POST', '', { email: freshEmail(), role: 'external', spaceId: rooms.workspace, channelIds: [] });
     assert.equal(outsider.status, 403);
     const email = freshEmail('nordlys.no');
     const ok = await api(ingrid, 'POST', '', { email, role: 'client', spaceId: rooms.nordlys, channelIds: [rooms.projectUpdates], locale: 'ja' });
@@ -125,25 +148,26 @@ describe('invite service', () => {
     assert.equal((await api(jonas, 'GET', `?roomId=${encodeURIComponent(rooms.nordlys)}`)).status, 403);
   });
 
-  it('member invites a guest; resend; revoke kills only the code; re-invite issues a fresh one', async () => {
+  it('an Admin invites an External; resend; revoke kills only the code; re-invite issues a fresh one', async () => {
     const email = freshEmail('freelance.dev');
-    const r = await api(jonas, 'POST', '', { email, role: 'guest', spaceId: rooms.workspace, channelIds: [rooms.design] });
+    const r = await api(ingrid, 'POST', '', { email, role: 'external', spaceId: rooms.workspace, channelIds: [rooms.design] });
     assert.equal(r.status, 201, JSON.stringify(r.body));
     const localpart = localpartOf(r.body.userId);
     const temp = unseal(key, db('SELECT secret FROM invites WHERE code = ?', r.body.code).secret);
 
-    assert.equal((await api(jonas, 'POST', `/${r.body.code}/resend`)).status, 204);
+    assert.equal((await api(jonas, 'POST', `/${r.body.code}/resend`)).status, 403);
+    assert.equal((await api(ingrid, 'POST', `/${r.body.code}/resend`)).status, 204);
     assert.equal((await api(sofia, 'DELETE', `/${r.body.code}`)).status, 204);
 
     assert.equal((await api(null, 'GET', `/${r.body.code}`)).body.state, 'revoked');
     const dead = await api(null, 'POST', `/${r.body.code}/claim`, { name: 'Lea', password: 'a-good-long-password' });
     assert.deepEqual([dead.status, dead.body], [410, { error: 'revoked' }]);
-    assert.equal((await api(jonas, 'POST', `/${r.body.code}/resend`)).status, 410);
-    const list = await api(jonas, 'GET', `?roomId=${encodeURIComponent(rooms.design)}`);
+    assert.equal((await api(ingrid, 'POST', `/${r.body.code}/resend`)).status, 410);
+    const list = await api(ingrid, 'GET', `?roomId=${encodeURIComponent(rooms.design)}`);
     assert.ok(!list.body.some((i: any) => i.code === r.body.code));
     assert.equal((await loginStatus(localpart, temp)).status, 200, 'account stays dormant, not deactivated');
 
-    const again = await api(sofia, 'POST', '', { email, name: 'Lea Again', role: 'guest', spaceId: rooms.workspace, channelIds: [rooms.general] });
+    const again = await api(sofia, 'POST', '', { email, name: 'Lea Again', role: 'external', spaceId: rooms.workspace, channelIds: [rooms.general] });
     assert.equal(again.status, 201, JSON.stringify(again.body));
     assert.equal(again.body.userId, r.body.userId);
     assert.notEqual(again.body.code, r.body.code);
@@ -151,7 +175,7 @@ describe('invite service', () => {
     assert.equal(mails.messages.length, 3, 'invite, resend, re-invite');
 
     // A third invite supersedes the second code too.
-    const third = await api(sofia, 'POST', '', { email, role: 'guest', spaceId: rooms.workspace, channelIds: [] });
+    const third = await api(sofia, 'POST', '', { email, role: 'external', spaceId: rooms.workspace, channelIds: [] });
     assert.equal(third.status, 201);
     assert.equal((await api(null, 'GET', `/${again.body.code}`)).body.state, 'revoked');
     assert.ok((await api(sofia, 'GET', `?roomId=${encodeURIComponent(rooms.general)}`)).body.some((i: any) => i.code === third.body.code));
@@ -170,7 +194,7 @@ describe('invite service', () => {
       '!other:x': { name: 'Other', kind: 'client' },
       [rooms.workspace]: { name: 'Pasodrum', kind: 'workspace' },
     });
-    const after = await api(sofia, 'POST', '', { email, role: 'guest', spaceId: rooms.workspace, channelIds: [] });
+    const after = await api(sofia, 'POST', '', { email, role: 'external', spaceId: rooms.workspace, channelIds: [] });
     assert.deepEqual([after.status, after.body], [409, { error: 'exists', userId: r.body.userId }]);
   });
 
@@ -194,7 +218,7 @@ describe('invite service', () => {
   it('codes are per space: removing someone from one space leaves their link for another; claiming one kills the rest', async () => {
     const email = freshEmail('nordlys.no');
     const a = await api(ingrid, 'POST', '', { email, role: 'client', spaceId: rooms.nordlys, channelIds: [rooms.projectUpdates] });
-    const b = await api(ingrid, 'POST', '', { email, role: 'guest', spaceId: rooms.workspace, channelIds: [rooms.design] });
+    const b = await api(ingrid, 'POST', '', { email, role: 'external', spaceId: rooms.workspace, channelIds: [rooms.design] });
     assert.equal(b.status, 201, JSON.stringify(b.body));
     assert.equal((await api(null, 'GET', `/${a.body.code}`)).body.state, 'open');
     const q = `?spaceId=${encodeURIComponent(rooms.nordlys)}&userId=${encodeURIComponent(a.body.userId)}`;
@@ -213,31 +237,30 @@ describe('invite service', () => {
       preset: 'private_chat', creation_content: { type: 'm.space' }, name: 'Acme',
       initial_state: [{ type: 'work.pasodrum.space', state_key: '', content: { kind: 'client' } }],
     })).body.room_id;
-    for (const [role, spaceId] of [['member', fake], ['guest', fake], ['client', marked]]) {
+    for (const [role, spaceId] of [['staff', fake], ['external', fake], ['client', marked]]) {
       const r = await api(jonas, 'POST', '', { email: freshEmail(), role, spaceId, channelIds: [] });
       assert.deepEqual([r.status, r.body], [403, { error: 'not-allowed' }], `${role} in a fake space`);
     }
 
-    // Ingrid's pending invite: Jonas inviting the same email gets no code (it would claim the account), just "exists".
+    // Ingrid's pending invite: Jonas (Staff on Kumo) inviting the same email gets no code (it would claim the account), just "exists".
     const email = freshEmail();
-    const mine = await api(ingrid, 'POST', '', { email, role: 'member', spaceId: rooms.workspace, channelIds: [rooms.general] });
+    const mine = await api(ingrid, 'POST', '', { email, role: 'staff', spaceId: rooms.workspace, channelIds: [rooms.general] });
     assert.equal(mine.status, 201);
-    const theirs = await api(jonas, 'POST', '', { email, role: 'guest', spaceId: rooms.workspace, channelIds: [rooms.design] });
+    const theirs = await api(jonas, 'POST', '', { email, role: 'client', spaceId: kumo, channelIds: [kumoChat] });
     assert.deepEqual([theirs.status, theirs.body], [409, { error: 'exists', userId: mine.body.userId }]);
     assert.equal((await api(null, 'GET', `/${mine.body.code}`)).body.state, 'open');
 
     // Codes and links in the pending list only for the inviter and Admins of the space.
-    const own = await api(jonas, 'POST', '', { email: freshEmail(), role: 'guest', spaceId: rooms.workspace, channelIds: [rooms.general] });
-    const seen = (await api(jonas, 'GET', `?roomId=${encodeURIComponent(rooms.general)}`)).body.map((i: any) => i.code);
-    assert.ok(seen.includes(own.body.code));
-    assert.ok(!seen.includes(mine.body.code));
+    const own = await api(jonas, 'POST', '', { email: freshEmail(), role: 'client', spaceId: kumo, channelIds: [kumoChat] });
+    assert.ok((await api(jonas, 'GET', `?roomId=${encodeURIComponent(kumoChat)}`)).body.some((i: any) => i.code === own.body.code));
+    assert.ok(!(await api(jonas, 'GET', `?roomId=${encodeURIComponent(rooms.general)}`)).body.some((i: any) => i.code === mine.body.code));
     assert.ok((await api(sofia, 'GET', `?roomId=${encodeURIComponent(rooms.general)}`)).body.some((i: any) => i.code === mine.body.code));
     for (const code of [mine.body.code, own.body.code]) await api(sofia, 'DELETE', `/${code}`);
     for (const id of [fake, marked]) await mx(jonas, 'POST', `/_matrix/client/v3/rooms/${encodeURIComponent(id)}/leave`, {});
   });
 
   it('expired codes cannot be claimed; unknown codes are 404; bad claims are 400', async () => {
-    const r = await api(sofia, 'POST', '', { email: freshEmail(), role: 'guest', spaceId: rooms.workspace, channelIds: [] });
+    const r = await api(sofia, 'POST', '', { email: freshEmail(), role: 'external', spaceId: rooms.workspace, channelIds: [] });
     assert.equal(r.status, 201);
     assert.equal((await api(null, 'POST', `/${r.body.code}/claim`, { name: 'A', password: 'short' })).status, 400);
     assert.equal((await api(null, 'POST', `/${r.body.code}/claim`, { name: ' ', password: 'long-enough-pw' })).status, 400);
@@ -246,6 +269,93 @@ describe('invite service', () => {
     const c = await api(null, 'POST', `/${r.body.code}/claim`, { name: 'A', password: 'long-enough-pw' });
     assert.deepEqual([c.status, c.body], [410, { error: 'expired' }]);
     assert.equal((await api(null, 'GET', `/${'A'.repeat(24)}`)).status, 404);
+  });
+
+  it('D-36: Staff at 10 on a client space invite its clients, nowhere else', async () => {
+    const r = await api(jonas, 'POST', '', { email: freshEmail('kumo.jp'), role: 'client', spaceId: kumo, channelIds: [kumoChat] });
+    assert.equal(r.status, 201, JSON.stringify(r.body));
+    const nordlys = await api(jonas, 'POST', '', { email: freshEmail('nordlys.no'), role: 'client', spaceId: rooms.nordlys, channelIds: [] });
+    assert.equal(nordlys.status, 403, 'not on that client space');
+    for (const role of ['staff', 'external']) assert.equal((await api(jonas, 'POST', '', { email: freshEmail(), role, spaceId: kumo, channelIds: [] })).status, 403);
+    await api(jonas, 'DELETE', `/${r.body.code}`);
+  });
+
+  it('D-36: an External gets only workspace channels and genuine client spaces the inviter is in', async () => {
+    const email = freshEmail('freelance.dev');
+    const ok = await api(ingrid, 'POST', '', { email, role: 'external', spaceId: rooms.workspace, channelIds: [rooms.design, rooms.nordlys, rooms.projectUpdates] });
+    assert.equal(ok.status, 201, JSON.stringify(ok.body));
+
+    // Rooms Jonas makes and Ingrid joins: a stray room, a client space marked by Staff, a channel claiming Nordlys as its parent.
+    const make = async (body: object) => {
+      const id = (await mxOk(jonas, 'POST', '/_matrix/client/v3/createRoom', { preset: 'private_chat', ...body })).room_id;
+      await mxOk(jonas, 'POST', `/_matrix/client/v3/rooms/${enc(id)}/invite`, { user_id: `@ingrid:${SERVER}` });
+      await mxOk(ingrid, 'POST', `/_matrix/client/v3/join/${enc(id)}`, {});
+      return id;
+    };
+    const stray = await make({ name: 'stray' });
+    const fakeClient = await make({ name: 'Acme', creation_content: { type: 'm.space' }, initial_state: [{ type: 'work.pasodrum.space', state_key: '', content: { kind: 'client' } }] });
+    const fakeChild = await make({ name: 'sneaky', initial_state: [{ type: 'm.space.parent', state_key: rooms.nordlys, content: { via: [SERVER] } }] });
+    const cases: [string, string[], string][] = [
+      ['stray room', [rooms.design, stray], rooms.workspace],
+      ['client space marked by Staff', [fakeClient], rooms.workspace],
+      ['channel claiming a client space', [fakeChild], rooms.workspace],
+      ['client space the inviter is not in', [kumo], rooms.workspace],
+      ['the workspace itself', [rooms.workspace], rooms.workspace],
+      ['filed under a client space', [rooms.projectUpdates], rooms.nordlys],
+    ];
+    for (const [what, channelIds, spaceId] of cases) {
+      const r = await api(ingrid, 'POST', '', { email: freshEmail(), role: 'external', spaceId, channelIds });
+      assert.deepEqual([r.status, r.body], [403, { error: 'not-allowed' }], what);
+    }
+    // Sofia is in Kumo and its channel, so she may hand them out.
+    const kumoOk = await api(sofia, 'POST', '', { email: freshEmail(), role: 'external', spaceId: rooms.workspace, channelIds: [kumo, kumoChat] });
+    assert.equal(kumoOk.status, 201, JSON.stringify(kumoOk.body));
+    await api(sofia, 'DELETE', `/${kumoOk.body.code}`);
+
+    // Claim leaves the rooms a fresh account may auto-accept (merged; never the workspace).
+    const userId = ok.body.userId;
+    const pre = await login(localpartOf(userId), unseal(key, db('SELECT secret FROM invites WHERE code = ?', ok.body.code).secret));
+    await mx(pre, 'PUT', invitedPath(userId), { rooms: ['!old:x'] });
+    await mx(pre, 'POST', '/_matrix/client/v3/logout', {});
+    assert.equal((await api(null, 'POST', `/${ok.body.code}/claim`, { name: 'Ola', password: 'a-good-long-password' })).status, 200);
+    const token = await login(localpartOf(userId), 'a-good-long-password');
+    assert.deepEqual((await mx(token, 'GET', invitedPath(userId))).body, { rooms: ['!old:x', rooms.design, rooms.nordlys, rooms.projectUpdates] });
+    for (const id of [stray, fakeClient, fakeChild]) {
+      for (const t of [jonas, ingrid]) await mx(t, 'POST', `/_matrix/client/v3/rooms/${enc(id)}/leave`, {});
+    }
+  });
+
+  it('D-36: pending invites from before keep working and read as staff/external', async () => {
+    const a = await api(sofia, 'POST', '', { email: freshEmail(), role: 'member', spaceId: rooms.workspace, channelIds: [rooms.general] });
+    const b = await api(sofia, 'POST', '', { email: freshEmail(), role: 'staff', spaceId: rooms.workspace, channelIds: [rooms.general] });
+    assert.equal(a.status, 201, 'old name in a request body');
+    db("UPDATE invites SET role = 'guest' WHERE code = ?", b.body.code);
+    assert.equal(db('SELECT role FROM invites WHERE code = ?', a.body.code).role, 'staff');
+    const list = (await api(sofia, 'GET', `?roomId=${encodeURIComponent(rooms.general)}`)).body;
+    assert.equal(list.find((i: any) => i.code === a.body.code).role, 'staff');
+    assert.equal(list.find((i: any) => i.code === b.body.code).role, 'external');
+    db("UPDATE invites SET role = 'member' WHERE code = ?", a.body.code);
+    assert.equal((await api(sofia, 'GET', `?roomId=${encodeURIComponent(rooms.general)}`)).body.find((i: any) => i.code === a.body.code).role, 'staff');
+    assert.equal((await api(null, 'POST', `/${b.body.code}/claim`, { name: 'Old Guest', password: 'a-good-long-password' })).status, 200);
+    const token = await login(localpartOf(b.body.userId), 'a-good-long-password');
+    assert.deepEqual((await mx(token, 'GET', invitedPath(b.body.userId))).body, { rooms: [rooms.general] });
+    await api(sofia, 'DELETE', `/${a.body.code}`);
+  });
+
+  it('D-36: revoke-all is Owner/Admin only and kills a person’s codes in every space', async () => {
+    const email = freshEmail();
+    const a = await api(jonas, 'POST', '', { email, role: 'client', spaceId: kumo, channelIds: [kumoChat] });
+    const b = await api(sofia, 'POST', '', { email, role: 'external', spaceId: rooms.workspace, channelIds: [rooms.design] });
+    assert.equal(b.status, 201, JSON.stringify(b.body));
+    const q = `/person?userId=${encodeURIComponent(a.body.userId)}`;
+    assert.equal((await api(jonas, 'DELETE', q)).status, 403, 'Staff');
+    assert.equal((await api(henrik, 'DELETE', q)).status, 403, 'a client');
+    assert.equal((await api(null, 'DELETE', q)).status, 401);
+    assert.equal((await api(ingrid, 'DELETE', '/person')).status, 400);
+    for (const code of [a.body.code, b.body.code]) assert.equal((await api(null, 'GET', `/${code}`)).body.state, 'open');
+    assert.deepEqual((await api(ingrid, 'DELETE', q)).body, { revoked: 2 });
+    for (const code of [a.body.code, b.body.code]) assert.equal((await api(null, 'GET', `/${code}`)).body.state, 'revoked');
+    assert.deepEqual((await api(sofia, 'DELETE', q)).body, { revoked: 0 });
   });
 
   it('translate is team only: clients and guests are 403, no token is 401', async () => {

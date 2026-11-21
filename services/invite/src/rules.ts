@@ -1,11 +1,19 @@
-export type Role = 'member' | 'guest' | 'client';
+export type Role = 'staff' | 'external' | 'client';
 export type SpaceKind = 'workspace' | 'client';
 export type InviteState = 'open' | 'used' | 'expired' | 'revoked';
 export type Person = { id: string; name: string };
 export type StateEvent = { type: string; state_key?: string; sender?: string; content?: Record<string, unknown> };
 
-export const ROLES: readonly Role[] = ['member', 'guest', 'client'];
+export const ROLES: readonly Role[] = ['staff', 'external', 'client'];
 export const ADMIN_LEVEL = 50;
+export const STAFF_LEVEL = 10;
+
+// D-36: Members became Staff and guests Externals; old request bodies and stored rows keep the old names.
+const LEGACY: Record<string, Role> = { member: 'staff', guest: 'external' };
+export function normalizeRole(role: unknown): Role | null {
+  if (typeof role !== 'string') return null;
+  return ROLES.includes(role as Role) ? (role as Role) : LEGACY[role] ?? null;
+}
 export const TTL_MS = 14 * 24 * 60 * 60 * 1000;
 
 export type SpaceInfo = {
@@ -14,6 +22,10 @@ export type SpaceInfo = {
   /** Who set `work.pasodrum.space` (what makes a room a client space). */
   kindSender?: string;
   joined: Map<string, string>;
+  /** Rooms this space lists as children (`m.space.child` with a `via`). */
+  children: Set<string>;
+  /** Spaces this room names as its parents (`m.space.parent`); claimed by the room, so check the parent's children. */
+  parents: string[];
   powerOf: (userId: string) => number;
 };
 
@@ -30,8 +42,13 @@ export function spaceInfo(events: StateEvent[]): SpaceInfo {
   const users = (pl.users ?? {}) as Record<string, number>;
   const usersDefault = typeof pl.users_default === 'number' ? pl.users_default : 0;
   const joined = new Map<string, string>();
+  const children = new Set<string>();
+  const parents: string[] = [];
   for (const e of events) {
-    if (e.type !== 'm.room.member' || !e.state_key || e.content?.membership !== 'join') continue;
+    if (!e.state_key) continue;
+    if (e.type === 'm.space.child' && Array.isArray(e.content?.via) && e.content.via.length) children.add(e.state_key);
+    if (e.type === 'm.space.parent' && Array.isArray(e.content?.via) && e.content.via.length) parents.push(e.state_key);
+    if (e.type !== 'm.room.member' || e.content?.membership !== 'join') continue;
     const name = e.content.displayname;
     joined.set(e.state_key, typeof name === 'string' && name ? name : e.state_key.slice(1, e.state_key.indexOf(':')));
   }
@@ -42,19 +59,21 @@ export function spaceInfo(events: StateEvent[]): SpaceInfo {
     kind: kindEvent?.content?.kind === 'client' ? 'client' : 'workspace',
     ...(kindEvent?.sender ? { kindSender: kindEvent.sender } : {}),
     joined,
+    children,
+    parents,
     powerOf: (userId) => (creators.includes(userId) ? Infinity : users[userId] ?? usersDefault),
   };
 }
 
-// D-25 / D-06: Owner/Admin add Members to the workspace; any workspace member adds guests;
-// in a client space the team (who hold invite rights there, PL 50) add clients.
+// D-36: Owner/Admin of the workspace add Staff and Externals (both filed under the workspace); Staff and up on a
+// client space add its clients.
 export function canInvite(role: Role, space: SpaceInfo, caller: string): boolean {
   if (!space.joined.has(caller)) return false;
   const level = space.powerOf(caller);
   switch (role) {
-    case 'member': return space.kind === 'workspace' && level >= ADMIN_LEVEL;
-    case 'guest': return space.kind === 'workspace';
-    case 'client': return space.kind === 'client' && level >= ADMIN_LEVEL;
+    case 'staff':
+    case 'external': return space.kind === 'workspace' && level >= ADMIN_LEVEL;
+    case 'client': return space.kind === 'client' && level >= STAFF_LEVEL;
   }
 }
 

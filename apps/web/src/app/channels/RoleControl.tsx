@@ -1,5 +1,6 @@
 // Role on the profile card (RoleChange, RoleChangeAdmin, MakeOwner; D-25).
-// Owners pick Owner / Admin / Member; Admins pick Admin / Member. Nobody switches their own role or demotes an Owner.
+// Owners pick Owner / Admin / Staff; Admins pick Admin / Staff. Nobody switches their own role or demotes an Owner.
+// D-36: the team sees an External's amber External tag; clients never do (Externals are team to them).
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore, useWorkspace, type Person, type Role } from '../../matrix';
@@ -48,8 +49,17 @@ export function RoleControl({ person, channelId, onMakeOwner }: { person: Person
 
   if (!theirs || !workspaceId) return null;
   const choices = roleChoices(mine, theirs, self);
-  const label = theirs === 'owner' || theirs === 'admin' || theirs === 'member' ? t(`channels.roles.${theirs}`) : null;
+  const label = theirs === 'owner' || theirs === 'admin' || theirs === 'staff' ? t(`channels.roles.${theirs}`) : null;
 
+  if (theirs === 'external') {
+    if (mine !== 'owner' && mine !== 'admin' && mine !== 'staff') return null;
+    return (
+      <span className={s.roleFact}>
+        <PersonIcon />
+        <span className={`${s.roleTag} ${s.roleTagExternal}`}>{t('channels.tags.external')}</span>
+      </span>
+    );
+  }
   if (!choices.length) {
     if (theirs !== 'owner' && theirs !== 'admin') return null;
     return (
@@ -60,7 +70,7 @@ export function RoleControl({ person, channelId, onMakeOwner }: { person: Person
     );
   }
 
-  const pick = (next: 'owner' | 'admin' | 'member') => {
+  const pick = (next: 'owner' | 'admin' | 'staff') => {
     setMenu(false);
     if (next === theirs) return;
     if (next === 'owner') {

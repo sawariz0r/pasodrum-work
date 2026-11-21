@@ -6,7 +6,7 @@ import { createFakeBackend } from '../../dev/fakeBackend';
 import type { Role } from '../../matrix';
 import { AppRoutes } from '../App';
 import { initI18n, setLanguage } from '../i18n';
-import { roleChoices } from './roles';
+import { addTypes, canAddNew, canAddPeople, canCreateIn, roleChoices } from './roles';
 
 initI18n();
 
@@ -27,7 +27,7 @@ function renderApp(path: string, roles?: Record<string, Role>) {
 }
 
 const flush = () => act(async () => {});
-const sidebar = () => screen.getByRole('complementary', { name: 'Pasodrum navigation' });
+const sidebar = (space = 'Pasodrum') => screen.getByRole('complementary', { name: `${space} navigation` });
 const header = () => screen.getByRole('main').querySelector('header')!;
 const openMenu = (el: HTMLElement) => fireEvent.keyDown(el, { key: 'Enter' });
 // The composer focuses itself a tick after it mounts, which would close a menu opened before then.
@@ -85,7 +85,7 @@ describe('new channel', () => {
   });
 
   it('hides creating and browsing from guests', () => {
-    renderApp('/w/!pasodrum/c/!design', { '!pasodrum': 'guest' });
+    renderApp('/w/!pasodrum/c/!design', { '!pasodrum': 'external' });
     expect(within(sidebar()).queryByRole('button', { name: 'Add a channel' })).toBeNull();
     expect(within(sidebar()).queryByRole('button', { name: 'Pasodrum' })).toBeNull();
     expect(within(sidebar()).queryByRole('button', { name: 'Add people' })).toBeNull();
@@ -99,7 +99,7 @@ describe('browse channels', () => {
     renderApp('/w/!pasodrum/channels');
     await flush();
     const list = screen.getByRole('list', { name: 'Channels' });
-    expect(within(list).getAllByRole('listitem').length).toBe(9);
+    expect(within(list).getAllByRole('listitem').length).toBe(10);
     fireEvent.change(screen.getByRole('searchbox', { name: 'Search channels' }), { target: { value: 'sal' } });
     const row = within(list).getByRole('listitem');
     fireEvent.click(within(row).getByRole('button', { name: 'Join #sales' }));
@@ -152,8 +152,9 @@ describe('channel details', () => {
     await flush();
     const list = within(dialog()).getByRole('list', { name: 'Members' });
     const rows = within(list).getAllByRole('listitem').map((r) => r.textContent);
-    expect(rows[0]).toContain('Ingrid HolmOwner');
-    expect(rows).toContain('OFOla FjellGuest');
+    expect(rows[0]).toContain('Sofia Olsen(you)Owner');
+    expect(rows[1]).toContain('Ingrid HolmAdmin');
+    expect(rows).toContain('OFOla FjellExternal');
     expect(rows.at(-1)).toContain('kari@nordlys.noPending');
     openMenu(within(list).getByRole('button', { name: 'More for kari@nordlys.no' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Copy join link' }));
@@ -162,7 +163,7 @@ describe('channel details', () => {
   });
 
   it('keeps member controls from Members', async () => {
-    renderApp('/w/!pasodrum/c/!design', { '!pasodrum': 'member' });
+    renderApp('/w/!pasodrum/c/!design', { '!pasodrum': 'staff' });
     fireEvent.click(within(header()).getByRole('button', { name: 'Channel details' }));
     expect(within(dialog()).queryByRole('button', { name: 'Edit' })).toBeNull();
     fireEvent.click(within(dialog()).getByRole('tab', { name: /Members/ }));
@@ -172,14 +173,30 @@ describe('channel details', () => {
 });
 
 describe('roles (D-25, D-27)', () => {
-  it('offers Owner/Admin/Member to Owners, Admin/Member to Admins, and never touches Owners or yourself', () => {
-    expect(roleChoices('owner', 'admin', false)).toEqual(['owner', 'admin', 'member']);
-    expect(roleChoices('admin', 'member', false)).toEqual(['admin', 'member']);
+  it('offers Owner/Admin/Staff to Owners, Admin/Staff to Admins, and never touches Owners or yourself', () => {
+    expect(roleChoices('owner', 'admin', false)).toEqual(['owner', 'admin', 'staff']);
+    expect(roleChoices('admin', 'staff', false)).toEqual(['admin', 'staff']);
     expect(roleChoices('owner', 'owner', false)).toEqual([]);
     expect(roleChoices('admin', 'owner', false)).toEqual([]);
-    expect(roleChoices('owner', 'member', true)).toEqual([]);
-    expect(roleChoices('member', 'admin', false)).toEqual([]);
-    expect(roleChoices('owner', 'guest', false)).toEqual([]);
+    expect(roleChoices('owner', 'staff', true)).toEqual([]);
+    expect(roleChoices('staff', 'admin', false)).toEqual([]);
+    expect(roleChoices('owner', 'external', false)).toEqual([]);
+  });
+
+  it('D-36: Owners/Admins add by type; Staff add colleagues (and clients where they are team); Externals and clients add nobody', () => {
+    const workspace = { id: '!w', name: 'Pasodrum', kind: 'workspace' } as const;
+    const client = { id: '!c', name: 'Nordlys', kind: 'client' } as const;
+    expect(addTypes('owner')).toEqual(['staff', 'external', 'client']);
+    expect(addTypes('admin')).toEqual(['staff', 'external', 'client']);
+    expect(addTypes('staff')).toEqual([]);
+    expect([canAddNew('owner'), canAddNew('admin'), canAddNew('staff'), canAddNew('external')]).toEqual([true, true, false, false]);
+    expect(canAddPeople(workspace, 'staff')).toBe(true);
+    expect(canAddPeople(client, 'staff')).toBe(true);
+    for (const r of ['external', 'client', undefined] as const) {
+      expect(canAddPeople(workspace, r)).toBe(false);
+      expect(canAddPeople(client, r)).toBe(false);
+      expect(canCreateIn(r)).toBe(false);
+    }
   });
 
   async function openCard(role: Role, name: string) {
@@ -196,7 +213,7 @@ describe('roles (D-25, D-27)', () => {
     const { store } = await openCard('owner', 'Jonas Berg');
     const setRole = vi.spyOn(store(), 'setRole');
     fireEvent.click(screen.getByRole('button', { name: 'Role: Jonas Berg' }));
-    expect(screen.getAllByRole('menuitemradio').map((x) => x.textContent)).toEqual(['Owner', 'Admin', 'Member']);
+    expect(screen.getAllByRole('menuitemradio').map((x) => x.textContent)).toEqual(['Owner', 'Admin', 'Staff']);
     fireEvent.click(screen.getByRole('menuitemradio', { name: 'Owner' }));
     const ask = await screen.findByRole('alertdialog', { name: 'Make Jonas Berg an owner?' });
     expect(setRole).not.toHaveBeenCalled();
@@ -205,23 +222,30 @@ describe('roles (D-25, D-27)', () => {
     expect(setRole).toHaveBeenCalledWith('!pasodrum', '@jonas:pasodrum.localhost', 'owner');
   });
 
-  it('lets an Admin switch Admin and Member without asking', async () => {
+  it('lets an Admin switch Admin and Staff without asking', async () => {
     const { store } = await openCard('admin', 'Maja Lind');
     const setRole = vi.spyOn(store(), 'setRole');
     fireEvent.click(screen.getByRole('button', { name: 'Role: Maja Lind' }));
-    expect(screen.getAllByRole('menuitemradio').map((x) => x.textContent)).toEqual(['Admin', 'Member']);
+    expect(screen.getAllByRole('menuitemradio').map((x) => x.textContent)).toEqual(['Admin', 'Staff']);
     fireEvent.click(screen.getByRole('menuitemradio', { name: 'Admin' }));
     await flush();
     expect(setRole).toHaveBeenCalledWith('!pasodrum', '@maja:pasodrum.localhost', 'admin');
     expect(screen.queryByRole('alertdialog')).toBeNull();
   });
 
-  it('shows an Owner as a tag only, and no role control to Members', async () => {
-    await openCard('owner', 'Ingrid Holm');
+  it('shows an Owner as a tag only, and no role control to Staff', async () => {
+    // D-36 canvas: Ingrid is an Admin; make her an Owner first.
+    const { store } = renderApp('/w/!pasodrum/c/!design', { '!pasodrum': 'owner' });
+    await act(() => store().setRole('!pasodrum', '@ingrid:pasodrum.localhost', 'owner'));
+    fireEvent.click(within(header()).getByRole('button', { name: '8 members' }));
+    await flush();
+    fireEvent.click(within(dialog()).getByRole('button', { name: 'Ingrid Holm' }));
+    await flush();
+    await flush();
     expect(screen.queryByRole('button', { name: 'Role: Ingrid Holm' })).toBeNull();
     expect(screen.getByRole('dialog', { name: 'Profile: Ingrid Holm' }).textContent).toContain('Owner');
     cleanup();
-    await openCard('member', 'Jonas Berg');
+    await openCard('staff', 'Jonas Berg');
     expect(screen.queryByRole('button', { name: 'Role: Jonas Berg' })).toBeNull();
   });
 });
@@ -239,36 +263,51 @@ describe('add people', () => {
     fireEvent.keyDown(input(), { key: 'Enter' });
   };
 
-  it('Owners pick Member or Guest; an outside email makes it Guest', async () => {
+  it('adds colleagues and a new email to a channel with no type; the email is a one-off External (D-36)', async () => {
     const { store } = await open();
     const addPeople = vi.spyOn(store(), 'addPeople');
-    expect(within(dialog()).getByRole('group', { name: 'Role' })).toBeTruthy();
+    expect(within(dialog()).queryByRole('group', { name: 'Type' })).toBeNull();
     fireEvent.change(input(), { target: { value: '田中' } });
     await flush();
     fireEvent.click(within(dialog()).getByRole('button', { name: 'Add 田中 由紀' }));
     enter('kari@nordlys.no');
-    expect((within(dialog()).getByRole('button', { name: 'Member' }) as HTMLButtonElement).disabled).toBe(true);
-    expect(within(dialog()).getByRole('button', { name: 'Guest' }).getAttribute('aria-pressed')).toBe('true');
-    expect(within(dialog()).getByText('Guest', { selector: 'span' })).toBeTruthy();
-    fireEvent.click(within(dialog()).getByRole('button', { name: 'Add 2 people' }));
+    expect(within(dialog()).getByText('External', { selector: 'span' })).toBeTruthy();
+    fireEvent.click(within(dialog()).getByRole('button', { name: 'Add 2' }));
     await flush();
-    expect(addPeople).toHaveBeenCalledWith('!design', { userIds: ['@tanaka:pasodrum.localhost'], emails: ['kari@nordlys.no'], role: 'guest' });
+    expect(addPeople).toHaveBeenCalledWith('!design', { type: 'channel', userIds: ['@tanaka:pasodrum.localhost'], emails: ['kari@nordlys.no'] });
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('adds to the space from the space menu', async () => {
-    const { store } = renderApp('/w/!pasodrum/c/!design');
-    const addPeople = vi.spyOn(store(), 'addPeople');
+  const fromSpaceMenu = async (space = 'Pasodrum', path = '/w/!pasodrum/c/!design', roles?: Record<string, Role>) => {
+    const app = renderApp(path, roles);
+    const addPeople = vi.spyOn(app.store(), 'addPeople');
     await composerFocused();
-    openMenu(within(sidebar()).getByRole('button', { name: 'Pasodrum' }));
+    openMenu(within(sidebar(space)).getByRole('button', { name: space }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Add people' }));
     await flush();
-    expect(within(dialog()).getByRole('heading', { name: 'Add people to Pasodrum' })).toBeTruthy();
-    expect(within(dialog()).queryByRole('group', { name: 'Role' })).toBeNull();
-    enter('kari@nordlys.no');
-    fireEvent.click(within(dialog()).getByRole('button', { name: 'Add 1 person' }));
+    return addPeople;
+  };
+
+  it('Owners pick a type at the workspace: Staff go on the client spaces picked', async () => {
+    const addPeople = await fromSpaceMenu();
+    expect(within(dialog()).getByRole('heading', { name: 'Add people' })).toBeTruthy();
+    expect(within(dialog()).getByRole('button', { name: 'Staff' }).getAttribute('aria-pressed')).toBe('true');
+    enter('aiko.ito@pasodrum.work');
+    fireEvent.click(within(dialog()).getByRole('button', { name: 'Nordlys' }));
+    fireEvent.click(within(dialog()).getByRole('button', { name: 'Add 1' }));
     await flush();
-    expect(addPeople).toHaveBeenCalledWith('!pasodrum', { userIds: [], emails: ['kari@nordlys.no'], role: 'member' });
+    expect(addPeople).toHaveBeenCalledWith('!pasodrum', { type: 'staff', userIds: [], emails: ['aiko.ito@pasodrum.work'], spaces: ['!nordlys'] });
+  });
+
+  it('an External needs a role or a channel, and gets them', async () => {
+    const addPeople = await fromSpaceMenu();
+    fireEvent.click(within(dialog()).getByRole('button', { name: 'External' }));
+    enter('ola@fjellstudio.no');
+    expect(within(dialog()).getByRole('button', { name: 'Add 1' }).hasAttribute('disabled')).toBe(true);
+    fireEvent.click(within(dialog()).getByRole('button', { name: 'Translators' }));
+    fireEvent.click(within(dialog()).getByRole('button', { name: 'Add 1' }));
+    await flush();
+    expect(addPeople).toHaveBeenCalledWith('!pasodrum', { type: 'external', userIds: [], emails: ['ola@fjellstudio.no'], roles: ['role-translators'], channels: [] });
   });
 
   it('opens from the empty channel too', async () => {
@@ -280,24 +319,27 @@ describe('add people', () => {
     expect(within(dialog()).getByRole('heading', { name: 'Add people to #design' })).toBeTruthy();
   });
 
-  it('Members add guests only, with no switch', async () => {
-    const { store } = await open('/w/!pasodrum/c/!design', { '!pasodrum': 'member', '!nordlys': 'member' });
+  it('Staff add colleagues only: a new email is refused before anything is sent', async () => {
+    const { store } = await open('/w/!pasodrum/c/!design', { '!pasodrum': 'staff', '!nordlys': 'staff' });
     const addPeople = vi.spyOn(store(), 'addPeople');
-    expect(within(dialog()).queryByRole('group', { name: 'Role' })).toBeNull();
-    enter('new@pasodrum.work');
-    fireEvent.click(within(dialog()).getByRole('button', { name: 'Add 1 person' }));
+    expect(within(dialog()).queryByRole('group', { name: 'Type' })).toBeNull();
+    enter('new@kotoba.jp');
+    expect(within(dialog()).getByRole('alert').textContent).toBe('Only Owners and Admins add new people');
+    expect(within(dialog()).getByRole('button', { name: 'Add people' }).hasAttribute('disabled')).toBe(true);
+    fireEvent.keyDown(input(), { key: 'Enter' });
     await flush();
-    expect(addPeople).toHaveBeenCalledWith('!design', { userIds: [], emails: ['new@pasodrum.work'], role: 'guest' });
+    expect(addPeople).not.toHaveBeenCalled();
   });
 
-  it('adds clients in a client space', async () => {
-    const { store } = await open('/w/!nordlys/c/!project-updates');
-    const addPeople = vi.spyOn(store(), 'addPeople');
-    enter('kari@nordlys.no');
+  it('Staff on a client space add its clients from the space menu, with no type', async () => {
+    const addPeople = await fromSpaceMenu('Nordlys', '/w/!nordlys/c/!project-updates', { '!pasodrum': 'staff', '!nordlys': 'staff' });
+    expect(within(dialog()).getByRole('heading', { name: 'Add people to Nordlys' })).toBeTruthy();
+    expect(within(dialog()).queryByRole('group', { name: 'Type' })).toBeNull();
+    enter('anna.vik@nordlys.no');
     expect(within(dialog()).getByText('Client')).toBeTruthy();
-    fireEvent.click(within(dialog()).getByRole('button', { name: 'Add 1 person' }));
+    fireEvent.click(within(dialog()).getByRole('button', { name: 'Add 1' }));
     await flush();
-    expect(addPeople.mock.calls[0]![1].role).toBe('client');
+    expect(addPeople).toHaveBeenCalledWith('!nordlys', { type: 'client', userIds: [], emails: ['anna.vik@nordlys.no'] });
   });
 
   it('marks a bad email, shows who is already in, and keeps what the server refused', async () => {
@@ -307,12 +349,12 @@ describe('add people', () => {
     expect(within(dialog()).getByRole('alert').textContent).toBe('henrik@nordlys isn’t an email address');
     expect(within(dialog()).getByRole('button', { name: 'Add people' }).hasAttribute('disabled')).toBe(true);
     enter('boss@notallowed.no');
-    expect(within(dialog()).getByRole('button', { name: 'Add 1 person' })).toBeTruthy();
+    expect(within(dialog()).getByRole('button', { name: 'Add 1' })).toBeTruthy();
     vi.spyOn(store(), 'addPeople');
     fireEvent.click(within(dialog()).getByRole('button', { name: 'Remove henrik@nordlys' }));
-    fireEvent.click(within(dialog()).getByRole('button', { name: 'Add 1 person' }));
+    fireEvent.click(within(dialog()).getByRole('button', { name: 'Add 1' }));
     await flush();
-    expect(within(dialog()).getByRole('alert').textContent).toBe('Couldn’t add boss@notallowed.no');
+    expect(within(dialog()).getByRole('alert').textContent).toBe('Only Owners and Admins add new people');
   });
 
   it('copies a pending person’s join link', async () => {
@@ -349,8 +391,8 @@ describe('rename and archive (E2): who sees them', () => {
     expect(general.getByRole('radiogroup', { name: 'Notifications' })).toBeTruthy();
   });
 
-  it('Members see Notifications only', async () => {
-    renderApp('/w/!pasodrum/c/!design', { '!pasodrum': 'member', '!nordlys': 'member' });
+  it('Staff see Notifications only', async () => {
+    renderApp('/w/!pasodrum/c/!design', { '!pasodrum': 'staff', '!nordlys': 'staff' });
     const panel = await settings('design');
     expect(panel.queryByRole('textbox', { name: 'Name' })).toBeNull();
     expect(panel.queryByRole('button', { name: 'Archive channel' })).toBeNull();

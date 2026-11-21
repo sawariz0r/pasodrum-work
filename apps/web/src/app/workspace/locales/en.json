@@ -1,0 +1,56 @@
+{
+  "workspaceSettings": {
+    "title": "Workspace settings",
+    "tabs": {
+      "people": "People",
+      "access": "Access"
+    },
+    "search": "Search",
+    "filters": {
+      "label": "Show",
+      "all": "All",
+      "staff": "Staff",
+      "external": "External"
+    },
+    "you": "you",
+    "tags": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "external": "External",
+      "pending": "Pending"
+    },
+    "roles": "Roles",
+    "removeFrom": "Remove from {{workspace}}",
+    "removeTitle": "Remove {{name}} from {{workspace}}?",
+    "removeButton": "Remove",
+    "loses": "Loses",
+    "newRole": "New role",
+    "roleList": "Roles",
+    "name": "Name",
+    "colour": "Colour",
+    "channels": "Channels",
+    "clientSpaces": "Client spaces",
+    "earlier": "Includes earlier messages",
+    "people": "People",
+    "add": "Add",
+    "deleteRole": "Delete role",
+    "notApplied": "Not applied",
+    "apply": "Apply",
+    "removePerson": "Remove {{name}}",
+    "swatches": {
+      "teal": "Teal",
+      "amber": "Amber",
+      "blue": "Blue",
+      "purple": "Purple",
+      "pink": "Pink",
+      "slate": "Slate"
+    },
+    "failed": {
+      "save": "Couldn’t save {{name}}. Try again.",
+      "delete": "Couldn’t delete {{name}}. Try again.",
+      "people": "Couldn’t update access for {{names}}. Try again.",
+      "access": "Couldn’t change {{name}}’s access",
+      "remove": "Couldn’t remove {{name}} from everything. Try again."
+    }
+  }
+}

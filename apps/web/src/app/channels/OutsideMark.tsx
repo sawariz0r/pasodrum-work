@@ -1,5 +1,5 @@
 // "This leaves the company" (RulesM5): one amber mark wherever someone outside the workspace reads along.
-// Team people only: Channel.outside is empty for clients and guests, and they never see the corner on DMs.
+// Team and Externals (D-36) see it: Channel.outside is empty for clients and Externals, and clients never see the corner on DMs.
 import { useTranslation } from 'react-i18next';
 import { useWorkspace, type Person } from '../../matrix';
 import { ExternalIcon } from '../icons';

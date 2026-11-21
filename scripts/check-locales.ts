@@ -41,7 +41,7 @@ function byBaseKey(flat: Map<string, string>) {
   return out;
 }
 
-const dirs = [join(web, 'locales')];
+const dirs = [join(web, 'locales'), join(web, 'app/workspace/locales')];
 const featuresDir = join(web, 'features');
 for (const f of readdirSync(featuresDir, { withFileTypes: true })) {
   const dir = join(featuresDir, f.name, 'locales');

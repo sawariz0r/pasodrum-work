@@ -183,13 +183,13 @@ function Card({ profile, anchor, onClose, onMakeOwner }: CardProps) {
 }
 
 /**
- * SIDE-03, the store's rule (shareHistory): I'm team (Owner/Admin/Member of the workspace), and this is an encrypted 1:1 DM
+ * SIDE-03, the store's rule (shareHistory): I'm team (Owner/Admin/Staff of the workspace), and this is an encrypted 1:1 DM
  * whose other person is outside the workspace.
  */
 export function mayShareHistory(x: WorkspaceSnapshot, dmId: string, userId: string): boolean {
   const workspace = x.spaces.find((sp) => sp.kind === 'workspace');
   const role = workspace && x.myRoles[workspace.id];
-  if (role !== 'owner' && role !== 'admin' && role !== 'member') return false;
+  if (role !== 'owner' && role !== 'admin' && role !== 'staff') return false;
   const dm = x.dms.find((d) => d.id === dmId);
   const others = dm?.people.filter((p) => p.id !== x.me.id) ?? [];
   return !!dm?.encrypted && others.length === 1 && others[0]!.id === userId && !!others[0]!.external;

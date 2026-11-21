@@ -1,7 +1,7 @@
 // /dev/app: the real app on the fake store, for screenshots without a server.
 // ?conn=starting|offline|reconnecting sets the first connection state; ?signin starts signed out;
-// ?role=owner|admin|member|guest sets my workspace role (M4; Nordlys follows: guest → none, otherwise the same).
-// ?as=client|guest signs in as the client (Henrik, Nordlys only) or a guest (Ola) (M5 shells).
+// ?role=owner|admin|staff|external sets my workspace role (M4; client spaces follow: external → none, otherwise the same).
+// ?as=client|external signs in as the client (Henrik, Nordlys only) or an External (Ola: #design and Nordlys) (M5 shells, D-36).
 // M6: ?security=unconfirmed (new device: DMs and #lead show the confirm card) | nodevice (no other device, recovery key only)
 // | newkey (no recovery key yet: RecoveryKeySave on the first DM) · &password (the server asks for the password first)
 // · ?confirm=asked|declined|timeout|mismatch|done starts on that confirmation step (asked = Is this you? from Safari on Mac)
@@ -38,8 +38,8 @@ const backend = createFakeBackend({
   delayMs: 400,
   loadMs: 600,
   uploadMs: 2400,
-  ...(role && { roles: role === 'guest' ? { '!pasodrum': 'guest' } : { '!pasodrum': role, '!nordlys': role } }),
-  ...((as === 'client' || as === 'guest') && { perspective: as }),
+  ...(role && { roles: role === 'external' ? { '!pasodrum': 'external' } : { '!pasodrum': role, '!kumo': role, '!nordlys': role } }),
+  ...((as === 'client' || as === 'external') && { perspective: as }),
   security,
   keyNeedsPassword: q.has('password'),
   backupUnreadable: q.has('unreadable'),

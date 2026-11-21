@@ -371,8 +371,8 @@
     "tags": {
       "owner": "オーナー",
       "admin": "管理者",
-      "member": "メンバー",
-      "guest": "ゲスト",
+      "staff": "スタッフ",
+      "external": "外部",
       "client": "クライアント",
       "pending": "参加待ち"
     },
@@ -389,8 +389,8 @@
     "roles": {
       "owner": "オーナー",
       "admin": "管理者",
-      "member": "メンバー",
-      "guest": "ゲスト",
+      "staff": "スタッフ",
+      "external": "外部",
       "client": "クライアント"
     },
     "makeOwnerTitle": "{{name}} をオーナーにしますか？",
@@ -414,7 +414,13 @@
     "archiveButton": "アーカイブ",
     "archived": "#{{name}} はアーカイブ済みです",
     "unarchive": "アーカイブを解除",
-    "archivedGroup": "アーカイブ済み"
+    "archivedGroup": "アーカイブ済み",
+    "type": "種類",
+    "clientSpaces": "クライアントスペース",
+    "clientSpace": "クライアントスペース",
+    "accessRoles": "ロール",
+    "newRole": "新しいロール",
+    "onlyManagers": "新しい人を追加できるのはオーナーと管理者だけです"
   },
   "spaces": {
     "newClientSpace": "新しいクライアントスペース",
@@ -455,7 +461,8 @@
     "removeFrom": "{{name}} から外す",
     "removeTitle": "{{person}} を {{name}} から外しますか？",
     "removeButton": "外す",
-    "renameFailed": "{{name}} に変更できませんでした"
+    "renameFailed": "{{name}} に変更できませんでした",
+    "workspaceSettings": "ワークスペースの設定"
   },
   "security": {
     "gateTitle": "このデバイスを確認",

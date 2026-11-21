@@ -34,13 +34,13 @@ import { decryptAttachment, encryptAttachment, sealedFileOf, type SealedFile } f
 import { CRYPTO_DB, createSecurity, cryptoCallbacks, withTimeout, type KeyHolder } from './crypto';
 import { sanitizeHtml, type SanitizedHtml } from './html';
 import { translateSegments } from './translate';
-import { createInvite, InviteError, listInvites, normalizeEmail, resendInvite, revokeInvitesFor, revokeInvite } from './invites';
+import { createInvite, InviteError, listInvites, normalizeEmail, resendInvite, revokeAllFor, revokeInvitesFor, revokeInvite, type NewInvite } from './invites';
 import {
   connectionOf, emailFromId, hydra, looksExternal, mayChangeRole, mediaOf, membershipSummary, powerLevel, reactionsOf, replyFallback, roleOf, sameMembers, share,
-  knownSpacesOf, linkPreviewOf, linksOf, pinnedIdsOf, stripReplyFallback, threadStats, workspaceOf,
-  type PowerFacts, type RoomFacts, type ThreadReply,
+  accessRoleOf, externalRecordOf, knownSpacesOf, linkPreviewOf, linksOf, pinnedIdsOf, stripReplyFallback, threadStats, workspaceOf,
+  type ExternalRecord, type PowerFacts, type RoomFacts, type ThreadReply,
 } from './map';
-import { archivedLevels, channelUsers, dmLevels, LEVEL, levelFor, PINS, powerLevels } from './levels';
+import { ACCESS_ROLE, archivedLevels, channelUsers, dmLevels, EXTERNAL, externalKey, LEVEL, PINS, powerLevels, withLevel } from './levels';
 import { defaultLevel, defaultOps, roomLevel, roomOps, type PushOp, type PushRules } from './push';
 import { createSearch } from './search';
 import { send, sendEdit, sendReaction, type MsgType, type TextMessage } from './send';
@@ -48,7 +48,7 @@ import { createBundleReceiver, markerFor, shareHistory } from './shareHistory';
 import { clearSession } from './session';
 import {
   PasswordRequired,
-  type ActivityItem, type AddPeopleResult, type Channel, type Dm, type FilesPage, type JoinableChannel, type LinkPreview, type Media, type Member, type Message, type MessageKind, type Person, type Role, type Session, type Space,
+  type AccessChange, type AccessRole, type ActivityItem, type AddPeopleResult, type Channel, type ExternalAccess, type Dm, type FilesPage, type JoinableChannel, type LinkPreview, type Media, type Member, type Message, type MessageKind, type Person, type Role, type Session, type Space,
   type ThreadInfo, type ThreadSummary, type Timeline, type Upload, type WorkspaceSnapshot, type WorkspaceStore,
 } from './types';
 
@@ -89,6 +89,8 @@ const NO_KEY_COMING = new Set<string>([
   DecryptionFailureCode.HISTORICAL_MESSAGE_USER_NOT_JOINED,
 ]);
 const SPACES = 'work.pasodrum.spaces';
+/** D-36. Written by the invite service at claim: the only rooms a fresh account auto-accepts. */
+const INVITED = 'work.pasodrum.invited';
 /** M7. Files tab: events per /messages request, and requests per page when scanning an encrypted conversation. */
 const FILES_PAGE = 30;
 const SCAN = 100;
@@ -305,9 +307,31 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     return ev;
   };
 
-  /** Not a member of the company workspace; before its member list loads (or for clients, who can't see it), judged by the ID. */
-  const isExternal = (userId: string) =>
-    workspaceRoom?.membersLoaded() ? workspaceRoom.getMember(userId)?.membership !== KnownMembership.Join : looksExternal(userId);
+  /** D-36. Who I am to the outside mark: in the workspace, an External (level 1 somewhere, no workspace), or a client. Set by build(). */
+  let viewer: 'team' | 'external' | 'client' = 'team';
+  /** Per build: everyone's highest level in my team rooms (see teamRooms). */
+  let metCache: Map<string, number> | null = null;
+  const metLevel = (userId: string) => {
+    if (!metCache) {
+      const met = new Map<string, number>();
+      for (const room of teamRooms()) {
+        const f = powerFacts(room);
+        for (const id of new Set([...f.creators, ...Object.keys(f.users ?? {}), ...room.getMembers().map((m) => m.userId)])) met.set(id, Math.max(met.get(id) ?? 0, powerLevel(f, id)));
+      }
+      metCache = met;
+    }
+    return metCache.get(userId);
+  };
+  /**
+   * D-36 outside mark. Team: anyone not joined to the workspace (by ID until its member list loads). Externals: anyone below
+   * Staff level where we meet. Clients: only other clients (level 0 where we meet); Externals are team to them.
+   */
+  const isExternal = (userId: string) => {
+    if (viewer === 'team') return workspaceRoom?.membersLoaded() ? workspaceRoom.getMember(userId)?.membership !== KnownMembership.Join : looksExternal(userId);
+    const level = metLevel(userId);
+    if (viewer === 'client') return (level ?? 0) < LEVEL.external;
+    return level === undefined ? looksExternal(userId) : level < LEVEL.staff;
+  };
   const person = (userId: string, name?: string | null, avatarUrl?: string): Person => ({
     id: userId,
     name: name || localpart(userId),
@@ -891,31 +915,103 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     if (changed) await client.setAccountData(EventType.Direct, content);
   };
 
-  const sharesSpace = (userId: string) => spacesJoined().some((s) => s.getMember(userId)?.membership === KnownMembership.Join);
-
   const childOfMySpace = (roomId: string) =>
     spacesJoined().some((s) => (s.currentState.getStateEvents(EventType.SpaceChild, roomId)?.getContent().via?.length ?? 0) > 0);
-  const sharesRoom = (userId: string) => roomsJoined().some((r) => r.getMember(userId)?.membership === KnownMembership.Join);
+  /** Channels auto-accepted this session: listed with the next write of `work.pasodrum.invited`. */
+  const anchored = new Set<string>();
+  const invitedNow = () => {
+    const content: Record<string, unknown> = client.getAccountData(INVITED as never)?.getContent() ?? {};
+    const list = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
+    return { content, rooms: new Set([...list(content.rooms), ...anchored]), people: new Set(list(content.people)), first: !Array.isArray(content.people) };
+  };
+  /**
+   * The rooms whose levels I trust: joined spaces, and joined channels a joined space lists or `work.pasodrum.invited`
+   * lists (an External's workspace channels). Never DMs, typed rooms (pages, projects) or other loose rooms: whoever
+   * makes a room outranks everyone in it.
+   */
+  const teamRooms = (except?: Room) => {
+    const { rooms } = invitedNow();
+    return client.getRooms().filter((r) => r !== except && joined(r) && (r.isSpaceRoom() || (!r.getType() && (rooms.has(r.roomId) || childOfMySpace(r.roomId)))));
+  };
+  /**
+   * D-36 trust anchor for when nothing is joined any more (removed and added again): `work.pasodrum.invited` also keeps
+   * my team rooms and the people at Staff level or above in them. It only grows. An account that never wrote it starts
+   * from the spaces and channels it's in.
+   */
+  let remembering: ReturnType<typeof setTimeout> | undefined;
+  const rememberTeam = () => {
+    remembering ??= setTimeout(() => {
+      remembering = undefined;
+      if (stopped) return;
+      const was = invitedNow();
+      const direct = directRooms();
+      const team = was.first ? client.getRooms().filter((r) => joined(r) && !visiting.has(r.roomId) && (r.isSpaceRoom() || (!r.getType() && !isDirect(r, direct)))) : teamRooms();
+      const rooms = new Set([...was.rooms, ...team.map((r) => r.roomId)]);
+      const people = new Set(was.people);
+      for (const r of team) {
+        const f = powerFacts(r);
+        for (const id of [...f.creators, ...Object.keys(f.users ?? {})]) if (id !== me.id && powerLevel(f, id) >= LEVEL.staff) people.add(id);
+      }
+      const listed = Array.isArray(was.content.rooms) ? new Set(was.content.rooms).size : -1;
+      if (!was.first && rooms.size === listed && people.size === was.people.size) return;
+      client.setAccountData(INVITED as never, { ...was.content, rooms: [...rooms], people: [...people] } as never).catch(noop);
+    }, 2_000);
+  };
+  const holdsStaff = (userId: string) => teamRooms().some((r) => levelIn(r, userId) >= LEVEL.staff);
+  const sharesRoom = async (userId: string, except?: Room) => {
+    const rooms = teamRooms(except);
+    await Promise.all(rooms.map((r) => r.loadMembersIfNeeded().catch(noop)));
+    return rooms.some((r) => r.getMember(userId)?.membership === KnownMembership.Join);
+  };
+  const othersIn = (room: Room) =>
+    room.getMembers().filter((m) => m.userId !== me.id && (m.membership === KnownMembership.Join || m.membership === KnownMembership.Invite)).map((m) => m.userId);
+  /** MSC3266 joined count of a room I'm invited to; undefined = the server can't say (skip), null = failed (wait). */
+  const joinedCount = (roomId: string) =>
+    client.http
+      .authedRequest<{ num_joined_members?: unknown }>(Method.Get, `/rooms/${enc(roomId)}/summary`, undefined, undefined, { prefix: '/_matrix/client/unstable/im.nheko.summary' })
+      .then(
+        (r) => (typeof r.num_joined_members === 'number' ? r.num_joined_members : null),
+        (e: unknown) => (e instanceof MatrixError && e.errcode === 'M_UNRECOGNIZED' ? undefined : null),
+      );
 
   /**
-   * D-07: no accept step. Accepted: DMs, spaces and channels from someone who shares a space with me; channels inside
-   * my spaces; on a fresh account (created by the invite service for these invites) everything; for guests (no space),
-   * invites from someone in one of my channels. Anything else waits.
+   * D-07/D-36: no accept step, but only from inside. Spaces and channels: the ones `work.pasodrum.invited` lists (the
+   * invite service at claim, then my team rooms); with no team room left, also from the people it lists. Spaces: from
+   * someone at Staff level or above in a team room of mine. Channels: inside one of my spaces; with no workspace
+   * (Externals, clients) also from someone at Staff level in a team room of mine. DMs: everyone in them shares a team
+   * room with me (no bridge between client spaces) and nobody joined is hidden from the invite; a group only when I'm
+   * in the workspace or the inviter is at Staff level or above. Anything else waits unanswered.
    */
-  const trusts = async (room: Room, inviter: string, dm: boolean, fresh: boolean, guest: boolean) => {
-    if (sharesSpace(inviter)) return true;
-    if (dm) return false;
-    if (fresh || childOfMySpace(room.roomId)) return true;
-    if (!guest) return false;
-    await Promise.all(roomsJoined().map((r) => r.loadMembersIfNeeded().catch(noop)));
-    return sharesRoom(inviter);
+  const trusts = async (room: Room, inviter: string, dm: boolean) => {
+    const inWorkspace = spacesJoined().some((s) => !isClientSpace(s));
+    if (!dm) {
+      const known = invitedNow();
+      if (known.rooms.has(room.roomId) || (!teamRooms().length && known.people.has(inviter))) return true;
+      return room.isSpaceRoom() ? holdsStaff(inviter) : childOfMySpace(room.roomId) || (!inWorkspace && holdsStaff(inviter));
+    }
+    const others = othersIn(room);
+    if (!others.includes(inviter)) others.push(inviter);
+    for (const id of others) if (!(await sharesRoom(id))) return false;
+    // The invite shows only some members; a joined one it doesn't show could be anyone.
+    const count = await joinedCount(room.roomId);
+    if ((others.length > 1 || (count ?? 0) > 1) && !inWorkspace && !holdsStaff(inviter)) return false;
+    return count === undefined || (count !== null && count <= room.getMembers().filter((m) => m.userId !== me.id && m.membership === KnownMembership.Join).length);
   };
+  /**
+   * After joining a DM: two invited at once both pass the count check, and someone who joined and left since isn't counted,
+   * so anyone in it (or who was) not sharing a room with me means it's a bridge.
+   */
+  const bridged = async (room: Room) => {
+    await room.loadMembersIfNeeded().catch(noop);
+    for (const m of room.getMembers()) if (m.userId !== me.id && !(await sharesRoom(m.userId, room))) return true;
+    return false;
+  };
+  /** DM invites that waited: checked again after a while, not on every sync (each check asks the server). */
+  const waited = new Map<string, number>();
   /** One join at a time, spaces first: Continuwuity's sync can miss a space join that lands together with a channel join. */
   let joinQueue = Promise.resolve();
   const acceptInvites = () => {
-    const fresh = !client.getRooms().some(joined);
-    const guest = !spacesJoined().length;
-    const invites = client.getRooms().filter((r) => r.getMyMembership() === KnownMembership.Invite && !joining.has(r.roomId));
+    const invites = client.getRooms().filter((r) => r.getMyMembership() === KnownMembership.Invite && !joining.has(r.roomId) && Date.now() - (waited.get(r.roomId) ?? 0) > 30_000);
     for (const room of invites.sort((a, b) => Number(b.isSpaceRoom()) - Number(a.isSpaceRoom()))) {
       const dmInviter = room.isSpaceRoom() ? undefined : room.getDMInviter();
       const inviter = dmInviter ?? room.getMember(me.id)?.events.member?.getSender();
@@ -923,11 +1019,21 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       joining.add(room.roomId);
       joinQueue = joinQueue.then(async () => {
         try {
-          if (!(await trusts(room, inviter, !!dmInviter, fresh, guest))) throw new Error('waits');
+          if (!(await trusts(room, inviter, !!dmInviter))) {
+            if (dmInviter) waited.set(room.roomId, Date.now());
+            throw new Error('waits');
+          }
           visiting.delete(room.roomId);
           await client.joinRoom(room.roomId, { viaServers: [server] });
           await whenJoined(room.roomId);
+          if (dmInviter && (await bridged(room))) {
+            discarded.add(room.roomId);
+            await client.leave(room.roomId).catch(noop);
+            await client.forget(room.roomId, true).catch(noop);
+            return;
+          }
           if (dmInviter) await addDirect(room.roomId, [dmInviter]);
+          else if (!room.getType()) anchored.add(room.roomId);
         } catch {
           joining.delete(room.roomId);
         }
@@ -957,8 +1063,26 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       if (!room.isSpaceRoom()) listThreads(room);
     }
     acceptInvites();
+    rememberTeam();
     encryptRooms(direct);
     openPins(direct);
+    healStaff();
+  };
+
+  /** D-36: Staff sit at 10 in the workspace and its channels; where I may set levels, whoever joined below that is lifted (one write per room, then a pause). */
+  const healing = new Set<string>();
+  const healStaff = () => {
+    if (!workspaceRoom?.membersLoaded()) return;
+    const staff = workspaceRoom.getJoinedMembers().map((m) => m.userId);
+    for (const room of [workspaceRoom, ...childRooms(workspaceRoom)]) {
+      if (healing.has(room.roomId) || discarded.has(room.roomId) || visiting.has(room.roomId)) continue;
+      const low = staff.filter((id) => levelIn(room, id) < LEVEL.staff && mayEditLevel(room, id, LEVEL.staff));
+      if (!low.length) continue;
+      healing.add(room.roomId);
+      void writeState(room.roomId, EventType.RoomPowerLevels, (c) => withLevel(c, low, LEVEL.staff))
+        .catch(noop)
+        .finally(() => setTimeout(() => healing.delete(room.roomId), 30_000));
+    }
   };
 
   /**
@@ -967,7 +1091,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
    */
   const pinsOpen = (pl: Record<string, unknown>) => {
     const level = (pl.events as Record<string, unknown> | undefined)?.[PINS];
-    return typeof level === 'number' && level <= LEVEL.member;
+    return typeof level === 'number' && level <= LEVEL.client;
   };
   const archivedPl = (pl: Record<string, unknown>) => typeof pl.events_default === 'number' && pl.events_default >= LEVEL.admin;
   const openPins = (direct: Map<string, string[]>) => {
@@ -981,7 +1105,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       if (!(space ? spaceStateOf(space).archived !== true : isDirect(room, direct)) || !mayState(room, me.id, EventType.RoomPowerLevels)) continue;
       lifted.add(room.roomId);
       void writeState(room.roomId, EventType.RoomPowerLevels, (c) =>
-        pinsOpen(c) || archivedPl(c) ? c : { ...c, events: { ...((c.events as Record<string, unknown> | undefined) ?? {}), [PINS]: LEVEL.member } },
+        pinsOpen(c) || archivedPl(c) ? c : { ...c, events: { ...((c.events as Record<string, unknown> | undefined) ?? {}), [PINS]: LEVEL.client } },
       ).catch(noop);
     }
   };
@@ -1065,22 +1189,39 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     return room_id;
   };
 
-  /** D-06: a client space takes my workspace role; someone outside the workspace is its client; in channels only, a guest. */
+  /** D-06/D-36: a client space takes my workspace role; outside the workspace, the External mark (1) there comes before "its client"; in channels only, an External. */
   const myRolesOf = (spaces: Space[]): Record<string, Role> =>
     Object.fromEntries(
       spaces.map((s) => {
         const room = client.getRoom(s.id);
-        if (!room || !joined(room)) return [s.id, 'guest'];
-        return [s.id, s.kind === 'workspace' ? roleOf(levelIn(room, me.id), 'workspace') : workspaceRoom ? roleOf(levelIn(workspaceRoom, me.id), 'workspace') : 'client'];
+        if (!room || !joined(room)) return [s.id, 'external'];
+        if (s.kind === 'workspace') return [s.id, roleOf(levelIn(room, me.id), 'workspace')];
+        if (workspaceRoom) return [s.id, roleOf(levelIn(workspaceRoom, me.id), 'workspace')];
+        return [s.id, levelIn(room, me.id) >= LEVEL.external ? 'external' : 'client'];
       }),
     );
 
-  /** D-28: clients and guests in a channel (joined or invited), only for the team. */
+  /** D-36. Access roles and External records from workspace state (only when I'm joined to it); empty content = deleted. */
+  const rolesNow = (): AccessRole[] =>
+    (workspaceRoom?.currentState.getStateEvents(ACCESS_ROLE) ?? [])
+      .map((e) => accessRoleOf(e.getStateKey()!, e.getContent()))
+      .filter((r): r is AccessRole => !!r)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  const recordsNow = (): Record<string, ExternalRecord> => {
+    const out: Record<string, ExternalRecord> = {};
+    for (const e of workspaceRoom?.currentState.getStateEvents(EXTERNAL) ?? []) {
+      const record = externalRecordOf(e.getContent());
+      if (record) out[`@${e.getStateKey()!}`] = record;
+    }
+    return out;
+  };
+
+  /** D-28: clients and Externals in a channel (joined or invited), only for the team. */
   const withOutside = (channels: Record<string, Channel[]>, roles: Record<string, Role>) =>
     Object.fromEntries(
       Object.entries(channels).map(([spaceId, list]) => {
         const role = roles[spaceId];
-        if (role !== 'owner' && role !== 'admin' && role !== 'member') return [spaceId, list];
+        if (role !== 'owner' && role !== 'admin' && role !== 'staff') return [spaceId, list];
         return [
           spaceId,
           list.map((c) => {
@@ -1147,9 +1288,11 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     scanCache = null;
     const hidden = halfMade(client.getRooms());
     const rooms = client.getRooms().filter((r) => !hidden.has(r.roomId));
+    metCache = null;
     workspaceRoom = rooms.find((r) => r.isSpaceRoom() && joined(r) && !isClientSpace(r));
     const workspace = workspaceOf(rooms.map(factsOf), knownSpacesOf(client.getAccountData(SPACES as never)?.getContent()));
     const myRoles = myRolesOf(workspace.spaces);
+    viewer = workspaceRoom ? 'team' : Object.values(myRoles).includes('external') ? 'external' : 'client';
     return {
       me,
       connection: connectionOf(syncState, synced),
@@ -1165,6 +1308,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       activity: activityOf(),
       myRoles,
       security: security.state(),
+      accessRoles: rolesNow(),
+      externals: recordsNow(),
     };
   };
 
@@ -1392,17 +1537,21 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     return rooms.filter((r) => r.room_id !== spaceId && !r.room_type);
   };
 
-  /** Members' roles: from the workspace when I'm in it; a client sees only their client space, so there the space's own levels and D-07 IDs decide. */
-  const roleFor = (userId: string, space: Room | undefined): Role => {
+  /**
+   * Members' roles (D-36). In the workspace: its members by their level there; then Externals (a record, or level 1 where we
+   * meet) BEFORE "in a client space → client". Outside it, levels in `rooms` decide: 10+ team, 1 External (team to a
+   * client: no tag), 0 client.
+   */
+  const roleFor = (userId: string, ...rooms: (Room | undefined)[]): Role => {
     if (workspaceRoom) {
-      const inWorkspace = workspaceRoom.getMember(userId)?.membership === KnownMembership.Join;
-      const inClient = spacesJoined().some((s) => isClientSpace(s) && s.getMember(userId)?.membership === KnownMembership.Join);
-      return roleOf(levelIn(workspaceRoom, userId), inWorkspace ? 'workspace' : inClient ? 'client' : 'none');
+      if (isMember(workspaceRoom, userId)) return roleOf(levelIn(workspaceRoom, userId), 'workspace');
+      if (recordsNow()[userId] || (metLevel(userId) ?? 0) >= LEVEL.external) return 'external';
+      return spacesJoined().some((s) => isClientSpace(s) && isMember(s, userId)) ? 'client' : 'external';
     }
-    // D-27: the client space's team sits at staff level or above; its clients at 0.
-    const inSpace = space?.getMember(userId)?.membership === KnownMembership.Join;
-    const level = levelIn(space, userId);
-    return roleOf(level, !inSpace ? 'none' : level >= LEVEL.staff ? 'workspace' : 'client');
+    const level = Math.max(0, ...rooms.map((r) => levelIn(r, userId)));
+    if (level >= LEVEL.staff) return roleOf(level, 'workspace');
+    if (level >= LEVEL.external) return viewer === 'client' ? 'staff' : 'external';
+    return 'client';
   };
 
   const chains = new Map<string, Promise<unknown>>();
@@ -1530,18 +1679,19 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   };
 
   type Failure = AddPeopleResult['failed'][number]['reason'];
-  /** Invites to the channel, and to its space unless they join as a guest (D-06). */
+  const reasonOf = (e: unknown): Failure => (e instanceof MatrixError && e.errcode === 'M_FORBIDDEN') || (e instanceof Error && e.message === 'not-allowed') ? 'not-allowed' : 'other';
+  /** Invites to the channel, and to its space unless they're an External (who get spaces only through roles, D-36). */
   /** `target` is what they're added to (the channel, or the space with `channel` as its home channel). */
-  const inviteTo = async (target: Room, channel: Room | undefined, space: Room | undefined, userId: string, role: 'member' | 'guest' | 'client', again = false): Promise<Failure | null> => {
+  const inviteTo = async (target: Room, channel: Room | undefined, space: Room | undefined, userId: string, role: 'staff' | 'external' | 'client', again = false): Promise<Failure | null> => {
     const membership = target.getMember(userId)?.membership;
     if (membership === KnownMembership.Join || (membership === KnownMembership.Invite && !again)) return 'already-member';
     try {
-      if (space && role !== 'guest' && !isMember(space, userId)) await client.invite(space.roomId, userId);
+      if (space && role !== 'external' && !isMember(space, userId)) await client.invite(space.roomId, userId);
       if (channel && !isMember(channel, userId)) await client.invite(channel.roomId, userId);
-      if (space && channel && isClientSpace(space) && role === 'member') await joinTeam(space, channel, userId);
+      if (space && channel && isClientSpace(space) && role === 'staff') await joinTeam(space, channel, userId);
       return null;
     } catch (e) {
-      return e instanceof MatrixError && e.errcode === 'M_FORBIDDEN' ? 'not-allowed' : 'other';
+      return reasonOf(e);
     }
   };
 
@@ -1611,14 +1761,236 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       ...Object.entries(known).filter(([id, k]) => id !== except && k.kind === 'client').map(([, k]) => k.name),
     ].some((n) => n.trim().toLowerCase() === wanted);
   };
-  /** In a client space: workspace people by their workspace role, everyone else is a client (pending ones too). A client judges by the space's levels. */
-  const spaceRole = (userId: string, space: Room): Role => {
-    if (!isClientSpace(space)) return roleOf(levelIn(space, userId), 'workspace');
-    if (workspaceRoom) return workspaceRoom.getMember(userId)?.membership === KnownMembership.Join ? roleOf(levelIn(workspaceRoom, userId), 'workspace') : 'client';
-    const level = levelIn(space, userId);
-    return roleOf(level, level >= LEVEL.staff ? 'workspace' : 'client');
+  /** In a client space: workspace people by their workspace role, then Externals, everyone else is a client (pending ones too). Outside the workspace, the space's levels decide. */
+  const spaceRole = (userId: string, space: Room): Role => (isClientSpace(space) ? roleFor(userId, space) : roleOf(levelIn(space, userId), 'workspace'));
+  const isTeam = (role: Role) => role === 'owner' || role === 'admin' || role === 'staff';
+
+  // D-36 people and access. Owners and Admins write access state; membership follows in their app (no background job).
+  type Want = { channels: Set<string>; spaces: Set<string> };
+  type Failed = AccessChange['failed'];
+  const present = (m: string | undefined) => m === KnownMembership.Join || m === KnownMembership.Invite;
+  /** From the server: membership is the access, so a lagging sync must not decide what to invite or kick. */
+  const membershipOf = async (roomId: string, userId: string) =>
+    ((await client.getStateEvent(roomId, EventType.RoomMember, userId).catch(() => ({}))) as { membership?: string }).membership;
+  const usersOf = (room: Room) => (room.currentState.getStateEvents(EventType.RoomPowerLevels, '')?.getContent().users ?? {}) as Record<string, unknown>;
+  const levelNeeded = (room: Room, key: 'invite' | 'kick', fallback: number) => {
+    const v: unknown = room.currentState.getStateEvents(EventType.RoomPowerLevels, '')?.getContent()[key];
+    return typeof v === 'number' ? v : fallback;
   };
-  const isTeam = (role: Role) => role === 'owner' || role === 'admin' || role === 'member';
+  /** Workspace channels and client spaces I'm in: everything I can change for someone. */
+  const workspaceChannels = () => (workspaceRoom ? childRooms(workspaceRoom) : []);
+  const clientSpaces = () => spacesJoined().filter(isClientSpace);
+  const mayEditAccess = () => !!workspaceRoom && mayState(workspaceRoom, me.id, EXTERNAL);
+  const wantOf = (record: ExternalRecord | undefined, roles: AccessRole[]): Want => {
+    const held = roles.filter((r) => record?.roles.includes(r.id));
+    return { channels: new Set([...(record?.channels ?? []), ...held.flatMap((r) => r.channels)]), spaces: new Set(held.flatMap((r) => r.spaces)) };
+  };
+  /** A client: no External record, at level 0 in a client space of mine. Never made an External (they'd be put out of their own space). */
+  const isClient = async (userId: string) => {
+    if (recordsNow()[userId]) return false;
+    const spaces = clientSpaces();
+    await Promise.all(spaces.map((s) => s.loadMembersIfNeeded().catch(noop)));
+    return spaces.some((s) => isMember(s, userId) && levelIn(s, userId) < LEVEL.external);
+  };
+  const writeRecord = (userId: string, record: ExternalRecord | null) =>
+    writeState(workspaceRoom!.roomId, EXTERNAL, () => (record ? { roles: record.roles, channels: record.channels } : {}), externalKey(userId));
+  const dropLevel = (roomId: string, userId: string) =>
+    writeState(roomId, EventType.RoomPowerLevels, (c) => {
+      const users = { ...((c.users as Record<string, number> | undefined) ?? {}) };
+      if (!(userId in users)) return c;
+      delete users[userId];
+      return { ...c, users };
+    });
+
+  /** Out of one room, level entry cleared. A room I'm not in I pass through (join, kick, leave) when its join rule lets me. */
+  const evict = async (roomId: string, userId: string) => {
+    const room = client.getRoom(roomId);
+    const passing = !room || !joined(room);
+    let entered = false;
+    if (passing) visiting.add(roomId);
+    try {
+      if (passing) {
+        await client.joinRoom(roomId, { viaServers: [server] });
+        entered = true;
+      }
+      if (present(await membershipOf(roomId, userId))) await client.kick(roomId, userId);
+      if (passing || userId in usersOf(room!)) await dropLevel(roomId, userId).catch(noop);
+    } finally {
+      if (entered) await client.leave(roomId).catch(noop);
+      else if (passing) visiting.delete(roomId);
+    }
+  };
+  /**
+   * D-36 removal order: out of the space first (its restricted channels can't be rejoined after), then every channel it
+   * lists; channels I'm not in only when they were in the space. Throws when the space refuses; resolves to the channels
+   * that couldn't be done.
+   */
+  const outOfSpace = async (space: Room, userId: string) => {
+    const wasIn = present(await membershipOf(space.roomId, userId));
+    if (wasIn) await client.kick(space.roomId, userId);
+    if (userId in usersOf(space)) await dropLevel(space.roomId, userId).catch(noop);
+    const unreached: string[] = [];
+    for (const e of space.currentState.getStateEvents(EventType.SpaceChild)) {
+      const id = e.getStateKey()!;
+      const room = client.getRoom(id);
+      if (!e.getContent().via?.length || room?.isSpaceRoom() || (!wasIn && !(room && joined(room)))) continue;
+      await evict(id, userId).catch(() => unreached.push(id));
+    }
+    return unreached;
+  };
+
+  /**
+   * D-36: one External's rooms follow their access. Wanted client spaces: invited to the space and its home channel (its
+   * other channels are restricted joins), level 1 in the space and its channels I can edit. Wanted workspace channels:
+   * invited, level 1. Workspace channels and client spaces I'm in that aren't wanted: out (a space first, then its
+   * channels). Steps already true are skipped; failures are collected, never thrown halfway.
+   */
+  const syncExternal = async (userId: string, want: Want): Promise<Failed> => {
+    const failed: Failed = [];
+    if (!workspaceRoom) return failed;
+    await workspaceRoom.loadMembersIfNeeded().catch(noop);
+    if (isMember(workspaceRoom, userId)) return failed;
+    if (await isClient(userId)) return [{ userId, roomId: workspaceRoom.roomId }];
+    const attempt = async (roomId: string, run: () => Promise<unknown>) => {
+      try {
+        await run();
+      } catch {
+        failed.push({ userId, roomId });
+      }
+    };
+    const admit = async (room: Room) => {
+      if (!present(await membershipOf(room.roomId, userId))) await client.invite(room.roomId, userId);
+    };
+    const mark = async (room: Room) => {
+      if (levelIn(room, userId) === LEVEL.external) return;
+      if (!mayEditLevel(room, userId, LEVEL.external)) throw new Error('not-allowed');
+      await setLevel(room, userId, LEVEL.external);
+    };
+    const mine = (id: string) => {
+      const r = client.getRoom(id);
+      return r && joined(r) ? r : undefined;
+    };
+    for (const id of want.spaces) {
+      const space = mine(id);
+      if (!space || !isClientSpace(space)) {
+        failed.push({ userId, roomId: id });
+        continue;
+      }
+      await attempt(id, async () => {
+        await admit(space);
+        await mark(space);
+      });
+      const home = homeOf(space);
+      for (const channel of childRooms(space))
+        await attempt(channel.roomId, async () => {
+          if (channel === home) await admit(channel);
+          await mark(channel);
+        });
+    }
+    for (const id of want.channels) {
+      const room = mine(id);
+      if (!room || room.isSpaceRoom()) {
+        failed.push({ userId, roomId: id });
+        continue;
+      }
+      await attempt(id, async () => {
+        await admit(room);
+        await mark(room);
+      });
+    }
+    for (const space of clientSpaces()) {
+      if (!want.spaces.has(space.roomId)) await attempt(space.roomId, async () => failed.push(...(await outOfSpace(space, userId)).map((roomId) => ({ userId, roomId }))));
+    }
+    for (const room of workspaceChannels()) if (!want.channels.has(room.roomId)) await attempt(room.roomId, () => evict(room.roomId, userId));
+    // Back in step with the server before anyone reads externalAccess again.
+    const skip = new Set(failed.map((f) => f.roomId));
+    await settle(
+      () =>
+        [...want.channels, ...want.spaces].every((id) => skip.has(id) || !mine(id) || isMember(mine(id), userId)) &&
+        [...workspaceChannels(), ...clientSpaces()].every((r) => skip.has(r.roomId) || want.channels.has(r.roomId) || want.spaces.has(r.roomId) || !isMember(r, userId)),
+      5_000,
+    );
+    return failed;
+  };
+  const follow = async (records: Record<string, ExternalRecord>, roles: AccessRole[], which: (record: ExternalRecord) => boolean) => {
+    const failed: Failed = [];
+    for (const [userId, record] of Object.entries(records)) if (which(record)) failed.push(...(await syncExternal(userId, wantOf(record, roles))));
+    return failed;
+  };
+
+  /** Everyone the access screens list as an External: records, level 1 in a room of mine (outside the workspace), pending email invites. */
+  const externalsOf = async (only?: string, codes?: Awaited<ReturnType<typeof listInvites>>): Promise<ExternalAccess[]> => {
+    const ws = workspaceRoom;
+    if (!ws) return [];
+    const channels = workspaceChannels();
+    const spaces = clientSpaces();
+    const rooms = [...channels, ...spaces];
+    await Promise.all([ws, ...rooms].map((r) => r.loadMembersIfNeeded().catch(noop)));
+    const records = recordsNow();
+    const roles = rolesNow();
+    const pending = (codes ?? (await listInvites(session.accessToken, ws.roomId).catch(() => []))).filter((i) => i.role === 'external' && i.userId);
+    const ids = new Set([...Object.keys(records), ...pending.map((i) => i.userId!)]);
+    for (const r of rooms) {
+      for (const m of r.getMembers()) {
+        const level = levelIn(r, m.userId);
+        if (present(m.membership) && level >= LEVEL.external && level < LEVEL.staff) ids.add(m.userId);
+      }
+    }
+    return [...ids]
+      .filter((id) => (!only || id === only) && id !== me.id && !isMember(ws, id))
+      .map((id): ExternalAccess => {
+        const want = wantOf(records[id], roles);
+        const at = (r: Room) => present(r.getMember(id)?.membership);
+        const now = { channels: channels.filter(at).map((r) => r.roomId), spaces: spaces.filter(at).map((r) => r.roomId) };
+        const differ = new Set<string>();
+        const stuck = new Set<string>();
+        for (const rid of [...want.channels, ...want.spaces]) {
+          const r = client.getRoom(rid);
+          if (!r || !joined(r)) {
+            differ.add(rid);
+            stuck.add(rid);
+            continue;
+          }
+          const inIt = at(r);
+          const marked = levelIn(r, id) === LEVEL.external;
+          if (inIt && marked) continue;
+          differ.add(rid);
+          if ((!inIt && levelIn(r, me.id) < levelNeeded(r, 'invite', 0)) || (!marked && !mayEditLevel(r, id, LEVEL.external))) stuck.add(rid);
+        }
+        for (const rid of [...now.channels, ...now.spaces]) {
+          if (want.channels.has(rid) || want.spaces.has(rid)) continue;
+          differ.add(rid);
+          const r = client.getRoom(rid)!;
+          if (levelIn(r, me.id) < levelNeeded(r, 'kick', LEVEL.admin) || levelIn(r, id) >= levelIn(r, me.id)) stuck.add(rid);
+        }
+        const code = pending.find((i) => i.userId === id);
+        const member = rooms.map((r) => r.getMember(id)).find((m) => !!m);
+        const joinedSomewhere = rooms.some((r) => r.getMember(id)?.membership === KnownMembership.Join);
+        const isPending = !joinedSomewhere && (!!code || now.channels.length + now.spaces.length > 0);
+        return {
+          person: person(id, member?.name ?? client.getUser(id)?.displayName ?? code?.name, member?.getMxcAvatarUrl()),
+          ...(code ? { email: code.email } : {}),
+          ...(isPending ? { pending: true } : {}),
+          roles: (records[id]?.roles ?? []).filter((r) => roles.some((x) => x.id === r)),
+          channels: records[id]?.channels ?? [],
+          ...(differ.size ? { notApplied: true } : {}),
+          ...(stuck.size ? { stuck: [...stuck] } : {}),
+          rooms: now,
+        };
+      })
+      .sort((a, b) => byName(a.person, b.person));
+  };
+
+  /** Put on a client space's team (as createClientSpace does): invited to the space and every channel of it I'm in, at their team level where I may set it. */
+  const onTeam = async (space: Room, userId: string) => {
+    const level = teamLevel(userId);
+    const rooms = [space, ...childRooms(space)];
+    await Promise.all(rooms.map((r) => r.loadMembersIfNeeded().catch(noop)));
+    for (const r of rooms) {
+      if (!isMember(r, userId)) await client.invite(r.roomId, userId);
+      if (levelIn(r, userId) < level && mayEditLevel(r, userId, level)) await setLevel(r, userId, level).catch(noop);
+    }
+  };
 
   return {
     getSnapshot: () => snapshot,
@@ -1986,7 +2358,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         .filter((m) => m.membership === KnownMembership.Join || m.membership === KnownMembership.Invite)
         .map((m): Member => ({
           person: person(m.userId, m.name, m.getMxcAvatarUrl()),
-          role: roleFor(m.userId, space),
+          role: roleFor(m.userId, space, room),
           ...(m.membership === KnownMembership.Invite ? { pending: true } : {}),
         }))
         .sort((a, b) => Number(!!a.pending) - Number(!!b.pending) || byName(a.person, b.person));
@@ -1995,11 +2367,11 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       await ready;
       const space = client.getRoom(spaceId);
       if (!space || !mayChangeRole(levelIn(space, me.id), levelIn(space, userId), role, userId === me.id)) throw new Error('not-allowed');
-      // D-27: the role is carried into every space of mine they're in (client spaces: Member = team level) and those spaces' channels.
+      // D-27/D-36: the role is carried into every space of mine they're in (Staff = 10 everywhere) and those spaces' channels.
       const spaces = [space, ...spacesJoined().filter((s) => s !== space && isMember(s, userId))];
       const plan: [Room, number][] = [];
       for (const s of spaces) {
-        const level = levelFor(role, isClientSpace(s) ? 'client' : 'workspace', true);
+        const level = LEVEL[role];
         plan.push([s, level]);
         for (const e of s.currentState.getStateEvents(EventType.SpaceChild)) {
           const r = client.getRoom(e.getStateKey());
@@ -2025,38 +2397,139 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       if (!target) throw new Error('not-allowed');
       const space = target.isSpaceRoom() ? target : spaceOf(targetId);
       const channel = target.isSpaceRoom() ? homeOf(target) : target;
-      await Promise.all([target, ...(channel ? [channel] : []), ...(space ? [space] : [])].map((r) => r.loadMembersIfNeeded().catch(noop)));
-      for (const userId of new Set(req.userIds)) {
-        const failure = await inviteTo(target, channel, space, userId, req.role);
-        if (failure) result.failed.push({ who: userId, reason: failure });
-        else result.added.push(userId);
-      }
-      for (const email of new Set(req.emails.map((e) => e.trim()).filter(Boolean))) {
-        if (!space) {
-          result.failed.push({ who: email, reason: 'other' });
-          continue;
+      const ws = workspaceRoom;
+      await Promise.all([target, channel, space, ws].filter((r): r is Room => !!r).map((r) => r.loadMembersIfNeeded().catch(noop)));
+      const ids = [...new Set(req.userIds)];
+      const emails = [...new Set(req.emails.map((e) => e.trim()).filter(Boolean))];
+      const refuseAll = (reason: Failure) => {
+        for (const who of [...ids, ...emails]) result.failed.push({ who, reason });
+        return result;
+      };
+      /**
+       * Each id, then each email: its account comes from the invite service (`exists` = an account already there), then
+       * it's added the same way. `fresh` = a code for a new or still-unclaimed account (their pending invites stand).
+       */
+      const each = async (add: (userId: string, by: { email: boolean; fresh: boolean }) => Promise<Failure | null>, invite: Omit<NewInvite, 'email' | 'locale'> | null) => {
+        for (const id of ids) {
+          const failure = await add(id, { email: false, fresh: false });
+          if (failure) result.failed.push({ who: id, reason: failure });
+          else result.added.push(id);
         }
-        let userId: string;
-        let existing = false;
-        try {
-          ({ userId } = await createInvite(session.accessToken, { email, role: req.role, spaceId: space.roomId, channelIds: channel ? [channel.roomId] : [], locale: inviteLocale() }));
-        } catch (e) {
-          const code = e instanceof InviteError ? e.code : 'other';
-          if (code === 'exists' && e instanceof InviteError && e.userId) {
-            userId = e.userId;
-            existing = true;
-          } else {
-            result.failed.push({ who: email, reason: code === 'invalid-email' || code === 'not-allowed' ? code : 'other' });
+        for (const email of emails) {
+          if (!invite) {
+            result.failed.push({ who: email, reason: 'not-allowed' });
             continue;
           }
+          let userId: string;
+          let fresh = true;
+          try {
+            ({ userId } = await createInvite(session.accessToken, { ...invite, email, locale: inviteLocale() }));
+          } catch (e) {
+            if (!(e instanceof InviteError && e.code === 'exists' && e.userId)) {
+              const code = e instanceof InviteError ? e.code : 'other';
+              result.failed.push({ who: email, reason: code === 'invalid-email' || code === 'not-allowed' ? code : 'other' });
+              continue;
+            }
+            userId = e.userId;
+            fresh = false;
+          }
+          const failure = await add(userId, { email: true, fresh });
+          if (failure) result.failed.push({ who: email, reason: failure });
+          else if (fresh) result.invited.push(email);
+          else result.added.push(userId);
         }
-        // A fresh code for someone still pending (201 again) re-sends the mail; their Matrix invites stand.
-        const failure = await inviteTo(target, channel, space, userId, req.role, !existing);
-        if (failure) result.failed.push({ who: email, reason: failure });
-        else if (existing) result.added.push(userId);
-        else result.invited.push(email);
+        return result;
+      };
+
+      if (req.type === 'staff') {
+        // Owner/Admin: into the workspace and its home channel at Staff level, and onto these client spaces' teams.
+        if (!ws || target !== ws || levelIn(ws, me.id) < LEVEL.admin) return refuseAll('not-allowed');
+        const home = homeOf(ws);
+        const spaces = req.spaces.map((id) => client.getRoom(id)).filter((r): r is Room => !!r && joined(r) && isClientSpace(r));
+        await Promise.all(spaces.map((r) => r.loadMembersIfNeeded().catch(noop)));
+        return each(
+          async (userId, by) => {
+            if (!by.fresh && isMember(ws, userId) && spaces.every((s) => isMember(s, userId))) return 'already-member';
+            try {
+              for (const r of [ws, home]) if (r && !isMember(r, userId)) await client.invite(r.roomId, userId);
+              for (const r of [ws, ...childRooms(ws)]) if (levelIn(r, userId) < LEVEL.staff && mayEditLevel(r, userId, LEVEL.staff)) await setLevel(r, userId, LEVEL.staff).catch(noop);
+              for (const s of spaces) await onTeam(s, userId);
+              return null;
+            } catch (e) {
+              return reasonOf(e);
+            }
+          },
+          { role: 'staff', spaceId: ws.roomId, channelIds: home ? [home.roomId] : [] },
+        );
       }
-      return result;
+
+      if (req.type === 'external') {
+        // Owner/Admin: the record first (what they should reach), then membership follows.
+        if (!ws || target !== ws || !mayEditAccess()) return refuseAll('not-allowed');
+        const roles = rolesNow();
+        const records = recordsNow();
+        const granted = wantOf({ roles: req.roles, channels: req.channels }, roles);
+        const rooms = [...granted.channels, ...granted.spaces].filter((id) => {
+          const r = client.getRoom(id);
+          return !!r && joined(r);
+        });
+        await Promise.all(workspaceChannels().map((r) => r.loadMembersIfNeeded().catch(noop)));
+        return each(
+          async (userId, by) => {
+            if (isMember(ws, userId)) return 'already-member';
+            const prev = records[userId];
+            if (!prev && (await isClient(userId))) return 'not-allowed';
+            // Someone with no record yet keeps the workspace channels they're already in (nobody loses access).
+            const had = prev?.channels ?? workspaceChannels().filter((r) => isMember(r, userId)).map((r) => r.roomId);
+            const record = { roles: [...new Set([...(prev?.roles ?? []), ...req.roles])], channels: [...new Set([...had, ...req.channels])] };
+            if (!by.fresh && prev && JSON.stringify(prev) === JSON.stringify(record)) return 'already-member';
+            try {
+              await writeRecord(userId, record);
+            } catch (e) {
+              return reasonOf(e);
+            }
+            records[userId] = record;
+            return (await syncExternal(userId, wantOf(record, roles))).length ? 'other' : null;
+          },
+          { role: 'external', spaceId: ws.roomId, channelIds: rooms },
+        );
+      }
+
+      if (req.type === 'client') {
+        // The team of that client space (Staff and up there).
+        if (!space || !isClientSpace(space) || levelIn(space, me.id) < LEVEL.staff) return refuseAll('not-allowed');
+        return each((userId, by) => inviteTo(target, channel, space, userId, 'client', by.fresh), { role: 'client', spaceId: space.roomId, channelIds: channel ? [channel.roomId] : [] });
+      }
+
+      if (target.isSpaceRoom()) return refuseAll('other');
+      const colleague = (userId: string) => !!ws && isMember(ws, userId);
+      if (space && isClientSpace(space)) {
+        // A client space's channel: colleagues join its team, others are added to the channel, new emails are its clients.
+        return each(
+          (userId, by) => inviteTo(target, target, colleague(userId) || by.email ? space : undefined, userId, colleague(userId) ? 'staff' : 'client', by.fresh),
+          levelIn(space, me.id) >= LEVEL.staff ? { role: 'client', spaceId: space.roomId, channelIds: [target.roomId] } : null,
+        );
+      }
+      // A workspace channel: colleagues as they are; Externals also get the mark and the channel as a one-off when I may
+      // write access (Owner/Admin); new emails are new Externals, Owner/Admin only.
+      const editor = mayEditAccess();
+      const external = async (userId: string, again: boolean): Promise<Failure | null> => {
+        if (await isClient(userId)) return 'not-allowed';
+        const failure = await inviteTo(target, target, undefined, userId, 'external', again);
+        if (failure || !editor) return failure;
+        try {
+          const prev = recordsNow()[userId];
+          if (!prev?.channels.includes(target.roomId)) await writeRecord(userId, { roles: prev?.roles ?? [], channels: [...(prev?.channels ?? []), target.roomId] });
+          if (levelIn(target, userId) !== LEVEL.external) await setLevel(target, userId, LEVEL.external);
+          return null;
+        } catch (e) {
+          return reasonOf(e);
+        }
+      };
+      return each(
+        (userId, by) => (!by.email && colleague(userId) ? inviteTo(target, target, space, userId, 'staff') : external(userId, by.fresh)),
+        editor && ws ? { role: 'external', spaceId: ws.roomId, channelIds: [target.roomId] } : null,
+      );
     },
     async pendingInvites(channelId) {
       return listInvites(session.accessToken, channelId).catch(() => []);
@@ -2261,31 +2734,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       await revokeInvitesFor(session.accessToken, spaceId, userId).catch((e: unknown) => {
         if (pending) throw new Error('other', { cause: e });
       });
-      // Every channel the space lists, mine or not: a channel I'm not in I pass through (join, kick, leave) when its join
-      // rule lets me; their pending invites are kicked too.
-      const unreached: string[] = [];
-      for (const e of space.currentState.getStateEvents(EventType.SpaceChild)) {
-        const id = e.getStateKey()!;
-        if (!e.getContent().via?.length || client.getRoom(id)?.isSpaceRoom()) continue;
-        const room = client.getRoom(id);
-        const passing = !room || !joined(room);
-        let entered = !passing;
-        try {
-          if (passing) {
-            visiting.add(id);
-            await client.joinRoom(id, { viaServers: [server] });
-            entered = true;
-          }
-          const { membership } = (await client.getStateEvent(id, EventType.RoomMember, userId).catch(() => ({}))) as { membership?: string };
-          if (membership === KnownMembership.Join || membership === KnownMembership.Invite) await client.kick(id, userId);
-        } catch {
-          unreached.push(id);
-        } finally {
-          if (passing && entered) await client.leave(id).catch(noop);
-          else if (passing) visiting.delete(id);
-        }
-      }
-      if (isMember(space, userId)) await client.kick(spaceId, userId).catch((e: unknown) => Promise.reject(forbidden(e)));
+      // D-36: the space first, then its channels.
+      const unreached = await outOfSpace(space, userId).catch((e: unknown) => Promise.reject(forbidden(e)));
       if (unreached.length) throw new Error('partial');
     },
     async setArchived(spaceId, archived) {
@@ -2435,6 +2885,100 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         personConfirmed: () => security.personConfirmed(userId),
         recipientReady: () => security.hasSignedDevice(userId),
       });
+    },
+    // D-36
+    async workspacePeople() {
+      await ready;
+      const ws = workspaceRoom;
+      if (!ws) return [];
+      await ws.loadMembersIfNeeded().catch(noop);
+      const codes = await listInvites(session.accessToken, ws.roomId).catch(() => []);
+      const team = ws
+        .getMembers()
+        .filter((m) => present(m.membership))
+        .map((m): Member => {
+          const pending = m.membership === KnownMembership.Invite;
+          const email = pending ? codes.find((i) => i.userId === m.userId)?.email : undefined;
+          return { person: person(m.userId, m.name, m.getMxcAvatarUrl()), role: roleOf(levelIn(ws, m.userId), 'workspace'), ...(pending ? { pending: true } : {}), ...(email ? { email } : {}) };
+        });
+      const externals = (await externalsOf(undefined, codes)).map((x): Member => ({ person: x.person, role: 'external', ...(x.pending ? { pending: true } : {}), ...(x.email ? { email: x.email } : {}), roles: x.roles }));
+      return [...team, ...externals].sort((a, b) => Number(!!a.pending) - Number(!!b.pending) || byName(a.person, b.person));
+    },
+    async externalAccess(userId) {
+      await ready;
+      return externalsOf(userId);
+    },
+    async saveAccessRole(role) {
+      await ready;
+      if (!workspaceRoom || !mayState(workspaceRoom, me.id, ACCESS_ROLE)) throw new Error('not-allowed');
+      const id = role.id ?? crypto.randomUUID();
+      const saved: AccessRole = { id, name: role.name.trim(), colour: role.colour, channels: [...new Set(role.channels)], spaces: [...new Set(role.spaces)] };
+      if (!saved.name) throw new Error('other');
+      await writeState(workspaceRoom.roomId, ACCESS_ROLE, () => ({ name: saved.name, colour: saved.colour, channels: saved.channels, spaces: saved.spaces }), id).catch((e: unknown) =>
+        Promise.reject(forbidden(e)),
+      );
+      const failed = await follow(recordsNow(), [...rolesNow().filter((r) => r.id !== id), saved], (record) => record.roles.includes(id));
+      await settle(() => JSON.stringify(snapshot.accessRoles.find((r) => r.id === id)) === JSON.stringify(saved));
+      return { id, failed };
+    },
+    async deleteAccessRole(id) {
+      await ready;
+      if (!workspaceRoom || !mayState(workspaceRoom, me.id, ACCESS_ROLE)) throw new Error('not-allowed');
+      const ws = workspaceRoom;
+      const records = recordsNow();
+      await writeState(ws.roomId, ACCESS_ROLE, () => ({}), id).catch((e: unknown) => Promise.reject(forbidden(e)));
+      const failed: Failed = [];
+      const held: Record<string, ExternalRecord> = {};
+      for (const [userId, record] of Object.entries(records)) {
+        if (!record.roles.includes(id)) continue;
+        held[userId] = { ...record, roles: record.roles.filter((r) => r !== id) };
+        await writeRecord(userId, held[userId]).catch(() => failed.push({ userId, roomId: ws.roomId }));
+      }
+      failed.push(...(await follow(held, rolesNow().filter((r) => r.id !== id), () => true)));
+      await settle(() => !snapshot.accessRoles.some((r) => r.id === id));
+      return { failed };
+    },
+    async setExternalRoles(userId, roles) {
+      await ready;
+      if (!workspaceRoom || !mayEditAccess()) throw new Error('not-allowed');
+      await workspaceRoom.loadMembersIfNeeded().catch(noop);
+      if (isMember(workspaceRoom, userId) || (await isClient(userId))) throw new Error('not-allowed');
+      const record: ExternalRecord = { roles: [...new Set(roles)], channels: recordsNow()[userId]?.channels ?? [] };
+      await writeRecord(userId, record).catch((e: unknown) => Promise.reject(forbidden(e)));
+      const failed = await syncExternal(userId, wantOf(record, rolesNow()));
+      await settle(() => JSON.stringify(snapshot.externals[userId]) === JSON.stringify(record));
+      return { failed };
+    },
+    async applyAccess(userId) {
+      await ready;
+      if (!mayEditAccess() || (await isClient(userId))) throw new Error('not-allowed');
+      return { failed: await syncExternal(userId, wantOf(recordsNow()[userId], rolesNow())) };
+    },
+    async removeExternal(userId) {
+      await ready;
+      const ws = workspaceRoom;
+      if (!ws || !mayEditAccess()) throw new Error('not-allowed');
+      await ws.loadMembersIfNeeded().catch(noop);
+      if (userId === me.id || isMember(ws, userId)) throw new Error('not-allowed');
+      let partial = false;
+      const miss = () => void (partial = true);
+      const want = wantOf(recordsNow()[userId], rolesNow());
+      const passed = new Set<string>();
+      await revokeAllFor(session.accessToken, userId).catch(miss);
+      for (const space of clientSpaces()) await outOfSpace(space, userId).then((left) => left.length && miss(), miss);
+      for (const room of workspaceChannels()) await evict(room.roomId, userId).catch(miss);
+      // Workspace channels open to its members that I'm not in: passed through (private ones I can't enter).
+      const mine = new Set(workspaceChannels().map((r) => r.roomId));
+      for (const r of await hierarchy(ws.roomId).catch(() => [])) if ((r.join_rule as string | undefined) === 'restricted' && !mine.has(r.room_id)) await evict(r.room_id, userId).then(() => passed.add(r.room_id), miss);
+      // A room their access names that I'm not in and couldn't pass through: they may still be there.
+      for (const id of [...want.channels, ...want.spaces]) {
+        const r = client.getRoom(id);
+        if (!(r && joined(r)) && !passed.has(id)) miss();
+      }
+      // The record goes last: a partial run leaves them listed with no access, so "Not applied" shows what's left.
+      await writeRecord(userId, partial ? { roles: [], channels: [] } : null).catch(miss);
+      if (partial) throw new Error('partial');
+      await settle(() => !snapshot.externals[userId]);
     },
     linkPreview(url) {
       let preview = previews.get(url);

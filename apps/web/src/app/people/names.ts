@@ -13,9 +13,9 @@ export function useDmName(): (dm: Dm) => string {
 }
 
 /**
- * Team people (Owner/Admin/Member somewhere) see the amber corner and the outside mark; clients and guests never do,
- * since they are the outside people (RulesM5). Decided by my roles: the server never marks me as external.
+ * Team people (Owner/Admin/Staff somewhere) and Externals (D-36: they work for us) see the amber corner and the outside mark;
+ * clients never do (RulesM5). Decided by my roles: the server never marks me as external.
  */
 export function useShowExternal(): boolean {
-  return useWorkspace((x) => Object.values(x.myRoles).some((r) => r === 'owner' || r === 'admin' || r === 'member'));
+  return useWorkspace((x) => Object.values(x.myRoles).some((r) => r === 'owner' || r === 'admin' || r === 'staff' || r === 'external'));
 }

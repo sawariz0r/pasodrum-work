@@ -113,12 +113,12 @@ export function matrixClient(base: string) {
       });
     },
 
-    /** Merges `patch` into the user's account data of `type` (read, then write). */
-    async mergeAccountData(token: string, userId: string, type: string, patch: Json): Promise<void> {
+    /** Rewrites the user's account data of `type` from what's there (read, then write; `{}` when unset). */
+    async updateAccountData(token: string, userId: string, type: string, update: (prev: Json) => Json): Promise<void> {
       const path = `/_matrix/client/v3/user/${enc(userId)}/account_data/${enc(type)}`;
       const r = await call(token, 'GET', path);
       if (r.status >= 300 && r.status !== 404) throw new MatrixError('account data', r);
-      await ok('account data', token, 'PUT', path, { ...(r.status === 200 ? r.body : {}), ...patch });
+      await ok('account data', token, 'PUT', path, update(r.status === 200 ? r.body : {}));
     },
 
     async logout(token: string): Promise<void> {

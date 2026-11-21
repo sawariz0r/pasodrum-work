@@ -375,8 +375,8 @@
     "tags": {
       "owner": "Owner",
       "admin": "Admin",
-      "member": "Member",
-      "guest": "Guest",
+      "staff": "Staff",
+      "external": "External",
       "client": "Client",
       "pending": "Pending"
     },
@@ -393,16 +393,16 @@
     "roles": {
       "owner": "Owner",
       "admin": "Admin",
-      "member": "Member",
-      "guest": "Guest",
+      "staff": "Staff",
+      "external": "External",
       "client": "Client"
     },
     "makeOwnerTitle": "Make {{name}} an owner?",
     "makeOwner": "Make owner",
     "addTo": "Add people to #{{name}}",
     "addToSpace": "Add people to {{name}}",
-    "addCount_one": "Add {{count}} person",
-    "addCount_other": "Add {{count}} people",
+    "addCount_one": "Add {{count}}",
+    "addCount_other": "Add {{count}}",
     "notEmail": "{{email}} isn’t an email address",
     "couldNotAdd": "Couldn’t add {{name}}",
     "suggestions": "Suggestions",
@@ -419,7 +419,13 @@
     "archiveButton": "Archive",
     "archived": "#{{name}} is archived",
     "unarchive": "Unarchive",
-    "archivedGroup": "Archived"
+    "archivedGroup": "Archived",
+    "type": "Type",
+    "clientSpaces": "Client spaces",
+    "clientSpace": "Client space",
+    "accessRoles": "Roles",
+    "newRole": "New role",
+    "onlyManagers": "Only Owners and Admins add new people"
   },
   "spaces": {
     "newClientSpace": "New client space",
@@ -460,7 +466,8 @@
     "removeFrom": "Remove from {{name}}",
     "removeTitle": "Remove {{person}} from {{name}}?",
     "removeButton": "Remove",
-    "renameFailed": "Couldn’t rename to {{name}}"
+    "renameFailed": "Couldn’t rename to {{name}}",
+    "workspaceSettings": "Workspace settings"
   },
   "security": {
     "gateTitle": "Confirm this device",

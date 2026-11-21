@@ -163,9 +163,9 @@ describe('share earlier messages (SIDE-03, D-35)', () => {
 
   it('is offered only to team people, in a 1:1 DM with an outside person', async () => {
     expect(await cardButtons('/dms/!dm-henrik', {})).toEqual(['Share earlier messages']);
-    expect(await cardButtons('/dms/!dm-henrik', { roles: { '!pasodrum': 'member' } })).toEqual(['Share earlier messages']);
+    expect(await cardButtons('/dms/!dm-henrik', { roles: { '!pasodrum': 'staff' } })).toEqual(['Share earlier messages']);
     expect(await cardButtons('/dms/!dm-jonas', {})).toEqual(['Message']);
     expect(await cardButtons('/dms/!dm-henrik', { perspective: 'client' })).toEqual(['Message']);
-    expect(await cardButtons('/dms/!dm-henrik', { roles: { '!pasodrum': 'guest' } })).toEqual(['Message']);
+    expect(await cardButtons('/dms/!dm-henrik', { roles: { '!pasodrum': 'external' } })).toEqual(['Message']);
   });
 });

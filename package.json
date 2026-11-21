@@ -23,7 +23,8 @@
     "test:invite": "node --test services/invite/test/*.integration.ts",
     "setup:prod": "bash scripts/setup-production-env.sh",
     "add:staff": "node dev/add-staff.ts",
-    "migrate:pins": "node dev/migrate-pins.ts"
+    "migrate:pins": "node dev/migrate-pins.ts",
+    "migrate:people": "node dev/migrate-people.ts"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

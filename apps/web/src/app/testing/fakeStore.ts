@@ -1,6 +1,6 @@
 // In-memory WorkspaceStore with the canvas workspace, for tests and /dev screens. No server.
 import { PasswordRequired } from '../../matrix';
-import type { ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Draft, FilesPage, JoinableChannel, LinkPreview, Media, Member, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, SasEmoji, SearchHit, Security, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
+import type { AccessChange, AccessRole, ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Draft, ExternalAccess, FilesPage, JoinableChannel, LinkPreview, Media, Member, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, SasEmoji, SearchHit, Security, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
 
 const people: Record<string, Person> = {
   so: { id: '@sofia:pasodrum.localhost', name: 'Sofia Olsen' },
@@ -9,13 +9,39 @@ const people: Record<string, Person> = {
   ty: { id: '@tanaka:pasodrum.localhost', name: '田中 由紀' },
   ml: { id: '@maja:pasodrum.localhost', name: 'Maja Lind' },
   ek: { id: '@erik:pasodrum.localhost', name: 'Erik Kvam' },
-  la: { id: '@lea:pasodrum.localhost', name: 'Lea Aune' },
+  // D-36: an External (Translators + a one-off #launch-site; still in #design, so not applied).
+  la: { id: '@lea:pasodrum.localhost', name: 'Lea Aune', external: true },
   tr: { id: '@tove:pasodrum.localhost', name: 'Tove Rask' },
   hd: { id: '@henrik_nordlys.no:pasodrum.localhost', name: 'Henrik Dahl', external: true },
 };
 
-// M4: a guest in #design (ChannelMembers board); not in the people directory.
+// M4/D-36: an External in #design and Nordlys (Nordlys designers); not in the people directory.
 const ola: Person = { id: '@ola_fjell.studio:pasodrum.localhost', name: 'Ola Fjell', external: true };
+
+const byEmail = (email: string): Person => ({ id: `@${email.toLowerCase().replace('@', '_')}:pasodrum.localhost`, name: email });
+// D-36: an External added by email, not joined yet (PeopleWorkspace, PeopleAccessNotApplied).
+const yui = byEmail('yui.sato@kotoba.jp');
+
+// D-36 access roles (PeopleAccess board) and External records; `rooms` is where they are now (joined or invited).
+const accessRoleSeed: AccessRole[] = [
+  { id: 'role-nordlys-designers', name: 'Nordlys designers', colour: '#0F766E', channels: ['!design'], spaces: ['!nordlys'] },
+  { id: 'role-translators', name: 'Translators', colour: '#B45309', channels: ['!launch-site'], spaces: ['!kumo'] },
+  { id: 'role-kumo-build', name: 'Kumo build', colour: '#1D4ED8', channels: [], spaces: [] },
+];
+type ExternalRecord = { roles: string[]; channels: string[]; email?: string; rooms: { channels: string[]; spaces: string[] } };
+const externalSeed: Record<string, ExternalRecord> = {
+  [ola.id]: { roles: ['role-nordlys-designers'], channels: [], rooms: { channels: ['!design'], spaces: ['!nordlys'] } },
+  // Still in #design and not yet in Kumo: "Not applied".
+  ['@lea:pasodrum.localhost']: { roles: ['role-translators'], channels: ['!launch-site'], rooms: { channels: ['!design', '!launch-site'], spaces: [] } },
+  [yui.id]: { roles: ['role-translators'], channels: [], email: 'yui.sato@kotoba.jp', rooms: { channels: ['!launch-site'], spaces: ['!kumo'] } },
+};
+const isTeam = (r?: Role) => r === 'owner' || r === 'admin' || r === 'staff';
+const byRoleName = (a: AccessRole, b: AccessRole) => a.name.localeCompare(b.name);
+/** D-36: the snapshot's access data; empty unless I'm joined to the workspace. */
+const accessView = (myRoles: Record<string, Role>, roles: AccessRole[], records: Record<string, ExternalRecord>) =>
+  isTeam(myRoles['!pasodrum'])
+    ? { accessRoles: [...roles].sort(byRoleName), externals: Object.fromEntries(Object.entries(records).map(([id, r]) => [id, { roles: [...r.roles], channels: [...r.channels] }])) }
+    : { accessRoles: [], externals: {} };
 
 // M4: channels you haven't joined (BrowseChannels board).
 const unjoined: Record<string, Omit<JoinableChannel, 'joined'>[]> = {
@@ -27,10 +53,12 @@ const unjoined: Record<string, Omit<JoinableChannel, 'joined'>[]> = {
     { id: '!support', spaceId: '!pasodrum', name: 'support', topic: 'Customer questions', private: false, memberCount: 7 },
   ],
   '!nordlys': [{ id: '!design-review', spaceId: '!nordlys', name: 'design-review', topic: 'Screens for review', private: false, memberCount: 4 }],
+  '!kumo': [],
 };
 
 const spaces: Space[] = [
   { id: '!pasodrum', name: 'Pasodrum', kind: 'workspace' },
+  { id: '!kumo', name: 'Kumo', kind: 'client', colour: '#9A3412' },
   { id: '!nordlys', name: 'Nordlys', kind: 'client', colour: '#2F4A6D' },
 ];
 
@@ -44,14 +72,16 @@ const ch = (id: string, spaceId: string, name: string, extra: Partial<Channel> =
 
 const channels: Record<string, Channel[]> = {
   '!pasodrum': [
-    ch('!design', '!pasodrum', 'design', { topic: 'Product design, critiques and Figma links', memberCount: 8, outside: [ola] }),
+    ch('!design', '!pasodrum', 'design', { topic: 'Product design, critiques and Figma links', memberCount: 8, outside: [people.la!, ola] }),
     ch('!eng', '!pasodrum', 'eng', { unread: 3, topic: 'Builds, releases and the occasional fire' }),
     ch('!general', '!pasodrum', 'general', { topic: 'Company-wide news and announcements' }),
+    ch('!launch-site', '!pasodrum', 'launch-site', { topic: 'Fjell Studio × Pasodrum', memberCount: 6, outside: [people.la!, yui] }),
     ch('!lead', '!pasodrum', 'lead', { private: true, encrypted: true, unread: 2, mentions: 2, memberCount: 2, topic: 'Planning and people topics' }),
   ],
+  '!kumo': [ch('!kumo-updates', '!kumo', 'project-updates', { memberCount: 3, outside: [yui] })],
   '!nordlys': [
-    ch('!project-updates', '!nordlys', 'project-updates', { memberCount: 3, outside: [people.hd!] }),
-    ch('!questions', '!nordlys', 'questions', { memberCount: 3, outside: [people.hd!] }),
+    ch('!project-updates', '!nordlys', 'project-updates', { memberCount: 4, outside: [people.hd!, ola] }),
+    ch('!questions', '!nordlys', 'questions', { memberCount: 4, outside: [people.hd!, ola] }),
   ],
 };
 
@@ -383,8 +413,8 @@ export interface FakeStoreOptions {
   threadFails?: boolean;
   /** M4. My role per space (default: Owner everywhere). */
   roles?: Record<string, Role>;
-  /** M5. Signed in as the client (Henrik: Nordlys only) or a guest (Ola: #design and #launch-site), as the server would show them. */
-  perspective?: 'client' | 'guest';
+  /** M5/D-36. Signed in as the client (Henrik: Nordlys only) or an External (Ola: #design and Nordlys), as the server would show them. */
+  perspective?: 'client' | 'external';
   /** M6. Start state of this device (default: confirmed, recovery key saved). */
   security?: Partial<Security>;
   /** M6. newRecoveryKey asks for the password first (RecoveryKeyPassword). */
@@ -407,8 +437,8 @@ const SAS: SasEmoji[] = [
   { emoji: '🚀', index: 54 }, { emoji: '🎸', index: 57 }, { emoji: '🐧', index: 10 },
 ];
 
-/** M5. What a client or guest gets from the server (RulesM5 shells): their spaces and channels, no outside marks, no client spaces. */
-function outsideView(perspective: 'client' | 'guest', me: Person | undefined): { view: Partial<WorkspaceSnapshot>; visible: string[] } {
+/** M5/D-36. What a client or External gets from the server (RulesM5 shells): their spaces and channels, no outside marks, no access data. */
+function outsideView(perspective: 'client' | 'external', me: Person | undefined): { view: Partial<WorkspaceSnapshot>; visible: string[] } {
   const plain = (c: Channel): Channel => {
     const rest = { ...c };
     delete rest.outside;
@@ -418,7 +448,7 @@ function outsideView(perspective: 'client' | 'guest', me: Person | undefined): {
     sampleDms()
       .filter((d) => d.people.length === 1 && keys.some((k) => people[k]!.id === d.people[0]!.id))
       .map((d) => ({ ...d, spaceIds: [spaceId] }));
-  const empty = { threads: [], activity: [], typing: {} };
+  const empty = { threads: [], activity: [], typing: {}, accessRoles: [], externals: {} };
   // Like the real store: my own Person never carries `external`, whoever I am.
   const self = (p: Person): Person => {
     const copy = { ...p };
@@ -439,21 +469,22 @@ function outsideView(perspective: 'client' | 'guest', me: Person | undefined): {
     };
   }
   return {
-    visible: [people.ih!.id, people.jb!.id, people.so!.id, people.ml!.id, people.ek!.id, people.la!.id, people.tr!.id],
+    visible: [people.ih!.id, people.jb!.id, people.so!.id, people.ml!.id, people.ek!.id, people.la!.id, people.tr!.id, people.hd!.id],
     view: {
       ...empty,
       me: self(me ?? ola),
-      spaces: spaces.filter((sp) => sp.kind === 'workspace'),
-      channels: {
-        '!pasodrum': [plain(channels['!pasodrum']![0]!), ch('!launch-site', '!pasodrum', 'launch-site', { topic: 'Fjell Studio × Pasodrum', memberCount: 6 })],
-      },
+      spaces: spaces.filter((sp) => sp.id === '!pasodrum' || sp.id === '!nordlys'),
+      channels: { '!pasodrum': [plain(channels['!pasodrum']![0]!)], '!nordlys': channels['!nordlys']!.map(plain) },
       dms: dms(['jb', 'ml'], '!pasodrum'),
-      myRoles: { '!pasodrum': 'guest' },
+      myRoles: { '!pasodrum': 'external', '!nordlys': 'external' },
     },
   };
 }
 
 export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & { set(patch: Partial<WorkspaceSnapshot>): void } {
+  let accessRoles = accessRoleSeed.map((r) => ({ ...r, channels: [...r.channels], spaces: [...r.spaces] }));
+  const externalRecords: Record<string, ExternalRecord> = structuredClone(externalSeed);
+  const myRoles = opts.roles ?? { '!pasodrum': 'owner', '!kumo': 'owner', '!nordlys': 'owner' };
   let snapshot: WorkspaceSnapshot = {
     me: opts.me ?? people.so!,
     connection: opts.connection ?? 'online',
@@ -470,8 +501,9 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     threads: sampleThreads(),
     threadTimelines: {},
     activity: sampleActivity(),
-    myRoles: opts.roles ?? { '!pasodrum': 'owner', '!nordlys': 'owner' },
+    myRoles,
     security: { device: 'confirmed', otherConfirmedDevices: 2, needsRecoveryKey: false, ...opts.security },
+    ...accessView(myRoles, accessRoles, externalRecords),
   };
   const outsider = opts.perspective ? outsideView(opts.perspective, opts.me) : undefined;
   if (outsider) snapshot = { ...snapshot, ...outsider.view };
@@ -530,30 +562,36 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     { id: 'IOS2', name: 'Element X on iPhone', lastSeenTs: Date.now() - 86_400_000, current: false, confirmed: true },
     { id: 'WIN1', name: 'Firefox on Windows', lastSeenTs: Date.now() - 8 * 86_400_000, current: false, confirmed: true },
   ];
-  // M4: workspace roles, channel members and pending people.
-  const roleOf: Record<string, Role> = { [people.ih!.id]: 'owner', [people.jb!.id]: 'admin', [people.hd!.id]: 'client', [ola.id]: 'guest' };
-  // Added by email, not joined yet: a pending member (role guest) plus a pending invite with the join link.
+  // M4/D-36: workspace roles (PeopleWorkspace board), channel members and pending people.
+  const roleOf: Record<string, Role> = { [people.ih!.id]: 'admin', [people.hd!.id]: 'client', [ola.id]: 'external', [people.la!.id]: 'external', [yui.id]: 'external' };
+  // D-36: the workspace's own people (Owner/Admin/Staff), me first.
+  const staffIds = [people.so!.id, people.ih!.id, people.jb!.id, people.ml!.id, people.ek!.id, people.tr!.id];
+  // Added by email, not joined yet: a pending member (role External) plus a pending invite with the join link.
   const waiting = new Map<string, Person>();
-  const byEmail = (email: string): Person => ({ id: `@${email.toLowerCase().replace('@', '_')}:pasodrum.localhost`, name: email });
   const kari = byEmail('kari@nordlys.no');
   waiting.set(kari.id, kari);
-  const role = (id: string): Role => (id === snapshot.me.id ? (snapshot.myRoles['!pasodrum'] ?? 'member') : (roleOf[id] ?? 'member'));
+  waiting.set(yui.id, yui);
+  const role = (id: string): Role => (id === snapshot.me.id ? (snapshot.myRoles['!pasodrum'] ?? 'staff') : (roleOf[id] ?? 'staff'));
   const memberIds: Record<string, string[]> = {
     '!design': [people.ih!.id, people.jb!.id, people.so!.id, people.ml!.id, people.ek!.id, people.la!.id, people.tr!.id, ola.id, kari.id],
+    '!launch-site': [people.so!.id, people.jb!.id, people.ml!.id, people.la!.id, yui.id],
+    '!kumo-updates': [people.so!.id, people.jb!.id, yui.id],
     '!lead': [people.ih!.id, people.so!.id],
-    '!project-updates': [people.hd!.id, people.jb!.id, people.so!.id],
-    '!questions': [people.hd!.id, people.jb!.id, people.so!.id],
+    '!project-updates': [people.hd!.id, people.jb!.id, people.so!.id, ola.id],
+    '!questions': [people.hd!.id, people.jb!.id, people.so!.id, ola.id],
   };
   const membersOf = (channelId: string) => (memberIds[channelId] ??= [people.ih!.id, people.jb!.id, people.so!.id, people.ml!.id, people.ek!.id]);
   const pendingBy: Record<string, PendingInvite[]> = {
-    '!design': [{ code: 'kari', email: 'kari@nordlys.no', role: 'guest', createdTs: Date.now() - 3_600_000, link: 'https://pasodrum.work/join/kari' }],
+    '!design': [{ code: 'kari', email: 'kari@nordlys.no', role: 'external', createdTs: Date.now() - 3_600_000, link: 'https://pasodrum.work/join/kari' }],
+    '!launch-site': [{ code: 'yui', email: 'yui.sato@kotoba.jp', role: 'external', createdTs: Date.now() - 7_200_000, link: 'https://pasodrum.work/join/yui' }],
   };
   const browse = Object.fromEntries(Object.entries(unjoined).map(([k, v]) => [k, [...v]]));
   const patchChannel = (channelId: string, patch: Partial<Channel>) =>
     set({ channels: Object.fromEntries(Object.entries(snapshot.channels).map(([k, v]) => [k, v.map((c) => (c.id === channelId ? { ...c, ...patch } : c))])) });
   // M5: who is in each client space (team on top, client below).
   const spaceRoster: Record<string, { team: string[]; clients: string[] }> = {
-    '!nordlys': { team: [people.so!.id, people.jb!.id, people.ih!.id], clients: [people.hd!.id] },
+    '!nordlys': { team: [people.so!.id, people.jb!.id, people.ih!.id, ola.id], clients: [people.hd!.id] },
+    '!kumo': { team: [people.so!.id, people.jb!.id, yui.id], clients: [] },
   };
   const rosterOf = (spaceId: string) => (spaceRoster[spaceId] ??= { team: [snapshot.me.id], clients: [] });
   const failedOnce = new Set<string>();
@@ -589,6 +627,59 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     patchMessage(channelId, messageId, (m) => ({ ...m, pinned: on || undefined }));
   };
   const previewMs = opts.loadMs ?? 0;
+  // D-36: membership follows access (roles ∪ one-off channels), as the editor's app does it.
+  const personOf = (id: string): Person =>
+    id === snapshot.me.id ? snapshot.me : ([...Object.values(people), ola].find((p) => p.id === id) ?? waiting.get(id) ?? { id, name: id });
+  const uniq = (list: string[]) => [...new Set(list)];
+  const same = (a: string[], b: string[]) => a.length === b.length && a.every((x) => b.includes(x));
+  const expectedOf = (r: ExternalRecord) => {
+    const held = accessRoles.filter((x) => r.roles.includes(x.id));
+    return { channels: uniq([...held.flatMap((x) => x.channels), ...r.channels]), spaces: uniq(held.flatMap((x) => x.spaces)) };
+  };
+  const publishAccess = () => set(accessView(snapshot.myRoles, accessRoles, externalRecords));
+  const follow = (userId: string) => {
+    const r = externalRecords[userId];
+    if (!r) return;
+    const want = expectedOf(r);
+    const reach = (rooms: ExternalRecord['rooms']) => new Set([...rooms.channels, ...rooms.spaces.flatMap((sid) => (snapshot.channels[sid] ?? []).map((c) => c.id))]);
+    const before = reach(r.rooms);
+    const after = reach(want);
+    for (const sid of r.rooms.spaces) if (!want.spaces.includes(sid)) rosterOf(sid).team = rosterOf(sid).team.filter((id) => id !== userId);
+    for (const sid of want.spaces) if (!rosterOf(sid).team.includes(userId)) rosterOf(sid).team.push(userId);
+    for (const id of before) if (!after.has(id)) memberIds[id] = membersOf(id).filter((x) => x !== userId);
+    for (const id of after) if (!membersOf(id).includes(userId)) membersOf(id).push(userId);
+    r.rooms = want;
+    const p = personOf(userId);
+    set({
+      channels: Object.fromEntries(
+        Object.entries(snapshot.channels).map(([k, list]) => [
+          k,
+          list.map((c) => {
+            if (before.has(c.id) === after.has(c.id)) return c;
+            const rest = (c.outside ?? []).filter((x) => x.id !== userId);
+            const next: Channel = { ...c, outside: after.has(c.id) ? [...rest, p].sort((a, b) => a.name.localeCompare(b.name)) : rest };
+            if (!next.outside?.length) delete next.outside;
+            return next;
+          }),
+        ]),
+      ),
+    });
+  };
+  const followAll = (ids: string[]): AccessChange => {
+    ids.forEach(follow);
+    publishAccess();
+    return { failed: [] };
+  };
+  const holders = (roleId: string) => Object.keys(externalRecords).filter((id) => externalRecords[id]!.roles.includes(roleId));
+  const mayManage = () => {
+    const mine = snapshot.myRoles['!pasodrum'];
+    if (mine !== 'owner' && mine !== 'admin') throw new Error('not-allowed');
+  };
+  const recordOf = (userId: string) => {
+    const r = externalRecords[userId];
+    if (!r) throw new Error('not-allowed');
+    return r;
+  };
 
   return {
     set,
@@ -774,7 +865,7 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     // M4
     async createChannel({ spaceId, name, private: isPrivate, topic }) {
       const names = [...(snapshot.channels[spaceId] ?? []), ...(browse[spaceId] ?? [])].map((c) => c.name);
-      if (!['owner', 'admin', 'member'].includes(snapshot.myRoles[spaceId] ?? '')) throw new Error('not-allowed');
+      if (!isTeam(snapshot.myRoles[spaceId])) throw new Error('not-allowed');
       if (names.includes(name)) throw new Error('taken');
       const id = `!ch-${localId++}`;
       memberIds[id] = [snapshot.me.id];
@@ -806,7 +897,7 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       Promise.resolve(
         membersOf(channelId).map((id) => {
           const pending = waiting.get(id);
-          if (pending) return { person: pending, role: 'guest' as const, pending: true };
+          if (pending) return { person: pending, role: 'external' as const, pending: true };
           return { person: id === snapshot.me.id ? snapshot.me : ([...Object.values(people), ola].find((p) => p.id === id) ?? { id, name: id }), role: role(id) };
         }),
       ),
@@ -822,12 +913,47 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     async addPeople(target, req) {
       const ok = (e: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
       const result: AddPeopleResult = { added: [], invited: [], failed: [] };
+      // D-36: an External gets a record (roles + one-off channels) and membership follows.
+      if (req.type === 'external') {
+        mayManage();
+        const give = (id: string, email?: string) => {
+          const r = (externalRecords[id] ??= { roles: [], channels: [], ...(email ? { email } : {}), rooms: { channels: [], spaces: [] } });
+          r.roles = uniq([...r.roles, ...req.roles]);
+          r.channels = uniq([...r.channels, ...req.channels]);
+          roleOf[id] = 'external';
+        };
+        for (const id of req.userIds) {
+          if (externalRecords[id]) result.failed.push({ who: id, reason: 'already-member' });
+          else {
+            give(id);
+            result.added.push(id);
+          }
+        }
+        for (const email of req.emails) {
+          if (!ok(email)) result.failed.push({ who: email, reason: 'invalid-email' });
+          else {
+            const person = byEmail(email);
+            waiting.set(person.id, person);
+            give(person.id, email);
+            result.invited.push(email);
+          }
+        }
+        followAll([...result.added, ...result.invited.map((e) => byEmail(e).id)]);
+        return result;
+      }
+      if (req.type === 'staff') {
+        for (const id of [...req.userIds, ...req.emails.filter(ok).map((e) => byEmail(e).id)]) {
+          roleOf[id] = 'staff';
+          if (!staffIds.includes(id)) staffIds.push(id);
+          for (const sid of req.spaces) if (!rosterOf(sid).team.includes(id)) rosterOf(sid).team.push(id);
+        }
+      }
       // A space id adds to the space's people and its first channel.
       const roster = snapshot.spaces.some((sp) => sp.id === target) ? rosterOf(target) : undefined;
       const channelId = (roster && snapshot.channels[target]?.[0]?.id) || target;
       const isIn = (id: string) => (roster ? [...roster.team, ...roster.clients] : membersOf(channelId)).includes(id);
       const join = (id: string) => {
-        if (roster) (req.role === 'client' ? roster.clients : roster.team).push(id);
+        if (roster) (req.type === 'client' ? roster.clients : roster.team).push(id);
         if (!membersOf(channelId).includes(id)) membersOf(channelId).push(id);
       };
       for (const id of req.userIds) {
@@ -849,7 +975,7 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
           }
           waiting.set(person.id, person);
           join(person.id);
-          (pendingBy[channelId] ??= []).push({ code, email, role: req.role, createdTs: Date.now(), link: `https://pasodrum.work/join/${code}` });
+          (pendingBy[channelId] ??= []).push({ code, email, role: req.type === 'client' || req.type === 'staff' ? req.type : 'external', createdTs: Date.now(), link: `https://pasodrum.work/join/${code}` });
           result.invited.push(email);
         }
       }
@@ -903,7 +1029,7 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       for (const c of list) memberIds[c.id] = [snapshot.me.id, ...team, ...outside.map((p) => p.id)];
       spaceRoster[spaceId] = { team: [snapshot.me.id, ...team], clients: outside.map((p) => p.id) };
       const sorted = [...snapshot.spaces, { id: spaceId, name: clean, kind: 'client' as const, colour }].sort(spaceOrder);
-      set({ spaces: sorted, channels: { ...snapshot.channels, [spaceId]: list }, myRoles: { ...snapshot.myRoles, [spaceId]: snapshot.myRoles['!pasodrum'] ?? 'member' } });
+      set({ spaces: sorted, channels: { ...snapshot.channels, [spaceId]: list }, myRoles: { ...snapshot.myRoles, [spaceId]: snapshot.myRoles['!pasodrum'] ?? 'staff' } });
       return { spaceId, channelId: list[0]!.id };
     },
     async updateSpace(spaceId, patch) {
@@ -913,10 +1039,10 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       const r = rosterOf(spaceId);
       const of = (id: string, fallback: Role): Member => {
         const pending = waiting.get(id);
-        if (pending) return { person: pending, role: fallback, pending: true };
+        if (pending) return { person: pending, role: roleOf[id] ?? fallback, pending: true };
         return { person: id === snapshot.me.id ? snapshot.me : ([...Object.values(people), ola].find((p) => p.id === id) ?? { id, name: id }), role: fallback === 'client' ? 'client' : role(id) };
       };
-      return Promise.resolve([...r.team.map((id) => of(id, 'member')), ...r.clients.map((id) => of(id, 'client'))]);
+      return Promise.resolve([...r.team.map((id) => of(id, 'staff')), ...r.clients.map((id) => of(id, 'client'))]);
     },
     async removeFromSpace(spaceId, userId) {
       const r = rosterOf(spaceId);
@@ -1080,7 +1206,7 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     personConfirmed: async (userId) => confirmedPeople.has(userId),
     async shareHistory(dmId, userId) {
       const dm = snapshot.dms.find((d) => d.id === dmId);
-      const team = ['owner', 'admin', 'member'].includes(snapshot.myRoles['!pasodrum'] ?? '');
+      const team = isTeam(snapshot.myRoles['!pasodrum']);
       if (!team || !dm?.encrypted || dm.people.length !== 1 || dm.people[0]!.id !== userId || !dm.people[0]!.external) throw new Error('not-allowed');
       if (snapshot.security.device !== 'confirmed') throw new Error('device-unconfirmed');
       if (!confirmedPeople.has(userId)) throw new Error('not-confirmed');
@@ -1089,6 +1215,72 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       const row = rich(dmId, 'so', Date.now(), { sender: snapshot.me, kind: 'system', system: { joined: [], left: [], historyShared: { by: snapshot.me } } });
       loaded[dmId] = [...historyOf(dmId), row];
       if (snapshot.timelines[dmId]) setTimeline(dmId, { messages: [...messagesOf(dmId), row] });
+    },
+    // D-36 people and access: canvas data (PeopleWorkspace, PeopleAccess, PeopleAccessNotApplied).
+    async workspacePeople() {
+      if (!isTeam(snapshot.myRoles['!pasodrum'])) return [];
+      const staff = [snapshot.me.id, ...staffIds.filter((id) => id !== snapshot.me.id)].map((id): Member => {
+        const pending = waiting.get(id);
+        return { person: personOf(id), role: role(id), ...(pending ? { pending: true, email: pending.name } : {}) };
+      });
+      const outside = Object.entries(externalRecords).map(([id, r]): Member => ({
+        person: personOf(id),
+        role: 'external',
+        roles: [...r.roles],
+        ...(r.email ? { pending: true, email: r.email } : {}),
+      }));
+      return [...staff, ...outside];
+    },
+    async externalAccess(userId) {
+      if (!isTeam(snapshot.myRoles['!pasodrum'])) return [];
+      return Object.entries(externalRecords)
+        .filter(([id]) => !userId || id === userId)
+        .map(([id, r]): ExternalAccess => {
+          const want = expectedOf(r);
+          const notApplied = !same(want.channels, r.rooms.channels) || !same(want.spaces, r.rooms.spaces);
+          return {
+            person: personOf(id),
+            ...(r.email ? { email: r.email, pending: true } : {}),
+            roles: [...r.roles],
+            channels: [...r.channels],
+            ...(notApplied ? { notApplied: true } : {}),
+            rooms: { channels: [...r.rooms.channels], spaces: [...r.rooms.spaces] },
+          };
+        });
+    },
+    async saveAccessRole(input) {
+      mayManage();
+      const id = input.id ?? `role-${localId++}`;
+      const next: AccessRole = { id, name: input.name, colour: input.colour, channels: [...input.channels], spaces: [...input.spaces] };
+      accessRoles = accessRoles.some((r) => r.id === id) ? accessRoles.map((r) => (r.id === id ? next : r)) : [...accessRoles, next];
+      return { id, ...followAll(holders(id)) };
+    },
+    async deleteAccessRole(id) {
+      mayManage();
+      const had = holders(id);
+      accessRoles = accessRoles.filter((r) => r.id !== id);
+      for (const h of had) externalRecords[h]!.roles = externalRecords[h]!.roles.filter((x) => x !== id);
+      return followAll(had);
+    },
+    async setExternalRoles(userId, roles) {
+      mayManage();
+      recordOf(userId).roles = [...roles];
+      return followAll([userId]);
+    },
+    async applyAccess(userId) {
+      mayManage();
+      recordOf(userId);
+      return followAll([userId]);
+    },
+    async removeExternal(userId) {
+      mayManage();
+      const r = recordOf(userId);
+      r.roles = [];
+      r.channels = [];
+      follow(userId);
+      delete externalRecords[userId];
+      if (r.email) for (const k of Object.keys(pendingBy)) pendingBy[k] = pendingBy[k]!.filter((p) => p.email !== r.email);
+      publishAccess();
     },
   };
 }

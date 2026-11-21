@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { renderInvite, tileColor } from './email.ts';
 import { isCode, localpartFor, newCode, newPassword, normalizeEmail } from './ids.ts';
 import { parseAddress } from './mail.ts';
-import { canInvite, canManage, isGenuine, rateLimiter, spaceInfo, stateOf, teamOf, type StateEvent } from './rules.ts';
+import { canInvite, canManage, isGenuine, normalizeRole, rateLimiter, spaceInfo, stateOf, teamOf, type StateEvent } from './rules.ts';
 import { keyFrom, seal, unseal } from './secret.ts';
 
 describe('ids', () => {
@@ -53,13 +53,14 @@ describe('secret', () => {
   });
 });
 
-describe('permission rules (D-25)', () => {
-  const sofia = '@sofia:p', ingrid = '@ingrid:p', jonas = '@jonas:p', henrik = '@henrik:p', stranger = '@x:p';
+describe('permission rules (D-25, D-36)', () => {
+  const sofia = '@sofia:p', ingrid = '@ingrid:p', jonas = '@jonas:p', henrik = '@henrik:p', stranger = '@x:p', kari = '@kari:p';
   const member = (id: string, name?: string): StateEvent => ({ type: 'm.room.member', state_key: id, content: { membership: 'join', displayname: name } });
   const pl: StateEvent = { type: 'm.room.power_levels', state_key: '', content: { users: { [sofia]: 100, [ingrid]: 50 } } };
   const workspace = spaceInfo([{ type: 'm.room.name', state_key: '', content: { name: 'Pasodrum' } }, pl, member(sofia, 'Sofia Olsen'), member(ingrid), member(jonas, 'Jonas Berg'),
     { type: 'm.room.member', state_key: stranger, content: { membership: 'invite' } }]);
-  const client = spaceInfo([{ type: 'work.pasodrum.space', state_key: '', content: { kind: 'client' } }, pl, member(sofia), member(ingrid), member(henrik)]);
+  const client = spaceInfo([{ type: 'work.pasodrum.space', state_key: '', content: { kind: 'client' } },
+    { ...pl, content: { users: { [sofia]: 100, [ingrid]: 50, [kari]: 10 } } }, member(sofia), member(ingrid), member(henrik), member(kari)]);
 
   it('reads the space', () => {
     expect(workspace.name).toBe('Pasodrum');
@@ -87,29 +88,32 @@ describe('permission rules (D-25)', () => {
     const v12 = spaceInfo([{ type: 'm.room.create', state_key: '', sender: jonas, content: { room_version: '12', additional_creators: [henrik] } }, pl, member(jonas), member(henrik)]);
     expect(v12.powerOf(jonas)).toBe(Infinity);
     expect(v12.powerOf(henrik)).toBe(Infinity);
-    expect(canInvite('member', v12, jonas)).toBe(true);
+    expect(canInvite('staff', v12, jonas)).toBe(true);
     const v11 = spaceInfo([{ type: 'm.room.create', state_key: '', sender: jonas, content: { room_version: '11' } }, pl, member(jonas)]);
     expect(v11.powerOf(jonas)).toBe(0);
   });
 
-  it('Owner/Admin add Members to the workspace; Members cannot', () => {
-    expect(canInvite('member', workspace, sofia)).toBe(true);
-    expect(canInvite('member', workspace, ingrid)).toBe(true);
-    expect(canInvite('member', workspace, jonas)).toBe(false);
-    expect(canInvite('member', client, sofia)).toBe(false);
+  it('only Owner/Admin of the workspace add Staff and Externals', () => {
+    for (const role of ['staff', 'external'] as const) {
+      expect(canInvite(role, workspace, sofia)).toBe(true);
+      expect(canInvite(role, workspace, ingrid)).toBe(true);
+      expect(canInvite(role, workspace, jonas)).toBe(false);
+      expect(canInvite(role, workspace, stranger)).toBe(false);
+      expect(canInvite(role, client, sofia)).toBe(false);
+    }
   });
 
-  it('any workspace member adds guests', () => {
-    expect(canInvite('guest', workspace, jonas)).toBe(true);
-    expect(canInvite('guest', workspace, stranger)).toBe(false);
-    expect(canInvite('guest', client, ingrid)).toBe(false);
-  });
-
-  it('the client-space team adds clients; clients cannot', () => {
+  it('Staff and up on a client space add its clients; clients cannot', () => {
     expect(canInvite('client', client, ingrid)).toBe(true);
+    expect(canInvite('client', client, kari)).toBe(true);
     expect(canInvite('client', client, henrik)).toBe(false);
     expect(canInvite('client', workspace, sofia)).toBe(false);
     expect(canInvite('client', client, jonas)).toBe(false);
+  });
+
+  it('reads the old role names', () => {
+    expect(['member', 'guest', 'staff', 'external', 'client'].map(normalizeRole)).toEqual(['staff', 'external', 'staff', 'external', 'client']);
+    for (const bad of ['owner', 'admin', '', 42, null]) expect(normalizeRole(bad)).toBeNull();
   });
 
   it('the inviter or an Admin of the space manages an invite', () => {

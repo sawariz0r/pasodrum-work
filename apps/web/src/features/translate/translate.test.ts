@@ -18,7 +18,7 @@ const snap = (role: string, extra: Partial<WorkspaceSnapshot> = {}) =>
 
 describe('teamConversation', () => {
   it('allows team channels and team DMs for owners, admins and members', () => {
-    for (const role of ['owner', 'admin', 'member']) {
+    for (const role of ['owner', 'admin', 'staff']) {
       expect(teamConversation(snap(role), '!gen')).toBe(true);
       expect(teamConversation(snap(role), '!dm-team')).toBe(true);
     }
@@ -32,7 +32,7 @@ describe('teamConversation', () => {
 
   it('trusts only the workspace I am on the team of, once its member list is known', () => {
     const unjoined = { id: '!other', name: 'Other', kind: 'workspace' };
-    const s = snap('owner', { spaces: [unjoined, ...snap('owner').spaces] as never, myRoles: { '!other': 'guest', '!ws': 'owner' } as never });
+    const s = snap('owner', { spaces: [unjoined, ...snap('owner').spaces] as never, myRoles: { '!other': 'external', '!ws': 'owner' } as never });
     s.channels['!other'] = [{ id: '!guestroom', spaceId: '!other' }] as never;
     expect(teamConversation(s, '!guestroom')).toBe(false);
     expect(teamConversation(s, '!gen')).toBe(true);
@@ -42,6 +42,6 @@ describe('teamConversation', () => {
 
   it('refuses clients and guests everywhere', () => {
     expect(teamConversation(snap('client', { myRoles: { '!cl': 'client' } }), '!proj')).toBe(false);
-    expect(teamConversation(snap('guest', { myRoles: {} }), '!gen')).toBe(false);
+    expect(teamConversation(snap('external', { myRoles: {} }), '!gen')).toBe(false);
   });
 });

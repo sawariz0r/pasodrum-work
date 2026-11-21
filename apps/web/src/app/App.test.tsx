@@ -127,7 +127,7 @@ describe('shell', () => {
 
     const side = screen.getByRole('complementary', { name: 'Pasodrum navigation' });
     const links = within(side).getAllByRole('link').filter((l) => l.getAttribute('href')!.startsWith('/w/!pasodrum/c/'));
-    expect(links.map((l) => l.textContent)).toEqual(['design', 'eng', 'general', 'lead2']);
+    expect(links.map((l) => l.textContent)).toEqual(['design', 'eng', 'general', 'launch-site', 'lead2']);
     expect(links[0]!.getAttribute('aria-current')).toBe('page');
     expect(links[1]!.className).toMatch(/strong/);
     expect(links[2]!.className).not.toMatch(/strong/);

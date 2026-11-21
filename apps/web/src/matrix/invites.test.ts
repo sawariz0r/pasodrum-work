@@ -62,7 +62,7 @@ describe('invite service client', () => {
 
   it('creates with the bearer token; 409 carries the existing account', async () => {
     reply = { status: 201, body: { code: 'k', userId: '@new_x.no:x', link: 'https://pasodrum.work/join/k' } };
-    const invite = { email: 'new@x.no', role: 'guest' as const, spaceId: '!s', channelIds: ['!c'], locale: 'ja' as const };
+    const invite = { email: 'new@x.no', role: 'external' as const, spaceId: '!s', channelIds: ['!c'], locale: 'ja' as const };
     expect(await createInvite('tok', invite)).toEqual({ code: 'k', userId: '@new_x.no:x', link: 'https://pasodrum.work/join/k' });
     expect(calls[0]!.init.headers).toMatchObject({ Authorization: 'Bearer tok', 'Content-Type': 'application/json' });
     expect(JSON.parse(String(calls[0]!.init.body))).toEqual(invite);
@@ -79,7 +79,7 @@ describe('invite service client', () => {
     reply = { status: 200, body: [{ code: 'k', email: 'a@b.no', role: 'client', createdTs: 5, link: 'L' }, { code: 'j', email: 'c@d.no', role: 'weird' }, { nope: true }] };
     expect(await listInvites('tok', '!c:x')).toEqual([
       { code: 'k', email: 'a@b.no', role: 'client', createdTs: 5, link: 'L' },
-      { code: 'j', email: 'c@d.no', role: 'guest', createdTs: 0 },
+      { code: 'j', email: 'c@d.no', role: 'external', createdTs: 0 },
     ]);
     expect(calls[0]!.url).toBe('https://pasodrum.work/api/invites?roomId=!c%3Ax');
     reply = { status: 204 };
