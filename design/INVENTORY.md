@@ -158,9 +158,21 @@ Team only; never where clients or guests are. Hover-bar icon only, shown when th
 | Original again + Show translation | TranslateOriginal | approved 2026-11-21 |
 | Couldn’t translate · Retry | TranslateFailed | approved 2026-11-21 |
 
-## Batch G — for M7
+## Batch G — for M7 (+ SIDE-02, other tab)
 
-Pins tab · Files tab (list, empty, loading) · add/remove tab · link card variants and loading · Docs "Soon" tab · Docs/Boards rail pages — all `needs design`.
+Drawn 2026-11-21, awaiting CEO approval. Rules: RulesM7.
+
+| Screen / state | Boards | Status |
+|---|---|---|
+| Tab strip Messages · Pins · Files | ChannelTabsM7 | drawn |
+| Pin / Unpin in the message menu | MsgMenuPin, MsgMenuUnpin | drawn |
+| Pinned message glyph | PinnedMessage | drawn |
+| Pins tab (list, hover Unpin, empty, loading) | PinsTab(+JP, Dark), PinsTabEmpty, PinsTabLoading | drawn |
+| Files tab (list, empty, loading, loading older) | FilesTab(+JP, Dark), FilesTabEmpty, FilesTabLoading, FilesTabMore | drawn |
+| Link card (image, no image, loading, none, two links) | LinkCard(+JP, Dark), LinkCardNoImage, LinkCardLoading, LinkCardNone, LinkCardMulti | drawn |
+| Docs / Boards "Soon" rail pages | DocsSoon, BoardsSoon, RailSoonJP | drawn |
+| SIDE-02 privacy line + header lock | PrivateDM, PrivateDMTooltip, PrivateGroupDM, PrivateChannel, PrivateJP, PrivateDark | drawn |
+| Open in another tab · Use here | OpenElsewhere, OpenElsewhereJP | drawn |
 
 ## Batch H — for M8–M9
 

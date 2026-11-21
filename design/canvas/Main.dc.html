@@ -169,10 +169,10 @@ body{margin:0}
   <button class="pd-rail" onClick="{{goRailAct}}" aria-current="{{railActCur}}" style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; width: 64px; padding: 2px 0; border: 0; background: transparent; color: {{railActColor}}; font-size: 11px; font-weight: {{railActWeight}}; cursor: pointer">
     <span class="pd-railicon" style="width: 36px; height: 32px; border-radius: 9px; background: {{railActBg}}; display: flex; align-items: center; justify-content: center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg></span>{{txActivity}}<sc-if value="{{actDot}}" hint-placeholder-val="{{true}}"><span style="position: absolute; top: 3px; right: 17px; width: 8px; height: 8px; border-radius: 4px; background: #F2B544; border: 2px solid var(--rail)"></span></sc-if><sc-if value="{{actCount}}" hint-placeholder-val="{{false}}"><span style="position: absolute; top: 0; right: 10px; min-width: 16px; height: 16px; padding: 0 4px; box-sizing: border-box; border-radius: 8px; background: var(--danger); color: #FFFFFF; font-size: 10px; font-weight: 700; line-height: 16px">{{actN}}</span></sc-if></button>
 
-  <button class="pd-rail" style="display: flex; flex-direction: column; align-items: center; gap: 3px; width: 64px; padding: 2px 0; border: 0; background: transparent; color: #B4B2BD; font-size: 11px; font-weight: 500; cursor: pointer">
-    <span class="pd-railicon" style="width: 36px; height: 32px; border-radius: 9px; background: transparent; display: flex; align-items: center; justify-content: center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"></path><path d="M14 3v6h6M8 13h8M8 17h5"></path></svg></span>{{txDocs}}</button>
-  <button class="pd-rail" style="display: flex; flex-direction: column; align-items: center; gap: 3px; width: 64px; padding: 2px 0; border: 0; background: transparent; color: #B4B2BD; font-size: 11px; font-weight: 500; cursor: pointer">
-    <span class="pd-railicon" style="width: 36px; height: 32px; border-radius: 9px; background: transparent; display: flex; align-items: center; justify-content: center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M8 7v7M12 7v4M16 7v9"></path></svg></span>{{txBoards}}</button>
+  <button class="pd-rail" onClick="{{G.goDocs}}" aria-current="{{railDocsCur}}" style="display: flex; flex-direction: column; align-items: center; gap: 3px; width: 64px; padding: 2px 0; border: 0; background: transparent; color: {{railDocsColor}}; font-size: 11px; font-weight: {{railDocsWeight}}; cursor: pointer">
+    <span class="pd-railicon" style="width: 36px; height: 32px; border-radius: 9px; background: {{railDocsBg}}; display: flex; align-items: center; justify-content: center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"></path><path d="M14 3v6h6M8 13h8M8 17h5"></path></svg></span>{{txDocs}}</button>
+  <button class="pd-rail" onClick="{{G.goBoards}}" aria-current="{{railBoardsCur}}" style="display: flex; flex-direction: column; align-items: center; gap: 3px; width: 64px; padding: 2px 0; border: 0; background: transparent; color: {{railBoardsColor}}; font-size: 11px; font-weight: {{railBoardsWeight}}; cursor: pointer">
+    <span class="pd-railicon" style="width: 36px; height: 32px; border-radius: 9px; background: {{railBoardsBg}}; display: flex; align-items: center; justify-content: center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M8 7v7M12 7v4M16 7v9"></path></svg></span>{{txBoards}}</button>
 
   <div style="flex: 1"></div>
   <button class="pd-rail" onClick="{{toggleTheme}}" aria-label="{{themeLabel}}" style="display: flex; align-items: center; justify-content: center; width: 64px; padding: 0; border: 0; background: transparent; color: #B4B2BD; cursor: pointer">
@@ -332,7 +332,7 @@ body{margin:0}
     <button onClick="{{goHome}}" style="margin-top: 22px; display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 16px; border: 0; border-radius: 9px; background: var(--accent); color: var(--onaccent); font-size: 14px; font-weight: 600; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"></path></svg>{{txOpenHome}}</button>
   </div>
   </sc-if>
-<sc-if value="{{isListPage}}" hint-placeholder-val="{false}">
+<!-- M7 Docs / Boards: rail pages that only say Soon (D-19: ship only controls that work, D-33) --><sc-if value="{{G.soonOn}}" hint-placeholder-val="{false}"><div class="pd-fadein" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px 120px; text-align: center"><div style="width: 64px; height: 64px; border-radius: 18px; display: flex; align-items: center; justify-content: center; background: var(--well); color: var(--subtle)"><sc-if value="{{G.soonDocs}}" hint-placeholder-val="{true}"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.8"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"></path><path d="M14 3v6h6M8 13h8M8 17h5"></path></svg></sc-if><sc-if value="{{G.soonBoards}}" hint-placeholder-val="{false}"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M8 7v7M12 7v4M16 7v9"></path></svg></sc-if></div><h1 style="margin: 20px 0 0; display: flex; align-items: center; gap: 10px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.015em">{{G.soonTitle}}<span style="font-family: Inter, var(--cjk), sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; line-height: 18px; color: var(--accent); background: var(--accentsoft); border-radius: 6px; padding: 1px 7px">{{txSoon}}</span></h1></div></sc-if><sc-if value="{{isListPage}}" hint-placeholder-val="{false}">
   <div class="pd-fadein" style="flex: 1; min-height: 0; display: flex; flex-direction: column">
   <header style="height: 56px; flex-shrink: 0; box-sizing: border-box; display: flex; align-items: center; gap: 9px; padding: 0 16px 0 24px; border-bottom: 1px solid var(--line)">
     <sc-if value="{{sideCollapsed}}" hint-placeholder-val="{{false}}"><button class="pd-ico" onClick="{{toggleDrawer}}" aria-label="{{txShowSidebar}}" aria-expanded="{{drawerExpanded}}" style="width: 34px; height: 34px; flex-shrink: 0; margin-left: -12px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M9 4v16"></path></svg></button></sc-if>
@@ -424,22 +424,22 @@ body{margin:0}
       </button>
       </sc-if>
       <sc-if value="{{isDM}}" hint-placeholder-val="{false}"><button class="pd-ico" aria-haspopup="dialog" style="flex-shrink: 0; display: flex; align-items: center; gap: 9px; height: 36px; padding: 0 8px 0 4px; border: 0; border-radius: 8px; background: transparent; color: var(--ink); font-family: 'Space Grotesk', var(--cjk), sans-serif; font-weight: 700; letter-spacing: -0.01em; font-size: 18px; cursor: pointer"><span style="position: relative; width: 26px; height: 26px; flex-shrink: 0; border-radius: 7px; background: {{dmColor}}; color: #FFFFFF; font-family: Inter, var(--cjk), sans-serif; font-size: {{dmAvFsS}}; font-weight: 700; letter-spacing: 0; display: flex; align-items: center; justify-content: center">{{dmInitials}}<sc-if value="{{dmHasDot}}" hint-placeholder-val="{true}"><span style="position: absolute; right: -3px; bottom: -3px; width: 10px; height: 10px; box-sizing: border-box; border-radius: 5px; background: {{dmDot}}; border: {{dmDotBorder}}; box-shadow: 0 0 0 2px var(--bg)"></span></sc-if></span>{{dmName}}<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button></sc-if>
-      <sc-if value="{{extOn}}" hint-placeholder-val="{false}"><button class="pd-ico" onClick="{{extClick}}" aria-label="{{extAria}}" title="{{extAria}}" style="flex-shrink: 0; width: 28px; height: 28px; margin-left: -8px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><span aria-hidden="true" style="width: 18px; height: 18px; flex-shrink: 0; box-sizing: border-box; border-radius: 5px; background: #F2B544; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#3A2A00" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M6 21V4h12v17M10 21v-4h4v4M10 8h.01M14 8h.01M10 12h.01M14 12h.01"></path></svg></span></button></sc-if>
+<sc-if value="{{G.pvLock}}" hint-placeholder-val="{false}"><span style="position: relative; flex-shrink: 0; display: flex; margin: 0 {{G.pvGap}} 0 -8px"><button class="pd-ico" aria-label="{{G.pvText}}" style="width: 28px; height: 28px; padding: 0; border: 0; border-radius: 8px; background: {{G.pvLockBg}}; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: default"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.1"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></button><sc-if value="{{G.pvTip}}" hint-placeholder-val="{false}"><span class="pd-fadein" role="tooltip" style="position: absolute; top: calc(100% + 8px); left: 14px; z-index: 30; transform: translateX(-50%); padding: 6px 10px; border-radius: 8px; background: var(--tip); color: var(--ontip); font-family: Inter, var(--cjk), sans-serif; font-size: 12.5px; font-weight: 600; letter-spacing: 0; line-height: 1.4; white-space: nowrap; box-shadow: 0 6px 16px rgba(0,0,0,.18)">{{G.pvText}}</span></sc-if></span></sc-if>      <sc-if value="{{extOn}}" hint-placeholder-val="{false}"><button class="pd-ico" onClick="{{extClick}}" aria-label="{{extAria}}" title="{{extAria}}" style="flex-shrink: 0; width: 28px; height: 28px; margin-left: -8px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><span aria-hidden="true" style="width: 18px; height: 18px; flex-shrink: 0; box-sizing: border-box; border-radius: 5px; background: #F2B544; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#3A2A00" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M6 21V4h12v17M10 21v-4h4v4M10 8h.01M14 8h.01M10 12h.01M14 12h.01"></path></svg></span></button></sc-if>
     </div>
     <sc-if value="{{notDM}}" hint-placeholder-val="{{true}}"><button class="pd-btn2" onClick="{{openMembers}}" aria-label="{{txMembers}}" style="display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 9px 0 5px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer">
       <span style="display: flex"><span style="width: 22px; height: 22px; border-radius: 6px; background: #C2410C; color: #FFFFFF; font-size: {{avFsIH}}; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px var(--bg)">{{avIH}}</span><span style="width: 22px; height: 22px; margin-left: -6px; border-radius: 6px; background: #1D4ED8; color: #FFFFFF; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px var(--bg)">JB</span><span style="width: 22px; height: 22px; margin-left: -6px; border-radius: 6px; background: #7E22CE; color: #FFFFFF; font-size: {{avFsML}}; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px var(--bg)">{{avML}}</span></span>{{memberCount}}</button></sc-if>
     <sc-if value="{{headAdd}}" hint-placeholder-val="{{true}}"><button class="pd-ico" onClick="{{openInvite}}" aria-label="{{txAddPeople}}" style="width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M19 8v6M22 11h-6"></path></svg></button></sc-if>
-    <button class="pd-ico" aria-label="{{txPinned}}" style="width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"></path><path d="M9 4h6l-1 6 4 4H6l4-4Z"></path></svg></button>
+    <sc-if value="{{headPin}}" hint-placeholder-val="{{true}}"><button class="pd-ico" aria-label="{{txPinned}}" style="width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"></path><path d="M9 4h6l-1 6 4 4H6l4-4Z"></path></svg></button></sc-if>
     <button class="pd-ico" onClick="{{openDetails}}" aria-label="{{txDetails}}" style="width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 16v-4M12 8h.01"></path></svg></button>
   </header>
 
-  <div role="tablist" aria-label="{{txTabs}}" style="flex-shrink: 0; height: 40px; box-sizing: border-box; display: flex; align-items: stretch; gap: 2px; padding: 0 14px; border-bottom: 1px solid var(--line); overflow-x: auto">
+  <sc-if value="{{tabsOld}}" hint-placeholder-val="{{true}}"><div role="tablist" aria-label="{{txTabs}}" style="flex-shrink: 0; height: 40px; box-sizing: border-box; display: flex; align-items: stretch; gap: 2px; padding: 0 14px; border-bottom: 1px solid var(--line); overflow-x: auto">
     <button role="tab" aria-selected="true" style="display: flex; align-items: center; gap: 6px; padding: 0 10px; border: 0; border-bottom: 2px solid var(--accent); background: transparent; color: var(--ink); font-size: 13.5px; font-weight: 600; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"></path></svg>{{txMessages}}</button>
     <sc-if value="{{notDM}}" hint-placeholder-val="{{true}}">    <button role="tab" aria-selected="false" style="display: flex; align-items: center; gap: 6px; padding: 0 10px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); font-size: 13.5px; font-weight: 500; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"></path><path d="M14 3v6h6"></path></svg>{{txDocs}}<span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em; color: var(--accent); background: var(--accentsoft); border-radius: 5px; padding: 1px 5px">{{txSoon}}</span></button></sc-if>
     <button role="tab" aria-selected="false" style="display: flex; align-items: center; gap: 6px; padding: 0 10px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); font-size: 13.5px; font-weight: 500; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 11-8.6 8.6a5 5 0 0 1-7-7l8.6-8.6a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4L16 7"></path></svg>{{txFiles}}</button>
     <button role="tab" aria-selected="false" style="display: flex; align-items: center; gap: 6px; padding: 0 10px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); font-size: 13.5px; font-weight: 500; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"></path><path d="M9 4h6l-1 6 4 4H6l4-4Z"></path></svg>{{txPins}}</button>
     <sc-if value="{{notDM}}" hint-placeholder-val="{{true}}">    <button class="pd-ico" aria-label="{{txAddTab}}" style="align-self: center; width: 26px; height: 26px; margin-left: 4px; border: 0; border-radius: 6px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button></sc-if>
-  </div>
+  </div></sc-if><sc-if value="{{tabsM7}}" hint-placeholder-val="{{false}}"><div role="tablist" aria-label="{{txTabs}}" style="flex-shrink: 0; height: 40px; box-sizing: border-box; display: flex; align-items: stretch; gap: 2px; padding: 0 14px; border-bottom: 1px solid var(--line); overflow-x: auto"><sc-for list="{{G.tabs}}" as="tb" hint-placeholder-count="3"><button class="pd-tab" role="tab" aria-selected="{{tb.sel}}" onClick="{{tb.pick}}" style="display: flex; align-items: center; gap: 6px; padding: 0 10px; border: 0; border-bottom: 2px solid {{tb.line}}; background: transparent; color: {{tb.color}}; font-size: 13.5px; font-weight: {{tb.weight}}; white-space: nowrap; cursor: pointer"><sc-if value="{{tb.icMsg}}" hint-placeholder-val="{true}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"></path></svg></sc-if><sc-if value="{{tb.icPin}}" hint-placeholder-val="{false}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M12 17v5"></path><path d="M9 4h6l-1 6 4 4H6l4-4Z"></path></svg></sc-if><sc-if value="{{tb.icFile}}" hint-placeholder-val="{false}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="m21 11-8.6 8.6a5 5 0 0 1-7-7l8.6-8.6a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4L16 7"></path></svg></sc-if>{{tb.label}}</button></sc-for></div></sc-if>
 
   <!-- M6 gate: an encrypted conversation on a device that isn't confirmed yet. Replaces timeline and composer. -->
   <sc-if value="{{gateOn}}" hint-placeholder-val="{false}">
@@ -454,7 +454,7 @@ body{margin:0}
     </div>
   </div>
   </sc-if>
-  <div aria-busy="{{tlBusy}}" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: {{tlDir}}{{tlX}}">
+<!-- M7 Pins: newest pinned first; the row jumps to the message in Messages; Unpin on hover. --><sc-if value="{{G.pinsOn}}" hint-placeholder-val="{false}"><div class="pd-fadein" role="tabpanel" aria-label="{{G.tabPins}}" style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px 20px 24px"><sc-for list="{{G.pinRows}}" as="pn" hint-placeholder-count="4"><div class="pd-card2 pd-draft" role="button" tabindex="0" onClick="{{pn.jump}}" style="position: relative; display: flex; gap: 12px; margin-bottom: 10px; padding: 12px 14px 13px; border: 1px solid {{pn.border}}; border-radius: 12px; background: var(--bg); box-shadow: 0 1px 2px rgba(0,0,0,.04); cursor: pointer"><span style="width: 36px; height: 36px; flex-shrink: 0; margin-top: 2px; border-radius: 9px; background: {{pn.color}}; color: #FFFFFF; font-size: {{pn.avFs}}; font-weight: 600; display: flex; align-items: center; justify-content: center">{{pn.initials}}</span><div style="flex: 1; min-width: 0; padding-right: 96px"><div style="display: flex; align-items: baseline; gap: 8px; line-height: 22px"><span style="font-size: 15px; font-weight: 700; color: var(--ink)">{{pn.name}}</span><span style="font-size: 12px; color: var(--subtle)">{{pn.time}}</span></div><div class="pd-clamp2" style="font-size: 15px; line-height: var(--lh); color: var(--ink)">{{pn.text}}</div></div><button class="pd-btn2 pd-dtools" onClick="{{pn.unpin}}" style="{{pn.unpinOp}}position: absolute; top: 12px; right: 12px; height: 30px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--raised); color: var(--ink); font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer">{{G.unpin}}</button></div></sc-for><sc-for list="{{G.pinSkel}}" as="k" hint-placeholder-count="0"><div aria-hidden="true" style="display: flex; gap: 12px; margin-bottom: 10px; padding: 12px 14px 13px; border: 1px solid var(--line); border-radius: 12px"><div class="pd-skel" style="width: 36px; height: 36px; flex-shrink: 0; border-radius: 9px"></div><div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px; padding-top: 4px"><div class="pd-skel" style="width: {{k.head}}; height: 11px"></div><div class="pd-skel" style="width: {{k.w1}}; height: 9px"></div><div class="pd-skel" style="width: 38%; height: 9px"></div></div></div></sc-for><sc-if value="{{G.pinsEmpty}}" hint-placeholder-val="{false}"><div style="display: flex; flex-direction: column; align-items: center; padding: 180px 24px 0; text-align: center"><div style="width: 64px; height: 64px; border-radius: 18px; display: flex; align-items: center; justify-content: center; background: var(--well); color: var(--subtle)"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.8"><path d="M12 17v5"></path><path d="M9 4h6l-1 6 4 4H6l4-4Z"></path></svg></div><h2 style="margin: 20px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-weight: 700; letter-spacing: -0.01em; font-size: 22px">{{G.noPins}}</h2></div></sc-if></div></sc-if><!-- M7 Files: every file and image sent here, newest first. Images open the viewer; other files download. --><sc-if value="{{G.filesOn}}" hint-placeholder-val="{false}"><div class="pd-fadein" role="tabpanel" aria-label="{{G.tabFiles}}" aria-busy="{{G.filesBusy}}" style="flex: 1; min-height: 0; overflow-y: auto; padding: 12px 12px 24px"><div role="list"><sc-for list="{{G.fileRows}}" as="fr" hint-placeholder-count="8"><div class="pd-lrow" role="listitem" tabindex="0" onClick="{{fr.open}}" style="display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 10px; cursor: pointer"><span style="width: 40px; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center"><sc-if value="{{fr.img}}" hint-placeholder-val="{{true}}"><span style="width: 40px; height: 40px; box-sizing: border-box; border-radius: 8px; border: 1px solid var(--line); background: {{fr.art}}"></span></sc-if><sc-if value="{{fr.doc}}" hint-placeholder-val="{false}"><span style="width: 32px; height: 38px; flex-shrink: 0; box-sizing: border-box; padding-bottom: 5px; clip-path: polygon(0 0, 68% 0, 100% 24%, 100% 100%, 0 100%); border-radius: 6px; background: {{fr.color}}; color: #FFFFFF; font-size: 8.5px; font-weight: 800; letter-spacing: .02em; display: flex; align-items: flex-end; justify-content: center">{{fr.ext}}</span></sc-if></span><span style="flex: 1; min-width: 0"><span style="display: block; font-size: 14.5px; font-weight: 600; line-height: 20px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{fr.name}}</span><span style="display: block; font-size: 13px; line-height: 20px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{fr.meta}}</span></span></div></sc-for><sc-for list="{{G.fileSkel}}" as="k" hint-placeholder-count="0"><div aria-hidden="true" style="display: flex; align-items: center; gap: 12px; padding: 8px 12px"><div class="pd-skel" style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 8px"></div><div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px"><div class="pd-skel" style="width: {{k.w2}}; min-width: 120px; max-width: 260px; height: 10px"></div><div class="pd-skel" style="width: {{k.head}}; min-width: 90px; height: 8px"></div></div></div></sc-for></div><sc-if value="{{G.filesEmpty}}" hint-placeholder-val="{false}"><div style="display: flex; flex-direction: column; align-items: center; padding: 180px 24px 0; text-align: center"><div style="width: 64px; height: 64px; border-radius: 18px; display: flex; align-items: center; justify-content: center; background: var(--well); color: var(--subtle)"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.8"><path d="m21 11-8.6 8.6a5 5 0 0 1-7-7l8.6-8.6a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4L16 7"></path></svg></div><h2 style="margin: 20px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-weight: 700; letter-spacing: -0.01em; font-size: 22px">{{G.noFiles}}</h2></div></sc-if></div></sc-if>  <div aria-busy="{{tlBusy}}" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: {{tlDir}}{{tlX}}">
     <div style="padding: 12px 8px {{tlPadB}}">
       <sc-for list="{{tlSkel}}" as="k" hint-placeholder-count="0">
         <div aria-hidden="true" style="display: flex; gap: 12px; padding: 10px 12px">
@@ -486,7 +486,7 @@ body{margin:0}
           <sc-if value="{{dmHasLocal}}" hint-placeholder-val="{true}"><div style="display: flex; align-items: center; gap: 7px; margin-top: 8px; font-size: 14px; color: var(--muted)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span>{{dmLocal}}</span></div></sc-if>
         </div>
       </sc-if>
-      <sc-for list="{{items}}" as="m" hint-placeholder-count="6">
+<sc-if value="{{G.pvIntroDM}}" hint-placeholder-val="{false}"><div class="pd-fadein" style="padding: 40px 20px 24px; max-width: 560px"><div style="position: relative; width: 72px; height: 72px; border-radius: 18px; background: {{dmColor}}; color: #FFFFFF; font-size: {{dmAvFsL}}; font-weight: 600; display: flex; align-items: center; justify-content: center">{{dmInitials}}<sc-if value="{{dmHasDot}}" hint-placeholder-val="{true}"><span style="position: absolute; right: -4px; bottom: -4px; width: 18px; height: 18px; box-sizing: border-box; border-radius: 9px; background: {{dmDot}}; border: {{dmDotBorderL}}; box-shadow: 0 0 0 3px var(--bg)"></span></sc-if></div><h2 style="margin: 18px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.015em">{{dmName}}</h2><sc-if value="{{dmHasLocal}}" hint-placeholder-val="{true}"><div style="display: flex; align-items: center; gap: 7px; margin-top: 8px; font-size: 14px; color: var(--muted)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span>{{dmLocal}}</span></div></sc-if><div style="display: flex; align-items: center; gap: 7px; margin-top: 8px; font-size: 14px; color: var(--muted)"><span style="display: flex; flex-shrink: 0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></span><span>{{G.pvText}}</span></div></div></sc-if><sc-if value="{{G.pvIntroCh}}" hint-placeholder-val="{false}"><div class="pd-fadein" style="padding: 40px 20px 24px; max-width: 560px"><div style="width: 56px; height: 56px; border-radius: 15px; background: var(--accentsoft); color: var(--accent); display: flex; align-items: center; justify-content: center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div><h2 style="margin: 18px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.015em">{{chanName}}</h2><div style="display: flex; align-items: center; gap: 7px; margin-top: 8px; font-size: 14px; color: var(--muted)"><span style="display: flex; flex-shrink: 0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></span><span>{{G.pvText}}</span></div></div></sc-if>      <sc-for list="{{items}}" as="m" hint-placeholder-count="6">
         <sc-if value="{{m.isDivider}}" hint-placeholder-val="{{false}}">
           <div style="display: flex; align-items: center; gap: 12px; margin: 14px 12px 6px">
             <div style="flex: 1; height: 1px; background: var(--line)"></div>
@@ -520,7 +520,7 @@ body{margin:0}
             </div>
             <div style="flex: 1; min-width: 0">
               <sc-if value="{{m.showHead}}" hint-placeholder-val="{{true}}">
-                <div style="display: flex; align-items: baseline; gap: 8px; line-height: 22px"><span class="{{m.nameCls}}" role="{{m.nameRole}}" tabindex="{{m.nameTab}}" aria-haspopup="{{m.namePopup}}" onClick="{{m.openProfile}}" style="font-size: 15px; font-weight: 700; color: var(--ink)">{{m.name}}</span><sc-if value="{{m.showTime}}" hint-placeholder-val="{{true}}"><span style="font-size: 12px; color: var(--subtle)">{{m.time}}</span></sc-if><sc-if value="{{m.sending}}" hint-placeholder-val="{{false}}"><span role="img" aria-label="{{txSending}}" style="align-self: center; display: inline-flex; color: var(--subtle)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span></sc-if></div>
+                <div style="display: flex; align-items: baseline; gap: 8px; line-height: 22px"><span class="{{m.nameCls}}" role="{{m.nameRole}}" tabindex="{{m.nameTab}}" aria-haspopup="{{m.namePopup}}" onClick="{{m.openProfile}}" style="font-size: 15px; font-weight: 700; color: var(--ink)">{{m.name}}</span><sc-if value="{{m.showTime}}" hint-placeholder-val="{{true}}"><span style="font-size: 12px; color: var(--subtle)">{{m.time}}</span></sc-if><sc-if value="{{m.pinHead}}" hint-placeholder-val="{{false}}"><span role="img" aria-label="{{G.pinned}}" title="{{G.pinned}}" style="align-self: center; display: inline-flex; color: var(--subtle)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><path d="M12 17v5"></path><path d="M9 4h6l-1 6 4 4H6l4-4Z"></path></svg></span></sc-if><sc-if value="{{m.sending}}" hint-placeholder-val="{{false}}"><span role="img" aria-label="{{txSending}}" style="align-self: center; display: inline-flex; color: var(--subtle)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span></sc-if></div>
               </sc-if>
               <sc-if value="{{m.hasQuote}}" hint-placeholder-val="{{false}}">
                 <div class="{{m.quoteCls}}" role="{{m.quoteRole}}" tabindex="{{m.quoteTab}}" style="display: flex; align-items: center; gap: 6px; max-width: 560px; margin: 2px 0 3px; padding: 2px 8px 2px 9px; border-left: 2px solid var(--quotebar); border-radius: 0 6px 6px 0; font-size: 13.5px; line-height: 20px; cursor: {{m.quoteCursor}}">
@@ -578,7 +578,7 @@ body{margin:0}
                   <span style="width: 76px; height: 54px; flex-shrink: 0; border-radius: 8px; background: var(--well); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 7px; box-sizing: border-box"><span style="border-radius: 3px; background: var(--accentsoft); border: 1px solid var(--line)"></span><span style="border-radius: 3px; background: var(--raised); border: 1px solid var(--line)"></span><span style="border-radius: 3px; background: var(--raised); border: 1px solid var(--line)"></span></span>
                   <span style="min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">{{m.cardTitle}}</span><span style="font-size: 12.5px; color: var(--subtle)">{{m.cardSub}}</span></span>
                 </a>
-              </sc-if>
+              </sc-if><sc-if value="{{m.lcOn}}" hint-placeholder-val="{{false}}"><a class="pd-card" href="#" style="display: flex; gap: 12px; margin-top: 8px; max-width: 440px; height: 84px; box-sizing: border-box; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--raised); color: var(--ink); text-decoration: none; overflow: hidden"><sc-if value="{{m.lcImg}}" hint-placeholder-val="{{true}}"><span style="width: 112px; flex-shrink: 0; border-radius: 8px; background: {{m.lcArt}}"></span></sc-if><span style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1px"><span style="font-size: 12.5px; line-height: 18px; color: var(--subtle); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{m.lcSite}}</span><span style="font-size: 14px; font-weight: 600; line-height: 20px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{m.lcTitle}}</span><span style="font-size: 13px; line-height: 19px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{m.lcDesc}}</span></span></a></sc-if><sc-if value="{{m.lcLoad}}" hint-placeholder-val="{{false}}"><div aria-hidden="true" style="display: flex; gap: 12px; margin-top: 8px; max-width: 440px; height: 84px; box-sizing: border-box; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--raised)"><span class="pd-skel" style="width: 112px; flex-shrink: 0; border-radius: 8px"></span><span style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 9px"><span class="pd-skel" style="width: 30%; height: 9px"></span><span class="pd-skel" style="width: 76%; height: 11px"></span><span class="pd-skel" style="width: 58%; height: 9px"></span></span></div></sc-if>
               <sc-if value="{{m.hasImg1}}" hint-placeholder-val="{{false}}">
                 <button class="pd-media" onClick="{{m.openViewer}}" aria-label="{{m.img1Label}}" style="display: block; margin-top: 6px; width: {{m.img1W}}; height: {{m.img1H}}; max-width: 100%; padding: 0; border: 0; border-radius: 10px; background: {{m.img1Art}}; box-shadow: inset 0 0 0 1px rgba(0,0,0,.07); cursor: zoom-in"></button>
               </sc-if>
@@ -660,7 +660,7 @@ body{margin:0}
             <div class="pd-pop" role="menu" aria-label="{{txMore}}" style="transform-origin: 100% 100%; position: absolute; right: 14px; bottom: calc(100% + 20px); z-index: 8; width: 224px; padding: 6px; box-sizing: border-box; background: var(--raised); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow)">
               <sc-for list="{{m.menu}}" as="mi" hint-placeholder-count="5">
                 <sc-if value="{{mi.sep}}" hint-placeholder-val="{{false}}"><div role="separator" style="height: 1px; margin: 5px 4px; background: var(--line)"></div></sc-if>
-                <sc-if value="{{mi.item}}" hint-placeholder-val="{{true}}"><button class="pd-menuitem" role="menuitem" onClick="{{mi.run}}" style="width: 100%; display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: {{mi.color}}; font-size: 14px; font-weight: 500; text-align: left; cursor: pointer"><span style="display: flex; color: {{mi.icColor}}"><sc-if value="{{mi.icEdit}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></sc-if><sc-if value="{{mi.icCopy}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path></svg></sc-if><sc-if value="{{mi.icLink}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path></svg></sc-if><sc-if value="{{mi.icTrash}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path></svg></sc-if></span>{{mi.label}}</button></sc-if>
+                <sc-if value="{{mi.item}}" hint-placeholder-val="{{true}}"><button class="pd-menuitem" role="menuitem" onClick="{{mi.run}}" style="width: 100%; display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: {{mi.color}}; font-size: 14px; font-weight: 500; text-align: left; cursor: pointer"><span style="display: flex; color: {{mi.icColor}}"><sc-if value="{{mi.icEdit}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></sc-if><sc-if value="{{mi.icCopy}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path></svg></sc-if><sc-if value="{{mi.icLink}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path></svg></sc-if><sc-if value="{{mi.icTrash}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path></svg></sc-if><sc-if value="{{mi.icPin}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M12 17v5"></path><path d="M9 4h6l-1 6 4 4H6l4-4Z"></path></svg></sc-if><sc-if value="{{mi.icUnpin}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M12 17v5"></path><path d="M9 4h6l-1 6 4 4H6l4-4Z"></path><path d="m3 3 18 18"></path></svg></sc-if></span>{{mi.label}}</button></sc-if>
               </sc-for>
             </div>
             </sc-if>
@@ -1447,9 +1447,9 @@ body{margin:0}
 </div>
 </sc-if>
 </sc-if>
-</div>
+<!-- Another tab: only one tab per account holds this device (D-33). Use here asks that tab to stop; it never takes over. --><sc-if value="{{G.otOn}}" hint-placeholder-val="{false}"><div class="pd-fadein" role="region" aria-labelledby="pd-ot-title" style="position: absolute; inset: 0; z-index: 90; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 24px 96px"><div class="pd-rise" style="word-break: auto-phrase; text-wrap: pretty; width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; text-align: center"><div style="width: 64px; height: 64px; border-radius: 18px; display: flex; align-items: center; justify-content: center; background: var(--accentsoft); color: var(--accent)"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18M9 4v5"></path></svg></div><h2 id="pd-ot-title" style="margin: 20px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.25">{{G.otTitle}}</h2><button class="pd-pop" onClick="{{G.otUse}}" style="margin-top: 24px; height: 40px; padding: 0 20px; border: 0; border-radius: 10px; background: var(--accent); color: var(--onaccent); font-size: 15px; font-weight: 600; cursor: pointer">{{G.otUseLabel}}</button></div></div></sc-if></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"perspective":{"editor":"enum","options":["team","client","guest"],"default":"team"},"showThread":{"editor":"boolean","default":true},"openModal":{"editor":"enum","options":["none","invite"],"default":"none"},"locale":{"editor":"enum","options":["en","ja"],"default":"en"},"shell":{"editor":"enum","options":["ready","syncing"],"default":"ready"},"connection":{"editor":"enum","options":["online","offline","reconnecting","restored"],"default":"online"},"timeline":{"editor":"enum","options":["ready","loading","older"],"default":"ready"},"outgoing":{"editor":"enum","options":["none","sending","failed"],"default":"none"},"layout":{"editor":"enum","options":["wide","1024","800"],"default":"wide"},"drawer":{"editor":"boolean","default":false},"openMenu":{"editor":"enum","options":["none","profile","workspace","channelAdd"],"default":"none"},"page":{"editor":"enum","options":["channel","unavailable"],"default":"channel"},"content":{"editor":"enum","options":["none","images","media","files","text","long","replies","rows","reactions"],"default":"none"},"hover":{"editor":"enum","options":["none","message"],"default":"none"},"msgMenu":{"editor":"enum","options":["none","own","others"],"default":"none"},"editing":{"editor":"boolean","default":false},"confirm":{"editor":"enum","options":["none","delete"],"default":"none"},"composerState":{"editor":"enum","options":["empty","format","reply","upload","failed","paste","mention","emoji","link"],"default":"empty"},"drop":{"editor":"boolean","default":false},"viewer":{"editor":"boolean","default":false},"newLine":{"editor":"enum","options":["none","new","jump"],"default":"none"},"notify":{"editor":"enum","options":["none","ask"],"default":"none"},"toast":{"editor":"enum","options":["none","linkCopied"],"default":"none"},"milestone":{"editor":"enum","options":["m2","m3","m4","m5","m6"],"default":"m2"},"view":{"editor":"enum","options":["channel","threads","activity","drafts","dms","dm","browse"],"default":"channel"},"activityFilter":{"editor":"enum","options":["all","mentions","replies"],"default":"all"},"listState":{"editor":"enum","options":["ready","empty"],"default":"ready"},"dmState":{"editor":"enum","options":["history","empty"],"default":"history"},"threadState":{"editor":"enum","options":["ready","empty","loading","error"],"default":"ready"},"threadDraft":{"editor":"boolean","default":false},"picker":{"editor":"enum","options":["none","search","group"],"default":"none"},"profile":{"editor":"boolean","default":false},"pane":{"editor":"enum","options":["list","detail"],"default":"list"},"composer":{"editor":"enum","options":["inline","float"],"default":"inline"},"space":{"editor":"enum","options":["pasodrum","nordlys"],"default":"pasodrum"},"myRole":{"editor":"enum","options":["admin","owner","member"],"default":"admin"},"sheet":{"editor":"enum","options":["none","create","details","leave","makeOwner","settings","spaceSettings","removePerson","archiveSpace","anotherApp","archiveChannel"],"default":"none"},"createState":{"editor":"enum","options":["ready","space","taken"],"default":"ready"},"detailsTab":{"editor":"enum","options":["about","members","settings"],"default":"about"},"memberMenu":{"editor":"enum","options":["none","pending"],"default":"none"},"profileRole":{"editor":"boolean","default":false},"addState":{"editor":"enum","options":["ready","errors"],"default":"ready"},"settingsTab":{"editor":"enum","options":["profile","notifications","appearance","devices"],"default":"profile"},"firstRun":{"editor":"boolean","default":false},"channel":{"editor":"enum","options":["start","lead"],"default":"start"},"roleTarget":{"editor":"enum","options":["admin","owner"],"default":"admin"},"dmWith":{"editor":"enum","options":["jb","hd"],"default":"jb"},"spaceTab":{"editor":"enum","options":["general","people"],"default":"general"},"spaceMenu":{"editor":"enum","options":["none","person"],"default":"none"},"archived":{"editor":"boolean","default":false},"fresh":{"editor":"boolean","default":false},"copied":{"editor":"enum","options":["none","server","username"],"default":"none"},"gate":{"editor":"enum","options":["none","device","nodevice"],"default":"none"},"cx":{"editor":"enum","options":["none","waiting","compare","done","failed","keyEnter","keyWrong","reset","resetWrong","approve","approveCompare","approveDone","password","passwordWrong","saveKey","signOut","signOutNoBackup"],"default":"none"},"cxReason":{"editor":"enum","options":["declined","timeout","mismatch"],"default":"declined"},"keyCopied":{"editor":"boolean","default":false},"utd":{"editor":"boolean","default":false},"devState":{"editor":"enum","options":["confirmed","unconfirmed"],"default":"confirmed"},"chanOps":{"editor":"boolean","default":false},"renameState":{"editor":"enum","options":["ready","edit","taken","error","saved"],"default":"ready"},"chArchived":{"editor":"boolean","default":false},"creator":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":900}}'>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"perspective":{"editor":"enum","options":["team","client","guest"],"default":"team"},"showThread":{"editor":"boolean","default":true},"openModal":{"editor":"enum","options":["none","invite"],"default":"none"},"locale":{"editor":"enum","options":["en","ja"],"default":"en"},"shell":{"editor":"enum","options":["ready","syncing"],"default":"ready"},"connection":{"editor":"enum","options":["online","offline","reconnecting","restored"],"default":"online"},"timeline":{"editor":"enum","options":["ready","loading","older"],"default":"ready"},"outgoing":{"editor":"enum","options":["none","sending","failed"],"default":"none"},"layout":{"editor":"enum","options":["wide","1024","800"],"default":"wide"},"drawer":{"editor":"boolean","default":false},"openMenu":{"editor":"enum","options":["none","profile","workspace","channelAdd"],"default":"none"},"page":{"editor":"enum","options":["channel","unavailable"],"default":"channel"},"content":{"editor":"enum","options":["none","images","media","files","text","long","replies","rows","reactions"],"default":"none"},"hover":{"editor":"enum","options":["none","message"],"default":"none"},"msgMenu":{"editor":"enum","options":["none","own","others"],"default":"none"},"editing":{"editor":"boolean","default":false},"confirm":{"editor":"enum","options":["none","delete"],"default":"none"},"composerState":{"editor":"enum","options":["empty","format","reply","upload","failed","paste","mention","emoji","link"],"default":"empty"},"drop":{"editor":"boolean","default":false},"viewer":{"editor":"boolean","default":false},"newLine":{"editor":"enum","options":["none","new","jump"],"default":"none"},"notify":{"editor":"enum","options":["none","ask"],"default":"none"},"toast":{"editor":"enum","options":["none","linkCopied"],"default":"none"},"milestone":{"editor":"enum","options":["m2","m3","m4","m5","m6","m7"],"default":"m2"},"view":{"editor":"enum","options":["channel","threads","activity","drafts","dms","dm","browse"],"default":"channel"},"activityFilter":{"editor":"enum","options":["all","mentions","replies"],"default":"all"},"listState":{"editor":"enum","options":["ready","empty"],"default":"ready"},"dmState":{"editor":"enum","options":["history","empty"],"default":"history"},"threadState":{"editor":"enum","options":["ready","empty","loading","error"],"default":"ready"},"threadDraft":{"editor":"boolean","default":false},"picker":{"editor":"enum","options":["none","search","group"],"default":"none"},"profile":{"editor":"boolean","default":false},"pane":{"editor":"enum","options":["list","detail"],"default":"list"},"composer":{"editor":"enum","options":["inline","float"],"default":"inline"},"space":{"editor":"enum","options":["pasodrum","nordlys"],"default":"pasodrum"},"myRole":{"editor":"enum","options":["admin","owner","member"],"default":"admin"},"sheet":{"editor":"enum","options":["none","create","details","leave","makeOwner","settings","spaceSettings","removePerson","archiveSpace","anotherApp","archiveChannel"],"default":"none"},"createState":{"editor":"enum","options":["ready","space","taken"],"default":"ready"},"detailsTab":{"editor":"enum","options":["about","members","settings"],"default":"about"},"memberMenu":{"editor":"enum","options":["none","pending"],"default":"none"},"profileRole":{"editor":"boolean","default":false},"addState":{"editor":"enum","options":["ready","errors"],"default":"ready"},"settingsTab":{"editor":"enum","options":["profile","notifications","appearance","devices"],"default":"profile"},"firstRun":{"editor":"boolean","default":false},"channel":{"editor":"enum","options":["start","lead","eng"],"default":"start"},"roleTarget":{"editor":"enum","options":["admin","owner"],"default":"admin"},"dmWith":{"editor":"enum","options":["jb","hd","g1"],"default":"jb"},"spaceTab":{"editor":"enum","options":["general","people"],"default":"general"},"spaceMenu":{"editor":"enum","options":["none","person"],"default":"none"},"archived":{"editor":"boolean","default":false},"fresh":{"editor":"boolean","default":false},"copied":{"editor":"enum","options":["none","server","username"],"default":"none"},"gate":{"editor":"enum","options":["none","device","nodevice"],"default":"none"},"cx":{"editor":"enum","options":["none","waiting","compare","done","failed","keyEnter","keyWrong","reset","resetWrong","approve","approveCompare","approveDone","password","passwordWrong","saveKey","signOut","signOutNoBackup"],"default":"none"},"cxReason":{"editor":"enum","options":["declined","timeout","mismatch"],"default":"declined"},"keyCopied":{"editor":"boolean","default":false},"utd":{"editor":"boolean","default":false},"devState":{"editor":"enum","options":["confirmed","unconfirmed"],"default":"confirmed"},"chanOps":{"editor":"boolean","default":false},"renameState":{"editor":"enum","options":["ready","edit","taken","error","saved"],"default":"ready"},"chArchived":{"editor":"boolean","default":false},"creator":{"editor":"boolean","default":false},"tab":{"editor":"enum","options":["messages","pins","files"],"default":"messages"},"tabState":{"editor":"enum","options":["ready","empty","loading","more"],"default":"ready"},"tabHover":{"editor":"boolean","default":false},"pinMenu":{"editor":"enum","options":["none","pin","unpin"],"default":"none"},"linkCard":{"editor":"enum","options":["none","card","noimage","loading","plain","multi"],"default":"none"},"soon":{"editor":"enum","options":["none","docs","boards"],"default":"none"},"privacy":{"editor":"boolean","default":false},"pvTip":{"editor":"boolean","default":false},"otherTab":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -1935,7 +1935,7 @@ class Component extends DCLogic {
   isMenuOpen(x, idx, c) {
     if (c.s.menuAt !== null) return c.s.menuAt === idx;
     const m = this.props.msgMenu || 'none';
-    return (m === 'own' && this.ownTarget(x, c)) || (m === 'others' && idx === 5);
+    return (m === 'own' && this.ownTarget(x, c)) || (m === 'others' && idx === 5) || this.pinMenuG(x, c);
   }
   isForced(x, idx, c) {
     if (this.isMenuOpen(x, idx, c)) return true;
@@ -1962,12 +1962,13 @@ class Component extends DCLogic {
     const mk = (id, label, icon, danger) => ({
       item: true, sep: false, label, run: run(id),
       color: danger ? 'var(--dangertext)' : 'var(--ink)', icColor: danger ? 'var(--dangertext)' : 'var(--muted)',
-      icEdit: icon === 'edit', icCopy: icon === 'copy', icLink: icon === 'link', icTrash: icon === 'trash'
+      icEdit: icon === 'edit', icCopy: icon === 'copy', icLink: icon === 'link', icTrash: icon === 'trash', icPin: icon === 'pin', icUnpin: icon === 'unpin'
     });
-    const SEP = { item: false, sep: true, label: '', run: () => {}, color: '', icColor: '', icEdit: false, icCopy: false, icLink: false, icTrash: false };
-    const menu = !menuOpen ? [] : own
+    const SEP = { item: false, sep: true, label: '', run: () => {}, color: '', icColor: '', icEdit: false, icCopy: false, icLink: false, icTrash: false, icPin: false, icUnpin: false };
+    const menu0 = !menuOpen ? [] : own
       ? [mk('edit', TB.edit, 'edit'), mk('copy', TB.copyText, 'copy'), mk('link', TB.copyMsgLink, 'link'), SEP, mk('delete', TB.del, 'trash', true)]
       : [mk('copy', TB.copyText, 'copy'), mk('link', TB.copyMsgLink, 'link')];
+    const menu = this.menuG(menu0, x, own, mk, c);
     const tipNames = x.tip ? x.tip.names.map((k) => P[k].n).concat(x.tip.you ? [TB.you] : []) : [];
     return {
       hasParts: !x.blocks && x.unsup === undefined && !x.utd && !x.utdWait && !editing,
@@ -2846,9 +2847,170 @@ class Component extends DCLogic {
     return { base, over };
   }
 
+  // ---- Batch G (M7 tabs & cards, Docs/Boards Soon, SIDE-02 privacy line, another tab) ----------------
+  // milestone="m7" is M6 plus: tabs Messages · Pins · Files in every conversation (no header pin button, no
+  // add-tab "+", D-33), Pin / Unpin in the message menu, a small pin beside the time of a pinned message, link
+  // cards (first link only, never in DMs or private channels). privacy turns on SIDE-02 for encrypted
+  // conversations; otherTab is the second-tab screen. Every earlier board renders as before.
+  stringsG(ja) {
+    if (ja) return {
+      pin: 'ピン留め', unpin: 'ピン留めを外す', pinned: 'ピン留め済み',
+      noPins: 'ピン留めはまだありません', noFiles: 'ファイルはまだありません',
+      today: '今日', yesterday: '昨日',
+      days: { d17: '11月17日', d14: '11月14日', d12: '11月12日', d10: '11月10日', d6: '11月6日', d3: '11月3日', d28: '10月28日', d21: '10月21日' },
+      pinOld: 'ブランドの書体が決まりました。アプリは Inter、見出しは Space Grotesk です。トークンはデザインファイルにあります。',
+      pvOne: (n) => 'この会話を読めるのは、あなたと ' + n + ' さんだけです。', pvMany: 'この会話を読めるのは、ここにいる人だけです。',
+      otTitle: 'Pasodrum work は別のタブで開いています', otUse: 'このタブで使う',
+      lcSay: '落ち着いた空の状態について、いい記事です：', lcSay2: '参考になる記事を二つ：', lcAnd: ' と ',
+      lcSite: 'Atlas Journal', lcTitle: '主張しない空の状態', lcDesc: '静かな画面ほど伝わる理由。'
+    };
+    return {
+      pin: 'Pin', unpin: 'Unpin', pinned: 'Pinned',
+      noPins: 'No pins yet', noFiles: 'No files yet',
+      today: 'Today', yesterday: 'Yesterday',
+      days: { d17: '17 Nov', d14: '14 Nov', d12: '12 Nov', d10: '10 Nov', d6: '6 Nov', d3: '3 Nov', d28: '28 Oct', d21: '21 Oct' },
+      pinOld: 'Brand type is final: Inter for the app, Space Grotesk for headings. Tokens are in the design file.',
+      pvOne: (n) => 'Only you and ' + n + ' can read this conversation.', pvMany: 'Only the people here can read this conversation.',
+      otTitle: 'Pasodrum work is open in another tab', otUse: 'Use here',
+      lcSay: 'Good read on calm empty states: ', lcSay2: 'Two good reads: ', lcAnd: ' and ',
+      lcSite: 'Atlas Journal', lcTitle: 'Empty states that don’t shout', lcDesc: 'Why the quietest version usually wins.'
+    };
+  }
+
+  // #design-studio: three pinned messages (Maja's composer rules, Jonas's Nordlys date, Ingrid's onboarding v3)
+  pinListG() { return [['ml', '10:02'], ['jb', '09:14'], ['ih', '16:42']]; }
+  isPinnedG(x, ch, s) {
+    if (this.props.milestone !== 'm7' || ch !== 'design' || !x || !x.w) return false;
+    return this.pinListG().some(([w, t]) => x.w === w && x.t === t) && !(s.unpinG || {})[x.w + x.t];
+  }
+  pinMenuG(x, c) {
+    const pm = this.props.milestone === 'm7' ? (this.props.pinMenu || 'none') : 'none';
+    return (pm === 'pin' && this.ownTarget(x, c)) || (pm === 'unpin' && x.w === 'ml' && x.t === '10:02');
+  }
+  // Pin / Unpin sits last before Delete (own messages) or last (everyone else's)
+  menuG(menu, x, own, mk, c) {
+    if (this.props.milestone !== 'm7' || !menu.length) return menu;
+    const S = this.stringsG(c.ja);
+    const pinned = this.isPinnedG(x, c.ch, c.s);
+    const item = mk('pin', pinned ? S.unpin : S.pin, pinned ? 'unpin' : 'pin');
+    return own ? menu.slice(0, 3).concat([item], menu.slice(3)) : menu.concat([item]);
+  }
+
+  feedG(c) {
+    const { feed, m7, rp, ja, isDM, ch } = c;
+    const kind = m7 ? (rp.linkCard || 'none') : 'none';
+    if (kind === 'none' || isDM || ch !== 'design') return feed;
+    const S = this.stringsG(ja);
+    const u1 = 'https://atlasjournal.design/empty-states', u2 = 'https://calmui.blog/one-clear-action';
+    const p = kind === 'multi' ? [S.lcSay2, { u: u1 }, S.lcAnd, { u: u2 }] : [S.lcSay, { u: u1 }];
+    return feed.concat([{ w: 'jb', t: '10:14', p, lc: kind }]);
+  }
+
+  viewG(c) {
+    const { s, rp, m7, ja, P, T, go, isDM, ch, cur, feed, items, dmP, extOn, tlX } = c;
+    const S = this.stringsG(ja);
+    const D = S.days;
+    const tab = m7 ? (s.tabG || rp.tab || 'messages') : 'messages';
+    const st = rp.tabState || 'ready';
+    const soon = m7 ? (s.soonG || rp.soon || 'none') : 'none';
+    const onDesign = ch === 'design' && !isDM;
+
+    const tabs = [['messages', T.messages], ['pins', T.pins], ['files', T.files]].map(([id, label]) => {
+      const on = tab === id;
+      return {
+        label, sel: on ? 'true' : 'false', line: on ? 'var(--accent)' : 'transparent', color: on ? 'var(--ink)' : 'var(--muted)', weight: on ? '600' : '500',
+        icMsg: id === 'messages', icPin: id === 'pins', icFile: id === 'files', pick: () => this.setState({ tabG: id })
+      };
+    });
+
+    // Pins: newest pinned first; the row jumps to the message, Unpin on hover
+    const fd = this.feeds(ja).design;
+    const body = (x) => this.plainText(x) + (x.b ? ' ' + x.b.join(' · ') : '');
+    const unpinned = s.unpinG || {};
+    const pinDefs = this.pinListG().map(([w, t]) => {
+      const x = fd.find((y) => y.w === w && y.t === t);
+      return { w, t, time: fd.indexOf(x) > fd.findIndex((y, i) => i > 0 && y.d) ? t : S.yesterday, text: body(x) };
+    }).concat([{ w: 'la', t: 'old', time: D.d12, text: S.pinOld }]).filter((r) => !unpinned[r.w + r.t]);
+    const pinRows = tab !== 'pins' || st !== 'ready' || !onDesign ? [] : pinDefs.map((r, i) => {
+      const q = P[r.w];
+      const hov = !!rp.tabHover && i === 1;
+      return {
+        unpinOp: hov ? 'opacity: 1; ' : '', border: hov ? 'var(--subtle)' : 'var(--line)',
+        name: q.n, initials: q.i, color: q.c, avFs: this.avFs(q.i, '13px', '15px'), time: r.time, text: r.text,
+        jump: () => this.setState({ tabG: 'messages' }),
+        unpin: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setState({ unpinG: Object.assign({}, unpinned, { [r.w + r.t]: true }) }); }
+      };
+    });
+
+    // Files: newest first; thumbnail for images, type icon for everything else
+    const F = [
+      ['empty-states-v2.png', 'ih', S.today, 'img', 'screen'], ['onboarding-v3.pdf', 'ih', S.yesterday, 'pdf'],
+      ['client-welcome-copy.docx', 'jb', D.d17, 'doc'], ['nordlys-moodboard.jpg', 'ml', D.d14, 'img', 'header'],
+      ['roadmap-q1.pptx', 'la', D.d12, 'slides'], ['icon-set.zip', 'ml', D.d10, 'zip'],
+      ['test-sessions.xlsx', 'ek', D.d6, 'sheet'], ['studio-desk.jpg', 'la', D.d3, 'img', 'desk'],
+      ['sketches-round-2.png', 'ih', D.d28, 'img', 'sketch'], ['kickoff.pdf', 'jb', D.d21, 'pdf']
+    ];
+    const fileList = st === 'more' ? F : F.slice(0, 8);
+    const fileRows = tab !== 'files' || (st !== 'ready' && st !== 'more') || !onDesign ? [] : fileList.map(([name, w, day, kind, art]) => ({
+      name, meta: P[w].n + ' · ' + day, img: kind === 'img', doc: kind !== 'img', art: art ? this.art(art) : '',
+      ext: name.split('.').pop().toUpperCase().slice(0, 4), color: this.fileColor(kind),
+      open: kind === 'img' ? () => this.setState({ viewer: true }) : () => {}
+    }));
+    const loading = st === 'loading';
+
+    // Link cards (first link only): image, site, title, one line; loading keeps the same height
+    const lcFor = (k) => ({
+      lcOn: k === 'card' || k === 'noimage' || k === 'multi', lcImg: k === 'card' || k === 'multi', lcLoad: k === 'loading',
+      lcSite: S.lcSite, lcTitle: S.lcTitle, lcDesc: S.lcDesc, lcArt: this.art('header')
+    });
+
+    // SIDE-02: encrypted conversations (every DM, every private channel) say who can read them
+    const pv = m7 && !!rp.privacy && (isDM || !!cur.priv) && soon === 'none';
+    const pvText = isDM && dmP ? S.pvOne(dmP.n.split(' ')[0]) : S.pvMany;
+    const pvTip = pv && !!rp.pvTip;
+
+    const railOn = (on) => ({ cur: on ? 'page' : false, color: on ? '#FFFFFF' : '#B4B2BD', weight: on ? '600' : '500', bg: on ? 'rgba(255,255,255,.16)' : 'transparent' });
+    const rDocs = railOn(soon === 'docs'), rBoards = railOn(soon === 'boards');
+
+    const base = {
+      tabsOld: !m7, tabsM7: m7, headPin: !m7,
+      railDocsCur: rDocs.cur, railDocsColor: rDocs.color, railDocsWeight: rDocs.weight, railDocsBg: rDocs.bg,
+      railBoardsCur: rBoards.cur, railBoardsColor: rBoards.color, railBoardsWeight: rBoards.weight, railBoardsBg: rBoards.bg,
+      G: {
+        pinned: S.pinned, unpin: S.unpin, tabs, tabPins: T.pins, tabFiles: T.files,
+        pinsOn: m7 && tab === 'pins' && soon === 'none', pinRows, pinSkel: loading ? this.skelRows(3) : [], pinsEmpty: m7 && tab === 'pins' && !loading && pinRows.length === 0, noPins: S.noPins,
+        filesOn: m7 && tab === 'files' && soon === 'none', fileRows, fileSkel: loading ? this.skelRows(7) : st === 'more' ? this.skelRows(2) : [],
+        filesBusy: loading || st === 'more' ? 'true' : 'false', filesEmpty: m7 && tab === 'files' && !loading && fileRows.length === 0, noFiles: S.noFiles,
+        soonOn: soon !== 'none', soonDocs: soon === 'docs', soonBoards: soon === 'boards', soonTitle: soon === 'boards' ? T.boards : T.docs,
+        goDocs: m7 ? () => this.setState({ soonG: 'docs', thread: false }) : null, goBoards: m7 ? () => this.setState({ soonG: 'boards', thread: false }) : null,
+        pvLock: pv, pvGap: extOn ? '6px' : '0', pvText, pvTip, pvLockBg: pvTip ? 'var(--hover)' : 'transparent',
+        pvIntroDM: pv && isDM, pvIntroCh: pv && !isDM,
+        otOn: m7 && !!rp.otherTab && !s.otUsed, otTitle: S.otTitle, otUseLabel: S.otUse, otUse: () => this.setState({ otUsed: true })
+      }
+    };
+    if (!m7) return { base, over: {} };
+
+    const over = {
+      items: items.map((m, i) => {
+        const x = feed[i];
+        if (!m.isMsg || !x) return m;
+        const o = {};
+        if (m.showHead && this.isPinnedG(x, ch, s)) o.pinHead = true;
+        if (x.lc) Object.assign(o, lcFor(x.lc));
+        return Object.keys(o).length ? Object.assign({}, m, o) : m;
+      }),
+      goRailHome: go({ view: 'channel', soonG: 'none' }), goRailDMs: go({ view: 'dms', thread: false, soonG: 'none' }), goRailAct: go({ view: 'activity', thread: false, channel: 'design', soonG: 'none' })
+    };
+    if (tab !== 'messages') Object.assign(over, { tlX: tlX + '; display: none', composerOn: false });
+    if (soon !== 'none') Object.assign(over, { showSide: false, isChannelPage: false, railHomeCur: false, railHomeColor: '#B4B2BD', railHomeWeight: '500', railHomeBg: 'transparent' });
+    if (pv) Object.assign(over, { dmEmpty: false, chanEmpty: false });
+    return { base, over };
+  }
+
   renderVals() {
     const s = this.state;
-    const m6 = this.props.milestone === 'm6';
+    const m7 = this.props.milestone === 'm7';
+    const m6 = this.props.milestone === 'm6' || m7;
     const pr = m6 ? Object.assign({}, this.props, { milestone: 'm5' }) : this.props;
     const locale = s.locale || pr.locale || 'en';
     const ja = locale === 'ja';
@@ -2910,7 +3072,7 @@ class Component extends DCLogic {
     const modalOpen = (s.modal !== null ? s.modal : (pr.openModal || 'none')) === 'invite';
     const online = conn === 'online' || conn === 'restored';
 
-    const ch = s.channel || (dd && pr.channel === 'lead' ? 'lead' : startCh);
+    const ch = s.channel || (dd && (pr.channel === 'lead' || pr.channel === 'eng') ? pr.channel : startCh);
     const cur = defs.find((c) => c.id === ch) || homeCh;
 
     const ee = pr.milestone === 'm5';
@@ -2979,6 +3141,7 @@ class Component extends DCLogic {
     const canEditCh = this.e2on(pr) && !isClient && !isGuest && (myRole === 'owner' || myRole === 'admin' || !!pr.creator);
     const canEdit = canEditCh && cur.id !== 'general';
     feed = this.feedE2({ feed, s, pr, ja, P, isDM, ch, me, canEdit: canEditCh });
+    feed = this.feedG({ feed, m7, rp: this.props, ja, isDM, ch });
     if (isGuest) feed = feed.map((x) => (x.mention ? Object.assign({}, x, { mention: false }) : x));
     if (firstRun) feed = feed.map((x) => (x.mention ? Object.assign({}, x, { mention: false }) : x)).concat(!isClient && ch === 'design' ? [{ sys: TD.addedYou(cur.name) }] : []);
     const retry = () => {
@@ -2986,7 +3149,7 @@ class Component extends DCLogic {
       setTimeout(() => this.setState({ outgoing: 'sent' }), 1400);
     };
     let prev = null;
-    const KIND = { isDivider: false, isSystem: false, isMsg: false, isNew: false, isDeleted: false, sysJoin: false, sysEdit: false, sysArch: false };
+    const KIND = { isDivider: false, isSystem: false, isMsg: false, isNew: false, isDeleted: false, sysJoin: false, sysEdit: false, sysArch: false, pinHead: false, lcOn: false, lcImg: false, lcLoad: false, lcSite: '', lcTitle: '', lcDesc: '', lcArt: '' };
     const items = feed.map((x, idx) => {
       if (x.d) { prev = null; return Object.assign({}, KIND, { isDivider: true, label: x.d }); }
       if (x.sys) { prev = null; return Object.assign({}, KIND, { isSystem: true, text: x.sys, sysJoin: !x.si, sysEdit: x.si === 'edit', sysArch: x.si === 'arch' }); }
@@ -3021,7 +3184,7 @@ class Component extends DCLogic {
         pad: cont ? '2px 12px' : '8px 12px 6px',
         parts: (x.p || []).map((pp) => typeof pp === 'string'
           ? { t: pp, style: '' }
-          : { t: pp.m, style: 'background: var(--chip); color: var(--link); font-weight: 600; border-radius: 4px; padding: 1px 3px' }).concat(x.edited && !x.blocks ? [{ t: ' ' + TB.edited, style: 'font-size: 12px; color: var(--subtle)' }] : []),
+          : pp.u ? { t: pp.u, style: 'color: var(--link)' } : { t: pp.m, style: 'background: var(--chip); color: var(--link); font-weight: 600; border-radius: 4px; padding: 1px 3px' }).concat(x.edited && !x.blocks ? [{ t: ' ' + TB.edited, style: 'font-size: 12px; color: var(--subtle)' }] : []),
         hasBullets: !!x.b, bullets: x.b || [],
         hasCard: !!x.card, cardTitle: x.card ? x.card.title : '', cardSub: x.card ? x.card.sub : '',
         hasReactions: reactions.length > 0, reactions,
@@ -3274,6 +3437,7 @@ class Component extends DCLogic {
     const VE = this.viewE({ s, pr, ja, P, T, TC, TD, fresh, me, cur, go, inClientSpace, isClient, isGuest, myRole, isDM, dmKey, extKeys });
     const VE2 = this.viewE2({ s, pr, ja, P, TD, cur, go, isDM, VD, canEdit, canEditCh });
     const VF = this.viewF({ s, rp: this.props, m6, ja, P, T, TD, me, go, isDM, dmKey, ch, cur, replies, dmRows, VD, VE, tlX: floatC ? '; overflow-x: hidden' : '' });
+    const VG = this.viewG({ s, rp: this.props, m7, ja, P, T, go, isDM, ch, cur, feed, items, dmP, extOn: extKeys.length > 0, tlX: floatC ? '; overflow-x: hidden' : '' });
     // Floating composer: card height (typing row 22 + card ~112 + 14) + 8 px air above it.
     const FLOAT_PAD = '156px';
 
@@ -3491,7 +3655,10 @@ class Component extends DCLogic {
       ...VF, ...(VF.over || {}),
 
       // Batch E2
-      ...VE2.base, ...VE2.over
+      ...VE2.base, ...VE2.over,
+
+      // Batch G
+      ...VG.base, ...VG.over
     };
   }
 }
