@@ -102,8 +102,9 @@ export function createPresence({ mx, now = Date.now }: { mx: Matrix; now?: () =>
     for (const r of rooms.values()) for (const o of r.values()) if (o.userId === userId) mine++;
     if (mine >= PER_USER || room.size >= PER_ROOM) throw new Fail(429, 'too-many');
 
+    // text/event-stream: proxies in front of us (Coolify's Traefik) never compress or buffer it; ndjson was held back ~20 s.
     res.writeHead(200, {
-      'Content-Type': 'application/x-ndjson',
+      'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-store, no-transform',
       'X-Accel-Buffering': 'no',
     });
