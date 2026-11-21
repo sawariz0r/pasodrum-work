@@ -116,17 +116,17 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ. Source copy in [desig
 | Another app (server + username, copy) | ProfileMenuAnotherApp, AnotherApp(+JP), JoinDoneOther | approved |
 | Phone hand-off, join page on phone | PhoneHandoff(+JP), JoinPhone, JoinDonePhone | approved |
 
-## Batch E2 — channel rename and archive (designed 2026-11-21, awaiting CEO approval)
+## Batch E2 — channel rename and archive (approved 2026-11-21)
 
 Who: Owners, Admins and the channel's creator (exactly what the server allows, D-27). `#general` can't be renamed or archived. Both live in Channel details → Settings. Archive = read-only like a client space (D-28); archived channels leave the sidebar and sit under Archived in Browse.
 
 | Screen / state | Artboard | Status |
 |---|---|---|
-| Rules | RulesE2 | designed |
-| Channel settings (allowed / everyone else) | ChannelSettingsE2, ChannelSettingsMember | designed |
-| Rename: editing, taken, error, saved (+JP) | RenameChannel, RenameChannelTaken, RenameChannelError, RenameChannelSaved, RenameChannelJP | designed |
-| Archive: ask (+JP), archived view (allowed, member, dark, JP), settings when archived | ArchiveChannel, ArchiveChannelJP, ArchivedChannel, ArchivedChannelMember, ArchivedChannelDark, ArchivedChannelJP, ArchivedChannelSettings | designed |
-| Browse channels with Archived (+JP) | BrowseArchived, BrowseArchivedJP | designed |
+| Rules | RulesE2 | approved |
+| Channel settings (allowed / everyone else) | ChannelSettingsE2, ChannelSettingsMember | approved |
+| Rename: editing, taken, error, saved (+JP) | RenameChannel, RenameChannelTaken, RenameChannelError, RenameChannelSaved, RenameChannelJP | approved |
+| Archive: ask (+JP), archived view (allowed, member, dark, JP), settings when archived | ArchiveChannel, ArchiveChannelJP, ArchivedChannel, ArchivedChannelMember, ArchivedChannelDark, ArchivedChannelJP, ArchivedChannelSettings | approved |
+| Browse channels with Archived (+JP) | BrowseArchived, BrowseArchivedJP | approved |
 
 ## Batch F — for M6 (approved 2026-11-21)
 
