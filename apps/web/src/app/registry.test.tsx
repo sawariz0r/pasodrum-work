@@ -50,9 +50,10 @@ function renderShell(list: readonly Feature[], tabs?: readonly StoredTab[]) {
 const tabNames = () => within(screen.getByRole('tablist')).getAllByRole('tab').map((t) => t.textContent);
 
 describe('feature registry', () => {
-  it('ships empty in M1', () => {
-    expect(features).toEqual([]);
-    expect(buildRegistry(features).rail).toEqual([]);
+  it('builds from whatever is registered, each feature once', () => {
+    const ids = features.map((f) => f.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(buildRegistry(features).rail).toEqual(features.flatMap((f) => f.rail ?? []));
   });
 
   it('renders the shell with features = [] and only the Messages tab', () => {

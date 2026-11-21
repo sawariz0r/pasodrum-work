@@ -8,7 +8,16 @@
   "launch": {
     "view": "canvas"
   },
-  "pages": [],
+  "pages": [
+    {
+      "id": "ui",
+      "name": "Pasodrum work UI"
+    },
+    {
+      "id": "discovery",
+      "name": "Discovery"
+    }
+  ],
   "boards": {
     "Main.dc.html": {
       "x": 0,
@@ -1975,6 +1984,105 @@
       "title": "Settings → Devices (M6) — dark",
       "expand": "fill",
       "is_interactive": true
+    },
+    "TranslateRules.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1180,
+      "title": "Translate — rules",
+      "page": "discovery",
+      "is_interactive": false
+    },
+    "Translate.dc.html": {
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "Translate — hover bar",
+      "page": "discovery",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "TranslateTranslating.dc.html": {
+      "x": 0,
+      "y": 1300,
+      "w": 1440,
+      "h": 900,
+      "title": "Translate — translating",
+      "page": "discovery",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Translated.dc.html": {
+      "x": 1520,
+      "y": 1300,
+      "w": 1440,
+      "h": 900,
+      "title": "Translate — translated in place",
+      "page": "discovery",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "TranslateOriginal.dc.html": {
+      "x": 3040,
+      "y": 1300,
+      "w": 1440,
+      "h": 900,
+      "title": "Translate — original again",
+      "page": "discovery",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "TranslateFailed.dc.html": {
+      "x": 0,
+      "y": 2320,
+      "w": 1440,
+      "h": 900,
+      "title": "Translate — couldn’t translate",
+      "page": "discovery",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "TranslateJP.dc.html": {
+      "x": 1520,
+      "y": 2320,
+      "w": 1440,
+      "h": 900,
+      "title": "Translate — hover bar, Japanese",
+      "page": "discovery",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "TranslatedJP.dc.html": {
+      "x": 3040,
+      "y": 2320,
+      "w": 1440,
+      "h": 900,
+      "title": "Translate — translated, Japanese",
+      "page": "discovery",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "TranslatedDark.dc.html": {
+      "x": 0,
+      "y": 3340,
+      "w": 1440,
+      "h": 900,
+      "title": "Translate — translated, dark",
+      "page": "discovery",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "TranslatedJPDark.dc.html": {
+      "x": 1520,
+      "y": 3340,
+      "w": 1440,
+      "h": 900,
+      "title": "Translate — translated, Japanese dark",
+      "page": "discovery",
+      "expand": "fill",
+      "is_interactive": true
     }
   },
   "order": [
@@ -2196,7 +2304,17 @@
     "SettingsDevicesM6.dc.html",
     "SettingsDevicesUnconfirmed.dc.html",
     "SettingsDevicesM6JP.dc.html",
-    "SettingsDevicesM6Dark.dc.html"
+    "SettingsDevicesM6Dark.dc.html",
+    "TranslateRules.dc.html",
+    "Translate.dc.html",
+    "TranslateTranslating.dc.html",
+    "Translated.dc.html",
+    "TranslateOriginal.dc.html",
+    "TranslateFailed.dc.html",
+    "TranslateJP.dc.html",
+    "TranslatedJP.dc.html",
+    "TranslatedDark.dc.html",
+    "TranslatedJPDark.dc.html"
   ],
   "notes": {
     "title": {
@@ -2261,6 +2379,14 @@
       "text": "Batch F — M6 encryption",
       "kind": "title1",
       "maxW": 4480
+    },
+    "discTranslate": {
+      "x": 0,
+      "y": -300,
+      "text": "Discovery — Translate a message",
+      "kind": "title1",
+      "maxW": 4480,
+      "page": "discovery"
     }
   },
   "designSystems": []

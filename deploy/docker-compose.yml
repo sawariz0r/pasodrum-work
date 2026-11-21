@@ -1,8 +1,9 @@
 # Production on Coolify (Docker Compose build pack, D-17/D-18). Coolify's proxy terminates TLS.
 # Coolify: Base Directory "/deploy", Docker Compose Location "/docker-compose.yml".
 # Set SERVER_NAME (e.g. pasodrum.work). Only the web service gets a domain: https://<SERVER_NAME>:80.
-# web serves the app and forwards /_matrix, /_continuwuity and /.well-known/matrix to continuwuity, /api/invites to invite.
+# web serves the app and forwards /_matrix, /_continuwuity and /.well-known/matrix to continuwuity, /api/invites and /api/translate to invite.
 # Set RESEND_API_KEY (sending-only, noreply.prpl.se) for invite mail (D-26); MAIL_FROM is optional.
+# Set OPENAI_API_KEY to turn on Translate (TRANSLATE_MODEL overrides the default gpt-6-luna); TRANSLATE_DAILY_LIMIT (calls per UTC day, all callers) is optional.
 services:
   web:
     build:
@@ -28,6 +29,9 @@ services:
       INVITE_SECRET: ${SERVICE_PASSWORD_64_INVITESECRET}
       RESEND_API_KEY: ${RESEND_API_KEY}
       MAIL_FROM: ${MAIL_FROM:-Pasodrum work <invites@noreply.prpl.se>}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      TRANSLATE_MODEL: ${TRANSLATE_MODEL:-}
+      TRANSLATE_DAILY_LIMIT: ${TRANSLATE_DAILY_LIMIT:-2000}
     expose:
       - "8080"
     volumes:

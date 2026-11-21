@@ -6,8 +6,16 @@ import { MatrixError, type Matrix } from './matrix.ts';
 import { ADMIN_LEVEL, ROLES, TTL_MS, canInvite, canManage, isGenuine, rateLimiter, spaceInfo, stateOf, teamOf, type Role, type SpaceInfo } from './rules.ts';
 import { seal, unseal } from './secret.ts';
 import type { Invite, Store } from './store.ts';
+import { parseRequest, translate as callTranslate, type TranslateConfig } from './translate.ts';
 
-export type Config = { serverName: string; publicUrl: string; registrationToken: string; workspaceAlias: string };
+export type Config = {
+  serverName: string;
+  publicUrl: string;
+  registrationToken: string;
+  workspaceAlias: string;
+  translate: TranslateConfig | null;
+  translateDailyLimit: number;
+};
 export type Deps = { cfg: Config; store: Store; mx: Matrix; sendMail: SendMail; key: Buffer; now?: () => number };
 
 class Reply {
@@ -23,12 +31,15 @@ const fail = (status: number, error: string) => new Reply(status, { error });
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const MAX_BODY = 16 * 1024;
+const TRANSLATE_PER_USER_DAY = 150;
 
 export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Deps) {
   const allow = rateLimiter();
   const claiming = new Set<string>();
   const host = new URL(cfg.publicUrl).host;
   const linkFor = (code: string) => `${cfg.publicUrl}/join/${code}`;
+  // Calls that reached OpenAI and came back, per UTC day: for everyone (TRANSLATE_DAILY_LIMIT) and per person (150).
+  const budget = { day: '', used: 0, perUser: new Map<string, number>() };
 
   function limit(k: string, max: number, windowMs: number) {
     if (!allow(k, max, windowMs)) throw fail(429, 'rate-limited');
@@ -268,10 +279,44 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
     })));
   }
 
+  // Team only: clients and guests never join the workspace space (D-06).
+  async function translate(req: IncomingMessage, body: Record<string, unknown>) {
+    const c = await caller(req);
+    const workspaceId = await mx.resolveAlias(c.token, cfg.workspaceAlias);
+    if (!workspaceId || (await mx.membership(c.token, workspaceId, c.userId)) !== 'join') throw fail(403, 'not-allowed');
+    if (!cfg.translate) throw fail(503, 'not-configured');
+    const input = parseRequest(body);
+    if (!input) throw fail(400, 'bad-request');
+    limit(`translate:${c.userId}`, 30, MINUTE);
+    const day = new Date(now()).toISOString().slice(0, 10);
+    if (budget.day !== day) Object.assign(budget, { day, used: 0, perUser: new Map() });
+    const mine = budget.perUser.get(c.userId) ?? 0;
+    if (mine >= TRANSLATE_PER_USER_DAY) throw fail(429, 'rate-limited');
+    if (budget.used >= cfg.translateDailyLimit) throw fail(503, 'daily-limit');
+    // Reserved before the call so parallel requests can't overshoot; handed back when the call fails.
+    budget.used += 1;
+    budget.perUser.set(c.userId, mine + 1);
+    try {
+      return new Reply(200, { segments: await callTranslate(cfg.translate, input.segments, input.to) });
+    } catch (e) {
+      if (budget.day === day) {
+        budget.used -= 1;
+        budget.perUser.set(c.userId, (budget.perUser.get(c.userId) ?? 1) - 1);
+      }
+      console.error(`translate failed: ${(e as Error).message}`);
+      throw fail(502, 'upstream');
+    }
+  }
+
   async function route(req: IncomingMessage, url: URL, meta: { name: string }): Promise<Reply> {
     const ip = clientIp(req);
     limit(`ip:${ip}`, 300, MINUTE);
     const parts = url.pathname.replace(/\/+$/, '').split('/').slice(1);
+    if (parts[0] === 'api' && parts[1] === 'translate' && parts.length === 2) {
+      if (req.method !== 'POST') return fail(405, 'method-not-allowed');
+      meta.name = 'translate';
+      return translate(req, await readJson(req));
+    }
     if (parts[0] !== 'api' || parts[1] !== 'invites' || parts.length > 4) return fail(404, 'not-found');
     const [, , code, action] = parts;
     const m = req.method;

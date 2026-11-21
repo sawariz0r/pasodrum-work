@@ -247,4 +247,18 @@ describe('invite service', () => {
     assert.deepEqual([c.status, c.body], [410, { error: 'expired' }]);
     assert.equal((await api(null, 'GET', `/${'A'.repeat(24)}`)).status, 404);
   });
+
+  it('translate is team only: clients and guests are 403, no token is 401', async () => {
+    const translate = (token: string | null, body: unknown) => fetch(`${BASE}/api/translate`, {
+      method: 'POST',
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }).then((r) => r.status);
+    const ok = { segments: ['Hei ⟦0⟧'], to: 'en' };
+    assert.equal(await translate(null, ok), 401);
+    assert.equal(await translate(henrik, ok), 403);
+    assert.equal(await translate(await login('lea_freelance.dev'), ok), 403);
+    // Past the gate: 400 for a bad body, or 503 when the dev stack has no OpenAI key.
+    assert.ok([400, 503].includes(await translate(jonas, { segments: [], to: 'en' })));
+  });
 });
