@@ -96,6 +96,20 @@ export interface Message {
   links?: string[];
   /** SIDE-03. Readable only because someone shared the history with me: who sent it can't be proven (grey shield). */
   restored?: boolean;
+  /** D-38. Help card from the system sender. */
+  help?: HelpCard;
+}
+
+export type HelpReason = 'email-missing' | 'stuck' | 'link-broken';
+
+/** D-38. A help card from the system sender "Pasodrum"; only set when that account sent it. `Message.body` keeps the full text. */
+export interface HelpCard {
+  who: Person;
+  spaceName?: string;
+  reason: HelpReason;
+  email: string;
+  /** Their clock when they asked, "07:12". */
+  localTime?: string;
 }
 
 export interface ThreadInfo {
@@ -141,6 +155,8 @@ export interface Dm {
   encrypted?: boolean;
   /** M7. I may pin and unpin here. */
   canPin?: boolean;
+  /** D-38. One-way conversation from the system sender: no composer, no intro, never encrypted. */
+  system?: boolean;
 }
 
 /**
@@ -390,6 +406,23 @@ export interface Security {
   /** The account has no recovery key yet: show RecoveryKeySave before the first DM/private-channel view or send. */
   needsRecoveryKey: boolean;
   confirmation?: Confirmation;
+  /** D-38. I'm a client or External: email flow, never a recovery key. undefined until the first sync has said who I am. */
+  confirmByEmail?: boolean;
+  /** Present when confirmByEmail. */
+  emailConfirm?: EmailConfirm;
+  /** Who "Need help? Ask …" names; absent = no pill. */
+  helpContact?: Person;
+}
+
+/** D-38. */
+export interface EmailConfirm {
+  /** 'sent' = waiting for the tap (polling); 'confirmed' = key collected and this device is confirmed. */
+  phase: 'idle' | 'sending' | 'sent' | 'confirmed' | 'failed';
+  email: string;
+  /** Send it again is allowed from this time. */
+  canResendAt?: number;
+  /** phase 'failed'. 'no-key' = nothing held for this account yet; 'wrong-key' = the held key no longer opens the account. */
+  error?: 'rate-limited' | 'no-key' | 'wrong-key' | 'unreachable' | 'other';
 }
 
 /** Immutable: a new object on every change; unchanged parts keep their identity. */
@@ -578,6 +611,12 @@ export interface WorkspaceStore {
   applyAccess(userId: string): Promise<AccessChange>;
   /** Out of every client space (space first, then its channels) and workspace channel I can reach, levels cleared, join codes revoked, record deleted. Rejects Error('partial') when some room couldn't be left. */
   removeExternal(userId: string): Promise<void>;
+  // D-38 confirm by email (confirmByEmail accounts: resetEncryption() hands the new key to the service itself, the app shows no
+  // save step; needsRecoveryKey stays true while the silent key is being made: show the skeleton, never RecoveryKeySave)
+  /** Emails the link and waits; progress in security.emailConfirm. Rejects Error(EmailConfirm['error']). */
+  requestConfirmEmail(): Promise<void>;
+  /** One tap; resolves when the contact has been told (or was told in the last 10 minutes). Rejects Error('no-contact' | 'unreachable' | 'other'). */
+  askForHelp(reason: HelpReason): Promise<void>;
 }
 
 export type SignInFailure = 'wrong-password' | 'unreachable' | 'rate-limited' | 'other';

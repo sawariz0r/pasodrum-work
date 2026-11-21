@@ -548,6 +548,48 @@
       "notConfirmed": "This device isn’t confirmed",
       "notSetUp": "{{name}} hasn’t set up again yet",
       "ok": "OK"
+    },
+    "email": {
+      "title": "Confirm it’s you",
+      "line": "You’re signed in on a new device, so we’ll email you a link to check it’s really you. Sorry for the extra step: it keeps your messages private.",
+      "emailMe": "Email me a link",
+      "useDevice": "Use another device",
+      "askHelp": "Need help? Ask {{name}}",
+      "askHelpBig": "Ask {{name}} to help me",
+      "helpedTitle": "{{name}} will help you",
+      "helpedLine": "We’ve let them know. They’ll call or email you soon.",
+      "sentTitle": "Check your email",
+      "sentLine": "We sent a link to <b>{{email}}</b>. Open it on any device, and this page carries on by itself.",
+      "waiting": "Waiting for you to open the link",
+      "didntGet": "Didn’t get it?",
+      "doneTitle": "You’re all set",
+      "helpTitle": "Didn’t get the email?",
+      "helpLine": "It can take a minute. Check your spam folder too.",
+      "sendAgain": "Send it again",
+      "stillNothing": "Still nothing?",
+      "back": "Back",
+      "startFresh": "Start fresh"
+    },
+    "link": {
+      "askTitle": "Confirm this device?",
+      "when": "Today {{time}} · {{place}}",
+      "whenTime": "Today {{time}}",
+      "yes": "Yes, it’s me",
+      "okTitle": "Confirmed",
+      "okLine": "Go back to {{device}}. It’s ready.",
+      "expTitle": "This link no longer works",
+      "expLine": "Ask for a new one on the device you’re signing in on."
+    },
+    "helpCard": {
+      "needs": "{{name}} needs your help",
+      "localTime": "their time {{time}}",
+      "email": "Email {{name}}",
+      "profile": "View profile",
+      "reason": {
+        "email-missing": "The email to confirm their new device didn’t arrive.",
+        "stuck": "They’re stuck confirming a new device.",
+        "link-broken": "The confirm link didn’t work for them."
+      }
     }
   },
   "find": {

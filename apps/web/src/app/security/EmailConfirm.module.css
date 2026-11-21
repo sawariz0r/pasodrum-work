@@ -1,0 +1,334 @@
+/* D-38 confirm by email (EmailConfirm board). Sits in Security.module.css's .gate frame. */
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  word-break: auto-phrase;
+  text-wrap: pretty;
+  animation: rise 240ms var(--ease-out);
+}
+
+.wide {
+  max-width: 400px;
+}
+
+.tile {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--accentsoft);
+  color: var(--accent);
+}
+
+.tileWell {
+  background: var(--well);
+  color: var(--muted);
+}
+
+.tileDone {
+  border-radius: 32px;
+  background: var(--accent);
+  color: var(--onaccent);
+}
+
+.title {
+  margin: 20px 0 0;
+  color: var(--ink);
+  font-family: var(--font-title);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+:lang(ja) .title {
+  letter-spacing: 0;
+}
+
+.line {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: var(--lh);
+}
+
+.email {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.primary,
+.secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary {
+  margin-top: 24px;
+  border: 0;
+  background: var(--accent);
+  color: var(--onaccent);
+  font-size: 15.5px;
+}
+
+.primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.secondary {
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  background: var(--raised);
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.secondary:hover,
+.pill:hover,
+.row:hover {
+  background: var(--hover);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  margin-top: 28px;
+  padding: 0 14px 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--raised);
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pill:hover,
+.text:hover {
+  color: var(--ink);
+}
+
+.pillAfterText {
+  display: contents;
+}
+
+.pillAfterText .pill {
+  margin-top: 14px;
+}
+
+.text {
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.text:hover {
+  background: var(--hover);
+}
+
+.didntGet {
+  margin-top: 26px;
+}
+
+.back {
+  margin-top: 22px;
+}
+
+.primary:focus-visible,
+.secondary:focus-visible,
+.pill:focus-visible,
+.text:focus-visible,
+.row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* The pulse while the page waits for the link */
+.dots {
+  display: flex;
+  gap: 6px;
+  margin-top: 22px;
+}
+
+.dots > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--accent);
+  animation: blink 1.2s infinite;
+}
+
+.dots > span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dots > span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Didn't get the email? */
+.more {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  text-align: left;
+}
+
+.moreTitle {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 60px;
+  box-sizing: border-box;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--raised);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rowLabel {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.rowChevron {
+  display: flex;
+  color: var(--subtle);
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.failed {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* The contact's face: pill (round), ask row, and the Help is on the way tile */
+.face {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--face-bg);
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
+}
+
+.face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.face28 {
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  font-size: 11px;
+}
+
+.face36 {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.face64 {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  font-size: 24px;
+}
+
+.face28.cjk {
+  font-size: 13px;
+}
+
+.face36.cjk {
+  font-size: 15px;
+}
+
+.face64.cjk {
+  font-size: 28px;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise));
+  }
+}
+
+@keyframes blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+
+  40% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dots > span {
+    opacity: 0.6;
+    animation: none;
+  }
+}

@@ -23,6 +23,28 @@ export type Invite = {
   revokedTs: number | null;
 };
 
+/** D-38: one emailed link, bound to the device that asked. */
+export type ConfirmRequest = {
+  code: string;
+  userId: string;
+  deviceId: string;
+  deviceName: string | null;
+  email: string;
+  locale: Locale;
+  tz: string | null;
+  /** Who the help DM goes to, picked at start so a link holder with no session can ask too. */
+  contacts: Person[];
+  spaceId: string | null;
+  spaceName: string | null;
+  createdTs: number;
+  expiresTs: number;
+  confirmedTs: number | null;
+  releasedTs: number | null;
+  replacedTs: number | null;
+  /** sha256 of the access token that asked: a later login reusing the device ID can't collect. */
+  session: string;
+};
+
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS invites (
   code TEXT PRIMARY KEY,
@@ -45,6 +67,33 @@ CREATE TABLE IF NOT EXISTS invites (
   revokedTs INTEGER
 );
 CREATE INDEX IF NOT EXISTS invites_user ON invites(userId);
+CREATE TABLE IF NOT EXISTS confirm_keys (
+  userId TEXT PRIMARY KEY,
+  sealed TEXT NOT NULL,
+  keyId TEXT NOT NULL,
+  updatedTs INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS confirm_requests (
+  code TEXT PRIMARY KEY,
+  userId TEXT NOT NULL,
+  deviceId TEXT NOT NULL,
+  deviceName TEXT,
+  email TEXT NOT NULL,
+  locale TEXT NOT NULL,
+  tz TEXT,
+  contacts TEXT NOT NULL,
+  spaceId TEXT,
+  spaceName TEXT,
+  createdTs INTEGER NOT NULL,
+  expiresTs INTEGER NOT NULL,
+  confirmedTs INTEGER,
+  releasedTs INTEGER,
+  replacedTs INTEGER,
+  session TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS confirm_requests_user ON confirm_requests(userId, createdTs);
+CREATE TABLE IF NOT EXISTS help_rooms (contactId TEXT PRIMARY KEY, roomId TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS help_sent (userId TEXT PRIMARY KEY, ts INTEGER NOT NULL);
 `;
 
 export function openStore(path: string) {
@@ -71,6 +120,33 @@ export function openStore(path: string) {
     revoke: db.prepare('UPDATE invites SET revokedTs = ? WHERE code = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
     revokeForUser: db.prepare('UPDATE invites SET revokedTs = ? WHERE userId = ? AND spaceId = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
     revokeAllForUser: db.prepare('UPDATE invites SET revokedTs = ? WHERE userId = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
+    latestClaimed: db.prepare('SELECT * FROM invites WHERE userId = ? AND claimedTs IS NOT NULL ORDER BY claimedTs DESC'),
+    confirmKey: db.prepare('SELECT sealed, keyId FROM confirm_keys WHERE userId = ?'),
+    putConfirmKey: db.prepare(`INSERT INTO confirm_keys VALUES (?, ?, ?, ?)
+      ON CONFLICT(userId) DO UPDATE SET sealed = excluded.sealed, keyId = excluded.keyId, updatedTs = excluded.updatedTs`),
+    dropConfirmKey: db.prepare('DELETE FROM confirm_keys WHERE userId = ?'),
+    replaceConfirms: db.prepare('UPDATE confirm_requests SET replacedTs = ? WHERE userId = ? AND replacedTs IS NULL'),
+    insertConfirm: db.prepare(`INSERT INTO confirm_requests VALUES ($code, $userId, $deviceId, $deviceName, $email, $locale, $tz,
+      $contacts, $spaceId, $spaceName, $createdTs, $expiresTs, $confirmedTs, $releasedTs, $replacedTs, $session)`),
+    dropConfirm: db.prepare('DELETE FROM confirm_requests WHERE code = ?'),
+    confirm: db.prepare('SELECT * FROM confirm_requests WHERE code = ?'),
+    lastConfirmTs: db.prepare('SELECT max(createdTs) AS ts FROM confirm_requests WHERE userId = ?'),
+    latestConfirmFor: db.prepare('SELECT * FROM confirm_requests WHERE userId = ? AND deviceId = ? AND session = ? ORDER BY createdTs DESC'),
+    tap: db.prepare(`UPDATE confirm_requests SET confirmedTs = $now WHERE code = $code
+      AND confirmedTs IS NULL AND replacedTs IS NULL AND expiresTs > $now`),
+    release: db.prepare(`UPDATE confirm_requests SET releasedTs = $now WHERE code = $code
+      AND releasedTs IS NULL AND replacedTs IS NULL AND confirmedTs IS NOT NULL AND confirmedTs > $since`),
+    helpRoom: db.prepare('SELECT roomId FROM help_rooms WHERE contactId = ?'),
+    setHelpRoom: db.prepare('INSERT INTO help_rooms VALUES (?, ?) ON CONFLICT(contactId) DO UPDATE SET roomId = excluded.roomId'),
+    helpSent: db.prepare('SELECT ts FROM help_sent WHERE userId = ?'),
+    claimHelp: db.prepare(`INSERT INTO help_sent VALUES ($userId, $now)
+      ON CONFLICT(userId) DO UPDATE SET ts = excluded.ts WHERE help_sent.ts <= $before`),
+    setHelpSent: db.prepare('UPDATE help_sent SET ts = ? WHERE userId = ?'),
+    dropHelpSent: db.prepare('DELETE FROM help_sent WHERE userId = ?'),
+  };
+  const toConfirm = (r: unknown): ConfirmRequest => {
+    const row = r as Record<string, unknown>;
+    return { ...row, contacts: JSON.parse(String(row.contacts)) } as ConfirmRequest;
   };
   return {
     insert(i: Invite) {
@@ -110,6 +186,61 @@ export function openStore(path: string) {
     revokeAllForUser(userId: string, ts: number): number {
       return Number(q.revokeAllForUser.run(ts, userId).changes);
     },
+    latestClaimed(userId: string): Invite | undefined {
+      const r = q.latestClaimed.get(userId);
+      return r ? toInvite(r) : undefined;
+    },
+
+    confirmKey(userId: string): { sealed: string; keyId: string } | undefined {
+      return q.confirmKey.get(userId) as { sealed: string; keyId: string } | undefined;
+    },
+    putConfirmKey(userId: string, sealed: string, keyId: string, ts: number) {
+      q.putConfirmKey.run(userId, sealed, keyId, ts);
+    },
+    dropConfirmKey(userId: string) {
+      q.dropConfirmKey.run(userId);
+    },
+    /** The new link replaces every earlier one of this person. */
+    startConfirm(r: ConfirmRequest) {
+      q.replaceConfirms.run(r.createdTs, r.userId);
+      q.insertConfirm.run({ ...r, contacts: JSON.stringify(r.contacts) });
+    },
+    dropConfirm(code: string) {
+      q.dropConfirm.run(code);
+    },
+    confirmRequest(code: string): ConfirmRequest | undefined {
+      const r = q.confirm.get(code);
+      return r ? toConfirm(r) : undefined;
+    },
+    lastConfirmTs(userId: string): number | null {
+      return ((q.lastConfirmTs.get(userId) as { ts: number | null } | undefined)?.ts) ?? null;
+    },
+    latestConfirmFor(userId: string, deviceId: string, session: string): ConfirmRequest | undefined {
+      const r = q.latestConfirmFor.get(userId, deviceId, session);
+      return r ? toConfirm(r) : undefined;
+    },
+    /** The tap: true only for the first one on an open, unexpired, unreplaced link. */
+    tap(code: string, now: number): boolean {
+      return Number(q.tap.run({ code, now }).changes) === 1;
+    },
+    /** The key goes out once: true only for the first release of a link tapped after `since`. */
+    release(code: string, now: number, since: number): boolean {
+      return Number(q.release.run({ code, now, since }).changes) === 1;
+    },
+
+    helpRoom(contactId: string): string | undefined {
+      return (q.helpRoom.get(contactId) as { roomId: string } | undefined)?.roomId;
+    },
+    setHelpRoom(contactId: string, roomId: string) {
+      q.setHelpRoom.run(contactId, roomId);
+    },
+    /** Takes this person's help slot (one per `windowMs`); returns an undo, or null when it's taken. */
+    claimHelp(userId: string, now: number, windowMs: number): (() => void) | null {
+      const prev = (q.helpSent.get(userId) as { ts: number } | undefined)?.ts;
+      if (Number(q.claimHelp.run({ userId, now, before: now - windowMs }).changes) !== 1) return null;
+      return () => (prev === undefined ? q.dropHelpSent.run(userId) : q.setHelpSent.run(prev, userId));
+    },
+
     close: () => db.close(),
   };
 }

@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { Dm, Person } from '../../matrix';
 import { avatarColor, initialsOf, isCjk } from '../../ui';
+import { LogoMark } from '../icons';
 import { ExternalCornerIcon } from '../shell/icons';
 import { useMediaUrl } from '../timeline/Media';
 import s from './People.module.css';
@@ -22,6 +23,15 @@ export function Face({ person, size, className }: { person: Person; size: FaceSi
   );
 }
 
+/** D-38: the system sender "Pasodrum" is the logo tile, never initials. */
+export function SystemFace({ size, className }: { size: FaceSize; className?: string }) {
+  return (
+    <span className={[s.face, s[`f${size}`], className].filter(Boolean).join(' ')} style={{ '--face-bg': '#0E7C66' } as CSSProperties} aria-hidden="true">
+      <LogoMark size={Math.round(size * 0.56)} />
+    </span>
+  );
+}
+
 /** Amber corner for people outside the company workspace (D-23). */
 export function ExternalCorner({ className }: { className?: string }) {
   return (
@@ -33,6 +43,7 @@ export function ExternalCorner({ className }: { className?: string }) {
 
 /** One person, or two overlapping tiles for a group. */
 export function DmFace({ dm, meId, size = 38, showExternal }: { dm: Dm; meId: string; size?: 38 | 20; showExternal: boolean }) {
+  if (dm.system) return <SystemFace size={size} />;
   const list = others(dm, meId);
   if (size === 20) {
     if (list.length > 1) {

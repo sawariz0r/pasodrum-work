@@ -4,6 +4,8 @@
 // Join links (/join/:code), with matrix/'s error codes: "used", "expired" (also any unknown code on the real service),
 // "offline" (preview can't reach the service), "gone" (claim answers 410, then the link reads as used),
 // "weak" (claim refuses the password), "down" (claim can't reach the service); any other code is an open link to Nordlys.
+// Confirm links (/confirm/:code, D-38): "gone" (used, expired or replaced), "offline" (can't reach the service),
+// "nohelp" (open, no contact: no pill); any other code is open, from Chrome on Mac in Tokyo, Jonas Berg helps.
 import type { Backend } from '../app/backend';
 import { createFakeStore, type FakeStoreOptions } from '../app/testing/fakeStore';
 import { SignInError, type InvitePreview, type Session } from '../matrix';
@@ -23,6 +25,7 @@ const henrik = { id: '@henrik_nordlys.no:pasodrum.work', name: 'Henrik Dahl', ex
 export function createFakeBackend(opts: FakeBackendOptions = {}): Backend & { stores: ReturnType<typeof createFakeStore>[]; claims: { code: string; name: string }[] } {
   let current: Session | null = opts.signedIn === false ? null : session;
   const claims: { code: string; name: string }[] = [];
+  const confirmed = new Set<string>();
   const wait = () => (opts.delayMs ? new Promise((r) => setTimeout(r, opts.delayMs)) : Promise.resolve());
   const stores: ReturnType<typeof createFakeStore>[] = [];
   return {
@@ -45,6 +48,23 @@ export function createFakeBackend(opts: FakeBackendOptions = {}): Backend & { st
       }
       claims.push({ code, name });
       return 'henrik@nordlys.no';
+    },
+    async previewConfirm(code) {
+      await wait();
+      if (code === 'offline') throw new Error('unreachable');
+      if (code === 'gone' || confirmed.has(code)) return { state: 'gone', contact: 'Jonas Berg', contactId: '@jonas:pasodrum.localhost' };
+      return { state: 'open', device: 'Chrome on Mac', requestedTs: Date.now() - 2 * 60_000, tz: 'Asia/Tokyo', ...(code !== 'nohelp' && { contact: 'Jonas Berg', contactId: '@jonas:pasodrum.localhost' }) };
+    },
+    async confirmDevice(code) {
+      await wait();
+      if (code === 'offline') throw new Error('unreachable');
+      if (code === 'gone' || confirmed.has(code)) throw new Error('gone');
+      confirmed.add(code);
+    },
+    async askForHelpByLink(code) {
+      await wait();
+      if (code === 'offline') throw new Error('unreachable');
+      if (code === 'nohelp') throw new Error('no-contact');
     },
     defaultServer: () => 'https://pasodrum.work',
     async resolveServer(input) {

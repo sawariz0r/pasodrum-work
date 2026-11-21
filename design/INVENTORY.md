@@ -250,4 +250,8 @@ Approved 2026-11-21 (CEO). Boards stay on the canvas Discovery page (CEO); mirro
 | Staff: a client needs your help (DM from Pasodrum) | EmailConfirmStaffHelp, EmailConfirmStaffHelpJP, EmailConfirmStaffHelpDark | approved 2026-11-21 |
 | Rules: confirm by email | EmailConfirmRules | approved 2026-11-21 |
 
+| Gap (built as shown, needs a board): send/help failed → muted "Something went wrong. Try again." line; link page can't be reached → clock tile + same line | — | needs design |
+| Gap: no key held for an old client with no confirmed device → shows "Didn't get the email?" | — | needs design |
+| Gap: sign-out "last device" body and "Reset and start fresh?" still name the recovery key for clients (buttons hidden) | — | needs design |
+
 Components: `EmailConfirm`, `EmailConfirmLink`, `EmailConfirmStaff`. For clients these replace ConfirmGate/ConfirmGateNoDevice, RecoveryKeySave, RecoveryKeyEnter and the Recovery key row in Settings → Devices; staff and the team keep those (RulesM6).

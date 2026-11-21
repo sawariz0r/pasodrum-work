@@ -1,7 +1,7 @@
 // In-memory WorkspaceStore with the canvas workspace, for tests and /dev screens. No server.
 import { PasswordRequired } from '../../matrix';
 import { createFakeDocsBoards } from './fakeDocsBoards';
-import type { AccessChange, AccessRole, ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Draft, ExternalAccess, FilesPage, JoinableChannel, LinkPreview, Media, Member, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, SasEmoji, SearchHit, Security, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
+import type { AccessChange, AccessRole, ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Dm, Draft, EmailConfirm, ExternalAccess, FilesPage, HelpReason, JoinableChannel, LinkPreview, Media, Member, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, SasEmoji, SearchHit, Security, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
 
 const people: Record<string, Person> = {
   so: { id: '@sofia:pasodrum.localhost', name: 'Sofia Olsen' },
@@ -15,6 +15,25 @@ const people: Record<string, Person> = {
   tr: { id: '@tove:pasodrum.localhost', name: 'Tove Rask' },
   hd: { id: '@henrik_nordlys.no:pasodrum.localhost', name: 'Henrik Dahl', external: true },
 };
+
+// D-38: the system sender of help cards (read-only DM, logo tile).
+const pasodrum: Person = { id: '@pasodrum:pasodrum.localhost', name: 'Pasodrum' };
+const helpBodies: Record<HelpReason, string> = {
+  'email-missing': 'The email to confirm their new device didn’t arrive.',
+  stuck: 'They’re stuck confirming a new device.',
+  'link-broken': 'The confirm link didn’t work for them.',
+};
+
+/** D-38: the help DM from Pasodrum (EmailConfirmStaffHelp): Henrik asks from Nordlys. */
+function helpDm(reason: HelpReason): { dm: Dm; messages: Message[] } {
+  const ts = at(0, 14, 12);
+  const body = `Henrik Dahl needs your help\n${helpBodies[reason]}\nNordlys · henrik@nordlys.no · their time 07:12`;
+  const message: Message = {
+    id: '$!dm-pasodrum-help', channelId: '!dm-pasodrum', sender: pasodrum, body, ts, status: 'sent',
+    help: { who: people.hd!, spaceName: 'Nordlys', reason, email: 'henrik@nordlys.no', localTime: '07:12' },
+  };
+  return { dm: { id: '!dm-pasodrum', people: [pasodrum], unread: 1, mentions: 1, lastTs: ts, spaceIds: ['!pasodrum'], system: true, last: message }, messages: [message] };
+}
 
 // M4/D-36: an External in #design and Nordlys (Nordlys designers); not in the people directory.
 const ola: Person = { id: '@ola_fjell.studio:pasodrum.localhost', name: 'Ola Fjell', external: true };
@@ -428,6 +447,12 @@ export interface FakeStoreOptions {
   confirmedPeople?: string[];
   /** SIDE-03. People who haven't set up again yet: shareHistory rejects 'not-ready'. */
   notReadyPeople?: string[];
+  /** D-38 (with security.confirmByEmail). The link is tapped this long after the email goes out; unset = never. */
+  emailTapMs?: number;
+  /** D-38. Email me a link fails with this ('no-key': nothing held for the account yet). */
+  emailFails?: NonNullable<EmailConfirm['error']>;
+  /** D-38. A help card from Pasodrum waits in a system DM (staff side). */
+  helpCard?: HelpReason;
 }
 
 /** M6. The fake account's recovery key; useRecoveryKey accepts it without spaces (the UI strips them), case-sensitive. */
@@ -503,11 +528,13 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     threadTimelines: {},
     activity: sampleActivity(),
     myRoles,
-    security: { device: 'confirmed', otherConfirmedDevices: 2, needsRecoveryKey: false, ...opts.security },
+    security: { device: 'confirmed', otherConfirmedDevices: 2, needsRecoveryKey: false, confirmByEmail: false, ...opts.security },
     ...accessView(myRoles, accessRoles, externalRecords),
   };
   const outsider = opts.perspective ? outsideView(opts.perspective, opts.me) : undefined;
   if (outsider) snapshot = { ...snapshot, ...outsider.view };
+  const help = opts.helpCard ? helpDm(opts.helpCard) : undefined;
+  if (help) snapshot = { ...snapshot, dms: [help.dm, ...snapshot.dms] };
   const listeners = new Set<() => void>();
   let localId = 0;
 
@@ -608,7 +635,7 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     return copy;
   };
   const ownHistory = (list: Message[]) => (opts.perspective === 'client' ? list : list.map(unrestored));
-  const historyOf = (channelId: string) => (loaded[channelId] ??= ownHistory(history[channelId]?.() ?? []));
+  const historyOf = (channelId: string) => (loaded[channelId] ??= channelId === help?.dm.id ? help.messages : ownHistory(history[channelId]?.() ?? []));
   const confirmedPeople = new Set(opts.confirmedPeople ?? []);
   const isEncrypted = (id: string) => !!Object.values(snapshot.channels).flat().find((c) => c.id === id)?.encrypted || !!snapshot.dms.find((d) => d.id === id)?.encrypted;
   const loadedReplies: Record<string, Message[]> = {};
@@ -1117,6 +1144,35 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       if (!backupReadable) throw new Error('backup-unreadable');
       setSecurity({ needsRecoveryKey: false });
       return FAKE_RECOVERY_KEY;
+    },
+    // D-38: sending → sent (resend in a minute) → the link is tapped after emailTapMs → confirmed with the held key.
+    async requestConfirmEmail() {
+      const ec = snapshot.security.emailConfirm ?? { phase: 'idle', email: 'henrik@nordlys.no' };
+      const setEc = (patch: Partial<EmailConfirm>, extra: Partial<Security> = {}) =>
+        setSecurity({ emailConfirm: { ...(snapshot.security.emailConfirm ?? ec), ...patch }, ...extra });
+      if (ec.canResendAt && ec.canResendAt > Date.now()) {
+        setEc({ phase: 'failed', error: 'rate-limited' });
+        throw new Error('rate-limited');
+      }
+      setEc({ phase: 'sending', error: undefined });
+      await new Promise((r) => setTimeout(r, opts.loadMs ?? 0));
+      if (opts.emailFails) {
+        setEc({ phase: 'failed', error: opts.emailFails });
+        throw new Error(opts.emailFails);
+      }
+      const sentAt = Date.now();
+      setEc({ phase: 'sent', canResendAt: sentAt + 60_000 });
+      if (opts.emailTapMs === undefined) return;
+      setTimeout(() => {
+        const now = snapshot.security.emailConfirm;
+        // Only the newest email's link works.
+        if (now?.phase !== 'sent' || now.canResendAt !== sentAt + 60_000) return;
+        setEc({ phase: 'confirmed' }, { device: 'confirmed', confirmation: undefined });
+      }, opts.emailTapMs);
+    },
+    async askForHelp() {
+      await new Promise((r) => setTimeout(r, opts.loadMs ?? 0));
+      if (!snapshot.security.helpContact) throw new Error('no-contact');
     },
     async resetEncryption(password) {
       if (password === 'wrong') throw new Error('wrong-password');

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWorkspace, type WorkspaceSnapshot } from '../../matrix';
 import { AlertIcon } from '../../ui/icons';
+import { EmailConfirm } from './EmailConfirm';
 import { ChevronIcon, DevicesIcon, KeyIcon, LaptopCheckIcon } from './icons';
 import { useSecurityUi } from './SecurityProvider';
 import s from './Security.module.css';
@@ -17,14 +18,20 @@ function encrypted(snap: WorkspaceSnapshot, channelId: string): boolean {
  * 'gate' = this device must be confirmed first (a card, not a page of quiet rows); 'wait' = crypto is still starting;
  * 'key' = the account's recovery key isn't saved yet, so nothing may be sent (backup before the first private message);
  * 'open' = show it.
+ * D-38: clients and Externals (confirmByEmail) wait until the first sync says who they are, never get 'key' (their key is
+ * made silently), and keep the gate for 1.2 s after the email confirmed them (You're all set).
  */
 export function useGate(channelId: string): 'gate' | 'wait' | 'key' | 'open' {
-  const { firstKey } = useSecurityUi();
+  const { firstKey, emailDone } = useSecurityUi();
   return useWorkspace((snap) => {
     if (!encrypted(snap, channelId)) return 'open';
-    const { device, needsRecoveryKey } = snap.security;
-    if (device === 'unconfirmed') return 'gate';
+    const { device, needsRecoveryKey, confirmByEmail } = snap.security;
+    if (device === 'unconfirmed') return confirmByEmail === undefined ? 'wait' : 'gate';
     if (device === 'starting' || device === 'elsewhere') return 'wait';
+    if (confirmByEmail && emailDone) return 'gate';
+    // Who I am isn't known yet, or my key is being made silently: the skeleton, never RecoveryKeySave.
+    if (confirmByEmail !== false && needsRecoveryKey) return 'wait';
+    if (confirmByEmail) return 'open';
     return needsRecoveryKey || firstKey !== 'idle' ? 'key' : 'open';
   });
 }
@@ -61,11 +68,13 @@ function Option({ icon, label, onClick }: { icon: React.ReactNode; label: string
   );
 }
 
-/** ConfirmGate / ConfirmGateNoDevice: in place of the timeline and composer. */
+/** ConfirmGate / ConfirmGateNoDevice: in place of the timeline and composer. D-38: clients and Externals get EmailConfirm. */
 export function ConfirmGate() {
   const { t } = useTranslation();
   const ui = useSecurityUi();
   const others = useWorkspace((x) => x.security.otherConfirmedDevices);
+  const byEmail = useWorkspace((x) => !!x.security.confirmByEmail);
+  if (byEmail) return <EmailConfirm done={ui.emailDone} />;
   return (
     <Card icon={<LaptopCheckIcon />} title={t('security.gateTitle')}>
       <div className={s.gateOptions}>

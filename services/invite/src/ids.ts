@@ -18,6 +18,12 @@ export function localpartFor(email: string, serverName: string): string {
 
 export const localpartOf = (userId: string) => userId.slice(1, userId.indexOf(':'));
 
+// localpartFor backwards: domains have no "_", so the last one splits local part and domain.
+export function emailFor(localpart: string, serverName: string): string | null {
+  const at = localpart.lastIndexOf('_');
+  return (at > 0 && normalizeEmail(`${localpart.slice(0, at)}@${localpart.slice(at + 1)}`)) || normalizeEmail(`${localpart}@${serverName}`);
+}
+
 // 144 bits, URL-safe.
 export const newCode = () => randomBytes(18).toString('base64url');
 export const isCode = (s: string) => /^[A-Za-z0-9_-]{24}$/.test(s);

@@ -16,6 +16,7 @@ import { PlainText, RichText } from './RichText';
 import r from './Rich.module.css';
 import s from './Timeline.module.css';
 import { PersonAvatar } from './PersonAvatar';
+import { HelpRow } from './HelpCard';
 import { Undecryptable } from '../security/Undecryptable';
 import { HistoryIcon } from '../security/icons';
 import { others } from '../people/Face';
@@ -292,6 +293,7 @@ export const MessageRow = memo(function MessageRow({
   const [wasUnavailable] = useState(m.kind === 'undecryptable');
   if (m.kind === 'deleted') return <DeletedRow m={m} />;
   if (m.kind === 'system') return <SystemRow m={m} meId={meId} />;
+  if (m.help) return <HelpRow m={m} help={m.help} head={head} />;
 
   const sending = m.status === 'sending';
   const failed = m.status === 'failed';

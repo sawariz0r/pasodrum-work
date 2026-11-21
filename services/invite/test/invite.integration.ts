@@ -1,52 +1,17 @@
 // Integration tests against the local stack (pnpm dev:server, pnpm dev:seed). Run: pnpm test:invite
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { before, describe, it } from 'node:test';
-import { BASE, SEED_FILE, SERVER, login, mx, ok as mxOk } from '../../../dev/lib.ts';
+import { SEED_FILE, SERVER, login, mx, ok as mxOk } from '../../../dev/lib.ts';
 import { powerLevels } from '../../../apps/web/src/matrix/levels.ts';
 import { keyFrom, unseal } from '../src/secret.ts';
+import { INVITE, MAILPIT, api, db, freshEmail, localpartOf, mailTo } from './helpers.ts';
 
-const MAILPIT = 'http://localhost:8025';
 type RoomKey = 'workspace' | 'general' | 'design' | 'lead' | 'nordlys' | 'projectUpdates' | 'questions';
 const seed = JSON.parse(readFileSync(SEED_FILE, 'utf8')) as { rooms: Record<RoomKey, string> };
 const rooms = seed.rooms;
 const devEnv = readFileSync(new URL('../../../dev/.env', import.meta.url), 'utf8');
 const key = keyFrom(devEnv.match(/^INVITE_SECRET=(.+)$/m)![1]!.trim());
-
-type Res = { status: number; body: any };
-async function api(token: string | null, method: string, path: string, body?: unknown): Promise<Res> {
-  const res = await fetch(`${BASE}/api/invites${path}`, {
-    method,
-    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  const text = await res.text();
-  return { status: res.status, body: text ? JSON.parse(text) : null };
-}
-
-const freshEmail = (domain = 'example.com') => `t${randomBytes(4).toString('hex')}@${domain}`;
-const localpartOf = (userId: string) => userId.slice(1, userId.indexOf(':'));
-
-// Runs inside the invite container, which has node:sqlite and the database.
-function db(sql: string, ...params: string[]): any {
-  const script = `const {DatabaseSync}=require('node:sqlite');const d=new DatabaseSync('/data/invites.db');
-    const s=d.prepare(process.argv[1]);const p=JSON.parse(process.argv[2]);
-    console.log(JSON.stringify(/^select/i.test(process.argv[1])?s.get(...p)??null:s.run(...p)));`;
-  const out = execFileSync('docker', ['compose', '-f', 'dev/docker-compose.yml', '--env-file', 'dev/.env', 'exec', '-T', 'invite',
-    'node', '-e', script, sql, JSON.stringify(params)], { encoding: 'utf8', env: { ...process.env, NODE_NO_WARNINGS: '1' } });
-  return JSON.parse(out.trim().split('\n').pop()!);
-}
-
-async function mailTo(email: string): Promise<{ Subject: string; HTML: string; Text: string; From: { Address: string } }> {
-  for (let i = 0; i < 20; i++) {
-    const r = await fetch(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:"${email}"`)}`).then((x) => x.json()) as any;
-    if (r.messages?.length) return fetch(`${MAILPIT}/api/v1/message/${r.messages[0].ID}`).then((x) => x.json()) as any;
-    await new Promise((res) => setTimeout(res, 250));
-  }
-  throw new Error(`no mail to ${email}`);
-}
 
 const accountData = (type: string) => (userId: string) => `/_matrix/client/v3/user/${encodeURIComponent(userId)}/account_data/${type}`;
 const spacesPath = accountData('work.pasodrum.spaces');
@@ -359,7 +324,7 @@ describe('invite service', () => {
   });
 
   it('translate is team only: clients and guests are 403, no token is 401', async () => {
-    const translate = (token: string | null, body: unknown) => fetch(`${BASE}/api/translate`, {
+    const translate = (token: string | null, body: unknown) => fetch(INVITE.replace(/invites$/, 'translate'), {
       method: 'POST',
       headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), 'Content-Type': 'application/json' },
       body: JSON.stringify(body),

@@ -17,7 +17,7 @@ You start with **no memory of prior chats** — orient yourself like this:
 4. **To work a task:** move its file `todo/ → implementing/`, set `stage: implementing` + `owner`, do the work, then move to `ceo-review/` with the **Outcome** filled in. Full workflow in [tasks/README.md](tasks/README.md).
 5. **Record as you go:** new decisions/learnings → `docs/DECISIONS.md`; correct this file when a rule changes.
 
-Status (2026-11-21): M0–M8 live; M7, M8, SIDE-02, SIDE-03 (share history) in ceo-review. In discovery with the CEO: Docs + Boards, people & access (Externals, roles), client-friendly device confirmation. Next: M9 desktop shell.
+Status (2026-11-21): M0–M8 live; M7, M8, SIDE-02, SIDE-03 (share history), SIDE-04 (confirm by email, D-38) in ceo-review. In discovery with the CEO: Docs + Boards, people & access (Externals, roles). Next: M9 desktop shell.
 
 ---
 

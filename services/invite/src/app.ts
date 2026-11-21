@@ -1,5 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { confirmRoutes } from './confirm.ts';
 import { renderInvite, type Locale } from './email.ts';
+import { SYSTEM_LOCALPART, systemAccount } from './help.ts';
 import { isCode, localpartFor, localpartOf, newCode, newPassword, normalizeEmail } from './ids.ts';
 import type { SendMail } from './mail.ts';
 import { MatrixError, type Matrix } from './matrix.ts';
@@ -17,9 +19,9 @@ export type Config = {
   translate: TranslateConfig | null;
   translateDailyLimit: number;
 };
-export type Deps = { cfg: Config; store: Store; mx: Matrix; sendMail: SendMail; key: Buffer; now?: () => number };
+export type Deps = { cfg: Config; store: Store; mx: Matrix; sendMail: SendMail; key: Buffer; confirmKey: Buffer; systemPassword?: string; now?: () => number };
 
-class Reply {
+export class Reply {
   status: number;
   body: unknown;
   constructor(status: number, body?: unknown) {
@@ -27,14 +29,15 @@ class Reply {
     this.body = body;
   }
 }
-const fail = (status: number, error: string) => new Reply(status, { error });
+export const fail = (status: number, error: string) => new Reply(status, { error });
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const MAX_BODY = 16 * 1024;
 const TRANSLATE_PER_USER_DAY = 150;
 
-export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Deps) {
+export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPassword, now = Date.now }: Deps) {
+  const confirm = confirmRoutes({ cfg, store, mx, sendMail, key: confirmKey, system: systemAccount(mx, store, cfg.serverName, systemPassword, cfg.registrationToken), now });
   const allow = rateLimiter();
   const presence = createPresence({ mx, now });
   const claiming = new Set<string>();
@@ -145,6 +148,7 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
     if (role === 'external' && !(await mayGrant(c.token, c.userId, channelIds as string[], spaceId, space))) throw fail(403, 'not-allowed');
 
     const localpart = localpartFor(email, cfg.serverName);
+    if (localpart === SYSTEM_LOCALPART) throw fail(400, 'invalid-email');
     const userId = `@${localpart}:${cfg.serverName}`;
     let rooms = [spaceId, ...(channelIds as string[])];
     const displayName = typeof name === 'string' && name.trim() ? name.trim() : null;
@@ -371,6 +375,7 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
       meta.name = 'translate';
       return translate(req, await readJson(req));
     }
+    if (parts[0] === 'api' && parts[1] === 'invites' && parts[2] === 'confirm') return confirm(req, url, parts.slice(3), meta, ip);
     if (parts[0] !== 'api' || parts[1] !== 'invites' || parts.length > 4) return fail(404, 'not-found');
     const [, , code, action] = parts;
     const m = req.method;
@@ -422,7 +427,7 @@ function clientIp(req: IncomingMessage): string {
   return first || req.socket.remoteAddress || '?';
 }
 
-async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> {
+export async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> {
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const chunk of req as AsyncIterable<Buffer>) {

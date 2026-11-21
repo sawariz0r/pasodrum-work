@@ -4,6 +4,7 @@ import { useWorkspace, WorkspaceProvider, type InvitePreview, type Session, type
 import { hostOf, usePhone } from './another/elementX';
 import { PhoneHandoffSignedIn, PhoneHandoffSignedOut } from './another/PhoneHandoff';
 import { matrixBackend, type Backend } from './backend';
+import { ConfirmRoute } from './confirm/ConfirmRoute';
 import { FirstRun, startFirstRun } from './join/FirstRun';
 import { JoinRoute, JoinRouteSignedIn } from './join/JoinRoute';
 import { lastIdentifier, rememberIdentifier } from './prefs';
@@ -42,7 +43,7 @@ export function AppRoutes({ backend }: { backend: Backend }) {
   const [expired, setExpired] = useState<Expired>();
   // After a deliberate sign-out, the next person shouldn't land on the previous person's page.
   const [signedOut, setSignedOut] = useState(false);
-  // Phones get the hand-off on every app route; /join/* works on phones (D-15, D-28).
+  // Phones get the hand-off on every app route; /join/* and /confirm/* work on phones (D-15, D-28, D-38).
   const phone = usePhone();
 
   const onSignedIn = (session: Session, identifier: string) => {
@@ -98,6 +99,7 @@ export function AppRoutes({ backend }: { backend: Backend }) {
           )
         }
       />
+      <Route path="/confirm/:code" element={<ConfirmRoute backend={backend} />} />
       <Route
         path="*"
         element={
