@@ -137,6 +137,14 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
   - Keyboard and touch use "Move to…" in the menus.
   - The List view and My issues aren't draggable.
 - **Interop and removal:** page and project rooms are hidden in Element X. Links in chat are plain links with a card on top (D-05). Deleting a feature folder leaves the rooms hidden and intact (D-04).
+- **Amended at build (2026-11-21):**
+  - The page tree lives in the space room's own state: `work.pasodrum.docs.page`, state key = page room id, `{title, parent?, order, links?}`, level 0 in spaces. `/hierarchy` can't return custom state, and clients can't add `m.space.child`. Page rooms carry `m.space.parent` and a restricted join only. Existing spaces need `node dev/migrate-docs.ts --apply`, run once by an Owner (done locally; production pending).
+  - Projects stay `m.space.child` and team-only, as the rules say. Clients create pages and issues, not projects or columns.
+  - An issue's description is state (`work.pasodrum.boards.description`, key = root event id, last write wins), because only the sender can edit a message. Change one-liners are derived from the issue state's history.
+  - Links use ids: `/docs/<pageRoomId>` and `/boards/<projectRoomId>/<issueEventId>`.
+  - A page room is joined on open and **never left**: on our single server, the last member leaving makes the room unjoinable for everyone.
+  - Presence (`/api/presence/<roomId>`, NDJSON stream) skips Caddy's `encode` in production, otherwise each stream waits for its first heartbeat.
+  - Translate for other features goes through the registry (`Feature.translation`), so deleting `features/translate` removes it from Docs and Boards too.
 
 ### D-36 · People types and access roles, amends D-06/D-25/D-27/D-28 · Accepted (model + boards approved by the CEO) · 2026-11-21
 - **Owner 100, Admin 50, Staff 10** (today's Member; 10 in workspace rooms too), **External 1** (a mark that grants nothing), **Client 0**. Admins have Owner-like rights but can't change or remove Owners/Admins.

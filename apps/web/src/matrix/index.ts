@@ -1,5 +1,7 @@
 // Public surface of matrix/ (D-03). Signatures are the contract with app/ (D-19).
 export * from './types';
+export * from './docsBoardsTypes';
+export { useDocsBoards } from './docsBoardsReact';
 export { WorkspaceProvider, useStore, useWorkspace } from './react';
 export { resolveServer, signIn, loadSession } from './session';
 export { createWorkspaceStore } from './store';

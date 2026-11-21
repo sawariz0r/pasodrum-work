@@ -43,6 +43,7 @@ import {
 import { ACCESS_ROLE, archivedLevels, channelUsers, dmLevels, EXTERNAL, externalKey, LEVEL, PINS, powerLevels, withLevel } from './levels';
 import { defaultLevel, defaultOps, roomLevel, roomOps, type PushOp, type PushRules } from './push';
 import { createSearch } from './search';
+import { createDocsBoards, pageRoomsOf } from './docsBoards';
 import { send, sendEdit, sendReaction, type MsgType, type TextMessage } from './send';
 import { createBundleReceiver, markerFor, shareHistory } from './shareHistory';
 import { clearSession } from './session';
@@ -581,7 +582,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       .sort(byName);
 
   // Threads
-  const roomsJoined = () => client.getRooms().filter((r) => joined(r) && !r.isSpaceRoom());
+  // D-37: typed rooms (spaces, pages, projects) aren't conversations.
+  const roomsJoined = () => client.getRooms().filter((r) => joined(r) && !r.getType());
   const spacesJoined = () => client.getRooms().filter((r) => joined(r) && r.isSpaceRoom());
 
   const scan = (): Scan => {
@@ -595,7 +597,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       }
       return root;
     };
-    for (const room of roomsJoined()) {
+    // Project rooms too: issue comments are threads (their live replies), kept out of Threads and Activity below.
+    for (const room of client.getRooms().filter((r) => joined(r) && !r.isSpaceRoom())) {
       for (const ev of [...room.getLiveTimeline().getEvents(), ...room.getPendingEvents()]) {
         const root = note(room, ev);
         if (root) {
@@ -700,6 +703,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   const threadsOf = (): ThreadSummary[] => {
     const out: ThreadSummary[] = [];
     for (const [rootId, room] of scan().roots) {
+      if (room.getType()) continue;
       const rootEv = eventOf(room, rootId);
       if (!rootEv) {
         fetchRoot(room, rootId);
@@ -831,7 +835,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     for (const room of roomsJoined()) room.getLiveTimeline().getEvents().forEach((ev) => consider(room, ev));
     for (const st of threadStore.values()) {
       const room = client.getRoom(st.roomId);
-      if (room && joined(room)) st.replies.forEach((ev) => consider(room, ev));
+      if (room && joined(room) && !room.getType()) st.replies.forEach((ev) => consider(room, ev));
     }
     return items.sort((a, b) => b.message.ts - a.message.ts);
   };
@@ -1060,7 +1064,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     for (const room of client.getRooms()) {
       if (!joined(room) || discarded.has(room.roomId) || visiting.has(room.roomId)) continue;
       if (team || room.isSpaceRoom() || isDirect(room, direct)) ensureMembers(room);
-      if (!room.isSpaceRoom()) listThreads(room);
+      if (!room.getType()) listThreads(room);
     }
     acceptInvites();
     rememberTeam();
@@ -1803,7 +1807,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     });
 
   /** Out of one room, level entry cleared. A room I'm not in I pass through (join, kick, leave) when its join rule lets me. */
-  const evict = async (roomId: string, userId: string) => {
+  const evict = async (roomId: string, userId: string, stay = false) => {
     const room = client.getRoom(roomId);
     const passing = !room || !joined(room);
     let entered = false;
@@ -1816,7 +1820,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       if (present(await membershipOf(roomId, userId))) await client.kick(roomId, userId);
       if (passing || userId in usersOf(room!)) await dropLevel(roomId, userId).catch(noop);
     } finally {
-      if (entered) await client.leave(roomId).catch(noop);
+      if (entered && !stay) await client.leave(roomId).catch(noop);
       else if (passing) visiting.delete(roomId);
     }
   };
@@ -1836,6 +1840,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       if (!e.getContent().via?.length || room?.isSpaceRoom() || (!wasIn && !(room && joined(room)))) continue;
       await evict(id, userId).catch(() => unreached.push(id));
     }
+    // Page rooms (D-37) aren't children; one I pass through stays joined, since the last member leaving would close it for good.
+    for (const id of pageRoomsOf(space)) if (wasIn || client.getRoom(id)?.getMyMembership() === KnownMembership.Join) await evict(id, userId, true).catch(() => unreached.push(id));
     return unreached;
   };
 
@@ -1992,8 +1998,11 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     }
   };
 
+  const docsBoards = createDocsBoards({ client, userId: session.userId, server, ready, person: (id, roomId) => personOf(roomId ? client.getRoom(roomId) : null, id, client.getUser(id)?.displayName) });
+
   return {
     getSnapshot: () => snapshot,
+    docsBoards,
     subscribe(onChange) {
       listeners.add(onChange);
       return () => void listeners.delete(onChange);
@@ -2050,6 +2059,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       media.clear();
       stopped = true;
       bundles.stop();
+      await docsBoards.stop();
       const loggedOut = await client.logout(true).then(
         () => true,
         () => false,
@@ -2377,6 +2387,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
           const r = client.getRoom(e.getStateKey());
           if (r && joined(r) && !r.isSpaceRoom()) plan.push([r, level]);
         }
+        for (const r of pageRoomsOf(s).map((id) => client.getRoom(id))) if (r && joined(r)) plan.push([r, level]);
       }
       if (!mayEditLevel(space, userId, plan[0]![1])) throw new Error('not-allowed');
       const changes = plan.filter(([r, level]) => levelIn(r, userId) !== level && mayEditLevel(r, userId, level));

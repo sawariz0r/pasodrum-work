@@ -5,4 +5,8 @@
 	reverse_proxy /.well-known/matrix/* continuwuity:6167
 	@invite path /api/invites /api/invites/* /api/translate
 	reverse_proxy @invite invite:8080
+	@presence path /api/presence/*
+	reverse_proxy @presence invite:8080 {
+		flush_interval -1
+	}
 }

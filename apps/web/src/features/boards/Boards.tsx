@@ -1,4 +1,3 @@
-import { SoonPage } from '../../app/shell/SoonPage';
 import { useT } from './strings';
 
 export function BoardsIcon({ size = 19, strokeWidth = 1.9 }: { size?: number; strokeWidth?: number }) {
@@ -12,8 +11,4 @@ export function BoardsIcon({ size = 19, strokeWidth = 1.9 }: { size?: number; st
 
 export function useBoardsLabel() {
   return useT()('boards');
-}
-
-export function BoardsPage() {
-  return <SoonPage icon={<BoardsIcon size={30} strokeWidth={1.8} />} title={useBoardsLabel()} />;
 }

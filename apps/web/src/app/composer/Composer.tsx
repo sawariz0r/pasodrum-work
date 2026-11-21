@@ -105,7 +105,20 @@ function useDismiss(open: boolean, onClose: () => void, ...inside: React.RefObje
   }, [open]);
 }
 
-export function Composer({ channelId, channelName, threadRootId, isDm = false }: { channelId: string; channelName: string; threadRootId?: string; isDm?: boolean }) {
+export function Composer({
+  channelId,
+  channelName,
+  threadRootId,
+  isDm = false,
+  placeholder: placeholderText,
+}: {
+  channelId: string;
+  channelName: string;
+  threadRootId?: string;
+  isDm?: boolean;
+  /** Also the field's label (an issue's comment box). */
+  placeholder?: string;
+}) {
   const { t } = useTranslation();
   const store = useStore();
   const { replyToId, cancelReply, editingId, startEdit } = useComposer();
@@ -139,8 +152,9 @@ export function Composer({ channelId, channelName, threadRootId, isDm = false }:
   const fileInput = useRef<HTMLInputElement>(null);
   const waiting = useRef(false);
 
-  const label = threadRootId ? t('thread.replyLabel') : t('composer.label', { channel: t('common.channelName', { name: channelName }) });
-  const placeholder = threadRootId ? t('thread.replyPlaceholder') : isDm ? t('composer.placeholderDm', { name: channelName }) : t('composer.placeholder', { channel: channelName });
+  const label = placeholderText ?? (threadRootId ? t('thread.replyLabel') : t('composer.label', { channel: t('common.channelName', { name: channelName }) }));
+  const placeholder =
+    placeholderText ?? (threadRootId ? t('thread.replyPlaceholder') : isDm ? t('composer.placeholderDm', { name: channelName }) : t('composer.placeholder', { channel: channelName }));
 
   const [exts] = useState(() =>
     extensions({

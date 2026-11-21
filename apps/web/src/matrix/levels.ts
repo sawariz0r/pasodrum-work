@@ -12,6 +12,8 @@ export type SpaceKind = 'workspace' | 'client';
 
 /** M7 (D-33): anyone in a conversation may pin. */
 export const PINS = 'm.room.pinned_events';
+/** D-37: a space's page tree (state key = page room id); everyone in the space may change it. */
+export const PAGES = 'work.pasodrum.docs.page';
 
 /**
  * Full m.room.power_levels content for a space or one of its channels. `users` holds explicit levels; in room
@@ -39,7 +41,7 @@ export function powerLevels(kind: SpaceKind, room: 'space' | 'channel', users: R
       'm.room.encryption': LEVEL.owner,
       'm.room.server_acl': LEVEL.owner,
       'm.room.tombstone': LEVEL.owner,
-      ...(space ? {} : { [PINS]: LEVEL.client }),
+      ...(space ? { [PAGES]: LEVEL.client } : { [PINS]: LEVEL.client }),
       ...(space && !client ? { [ACCESS_ROLE]: LEVEL.admin, [EXTERNAL]: LEVEL.admin } : {}),
     },
   };

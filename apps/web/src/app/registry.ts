@@ -25,6 +25,22 @@ export interface ChannelTabType {
 export interface FeatureRoute {
   path: string;
   element: ReactNode;
+  /** The left column beside the rail (D-37, first use: the Docs tree and the Boards project list). */
+  column?: ReactNode;
+}
+
+/** Translation for other features' text (D-37; first use: Docs and Boards). Absent when no feature provides it. */
+export interface TextTranslation {
+  /** null when this person may not translate in this space (not team, or a client space). */
+  useTranslator(spaceId: string): {
+    target: 'en' | 'ja';
+    /** Looks like the other language and fits the service's limits. */
+    offers(text: string, html?: string): boolean;
+    /** `id` keys the cache, e.g. pageId + ':' + blockIndex. */
+    translate(source: { id: string; body: string; html?: string }): Promise<{ html?: string; text?: string }>;
+    icon: ReactNode;
+    labels: { translate: string; showOriginal: string; failed: string; retry: string };
+  } | null;
 }
 
 /** Drawn under a message's text (M7, first use: link cards). Returns null when it doesn't apply. */
@@ -56,6 +72,7 @@ export interface Feature {
   channelTabs?: ChannelTabType[];
   messageActions?: MessageAction[];
   messageParts?: MessagePart[];
+  translation?: TextTranslation;
 }
 
 export function defineFeature<F extends Feature>(feature: F): F {
@@ -68,6 +85,8 @@ export interface Registry {
   channelTabs: ReadonlyMap<string, ChannelTabType>;
   messageActions: MessageAction[];
   messageParts: MessagePart[];
+  /** The first feature's translation, if any feature provides one. */
+  translation?: TextTranslation;
 }
 
 export function buildRegistry(features: readonly Feature[]): Registry {
@@ -79,6 +98,7 @@ export function buildRegistry(features: readonly Feature[]): Registry {
     channelTabs,
     messageActions: features.flatMap((f) => f.messageActions ?? []),
     messageParts: features.flatMap((f) => f.messageParts ?? []),
+    translation: features.find((f) => f.translation)?.translation,
   };
 }
 

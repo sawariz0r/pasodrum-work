@@ -17,7 +17,7 @@ import { channelPath, dmPath, fallbackSpace, homeChannel, spaceHome } from '../p
 import { rememberPlace } from '../prefs';
 import { ThreadPanel } from '../thread/ThreadPanel';
 import { useOpenThread, useThreadNav } from '../thread/useThread';
-import { noStoredTabs } from '../registry';
+import { noStoredTabs, type FeatureRoute } from '../registry';
 import { useRegistry } from '../RegistryProvider';
 import { ToastProvider } from '../toast';
 import { AppStart } from './AppStart';
@@ -58,7 +58,7 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
               <Route path="activity" element={<ActivityRoute />} />
               <Route path="search" element={<SearchRoute />} />
               {routes.map((r) => (
-                <Route key={r.path} path={r.path} element={<Frame section="feature" column={null}>{r.element}</Frame>} />
+                <Route key={r.path} path={r.path} element={<FeatureFrame route={r} />} />
               ))}
               <Route path="*" element={<UnknownRoute />} />
             </Routes>
@@ -202,6 +202,16 @@ function SearchRoute() {
   return (
     <Frame section="home" space={space} column={space && <Sidebar space={space} />}>
       <SearchPage />
+    </Frame>
+  );
+}
+
+/** A feature's rail page; the selected space (its tile lit) is the last one opened (build plan 0.6). */
+function FeatureFrame({ route }: { route: FeatureRoute }) {
+  const space = useFallbackSpace();
+  return (
+    <Frame section="feature" space={space} column={route.column ?? null}>
+      {route.element}
     </Frame>
   );
 }

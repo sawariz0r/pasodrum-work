@@ -1,5 +1,6 @@
 // In-memory WorkspaceStore with the canvas workspace, for tests and /dev screens. No server.
 import { PasswordRequired } from '../../matrix';
+import { createFakeDocsBoards } from './fakeDocsBoards';
 import type { AccessChange, AccessRole, ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Draft, ExternalAccess, FilesPage, JoinableChannel, LinkPreview, Media, Member, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, SasEmoji, SearchHit, Security, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
 
 const people: Record<string, Person> = {
@@ -684,6 +685,7 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
   return {
     set,
     getSnapshot: () => snapshot,
+    docsBoards: createFakeDocsBoards({ perspective: opts.perspective, me: snapshot.me }),
     subscribe(onChange) {
       listeners.add(onChange);
       return () => listeners.delete(onChange);

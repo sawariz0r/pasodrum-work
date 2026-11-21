@@ -250,6 +250,46 @@ await probe('Japanese names, channel names and filenames round-trip', 'Fix or es
   return [dn.displayname === '田中 由紀' && name.name === '日本語チャンネル' && fileOk, `display name ${dn.displayname}, channel ${name.name}, download ${dl.status} disposition: ${cd}`];
 });
 
+// ── Docs and Boards (D-37) ────────────────────────────────
+await probe('Docs: 30 update events in 10 s from one person', 'Flush less often', async () => {
+  const room = await ok(t.sofia!, 'POST', '/_matrix/client/v3/createRoom', { preset: 'private_chat', creation_content: { type: 'work.pasodrum.docs.page' } });
+  const started = Date.now();
+  const codes: number[] = [];
+  for (let i = 0; i < 30; i++) {
+    codes.push((await mx(t.sofia!, 'PUT', `/_matrix/client/v3/rooms/${enc(room.room_id)}/send/work.pasodrum.docs.update/probe${started}-${i}`, { update: 'AAA=' })).status);
+    await sleep(Math.max(0, started + (i + 1) * 333 - Date.now()));
+  }
+  await mx(t.sofia!, 'POST', `/_matrix/client/v3/rooms/${enc(room.room_id)}/leave`, {});
+  const refused = codes.filter((c) => c !== 200);
+  return [!refused.length, `${codes.length - refused.length}/30 accepted in ${((Date.now() - started) / 1000).toFixed(1)} s${refused.length ? `; refused: ${refused.join(', ')}` : ''}`];
+});
+
+await probe('Docs: 100 KiB media upload and authenticated download (snapshots, big pastes)', 'Smaller snapshots; raise max_request_size', async () => {
+  const bytes = new Uint8Array(100 * 1024).map((_, i) => (i * 7919) % 251);
+  const up = await fetch(`${BASE}/_matrix/media/v3/upload`, { method: 'POST', headers: { Authorization: `Bearer ${t.sofia}`, 'Content-Type': 'application/octet-stream' }, body: bytes });
+  const uri: string = up.ok ? (await up.json()).content_uri : '';
+  const [, mediaServer, mediaId] = uri.match(/^mxc:\/\/([^/]+)\/(.+)$/) ?? [];
+  const dl = mediaId ? await fetch(`${BASE}/_matrix/client/v1/media/download/${mediaServer}/${mediaId}`, { headers: { Authorization: `Bearer ${t.jonas}` } }) : null;
+  const back = dl?.ok ? new Uint8Array(await dl.arrayBuffer()) : new Uint8Array();
+  const same = back.length === bytes.length && back.every((b, i) => b === bytes[i]);
+  return [same, `upload ${up.status}, download ${dl?.status ?? '—'} (${back.length} bytes, identical: ${same})`];
+});
+
+await probe('Docs: restricted join without m.space.child (page rooms)', 'Make page rooms space children', async () => {
+  const room = await ok(t.sofia!, 'POST', '/_matrix/client/v3/createRoom', {
+    preset: 'private_chat',
+    creation_content: { type: 'work.pasodrum.docs.page' },
+    initial_state: [
+      { type: 'm.space.parent', state_key: r.nordlys, content: { via: [SERVER], canonical: true } },
+      { type: 'm.room.join_rules', state_key: '', content: { join_rule: 'restricted', allow: [{ type: 'm.room_membership', room_id: r.nordlys }] } },
+    ],
+  });
+  const member = await mx(client, 'POST', `/_matrix/client/v3/join/${enc(room.room_id)}`, {});
+  const outsider = await mx(t.tanaka!, 'POST', `/_matrix/client/v3/join/${enc(room.room_id)}`, {});
+  for (const tok of [client, t.sofia!]) await mx(tok, 'POST', `/_matrix/client/v3/rooms/${enc(room.room_id)}/leave`, {});
+  return [member.status === 200 && outsider.status === 403, `space member joins ${member.status}, non-member (tanaka, not in Nordlys) ${outsider.status}`];
+});
+
 // ── Report ────────────────────────────────────────────────
 const failedMust = rows.filter((x) => x.must && !x.pass);
 const md = [

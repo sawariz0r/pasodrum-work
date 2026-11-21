@@ -3,6 +3,7 @@ import { renderInvite, type Locale } from './email.ts';
 import { isCode, localpartFor, localpartOf, newCode, newPassword, normalizeEmail } from './ids.ts';
 import type { SendMail } from './mail.ts';
 import { MatrixError, type Matrix } from './matrix.ts';
+import { createPresence } from './presence.ts';
 import { ADMIN_LEVEL, TTL_MS, canInvite, canManage, isGenuine, normalizeRole, rateLimiter, spaceInfo, stateOf, teamOf, type SpaceInfo } from './rules.ts';
 import { seal, unseal } from './secret.ts';
 import type { Invite, Store } from './store.ts';
@@ -35,6 +36,7 @@ const TRANSLATE_PER_USER_DAY = 150;
 
 export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Deps) {
   const allow = rateLimiter();
+  const presence = createPresence({ mx, now });
   const claiming = new Set<string>();
   const host = new URL(cfg.publicUrl).host;
   const linkFor = (code: string) => `${cfg.publicUrl}/join/${code}`;
@@ -394,6 +396,7 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
   }
 
   return async function handle(req: IncomingMessage, res: ServerResponse) {
+    if (await presence.handle(req, res)) return;
     const started = Date.now();
     const meta = { name: '?' };
     let reply: Reply;

@@ -172,8 +172,11 @@ describe('D-36 isolation', () => {
   });
 
   it('c. removeExternal leaves them in none of our rooms, and they can’t rejoin a restricted client channel', async () => {
+    // A page room (D-37) isn't a space child: removal has to reach it too.
+    const pageId = await sofia.store.docsBoards.createPage({ spaceId: a.spaceId, title: `PA page ${stamp()}` });
+    expect(await join(ext.token, pageId)).toBe(200);
     await sofia.store.removeExternal(ext.userId);
-    for (const roomId of [w1, w2, a.spaceId, a.channelId, b.spaceId, b.channelId, ...(await childrenOf(owner, a.spaceId)), ...(await childrenOf(owner, b.spaceId))]) {
+    for (const roomId of [w1, w2, a.spaceId, a.channelId, b.spaceId, b.channelId, pageId, ...(await childrenOf(owner, a.spaceId)), ...(await childrenOf(owner, b.spaceId))]) {
       expect([undefined, 'leave', 'ban']).toContain(await membership(owner, roomId, ext.userId));
     }
     expect(sofia.store.getSnapshot().externals[ext.userId]).toBeUndefined();

@@ -1,4 +1,5 @@
 // The only shapes the app sees from the server (D-03). Product vocabulary, no Matrix terms.
+import type { DocsBoards } from './docsBoardsTypes';
 
 export type ConnectionState = 'starting' | 'online' | 'reconnecting' | 'offline';
 
@@ -427,6 +428,8 @@ export interface WorkspaceSnapshot {
 export interface WorkspaceStore {
   getSnapshot(): WorkspaceSnapshot;
   subscribe(onChange: () => void): () => void;
+  /** D-37. Docs and Boards: their own snapshot (useDocsBoards) and commands. */
+  docsBoards: DocsBoards;
   openTimeline(channelId: string): void;
   loadOlder(channelId: string): void;
   sendText(channelId: string, body: string): void;

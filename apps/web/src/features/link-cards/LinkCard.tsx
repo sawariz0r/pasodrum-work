@@ -6,7 +6,7 @@ import s from './LinkCard.module.css';
 
 /** LinkCard: the first link only, at one fixed height. Loading keeps that height; no preview leaves the plain link. */
 export function LinkCard({ message }: { message: Message }) {
-  const url = message.links?.[0];
+  const url = message.links?.find((l) => new URL(l).origin !== location.origin);
   return url ? <Card key={url} url={url} /> : null;
 }
 

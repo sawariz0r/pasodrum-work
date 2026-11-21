@@ -1,0 +1,80 @@
+// The Boards column (BoardsPage, BoardsNordlys): My issues, then the projects of each space in scope, grouped.
+import { useState } from 'react';
+import { Link } from 'react-router';
+import shell from '../../app/shell/Shell.module.css';
+import { useShowExternal } from '../../app/people/names';
+import { myIssues, useDocsBoards, useWorkspace, type Project, type Space } from '../../matrix';
+import { IconButton } from '../../ui';
+import { BuildingIcon, ChevronDownIcon, PencilIcon, PersonIcon, PlusIcon } from './icons';
+import { boardsPath, minePath, openNewProject, useBoardsRoute, useIsTeam, useScope } from './model';
+import s from './Boards.module.css';
+import { useT } from './strings';
+
+const none: Project[] = [];
+
+export function BoardsColumn() {
+  const t = useT();
+  const route = useBoardsRoute();
+  const { selected, scope } = useScope();
+  const team = useIsTeam();
+  const meId = useWorkspace((x) => x.me.id);
+  const scopeIds = scope.map((x) => x.id).join('\n');
+  const mine = useDocsBoards((x) => myIssues(x, meId, scopeIds ? scopeIds.split('\n') : []).length);
+
+  return (
+    <aside aria-label={t('boards')} className={`${shell.sidebar} ${s.column}`}>
+      <div className={s.colHead}>
+        <h1 className={s.colTitle}>{t('boards')}</h1>
+        {team && selected && <IconButton outline label={t('newProject')} icon={<PencilIcon />} onClick={() => openNewProject(selected.id)} />}
+      </div>
+      <nav className={s.nav}>
+        <Link to={minePath()} className={`${s.navRow} ${s.mineRow}`} aria-current={route.mine ? 'page' : undefined}>
+          <span>
+            <PersonIcon />
+          </span>
+          <span className={s.navName}>{t('myIssues')}</span>
+          {mine > 0 && <span className={s.mineCount}>{mine}</span>}
+        </Link>
+        {scope.map((space) => (
+          <SpaceGroup key={space.id} space={space} team={team} activeId={route.mine ? undefined : route.projectId} />
+        ))}
+      </nav>
+    </aside>
+  );
+}
+
+function SpaceGroup({ space, team, activeId }: { space: Space; team: boolean; activeId?: string }) {
+  const t = useT();
+  const [open, setOpen] = useState(true);
+  const showExternal = useShowExternal();
+  const projects = useDocsBoards((x) => x.projects[space.id] ?? none);
+  return (
+    <>
+      <div className={s.group}>
+        <button type="button" className={s.groupToggle} aria-expanded={open} onClick={() => setOpen(!open)}>
+          <span>
+            <ChevronDownIcon />
+          </span>
+          <span className={s.groupName}>{space.name}</span>
+        </button>
+        {space.kind === 'client' && showExternal && (
+          <span role="img" className={s.outsideMark} aria-label={t('outside')} title={t('outside')}>
+            <BuildingIcon />
+          </span>
+        )}
+        {team && (
+          <button type="button" className={s.groupAdd} aria-label={t('newProject')} onClick={() => openNewProject(space.id)}>
+            <PlusIcon size={14} />
+          </button>
+        )}
+      </div>
+      {open &&
+        projects.map((p) => (
+          <Link key={p.id} to={boardsPath(p.id)} className={s.navRow} aria-current={p.id === activeId ? 'page' : undefined}>
+            <span className={s.swatch} style={{ background: p.colour }} />
+            <span className={s.navName}>{p.name}</span>
+          </Link>
+        ))}
+    </>
+  );
+}
