@@ -13,7 +13,7 @@ You start with **no memory of prior chats** — orient yourself like this:
    - `tasks/implementing/` **first** — anything here is in-flight; resume it before starting anything new.
    - then `tasks/todo/` — committed + ready, priority-ordered (`P0` first). Respect each task's `depends_on`.
    - `tasks/ceo-review/` = awaiting CEO; `tasks/done/` = finished; `tasks/backlog/` = future.
-3. **Design gate:** a task that builds UI may only enter `implementing/` when every screen it names is `approved` in [design/INVENTORY.md](design/INVENTORY.md). An undesigned state found mid-build becomes an inventory row plus a small design task; carry on with other work.
+3. **Design gate:** a task that builds UI may only enter `implementing/` when every screen it names is `approved` in [design/INVENTORY.md](design/INVENTORY.md). Find the screens in [design/CANVAS-MAP.md](design/CANVAS-MAP.md) (one canvas page per feature) and open only those `.dc.html` files. An undesigned state found mid-build becomes an inventory row plus a small design task; carry on with other work.
 4. **To work a task:** move its file `todo/ → implementing/`, set `stage: implementing` + `owner`, do the work, then move to `ceo-review/` with the **Outcome** filled in. Full workflow in [tasks/README.md](tasks/README.md).
 5. **Record as you go:** new decisions/learnings → `docs/DECISIONS.md`; correct this file when a rule changes.
 
@@ -119,5 +119,5 @@ Status (2026-11-21): M0–M8 live; M7, M8, SIDE-02, SIDE-03 (share history), SID
 ## 7. Pointers
 
 - Plan this repo was bootstrapped from: [docs/SPEC.md](docs/SPEC.md) §6–§8 and DECISIONS D-01…D-13.
-- Design canvas (all approved screens): https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ (private to the CEO).
+- Design canvas (all approved screens): https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ (private to the CEO). One canvas page per feature; [design/CANVAS-MAP.md](design/CANVAS-MAP.md) lists every page, section and artboard, so read it instead of the whole `canvas.json`.
 - Design gate: [design/INVENTORY.md](design/INVENTORY.md).

@@ -2,7 +2,7 @@
 
 Every screen and state in the app. Status: `needs design` → `designed` → `approved` (date). A task may enter `tasks/implementing/` only when every screen it names is `approved`. Each screen is approved in EN and JP, light and dark ([[D-10]]).
 
-Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ. Source copy in [design/canvas/](canvas/) (`.dc.html` per artboard, `canvas.json` index): read these when building a screen. Re-copy after every canvas change.
+Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ, one page per feature (since 2026-11-21). Source copy in [design/canvas/](canvas/) (`.dc.html` per artboard, `canvas.json` index): read these when building a screen. Re-copy after every canvas change, then run `pnpm canvas:map`. **Find a feature’s artboards in [CANVAS-MAP.md](CANVAS-MAP.md)** (page → section → artboard); this file stays the status record.
 
 ## Approved (before Batch A)
 
@@ -145,7 +145,7 @@ Words: "Confirm this device", "Not confirmed", "Not available on this device", "
 
 ## Side features
 
-### Translate a message (SIDE-01, D-32) — canvas page **Discovery**
+### Translate a message (SIDE-01, D-32) — canvas page **Translate**
 
 Team only; never where clients or guests are. Hover-bar icon only, shown when the message is in the other script from your language. Translated in place with one line under it; only you see it.
 
@@ -238,7 +238,7 @@ Approved 2026-11-21 (CEO). Rules: DocsBoardsRules. Components: DocsPage, BoardsP
 
 ## Confirm by email (D-38)
 
-Approved 2026-11-21 (CEO). Boards stay on the canvas Discovery page (CEO); mirrored in design/canvas. Rules: EmailConfirmRules.
+Approved 2026-11-21 (CEO). Boards on the canvas page **Confirm by email** (moved from Discovery when the canvas went to one page per feature); mirrored in design/canvas. Rules: EmailConfirmRules.
 
 | Screen | Boards | Status |
 |---|---|---|

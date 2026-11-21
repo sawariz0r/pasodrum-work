@@ -14,6 +14,7 @@
     "test:matrix": "vitest run --root apps/web --config vitest.matrix.config.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm locales",
     "locales": "node scripts/check-locales.ts",
+    "canvas:map": "node scripts/canvas-map.ts",
     "dev:server": "docker compose -f dev/docker-compose.yml --env-file dev/.env up -d --build",
     "dev:server:stop": "docker compose -f dev/docker-compose.yml --env-file dev/.env down",
     "dev:server:reset": "docker compose -f dev/docker-compose.yml --env-file dev/.env down -v && rm -rf dev/data",

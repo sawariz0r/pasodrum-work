@@ -6,12 +6,77 @@
  },
  "title": "Pasodrum work — UI",
  "launch": {
-  "view": "canvas"
+  "view": "canvas",
+  "page": "overview"
  },
  "pages": [
   {
-   "id": "ui",
-   "name": "Pasodrum work UI"
+   "id": "overview",
+   "name": "Overview & foundations"
+  },
+  {
+   "id": "signin",
+   "name": "Sign in"
+  },
+  {
+   "id": "messages",
+   "name": "Messages & composer"
+  },
+  {
+   "id": "threads",
+   "name": "Threads, activity & drafts"
+  },
+  {
+   "id": "dms",
+   "name": "DMs & profiles"
+  },
+  {
+   "id": "channels",
+   "name": "Channels"
+  },
+  {
+   "id": "channel-tabs",
+   "name": "Pins, files & link cards"
+  },
+  {
+   "id": "people",
+   "name": "People & access"
+  },
+  {
+   "id": "client-spaces",
+   "name": "Client spaces & guests"
+  },
+  {
+   "id": "joining",
+   "name": "Invites, joining & first run"
+  },
+  {
+   "id": "devices",
+   "name": "Devices & encryption"
+  },
+  {
+   "id": "confirm-email",
+   "name": "Confirm by email"
+  },
+  {
+   "id": "search",
+   "name": "Search & ⌘K"
+  },
+  {
+   "id": "settings",
+   "name": "Settings"
+  },
+  {
+   "id": "translate",
+   "name": "Translate"
+  },
+  {
+   "id": "docs",
+   "name": "Docs"
+  },
+  {
+   "id": "boards",
+   "name": "Boards"
   },
   {
    "id": "discovery",
@@ -21,1969 +86,2188 @@
  "boards": {
   "Main.dc.html": {
    "x": 0,
-   "y": 0,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Workspace — light",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "Dark.dc.html": {
    "x": 1520,
-   "y": 0,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Workspace — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "AddPeople.dc.html": {
    "x": 0,
-   "y": 1020,
+   "y": 9320,
    "w": 1440,
    "h": 900,
    "title": "Add people (replaces Matrix invites)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "people"
   },
   "SignIn.dc.html": {
-   "x": 1520,
-   "y": 1020,
+   "x": 0,
+   "y": 0,
    "w": 1440,
    "h": 900,
    "title": "Sign in (no homeserver picker)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "signin"
   },
   "Foundations.dc.html": {
    "x": 0,
-   "y": 2040,
+   "y": 1260,
    "w": 1440,
    "h": 5240,
-   "title": "Foundations & vocabulary"
+   "title": "Foundations & vocabulary",
+   "page": "overview"
   },
   "ClientSpace.dc.html": {
    "x": 0,
-   "y": 7700,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Client's view of their space",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "InviteLanding.dc.html": {
-   "x": 1520,
-   "y": 7700,
+   "x": 0,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Invite link landing (browser)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "CreateClientSpace.dc.html": {
-   "x": 3040,
-   "y": 7700,
+   "x": 1520,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "New client space",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "MainJP.dc.html": {
    "x": 0,
-   "y": 9300,
+   "y": 6620,
    "w": 1440,
    "h": 900,
    "title": "Workspace — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "SignInJP.dc.html": {
-   "x": 1520,
-   "y": 9300,
+   "x": 0,
+   "y": 1020,
    "w": 1440,
    "h": 900,
    "title": "Sign in — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "signin"
   },
   "LanguageMenu.dc.html": {
-   "x": 3040,
-   "y": 9300,
+   "x": 0,
+   "y": 0,
    "w": 1440,
    "h": 900,
    "title": "Profile menu: language switch",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "settings"
   },
   "AppStart.dc.html": {
    "x": 0,
-   "y": 10320,
+   "y": 10760,
    "w": 1440,
    "h": 900,
    "title": "App start / first sync",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "TimelineLoading.dc.html": {
    "x": 1520,
-   "y": 10320,
+   "y": 10760,
    "w": 1440,
    "h": 900,
    "title": "Channel loading",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "OlderHistory.dc.html": {
    "x": 3040,
-   "y": 10320,
+   "y": 10760,
    "w": 1440,
    "h": 900,
    "title": "Loading older messages",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "Offline.dc.html": {
    "x": 0,
-   "y": 11340,
+   "y": 11780,
    "w": 1440,
    "h": 900,
    "title": "Offline, message waiting",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "Reconnecting.dc.html": {
    "x": 1520,
-   "y": 11340,
+   "y": 11780,
    "w": 1440,
    "h": 900,
    "title": "Reconnecting",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "BackOnline.dc.html": {
    "x": 3040,
-   "y": 11340,
+   "y": 11780,
    "w": 1440,
    "h": 900,
    "title": "Back online",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "MessageSending.dc.html": {
    "x": 0,
-   "y": 12360,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Message sending",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MessageFailed.dc.html": {
    "x": 1520,
-   "y": 12360,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Message not sent, retry",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "NotAvailable.dc.html": {
-   "x": 3040,
-   "y": 12360,
+   "x": 0,
+   "y": 12800,
    "w": 1440,
    "h": 900,
    "title": "Page not available",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "SignInWrongPassword.dc.html": {
    "x": 0,
-   "y": 13380,
+   "y": 2040,
    "w": 1440,
    "h": 900,
    "title": "Sign in — wrong password",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "signin"
   },
   "SignInServerDown.dc.html": {
    "x": 1520,
-   "y": 13380,
+   "y": 2040,
    "w": 1440,
    "h": 900,
    "title": "Sign in — server unreachable",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "signin"
   },
   "SessionExpired.dc.html": {
    "x": 3040,
-   "y": 13380,
+   "y": 2040,
    "w": 1440,
    "h": 900,
    "title": "Signed out on this device",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "signin"
   },
   "ForgotPassword.dc.html": {
    "x": 0,
-   "y": 14400,
+   "y": 3060,
    "w": 1440,
    "h": 900,
    "title": "Forgot password — email",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "signin"
   },
   "ForgotPasswordSent.dc.html": {
    "x": 1520,
-   "y": 14400,
+   "y": 3060,
    "w": 1440,
    "h": 900,
    "title": "Forgot password — check email",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "signin"
   },
   "ResetPassword.dc.html": {
    "x": 3040,
-   "y": 14400,
+   "y": 3060,
    "w": 1440,
    "h": 900,
    "title": "Forgot password — new password",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "signin"
   },
   "Window1024.dc.html": {
    "x": 0,
-   "y": 15420,
+   "y": 9200,
    "w": 1024,
    "h": 900,
    "title": "Window 1024 px — thread open",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "Window800.dc.html": {
    "x": 1104,
-   "y": 15420,
+   "y": 9200,
    "w": 800,
    "h": 900,
    "title": "Window 800 px — thread open",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "Window800Sidebar.dc.html": {
    "x": 1984,
-   "y": 15420,
+   "y": 9200,
    "w": 800,
    "h": 900,
    "title": "Window 800 px — sidebar drawer",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "MsgImages.dc.html": {
    "x": 0,
-   "y": 16820,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "Images: single and several",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgVideoAudio.dc.html": {
    "x": 1520,
-   "y": 16820,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "Video, voice and audio",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgFiles.dc.html": {
    "x": 3040,
-   "y": 16820,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "Files: single and several",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgText.dc.html": {
    "x": 0,
-   "y": 17840,
+   "y": 2280,
    "w": 1440,
    "h": 900,
    "title": "Formatted text and code",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgTextJP.dc.html": {
    "x": 1520,
-   "y": 17840,
+   "y": 2280,
    "w": 1440,
    "h": 900,
    "title": "Formatted text — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgLong.dc.html": {
    "x": 3040,
-   "y": 17840,
+   "y": 2280,
    "w": 1440,
    "h": 900,
    "title": "Long message, collapsed",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgReplies.dc.html": {
    "x": 0,
-   "y": 18860,
+   "y": 3300,
    "w": 1440,
    "h": 900,
    "title": "Replies, incl. from another app",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgRowStates.dc.html": {
    "x": 1520,
-   "y": 18860,
+   "y": 3300,
    "w": 1440,
    "h": 900,
    "title": "Edited, deleted, can’t show",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgRowStatesJP.dc.html": {
    "x": 3040,
-   "y": 18860,
+   "y": 3300,
    "w": 1440,
    "h": 900,
    "title": "Edited, deleted, can’t show — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgReactions.dc.html": {
    "x": 0,
-   "y": 19880,
+   "y": 4320,
    "w": 1440,
    "h": 900,
    "title": "Reactions: mine, many, who reacted",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgHover.dc.html": {
    "x": 1520,
-   "y": 19880,
+   "y": 4320,
    "w": 1440,
    "h": 900,
    "title": "Message hover actions (M2)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgMoreMenu.dc.html": {
    "x": 3040,
-   "y": 19880,
+   "y": 4320,
    "w": 1440,
    "h": 900,
    "title": "More menu, own message",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgMoreMenuJP.dc.html": {
    "x": 0,
-   "y": 20900,
+   "y": 5340,
    "w": 1440,
    "h": 900,
    "title": "More menu — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgEdit.dc.html": {
    "x": 1520,
-   "y": 20900,
+   "y": 5340,
    "w": 1440,
    "h": 900,
    "title": "Edit in place",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgDeleteConfirm.dc.html": {
    "x": 3040,
-   "y": 20900,
+   "y": 5340,
    "w": 1440,
    "h": 900,
    "title": "Delete message?",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "LinkCopied.dc.html": {
    "x": 0,
-   "y": 21920,
+   "y": 6360,
    "w": 1440,
    "h": 900,
    "title": "Copy link → toast",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "ComposerFormat.dc.html": {
-   "x": 1520,
-   "y": 21920,
+   "x": 0,
+   "y": 10980,
    "w": 1440,
    "h": 900,
    "title": "Composer: formatting",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "ComposerReply.dc.html": {
-   "x": 3040,
-   "y": 21920,
+   "x": 1520,
+   "y": 10980,
    "w": 1440,
    "h": 900,
    "title": "Composer: replying",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "EmojiPicker.dc.html": {
    "x": 0,
-   "y": 22940,
+   "y": 12000,
    "w": 1440,
    "h": 900,
    "title": "Emoji picker",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MentionPicker.dc.html": {
    "x": 1520,
-   "y": 22940,
+   "y": 12000,
    "w": 1440,
    "h": 900,
    "title": "Mention picker, chip in draft",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MentionPickerJP.dc.html": {
    "x": 3040,
-   "y": 22940,
+   "y": 12000,
    "w": 1440,
    "h": 900,
    "title": "Mention picker — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "LinkDialog.dc.html": {
    "x": 0,
-   "y": 23960,
+   "y": 13020,
    "w": 1440,
    "h": 900,
    "title": "Link on selected text",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "UploadProgress.dc.html": {
    "x": 1520,
-   "y": 23960,
+   "y": 13020,
    "w": 1440,
    "h": 900,
    "title": "Attach → uploading",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "PasteImage.dc.html": {
    "x": 3040,
-   "y": 23960,
+   "y": 13020,
    "w": 1440,
    "h": 900,
    "title": "Pasted image",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "UploadFailed.dc.html": {
    "x": 0,
-   "y": 24980,
+   "y": 14040,
    "w": 1440,
    "h": 900,
    "title": "Upload failed, too big",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "UploadFailedJP.dc.html": {
    "x": 1520,
-   "y": 24980,
+   "y": 14040,
    "w": 1440,
    "h": 900,
    "title": "Upload failed — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "DropOverlay.dc.html": {
    "x": 3040,
-   "y": 24980,
+   "y": 14040,
    "w": 1440,
    "h": 900,
    "title": "Drag and drop",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "ImageViewer.dc.html": {
    "x": 0,
-   "y": 26000,
+   "y": 15060,
    "w": 1440,
    "h": 900,
    "title": "Image viewer",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "NewMessages.dc.html": {
-   "x": 1520,
-   "y": 26000,
+   "x": 0,
+   "y": 17640,
    "w": 1440,
    "h": 900,
    "title": "New-messages line",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "JumpToLatest.dc.html": {
-   "x": 3040,
-   "y": 26000,
+   "x": 1520,
+   "y": 17640,
    "w": 1440,
    "h": 900,
    "title": "Scrolled up, new below",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "JumpToLatestJP.dc.html": {
    "x": 0,
-   "y": 27020,
+   "y": 18660,
    "w": 1440,
    "h": 900,
    "title": "Scrolled up — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "NotifyAsk.dc.html": {
    "x": 1520,
-   "y": 27020,
+   "y": 18660,
    "w": 1440,
    "h": 900,
    "title": "Notification ask (after first send)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "NotifyAskJP.dc.html": {
    "x": 3040,
-   "y": 27020,
+   "y": 18660,
    "w": 1440,
    "h": 900,
    "title": "Notification ask — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "DesktopNotification.dc.html": {
    "x": 0,
-   "y": 28040,
+   "y": 19680,
    "w": 1440,
    "h": 900,
    "title": "Desktop notifications EN / JP",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgTextDark.dc.html": {
-   "x": 1520,
-   "y": 28040,
+   "x": 0,
+   "y": 7380,
    "w": 1440,
    "h": 900,
    "title": "Formatted text and code — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MsgMediaDark.dc.html": {
-   "x": 3040,
-   "y": 28040,
+   "x": 1520,
+   "y": 7380,
    "w": 1440,
    "h": 900,
    "title": "Media and files — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "UploadDark.dc.html": {
    "x": 0,
-   "y": 29060,
+   "y": 16080,
    "w": 1440,
    "h": 900,
    "title": "Uploading — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "MoreMenuDark.dc.html": {
-   "x": 1520,
-   "y": 29060,
+   "x": 0,
+   "y": 8400,
    "w": 1440,
    "h": 900,
    "title": "More menu — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "NavigationM3.dc.html": {
    "x": 0,
-   "y": 30460,
+   "y": 7640,
    "w": 1440,
    "h": 900,
    "title": "Navigation (M3): rail, sidebar, rules",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "Threads.dc.html": {
-   "x": 1520,
-   "y": 30460,
+   "x": 0,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Threads view, unread first",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "ThreadsJP.dc.html": {
-   "x": 3040,
-   "y": 30460,
+   "x": 1520,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Threads view — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "ThreadNew.dc.html": {
    "x": 0,
-   "y": 31480,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "Thread panel: first reply",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "ThreadLoading.dc.html": {
    "x": 1520,
-   "y": 31480,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "Thread panel: loading replies",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "ThreadError.dc.html": {
    "x": 3040,
-   "y": 31480,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "Thread panel: replies can’t load",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "ThreadComposer.dc.html": {
    "x": 0,
-   "y": 32500,
+   "y": 2280,
    "w": 1440,
    "h": 900,
    "title": "Thread reply composer, typing",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "ThreadErrorJP.dc.html": {
    "x": 1520,
-   "y": 32500,
+   "y": 2280,
    "w": 1440,
    "h": 900,
    "title": "Thread panel can’t load — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "MsgHoverM3.dc.html": {
-   "x": 3040,
-   "y": 32500,
+   "x": 0,
+   "y": 9420,
    "w": 1440,
    "h": 900,
    "title": "Hover bar with Thread (M3)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "messages"
   },
   "Activity.dc.html": {
    "x": 0,
-   "y": 33520,
+   "y": 8940,
    "w": 1440,
    "h": 900,
    "title": "Activity: mentions and replies to you",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "Mentions.dc.html": {
    "x": 1520,
-   "y": 33520,
+   "y": 8940,
    "w": 1440,
    "h": 900,
    "title": "Activity → Mentions",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "ActivityJP.dc.html": {
    "x": 3040,
-   "y": 33520,
+   "y": 8940,
    "w": 1440,
    "h": 900,
    "title": "Activity — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "Drafts.dc.html": {
    "x": 0,
-   "y": 34540,
+   "y": 9960,
    "w": 1440,
    "h": 900,
    "title": "Drafts (this device)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "DraftsJP.dc.html": {
    "x": 1520,
-   "y": 34540,
+   "y": 9960,
    "w": 1440,
    "h": 900,
    "title": "Drafts — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "ThreadsEmpty.dc.html": {
-   "x": 3040,
-   "y": 34540,
+   "x": 0,
+   "y": 3300,
    "w": 1440,
    "h": 900,
    "title": "Threads — none yet",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "DMs.dc.html": {
    "x": 0,
-   "y": 35560,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "DMs page (every space)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "DMsJP.dc.html": {
    "x": 1520,
-   "y": 35560,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "DMs page — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "DMEmpty.dc.html": {
    "x": 3040,
-   "y": 35560,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "DM header, no messages yet",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "DMEmptyJP.dc.html": {
    "x": 0,
-   "y": 36580,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "New DM — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "NewMessage.dc.html": {
    "x": 1520,
-   "y": 36580,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "New message: find people",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "NewMessageGroup.dc.html": {
    "x": 3040,
-   "y": 36580,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "New message: group DM",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "NewMessageJP.dc.html": {
    "x": 0,
-   "y": 37600,
+   "y": 2280,
    "w": 1440,
    "h": 900,
    "title": "New message — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "ProfileCard.dc.html": {
-   "x": 1520,
-   "y": 37600,
+   "x": 0,
+   "y": 8940,
    "w": 1440,
    "h": 900,
    "title": "Profile card (click a name)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "ProfileCardJP.dc.html": {
-   "x": 3040,
-   "y": 37600,
+   "x": 1520,
+   "y": 8940,
    "w": 1440,
    "h": 900,
    "title": "Profile card — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "ClientDMs.dc.html": {
    "x": 0,
-   "y": 38620,
+   "y": 3300,
    "w": 1440,
    "h": 900,
    "title": "Client: DMs with their team only",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "ClientNewMessage.dc.html": {
    "x": 1520,
-   "y": 38620,
+   "y": 3300,
    "w": 1440,
    "h": 900,
    "title": "Client: New message, their space only",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "ClientThread.dc.html": {
-   "x": 3040,
-   "y": 38620,
+   "x": 0,
+   "y": 4320,
    "w": 1440,
    "h": 900,
    "title": "Client: thread in their channel",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "ThreadsDark.dc.html": {
    "x": 0,
-   "y": 39640,
+   "y": 5340,
    "w": 1440,
    "h": 900,
    "title": "Threads view — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "DMsDark.dc.html": {
-   "x": 1520,
-   "y": 39640,
+   "x": 0,
+   "y": 4320,
    "w": 1440,
    "h": 900,
    "title": "DMs page — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "ProfileCardDark.dc.html": {
-   "x": 3040,
-   "y": 39640,
+   "x": 0,
+   "y": 9960,
    "w": 1440,
    "h": 900,
    "title": "Profile card — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "ActivityEmpty.dc.html": {
    "x": 0,
-   "y": 40660,
+   "y": 10980,
    "w": 1440,
    "h": 900,
    "title": "Activity — nothing new",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "DraftsEmpty.dc.html": {
    "x": 1520,
-   "y": 40660,
+   "y": 10980,
    "w": 1440,
    "h": 900,
    "title": "Drafts — none",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "Thread1024.dc.html": {
    "x": 0,
-   "y": 42060,
+   "y": 6360,
    "w": 1024,
    "h": 900,
    "title": "1024: thread open, sidebar folded",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "Thread800.dc.html": {
    "x": 1104,
-   "y": 42060,
+   "y": 6360,
    "w": 800,
    "h": 900,
    "title": "800: thread replaces the conversation",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "Threads1024.dc.html": {
    "x": 1984,
-   "y": 42060,
+   "y": 6360,
    "w": 1024,
    "h": 900,
    "title": "Threads 1024: sidebar folds while a thread is open",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "Threads800.dc.html": {
    "x": 3088,
-   "y": 42060,
+   "y": 6360,
    "w": 800,
    "h": 900,
    "title": "Threads 800: cards fill, sidebar is a drawer",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "Activity1024.dc.html": {
    "x": 0,
-   "y": 43080,
+   "y": 12000,
    "w": 1024,
    "h": 900,
    "title": "Activity 1024: list + conversation",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "Activity800.dc.html": {
    "x": 1104,
-   "y": 43080,
+   "y": 12000,
    "w": 800,
    "h": 900,
    "title": "Activity 800: the list fills the window",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "DMs1024.dc.html": {
-   "x": 1984,
-   "y": 43080,
+   "x": 0,
+   "y": 5340,
    "w": 1024,
    "h": 900,
    "title": "DMs 1024: list + conversation",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "DMs800.dc.html": {
-   "x": 3088,
-   "y": 43080,
+   "x": 1104,
+   "y": 5340,
    "w": 800,
    "h": 900,
    "title": "DMs 800: conversation replaces the list, back arrow",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "DMs800JP.dc.html": {
    "x": 0,
-   "y": 44100,
+   "y": 6360,
    "w": 800,
    "h": 900,
    "title": "DMs 800 — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "NewMessage800.dc.html": {
    "x": 880,
-   "y": 44100,
+   "y": 6360,
    "w": 800,
    "h": 900,
    "title": "New message at 800",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "ProfileCard800.dc.html": {
-   "x": 1760,
-   "y": 44100,
+   "x": 0,
+   "y": 10980,
    "w": 800,
    "h": 900,
    "title": "Profile card at 800",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "Threads1024Dark.dc.html": {
-   "x": 2640,
-   "y": 44100,
+   "x": 0,
+   "y": 7380,
    "w": 1024,
    "h": 900,
    "title": "Threads 1024 — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "threads"
   },
   "RulesM4.dc.html": {
    "x": 0,
-   "y": 45320,
+   "y": 10340,
    "w": 1440,
    "h": 1760,
    "title": "Rules: narrow widths, roles (D-25), links, first run",
-   "is_interactive": false
+   "is_interactive": false,
+   "page": "people"
   },
   "WorkspaceMenu.dc.html": {
-   "x": 1520,
-   "y": 45320,
+   "x": 0,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Workspace menu (Owner)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "ChannelsPlusMenu.dc.html": {
-   "x": 3040,
-   "y": 45320,
+   "x": 1520,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "+ beside Channels",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "CreateChannel.dc.html": {
-   "x": 1520,
-   "y": 46340,
+   "x": 0,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "New channel: private, name gets the lock",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "CreateChannelSpace.dc.html": {
-   "x": 3040,
-   "y": 46340,
+   "x": 1520,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "New channel: which space",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "CreateChannelTaken.dc.html": {
    "x": 0,
-   "y": 47360,
+   "y": 2280,
    "w": 1440,
    "h": 900,
    "title": "New channel: name already exists",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "CreateChannelJP.dc.html": {
    "x": 1520,
-   "y": 47360,
+   "y": 2280,
    "w": 1440,
    "h": 900,
    "title": "New channel — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "BrowseChannels.dc.html": {
    "x": 3040,
-   "y": 47360,
+   "y": 2280,
    "w": 1440,
    "h": 900,
    "title": "Browse channels, join",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "BrowseChannelsJP.dc.html": {
    "x": 0,
-   "y": 48380,
+   "y": 3300,
    "w": 1440,
    "h": 900,
    "title": "Browse channels — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "ChannelAbout.dc.html": {
    "x": 1520,
-   "y": 48380,
+   "y": 3300,
    "w": 1440,
    "h": 900,
    "title": "Channel details: About (private)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "ChannelMembers.dc.html": {
    "x": 3040,
-   "y": 48380,
+   "y": 3300,
    "w": 1440,
    "h": 900,
    "title": "Members: roles, pending person, join link",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "ChannelMembersJP.dc.html": {
    "x": 0,
-   "y": 49400,
+   "y": 4320,
    "w": 1440,
    "h": 900,
    "title": "Members — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "ChannelSettings.dc.html": {
    "x": 1520,
-   "y": 49400,
+   "y": 4320,
    "w": 1440,
    "h": 900,
    "title": "Channel details: Settings",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "LeaveChannel.dc.html": {
    "x": 3040,
-   "y": 49400,
+   "y": 4320,
    "w": 1440,
    "h": 900,
    "title": "Leave a private channel",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "RoleChange.dc.html": {
    "x": 0,
-   "y": 50420,
+   "y": 12220,
    "w": 1440,
    "h": 900,
    "title": "D-25: Owners change Owners (role on the profile card)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "people"
   },
   "MakeOwner.dc.html": {
    "x": 1520,
-   "y": 50420,
+   "y": 12220,
    "w": 1440,
    "h": 900,
    "title": "Make owner, asked once (an Owner can undo it, D-25)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "people"
   },
   "AddPeopleMember.dc.html": {
    "x": 3040,
-   "y": 50420,
+   "y": 12220,
    "w": 1440,
    "h": 900,
    "title": "Add people as a Member: guests only",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "people"
   },
   "AddPeopleClient.dc.html": {
    "x": 0,
-   "y": 51440,
+   "y": 13240,
    "w": 1440,
    "h": 900,
    "title": "Add people in a client space: clients",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "people"
   },
   "AddPeopleErrors.dc.html": {
    "x": 1520,
-   "y": 51440,
+   "y": 13240,
    "w": 1440,
    "h": 900,
    "title": "Add people: bad email, in channel, pending",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "people"
   },
   "AddPeopleErrorsJP.dc.html": {
    "x": 3040,
-   "y": 51440,
+   "y": 13240,
    "w": 1440,
    "h": 900,
    "title": "Add people errors — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "people"
   },
   "ProfileMenuSettings.dc.html": {
    "x": 0,
-   "y": 52460,
+   "y": 1020,
    "w": 1440,
    "h": 900,
    "title": "Profile menu → Settings",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "settings"
   },
   "SettingsProfile.dc.html": {
    "x": 1520,
-   "y": 52460,
+   "y": 1020,
    "w": 1440,
    "h": 900,
    "title": "Settings: profile",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "settings"
   },
   "SettingsProfileJP.dc.html": {
    "x": 3040,
-   "y": 52460,
+   "y": 1020,
    "w": 1440,
    "h": 900,
    "title": "Settings: profile — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "settings"
   },
   "SettingsNotifications.dc.html": {
    "x": 0,
-   "y": 53480,
+   "y": 2040,
    "w": 1440,
    "h": 900,
    "title": "Settings: notifications",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "settings"
   },
   "SettingsAppearance.dc.html": {
    "x": 1520,
-   "y": 53480,
+   "y": 2040,
    "w": 1440,
    "h": 900,
    "title": "Settings: appearance and language",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "settings"
   },
   "SettingsDevices.dc.html": {
    "x": 3040,
-   "y": 53480,
+   "y": 2040,
    "w": 1440,
    "h": 900,
    "title": "Settings: devices",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "settings"
   },
   "SettingsDevicesDark.dc.html": {
    "x": 0,
-   "y": 54500,
+   "y": 3060,
    "w": 1440,
    "h": 900,
    "title": "Settings: devices — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "settings"
   },
   "ChannelMembersDark.dc.html": {
-   "x": 1520,
-   "y": 54500,
+   "x": 0,
+   "y": 5340,
    "w": 1440,
    "h": 900,
    "title": "Members — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "InviteEmail.dc.html": {
-   "x": 3040,
-   "y": 54500,
+   "x": 0,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "Email when someone adds you (EN / JP)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "JoinUsed.dc.html": {
    "x": 0,
-   "y": 55520,
+   "y": 2280,
    "w": 1440,
    "h": 900,
    "title": "Join page: link already used",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "JoinWrongAccount.dc.html": {
    "x": 1520,
-   "y": 55520,
+   "y": 2280,
    "w": 1440,
    "h": 900,
    "title": "Join page: signed in as someone else",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "JoinWrongAccountJP.dc.html": {
    "x": 3040,
-   "y": 55520,
+   "y": 2280,
    "w": 1440,
    "h": 900,
    "title": "Join page: someone else — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "FirstRunTeam.dc.html": {
    "x": 0,
-   "y": 56540,
+   "y": 4860,
    "w": 1440,
    "h": 900,
    "title": "First sign-in: new teammate",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "FirstRunClient.dc.html": {
    "x": 1520,
-   "y": 56540,
+   "y": 4860,
    "w": 1440,
    "h": 900,
    "title": "First sign-in: client",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "FirstRunClientJP.dc.html": {
    "x": 3040,
-   "y": 56540,
+   "y": 4860,
    "w": 1440,
    "h": 900,
    "title": "First sign-in: client — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "RulesM5.dc.html": {
    "x": 0,
-   "y": 57860,
+   "y": 1260,
    "w": 1440,
    "h": 1480,
    "title": "Rules: client spaces, guests, the outside mark, phones",
-   "is_interactive": false
+   "is_interactive": false,
+   "page": "client-spaces"
   },
   "RoleChangeAdmin.dc.html": {
-   "x": 1520,
-   "y": 57860,
+   "x": 0,
+   "y": 14260,
    "w": 1440,
    "h": 900,
    "title": "D-25: an Admin switches Member ↔ Admin",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "people"
   },
   "ClientSpaceCreating.dc.html": {
-   "x": 3040,
-   "y": 57860,
+   "x": 1520,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "New client space: creating",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ClientSpaceNameTaken.dc.html": {
-   "x": 1520,
-   "y": 58880,
+   "x": 0,
+   "y": 2860,
    "w": 1440,
    "h": 900,
    "title": "New client space: name already exists",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ClientSpaceCreateError.dc.html": {
-   "x": 3040,
-   "y": 58880,
+   "x": 1520,
+   "y": 2860,
    "w": 1440,
    "h": 900,
    "title": "New client space: couldn’t create, retry",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ClientSpaceCreated.dc.html": {
    "x": 0,
-   "y": 59900,
+   "y": 3880,
    "w": 1440,
    "h": 900,
    "title": "New client space: created, you land in it",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "CreateClientSpaceJP.dc.html": {
    "x": 1520,
-   "y": 59900,
+   "y": 3880,
    "w": 1440,
    "h": 900,
    "title": "New client space — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ClientShell.dc.html": {
-   "x": 3040,
-   "y": 59900,
+   "x": 0,
+   "y": 5440,
    "w": 1440,
    "h": 900,
    "title": "Client’s shell (M5): one tile, no workspace, no +",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ClientShellMenu.dc.html": {
    "x": 0,
-   "y": 60920,
+   "y": 6460,
    "w": 1440,
    "h": 900,
    "title": "Client’s space menu: browse only",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ClientShellJP.dc.html": {
    "x": 1520,
-   "y": 60920,
+   "y": 6460,
    "w": 1440,
    "h": 900,
    "title": "Client’s shell — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "GuestShell.dc.html": {
    "x": 3040,
-   "y": 60920,
+   "y": 6460,
    "w": 1440,
    "h": 900,
    "title": "Guest’s shell: only the channels they were added to",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "GuestShellJP.dc.html": {
    "x": 0,
-   "y": 61940,
+   "y": 7480,
    "w": 1440,
    "h": 900,
    "title": "Guest’s shell — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ExternalChannel.dc.html": {
    "x": 1520,
-   "y": 61940,
+   "y": 7480,
    "w": 1440,
    "h": 900,
    "title": "Outside mark: workspace channel with a guest",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ExternalClientSpace.dc.html": {
    "x": 3040,
-   "y": 61940,
+   "y": 7480,
    "w": 1440,
    "h": 900,
    "title": "Outside mark: team inside a client space",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ExternalDM.dc.html": {
    "x": 0,
-   "y": 62960,
+   "y": 8500,
    "w": 1440,
    "h": 900,
    "title": "Outside mark: DM with a client",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ExternalJP.dc.html": {
    "x": 1520,
-   "y": 62960,
+   "y": 8500,
    "w": 1440,
    "h": 900,
    "title": "Outside mark — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ExternalDark.dc.html": {
    "x": 3040,
-   "y": 62960,
+   "y": 8500,
    "w": 1440,
    "h": 900,
    "title": "Outside mark — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ClientSpaceMenuAdmin.dc.html": {
    "x": 0,
-   "y": 63980,
+   "y": 11080,
    "w": 1440,
    "h": 900,
    "title": "Client space menu (Admin): settings",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "SpaceSettings.dc.html": {
    "x": 1520,
-   "y": 63980,
+   "y": 11080,
    "w": 1440,
    "h": 900,
    "title": "Client space settings: name, colour, archive",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "SpacePeople.dc.html": {
    "x": 3040,
-   "y": 63980,
+   "y": 11080,
    "w": 1440,
    "h": 900,
    "title": "Client space settings: people, remove",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "RemoveFromSpace.dc.html": {
    "x": 0,
-   "y": 65000,
+   "y": 12100,
    "w": 1440,
    "h": 900,
    "title": "Remove from the client space, asked once",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ArchiveSpace.dc.html": {
    "x": 1520,
-   "y": 65000,
+   "y": 12100,
    "w": 1440,
    "h": 900,
    "title": "Archive the client space, asked once",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ArchivedSpace.dc.html": {
    "x": 3040,
-   "y": 65000,
+   "y": 12100,
    "w": 1440,
    "h": 900,
    "title": "Archived client space: read-only",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "SpaceSettingsJP.dc.html": {
    "x": 0,
-   "y": 66020,
+   "y": 13120,
    "w": 1440,
    "h": 900,
    "title": "Client space settings — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "RemoveFromSpaceJP.dc.html": {
    "x": 1520,
-   "y": 66020,
+   "y": 13120,
    "w": 1440,
    "h": 900,
    "title": "Remove from the client space — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "SpacePeopleDark.dc.html": {
    "x": 3040,
-   "y": 66020,
+   "y": 13120,
    "w": 1440,
    "h": 900,
    "title": "Client space people — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "ProfileMenuAnotherApp.dc.html": {
    "x": 0,
-   "y": 67040,
+   "y": 6420,
    "w": 1440,
    "h": 900,
    "title": "Profile menu → Another app",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "AnotherApp.dc.html": {
    "x": 1520,
-   "y": 67040,
+   "y": 6420,
    "w": 1440,
    "h": 900,
    "title": "Another app: server and username, copied",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "AnotherAppJP.dc.html": {
    "x": 3040,
-   "y": 67040,
+   "y": 6420,
    "w": 1440,
    "h": 900,
    "title": "Another app — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "JoinDoneOther.dc.html": {
    "x": 0,
-   "y": 68060,
+   "y": 3300,
    "w": 1440,
    "h": 900,
    "title": "Join page: done, another app open",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "ClientShellDark.dc.html": {
-   "x": 1520,
-   "y": 68060,
+   "x": 0,
+   "y": 9520,
    "w": 1440,
    "h": 900,
    "title": "Client’s shell — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "PhoneHandoff.dc.html": {
    "x": 0,
-   "y": 69080,
+   "y": 7440,
    "w": 390,
    "h": 844,
    "title": "Phone: an app link points to the computer or Element X",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "PhoneHandoffJP.dc.html": {
    "x": 470,
-   "y": 69080,
+   "y": 7440,
    "w": 390,
    "h": 844,
    "title": "Phone hand-off — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "JoinPhone.dc.html": {
    "x": 940,
-   "y": 69080,
+   "y": 7440,
    "w": 390,
    "h": 844,
    "title": "Join page on a phone",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "JoinDonePhone.dc.html": {
    "x": 1410,
-   "y": 69080,
+   "y": 7440,
    "w": 390,
    "h": 844,
    "title": "Joined on a phone: Element X next",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "joining"
   },
   "RulesM6.dc.html": {
    "x": 0,
-   "y": 70344,
+   "y": 240,
    "w": 1440,
    "h": 2180,
    "title": "Rules: encryption without the words (M6)",
-   "is_interactive": false
+   "is_interactive": false,
+   "page": "devices"
   },
   "ConfirmGate.dc.html": {
    "x": 1520,
-   "y": 70344,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "New device: a DM asks to confirm this device first",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ConfirmGateJP.dc.html": {
    "x": 3040,
-   "y": 70344,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Confirm this device — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ConfirmGateNoDevice.dc.html": {
-   "x": 1520,
-   "y": 71364,
+   "x": 0,
+   "y": 2540,
    "w": 1440,
    "h": 900,
    "title": "No other device signed in: recovery key only (private channel)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ConfirmGateDark.dc.html": {
-   "x": 3040,
-   "y": 71364,
+   "x": 1520,
+   "y": 2540,
    "w": 1440,
    "h": 900,
    "title": "Confirm this device — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ConfirmWaiting.dc.html": {
    "x": 0,
-   "y": 72624,
+   "y": 3560,
    "w": 1440,
    "h": 900,
    "title": "Use another device: approve there",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ConfirmCompare.dc.html": {
    "x": 1520,
-   "y": 72624,
+   "y": 3560,
    "w": 1440,
    "h": 900,
    "title": "Compare the emoji (new device)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ConfirmCompareJP.dc.html": {
    "x": 3040,
-   "y": 72624,
+   "y": 3560,
    "w": 1440,
    "h": 900,
    "title": "Compare the emoji — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ConfirmDone.dc.html": {
    "x": 0,
-   "y": 73644,
+   "y": 4580,
    "w": 1440,
    "h": 900,
    "title": "Device confirmed: the conversation opens",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ConfirmDeclined.dc.html": {
    "x": 1520,
-   "y": 73644,
+   "y": 4580,
    "w": 1440,
    "h": 900,
    "title": "Declined on the other device",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ConfirmTimeoutJP.dc.html": {
    "x": 3040,
-   "y": 73644,
+   "y": 4580,
    "w": 1440,
    "h": 900,
    "title": "No answer — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ConfirmMismatch.dc.html": {
    "x": 0,
-   "y": 74664,
+   "y": 5600,
    "w": 1440,
    "h": 900,
    "title": "The emoji didn’t match",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ApproveAsk.dc.html": {
    "x": 1520,
-   "y": 74664,
+   "y": 5600,
    "w": 1440,
    "h": 900,
    "title": "Signed-in device: “Is this you?”",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ApproveAskJP.dc.html": {
    "x": 3040,
-   "y": 74664,
+   "y": 5600,
    "w": 1440,
    "h": 900,
    "title": "Is this you — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ApproveCompare.dc.html": {
    "x": 0,
-   "y": 75684,
+   "y": 6620,
    "w": 1440,
    "h": 900,
    "title": "Compare the emoji (signed-in device)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ApproveDone.dc.html": {
    "x": 1520,
-   "y": 75684,
+   "y": 6620,
    "w": 1440,
    "h": 900,
    "title": "Signed-in device: confirmed",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ApproveDark.dc.html": {
    "x": 3040,
-   "y": 75684,
+   "y": 6620,
    "w": 1440,
    "h": 900,
    "title": "Is this you — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "RecoveryKeySave.dc.html": {
    "x": 0,
-   "y": 76704,
+   "y": 8180,
    "w": 1440,
    "h": 900,
    "title": "Save the recovery key (first time), copied",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "RecoveryKeySaveJP.dc.html": {
    "x": 1520,
-   "y": 76704,
+   "y": 8180,
    "w": 1440,
    "h": 900,
    "title": "Save the recovery key — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "RecoveryKeySaveDark.dc.html": {
    "x": 3040,
-   "y": 76704,
+   "y": 8180,
    "w": 1440,
    "h": 900,
    "title": "Save the recovery key — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "RecoveryKeyPassword.dc.html": {
    "x": 0,
-   "y": 77724,
+   "y": 9200,
    "w": 1440,
    "h": 900,
    "title": "Password first, only when the server asks",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "RecoveryKeyEnter.dc.html": {
    "x": 1520,
-   "y": 77724,
+   "y": 9200,
    "w": 1440,
    "h": 900,
    "title": "Enter the recovery key (new device)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "RecoveryKeyWrong.dc.html": {
    "x": 3040,
-   "y": 77724,
+   "y": 9200,
    "w": 1440,
    "h": 900,
    "title": "Wrong recovery key",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "RecoveryKeyEnterJP.dc.html": {
    "x": 0,
-   "y": 78744,
+   "y": 10220,
    "w": 1440,
    "h": 900,
    "title": "Enter the recovery key — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ResetConfirm.dc.html": {
    "x": 1520,
-   "y": 78744,
+   "y": 10220,
    "w": 1440,
    "h": 900,
    "title": "Can’t confirm: reset, honest about older messages",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ResetConfirmJP.dc.html": {
    "x": 3040,
-   "y": 78744,
+   "y": 10220,
    "w": 1440,
    "h": 900,
    "title": "Reset — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ResetWrongPassword.dc.html": {
    "x": 0,
-   "y": 79764,
+   "y": 11240,
    "w": 1440,
    "h": 900,
    "title": "Reset: wrong password",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "UndecryptableDM.dc.html": {
    "x": 1520,
-   "y": 79764,
+   "y": 11240,
    "w": 1440,
    "h": 900,
    "title": "Not available on this device: DM + list preview",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "UndecryptableThread.dc.html": {
    "x": 3040,
-   "y": 79764,
+   "y": 11240,
    "w": 1440,
    "h": 900,
    "title": "Not available on this device: private channel + thread",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "UndecryptableJP.dc.html": {
    "x": 0,
-   "y": 80784,
+   "y": 12260,
    "w": 1440,
    "h": 900,
    "title": "Not available on this device — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "UndecryptableDark.dc.html": {
    "x": 1520,
-   "y": 80784,
+   "y": 12260,
    "w": 1440,
    "h": 900,
    "title": "Not available on this device — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "SignOutWarn.dc.html": {
    "x": 3040,
-   "y": 80784,
+   "y": 12260,
    "w": 1440,
    "h": 900,
    "title": "Sign out from the last confirmed device",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "SignOutWarnJP.dc.html": {
    "x": 0,
-   "y": 81804,
+   "y": 13280,
    "w": 1440,
    "h": 900,
    "title": "Sign-out warning — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "SignOutNoBackup.dc.html": {
    "x": 1520,
-   "y": 81804,
+   "y": 13280,
    "w": 1440,
    "h": 900,
    "title": "Sign out with no backup: honest loss",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "SettingsDevicesM6.dc.html": {
    "x": 3040,
-   "y": 81804,
+   "y": 13280,
    "w": 1440,
    "h": 900,
    "title": "Settings → Devices: Not confirmed, Recovery key",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "SettingsDevicesUnconfirmed.dc.html": {
    "x": 0,
-   "y": 82824,
+   "y": 14300,
    "w": 1440,
    "h": 900,
    "title": "Settings → Devices on an unconfirmed device: Confirm",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "SettingsDevicesM6JP.dc.html": {
    "x": 1520,
-   "y": 82824,
+   "y": 14300,
    "w": 1440,
    "h": 900,
    "title": "Settings → Devices (M6) — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "SettingsDevicesM6Dark.dc.html": {
    "x": 3040,
-   "y": 82824,
+   "y": 14300,
    "w": 1440,
    "h": 900,
    "title": "Settings → Devices (M6) — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "TranslateRules.dc.html": {
    "x": 0,
@@ -1991,7 +2275,7 @@
    "w": 1440,
    "h": 1180,
    "title": "Translate — rules",
-   "page": "discovery",
+   "page": "translate",
    "is_interactive": false
   },
   "Translate.dc.html": {
@@ -2000,7 +2284,7 @@
    "w": 1440,
    "h": 900,
    "title": "Translate — hover bar",
-   "page": "discovery",
+   "page": "translate",
    "expand": "fill",
    "is_interactive": true
   },
@@ -2010,7 +2294,7 @@
    "w": 1440,
    "h": 900,
    "title": "Translate — translating",
-   "page": "discovery",
+   "page": "translate",
    "expand": "fill",
    "is_interactive": true
   },
@@ -2020,7 +2304,7 @@
    "w": 1440,
    "h": 900,
    "title": "Translate — translated in place",
-   "page": "discovery",
+   "page": "translate",
    "expand": "fill",
    "is_interactive": true
   },
@@ -2030,7 +2314,7 @@
    "w": 1440,
    "h": 900,
    "title": "Translate — original again",
-   "page": "discovery",
+   "page": "translate",
    "expand": "fill",
    "is_interactive": true
   },
@@ -2040,7 +2324,7 @@
    "w": 1440,
    "h": 900,
    "title": "Translate — couldn’t translate",
-   "page": "discovery",
+   "page": "translate",
    "expand": "fill",
    "is_interactive": true
   },
@@ -2050,7 +2334,7 @@
    "w": 1440,
    "h": 900,
    "title": "Translate — hover bar, Japanese",
-   "page": "discovery",
+   "page": "translate",
    "expand": "fill",
    "is_interactive": true
   },
@@ -2060,7 +2344,7 @@
    "w": 1440,
    "h": 900,
    "title": "Translate — translated, Japanese",
-   "page": "discovery",
+   "page": "translate",
    "expand": "fill",
    "is_interactive": true
   },
@@ -2070,7 +2354,7 @@
    "w": 1440,
    "h": 900,
    "title": "Translate — translated, dark",
-   "page": "discovery",
+   "page": "translate",
    "expand": "fill",
    "is_interactive": true
   },
@@ -2080,1516 +2364,2033 @@
    "w": 1440,
    "h": 900,
    "title": "Translate — translated, Japanese dark",
-   "page": "discovery",
+   "page": "translate",
    "expand": "fill",
    "is_interactive": true
   },
   "RulesE2.dc.html": {
    "x": 0,
-   "y": 84144,
+   "y": 6900,
    "w": 1440,
    "h": 1660,
    "title": "Rules: rename and archive a channel",
-   "is_interactive": false
+   "is_interactive": false,
+   "page": "channels"
   },
   "ChannelSettingsE2.dc.html": {
    "x": 1520,
-   "y": 84144,
+   "y": 6900,
    "w": 1440,
    "h": 900,
    "title": "Channel details → Settings: Name and Archive (Owners, Admins, its creator)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "ChannelSettingsMember.dc.html": {
    "x": 3040,
-   "y": 84144,
+   "y": 6900,
    "w": 1440,
    "h": 900,
    "title": "Channel details → Settings for everyone else: notifications only",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "RenameChannel.dc.html": {
-   "x": 1520,
-   "y": 85164,
+   "x": 0,
+   "y": 8680,
    "w": 1440,
    "h": 900,
    "title": "Rename: Save appears once the name changes",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "RenameChannelTaken.dc.html": {
-   "x": 3040,
-   "y": 85164,
+   "x": 1520,
+   "y": 8680,
    "w": 1440,
    "h": 900,
    "title": "Rename: the name is taken in this space",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "RenameChannelError.dc.html": {
    "x": 0,
-   "y": 86184,
+   "y": 9700,
    "w": 1440,
    "h": 900,
    "title": "Rename: couldn’t save, Retry",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "RenameChannelSaved.dc.html": {
    "x": 1520,
-   "y": 86184,
+   "y": 9700,
    "w": 1440,
    "h": 900,
    "title": "Renamed: the new name everywhere, one row in the timeline",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "RenameChannelJP.dc.html": {
    "x": 3040,
-   "y": 86184,
+   "y": 9700,
    "w": 1440,
    "h": 900,
    "title": "Rename — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "ArchiveChannel.dc.html": {
    "x": 0,
-   "y": 87204,
+   "y": 10720,
    "w": 1440,
    "h": 900,
    "title": "Archive the channel, asked once",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "ArchiveChannelJP.dc.html": {
    "x": 1520,
-   "y": 87204,
+   "y": 10720,
    "w": 1440,
    "h": 900,
    "title": "Archive the channel — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "ArchivedChannel.dc.html": {
    "x": 3040,
-   "y": 87204,
+   "y": 10720,
    "w": 1440,
    "h": 900,
    "title": "Archived: readable, quiet bar with Unarchive, gone from the sidebar",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "ArchivedChannelMember.dc.html": {
    "x": 0,
-   "y": 88224,
+   "y": 11740,
    "w": 1440,
    "h": 900,
    "title": "Archived, seen by a Member: the bar alone",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "ArchivedChannelDark.dc.html": {
    "x": 1520,
-   "y": 88224,
+   "y": 11740,
    "w": 1440,
    "h": 900,
    "title": "Archived channel — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "ArchivedChannelJP.dc.html": {
    "x": 3040,
-   "y": 88224,
+   "y": 11740,
    "w": 1440,
    "h": 900,
    "title": "Archived channel — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "ArchivedChannelSettings.dc.html": {
    "x": 0,
-   "y": 89244,
+   "y": 12760,
    "w": 1440,
    "h": 900,
    "title": "Archived → Settings: Unarchive channel",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "BrowseArchived.dc.html": {
    "x": 1520,
-   "y": 89244,
+   "y": 12760,
    "w": 1440,
    "h": 900,
    "title": "Browse channels: Archived at the bottom, Unarchive",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "BrowseArchivedJP.dc.html": {
    "x": 3040,
-   "y": 89244,
+   "y": 12760,
    "w": 1440,
    "h": 900,
    "title": "Browse channels with Archived — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channels"
   },
   "RulesM7.dc.html": {
    "x": 0,
-   "y": 90564,
+   "y": 240,
    "w": 1440,
    "h": 1900,
    "title": "Rules: tabs, pins, files, link cards (M7)",
-   "is_interactive": false
+   "is_interactive": false,
+   "page": "channel-tabs"
   },
   "ChannelTabsM7.dc.html": {
    "x": 1520,
-   "y": 90564,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Tabs: Messages · Pins · Files, no pin button in the header",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "PinnedMessage.dc.html": {
    "x": 3040,
-   "y": 90564,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Pinned messages: a small pin beside the time",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "MsgMenuPin.dc.html": {
-   "x": 1520,
-   "y": 91584,
+   "x": 0,
+   "y": 2260,
    "w": 1440,
    "h": 900,
    "title": "More menu: Pin",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "MsgMenuUnpin.dc.html": {
-   "x": 3040,
-   "y": 91584,
+   "x": 1520,
+   "y": 2260,
    "w": 1440,
    "h": 900,
    "title": "More menu on a pinned message: Unpin",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "PinsTab.dc.html": {
    "x": 0,
-   "y": 92604,
+   "y": 3280,
    "w": 1440,
    "h": 900,
    "title": "Pins: newest pinned first, Unpin on hover, click jumps",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "PinsTabEmpty.dc.html": {
    "x": 1520,
-   "y": 92604,
+   "y": 3280,
    "w": 1440,
    "h": 900,
    "title": "Pins: none yet",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "PinsTabLoading.dc.html": {
    "x": 3040,
-   "y": 92604,
+   "y": 3280,
    "w": 1440,
    "h": 900,
    "title": "Pins: loading",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "PinsTabJP.dc.html": {
    "x": 0,
-   "y": 93624,
+   "y": 4300,
    "w": 1440,
    "h": 900,
    "title": "Pins — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "PinsTabDark.dc.html": {
    "x": 1520,
-   "y": 93624,
+   "y": 4300,
    "w": 1440,
    "h": 900,
    "title": "Pins — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "FilesTab.dc.html": {
-   "x": 3040,
-   "y": 93624,
+   "x": 0,
+   "y": 5860,
    "w": 1440,
    "h": 900,
    "title": "Files: newest first, thumbnail or type icon, sender, date",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "FilesTabEmpty.dc.html": {
    "x": 0,
-   "y": 94644,
+   "y": 6880,
    "w": 1440,
    "h": 900,
    "title": "Files: none yet",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "FilesTabLoading.dc.html": {
    "x": 1520,
-   "y": 94644,
+   "y": 6880,
    "w": 1440,
    "h": 900,
    "title": "Files: loading",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "FilesTabMore.dc.html": {
    "x": 3040,
-   "y": 94644,
+   "y": 6880,
    "w": 1440,
    "h": 900,
    "title": "Files: older files still loading at the end",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "FilesTabJP.dc.html": {
    "x": 0,
-   "y": 95664,
+   "y": 7900,
    "w": 1440,
    "h": 900,
    "title": "Files — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "FilesTabDark.dc.html": {
    "x": 1520,
-   "y": 95664,
+   "y": 7900,
    "w": 1440,
    "h": 900,
    "title": "Files — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "LinkCard.dc.html": {
-   "x": 3040,
-   "y": 95664,
+   "x": 0,
+   "y": 9460,
    "w": 1440,
    "h": 900,
    "title": "Link card: image, site, title, one line",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "LinkCardNoImage.dc.html": {
    "x": 0,
-   "y": 96684,
+   "y": 10480,
    "w": 1440,
    "h": 900,
    "title": "Link card without an image: same height",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "LinkCardLoading.dc.html": {
    "x": 1520,
-   "y": 96684,
+   "y": 10480,
    "w": 1440,
    "h": 900,
    "title": "Link card loading: fixed-height skeleton",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "LinkCardNone.dc.html": {
    "x": 3040,
-   "y": 96684,
+   "y": 10480,
    "w": 1440,
    "h": 900,
    "title": "No card came back: the plain link, no error",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "LinkCardJP.dc.html": {
    "x": 0,
-   "y": 97704,
+   "y": 11500,
    "w": 1440,
    "h": 900,
    "title": "Link card — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "LinkCardDark.dc.html": {
    "x": 1520,
-   "y": 97704,
+   "y": 11500,
    "w": 1440,
    "h": 900,
    "title": "Link card — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "LinkCardMulti.dc.html": {
    "x": 3040,
-   "y": 97704,
+   "y": 11500,
    "w": 1440,
    "h": 900,
    "title": "Two links: only the first gets a card",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "channel-tabs"
   },
   "DocsSoon.dc.html": {
    "x": 0,
-   "y": 98844,
+   "y": 9620,
    "w": 1440,
    "h": 900,
    "title": "Docs in the rail: Soon",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "BoardsSoon.dc.html": {
-   "x": 1520,
-   "y": 98844,
+   "x": 0,
+   "y": 0,
    "w": 1440,
    "h": 900,
    "title": "Boards in the rail: Soon",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "RailSoonJP.dc.html": {
-   "x": 3040,
-   "y": 98844,
+   "x": 0,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Docs: Soon — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "PrivateDM.dc.html": {
    "x": 0,
-   "y": 99984,
+   "y": 12540,
    "w": 1440,
    "h": 900,
    "title": "Private DM: one line at the start, a small lock in the header",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "PrivateDMTooltip.dc.html": {
    "x": 1520,
-   "y": 99984,
+   "y": 12540,
    "w": 1440,
    "h": 900,
    "title": "The header lock on hover or focus: the same sentence",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "PrivateGroupDM.dc.html": {
    "x": 3040,
-   "y": 99984,
+   "y": 12540,
    "w": 1440,
    "h": 900,
    "title": "Private group DM: only the people here",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "PrivateChannel.dc.html": {
    "x": 0,
-   "y": 101004,
+   "y": 13560,
    "w": 1440,
    "h": 900,
    "title": "Private channel: the same line, the lock after the name",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "PrivateJP.dc.html": {
    "x": 1520,
-   "y": 101004,
+   "y": 13560,
    "w": 1440,
    "h": 900,
    "title": "Private DM — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "PrivateDark.dc.html": {
    "x": 3040,
-   "y": 101004,
+   "y": 13560,
    "w": 1440,
    "h": 900,
    "title": "Private DM — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "OpenElsewhere.dc.html": {
    "x": 0,
-   "y": 102144,
+   "y": 13820,
    "w": 1440,
    "h": 900,
    "title": "Open in another tab: Use here",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "OpenElsewhereJP.dc.html": {
    "x": 1520,
-   "y": 102144,
+   "y": 13820,
    "w": 1440,
    "h": 900,
    "title": "Open in another tab — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "DocsPage.dc.html": {
    "x": 0,
-   "y": 125844,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "Docs — page, two people present",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsTranslated.dc.html": {
    "x": 1520,
-   "y": 129924,
+   "y": 7040,
    "w": 1440,
    "h": 900,
    "title": "Docs — translated",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsPageJP.dc.html": {
    "x": 1520,
-   "y": 125844,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "Docs — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "BoardsPage.dc.html": {
-   "x": 9600,
-   "y": 125844,
+   "x": 0,
+   "y": 1020,
    "w": 1440,
    "h": 900,
    "title": "Boards — project board",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsIssue.dc.html": {
-   "x": 11120,
-   "y": 126864,
+   "x": 1520,
+   "y": 2040,
    "w": 1440,
    "h": 900,
    "title": "Boards — issue panel",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsList.dc.html": {
-   "x": 14160,
-   "y": 125844,
+   "x": 4560,
+   "y": 1020,
    "w": 1440,
    "h": 900,
    "title": "Boards — list view",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsPageJP.dc.html": {
-   "x": 11120,
-   "y": 125844,
+   "x": 1520,
+   "y": 1020,
    "w": 1440,
    "h": 900,
    "title": "Boards — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "DocsDark.dc.html": {
    "x": 3040,
-   "y": 125844,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "Docs — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsEmpty.dc.html": {
    "x": 0,
-   "y": 126864,
+   "y": 3980,
    "w": 1440,
    "h": 900,
    "title": "Docs — new page",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsBlocks.dc.html": {
    "x": 3040,
-   "y": 126864,
+   "y": 3980,
    "w": 1440,
    "h": 900,
    "title": "Docs — add a block",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsLink.dc.html": {
    "x": 0,
-   "y": 127884,
+   "y": 5000,
    "w": 1440,
    "h": 900,
    "title": "Docs — link to a page",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsOffline.dc.html": {
    "x": 3040,
-   "y": 127884,
+   "y": 5000,
    "w": 1440,
    "h": 900,
    "title": "Docs — offline",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsNordlys.dc.html": {
    "x": 4560,
-   "y": 125844,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "Docs — in a client space",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsClient.dc.html": {
    "x": 6080,
-   "y": 125844,
+   "y": 1260,
    "w": 1440,
    "h": 900,
    "title": "Docs — client view",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsBoardsCards.dc.html": {
-   "x": 3040,
-   "y": 130944,
+   "x": 0,
+   "y": 10640,
    "w": 1100,
    "h": 520,
-   "title": "doc and issue cards in chat"
+   "title": "doc and issue cards in chat",
+   "page": "docs"
   },
   "BoardsDark.dc.html": {
-   "x": 14160,
-   "y": 126864,
+   "x": 4560,
+   "y": 2040,
    "w": 1440,
    "h": 900,
    "title": "Boards — issue panel, dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsNewIssue.dc.html": {
-   "x": 11120,
-   "y": 127884,
+   "x": 1520,
+   "y": 3060,
    "w": 1440,
    "h": 900,
    "title": "Boards — new issue",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsAssignee.dc.html": {
-   "x": 15680,
-   "y": 126864,
+   "x": 6080,
+   "y": 2040,
    "w": 1440,
    "h": 900,
    "title": "Boards — assign",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsDue.dc.html": {
-   "x": 9600,
-   "y": 127884,
+   "x": 0,
+   "y": 3060,
    "w": 1440,
    "h": 900,
    "title": "Boards — due date",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsMine.dc.html": {
-   "x": 9600,
-   "y": 129924,
+   "x": 0,
+   "y": 5100,
    "w": 1440,
    "h": 900,
    "title": "Boards — my issues",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsColumn.dc.html": {
-   "x": 12640,
-   "y": 128904,
+   "x": 3040,
+   "y": 4080,
    "w": 1440,
    "h": 900,
    "title": "Boards — new column",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsColumnJP.dc.html": {
-   "x": 14160,
-   "y": 128904,
+   "x": 4560,
+   "y": 4080,
    "w": 1440,
    "h": 900,
    "title": "Boards — new column, Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsNordlys.dc.html": {
-   "x": 15680,
-   "y": 125844,
+   "x": 6080,
+   "y": 1020,
    "w": 1440,
    "h": 900,
    "title": "Boards — in a client space",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsClient.dc.html": {
-   "x": 9600,
-   "y": 126864,
+   "x": 0,
+   "y": 2040,
    "w": 1440,
    "h": 900,
    "title": "Boards — client view",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "DocsBoardsRules.dc.html": {
    "x": 7600,
-   "y": 125844,
+   "y": 1260,
    "w": 1440,
    "h": 2600,
-   "title": "Docs and Boards — rules (for approval)"
+   "title": "Docs and Boards — rules (for approval)",
+   "page": "docs"
   },
   "BoardsQuickAdd.dc.html": {
-   "x": 9600,
-   "y": 128904,
+   "x": 0,
+   "y": 4080,
    "w": 1440,
    "h": 900,
    "title": "Boards — quick add",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsCardTranslate.dc.html": {
-   "x": 15680,
-   "y": 128904,
+   "x": 6080,
+   "y": 4080,
    "w": 1440,
    "h": 900,
    "title": "Boards — translate a card",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsDrag.dc.html": {
-   "x": 12640,
-   "y": 131964,
+   "x": 3040,
+   "y": 7140,
    "w": 1440,
    "h": 900,
    "title": "Boards — dragging a card",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "DocsDragBlock.dc.html": {
    "x": 0,
-   "y": 130944,
+   "y": 8060,
    "w": 1440,
    "h": 900,
    "title": "Docs — dragging a block",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsDragPage.dc.html": {
    "x": 1520,
-   "y": 130944,
+   "y": 8060,
    "w": 1440,
    "h": 900,
    "title": "Docs — dragging a page",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "BoardsLive.dc.html": {
-   "x": 14160,
-   "y": 131964,
+   "x": 4560,
+   "y": 7140,
    "w": 1440,
    "h": 900,
    "title": "Boards — others moving and editing",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsLiveIssue.dc.html": {
-   "x": 9600,
-   "y": 132984,
+   "x": 0,
+   "y": 8160,
    "w": 1440,
    "h": 900,
    "title": "Boards — others in an issue",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "RulesM8.dc.html": {
    "x": 0,
-   "y": 103464,
+   "y": 0,
    "w": 1440,
    "h": 1720,
    "title": "Rules: find, share earlier messages (M8, SIDE-03)",
-   "is_interactive": false
+   "is_interactive": false,
+   "page": "search"
   },
   "Switcher.dc.html": {
    "x": 1520,
-   "y": 103464,
+   "y": 0,
    "w": 1440,
    "h": 900,
    "title": "⌘K from the header search button: recent conversations",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "search"
   },
   "SwitcherJP.dc.html": {
    "x": 3040,
-   "y": 103464,
+   "y": 0,
    "w": 1440,
    "h": 900,
    "title": "⌘K — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "search"
   },
   "SwitcherDark.dc.html": {
-   "x": 1520,
-   "y": 104484,
+   "x": 0,
+   "y": 1840,
    "w": 1440,
    "h": 900,
    "title": "⌘K — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "search"
   },
   "SwitcherResults.dc.html": {
-   "x": 3040,
-   "y": 104484,
+   "x": 1520,
+   "y": 1840,
    "w": 1440,
    "h": 900,
    "title": "⌘K typed: Channels, Direct messages, People, then Search messages",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "search"
   },
   "SwitcherEmpty.dc.html": {
    "x": 0,
-   "y": 105504,
+   "y": 2860,
    "w": 1440,
    "h": 900,
    "title": "⌘K with no match: only Search messages",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "search"
   },
   "SearchResults.dc.html": {
    "x": 1520,
-   "y": 105504,
+   "y": 2860,
    "w": 1440,
    "h": 900,
    "title": "Search: flat, newest first, the match marked; click jumps",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "search"
   },
   "SearchResultsJP.dc.html": {
    "x": 3040,
-   "y": 105504,
+   "y": 2860,
    "w": 1440,
    "h": 900,
    "title": "Search — Japanese (a substring inside a word)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "search"
   },
   "SearchResultsDark.dc.html": {
    "x": 0,
-   "y": 106524,
+   "y": 3880,
    "w": 1440,
    "h": 900,
    "title": "Search — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "search"
   },
   "SearchSearching.dc.html": {
    "x": 1520,
-   "y": 106524,
+   "y": 3880,
    "w": 1440,
    "h": 900,
    "title": "Searching older messages: rows arrive at the end",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "search"
   },
   "SearchEmpty.dc.html": {
    "x": 3040,
-   "y": 106524,
+   "y": 3880,
    "w": 1440,
    "h": 900,
    "title": "Search: no results, Search older messages",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "search"
   },
   "SearchUnconfirmedDevice.dc.html": {
    "x": 0,
-   "y": 107544,
+   "y": 4900,
    "w": 1440,
    "h": 900,
    "title": "Search on an unconfirmed device: one line and Confirm",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "search"
   },
   "ShareHistoryEntry.dc.html": {
    "x": 0,
-   "y": 108684,
+   "y": 15860,
    "w": 1440,
    "h": 900,
    "title": "Staff, DM with an outside person: Share earlier messages on the profile card",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ShareHistoryEntryJP.dc.html": {
    "x": 1520,
-   "y": 108684,
+   "y": 15860,
    "w": 1440,
    "h": 900,
    "title": "Share earlier messages — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ShareHistoryEntryDark.dc.html": {
    "x": 3040,
-   "y": 108684,
+   "y": 15860,
    "w": 1440,
    "h": 900,
    "title": "Share earlier messages — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ShareHistoryVerify.dc.html": {
    "x": 0,
-   "y": 109704,
+   "y": 16880,
    "w": 1440,
    "h": 900,
    "title": "Call Henrik, then compare emoji (the M6 layout)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ShareHistoryConfirm.dc.html": {
    "x": 1520,
-   "y": 109704,
+   "y": 16880,
    "w": 1440,
    "h": 900,
    "title": "Only if it’s really Henrik: Share / Cancel",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ShareHistoryProgress.dc.html": {
    "x": 3040,
-   "y": 109704,
+   "y": 16880,
    "w": 1440,
    "h": 900,
    "title": "Sharing… · Shared (Share again) · Couldn’t share (Retry)",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ShareHistoryBlocked.dc.html": {
    "x": 0,
-   "y": 110724,
+   "y": 17900,
    "w": 1440,
    "h": 900,
    "title": "Can’t share: this device isn’t confirmed · Henrik hasn’t set up again",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ConfirmPersonAsk.dc.html": {
    "x": 0,
-   "y": 111864,
+   "y": 18920,
    "w": 1440,
    "h": 900,
    "title": "Client: Jonas wants to confirm it’s you, with the emoji",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "ConfirmPersonAskJP.dc.html": {
    "x": 1520,
-   "y": 111864,
+   "y": 18920,
    "w": 1440,
    "h": 900,
    "title": "Confirm it’s you — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "HistoryRestoredRow.dc.html": {
    "x": 3040,
-   "y": 111864,
+   "y": 18920,
    "w": 1440,
    "h": 900,
    "title": "Client: Jonas shared earlier messages; restored messages carry a small mark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "HistoryRestoredRowJP.dc.html": {
    "x": 0,
-   "y": 112884,
+   "y": 19940,
    "w": 1440,
    "h": 900,
    "title": "Restored messages — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "HistoryRestoredRowDark.dc.html": {
    "x": 1520,
-   "y": 112884,
+   "y": 19940,
    "w": 1440,
    "h": 900,
    "title": "Restored messages — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "devices"
   },
   "SignInOtherError.dc.html": {
    "x": 0,
-   "y": 114024,
+   "y": 4080,
    "w": 1440,
    "h": 900,
    "title": "Sign in: something went wrong, Try again",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "signin"
   },
   "SignInTooMany.dc.html": {
    "x": 1520,
-   "y": 114024,
+   "y": 4080,
    "w": 1440,
    "h": 900,
    "title": "Sign in: too many attempts",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "signin"
   },
   "DmsEmpty.dc.html": {
-   "x": 1520,
-   "y": 115044,
+   "x": 0,
+   "y": 7380,
    "w": 1440,
    "h": 900,
    "title": "DMs page with no DMs: one line and New message",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "dms"
   },
   "BuiltStatesM4.dc.html": {
-   "x": 3040,
-   "y": 115044,
+   "x": 1520,
+   "y": 15860,
    "w": 1440,
    "h": 1880,
    "title": "Built in M4 without a board: password prompt, join errors, link not found, Couldn’t add",
-   "is_interactive": false
+   "is_interactive": false,
+   "page": "overview"
   },
   "ActionFailed.dc.html": {
-   "x": 3040,
-   "y": 114024,
+   "x": 0,
+   "y": 14840,
    "w": 1440,
    "h": 900,
    "title": "Failed actions: the alert line in a confirm dialog; a toast for menu actions",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "ActionFailedJP.dc.html": {
    "x": 0,
-   "y": 115044,
+   "y": 15860,
    "w": 1440,
    "h": 900,
    "title": "Failed actions — Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "overview"
   },
   "PeopleAddExternal.dc.html": {
    "x": 0,
-   "y": 117724,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Add people: External (Owner, Admin)",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "people"
   },
   "PeopleAddStaff.dc.html": {
    "x": 1520,
-   "y": 117724,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Add people: Staff (Owner, Admin)",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "people"
   },
   "PeopleAddClient.dc.html": {
    "x": 3040,
-   "y": 117724,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Add people: Client (Owner, Admin)",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "people"
   },
   "PeopleAddNordlys.dc.html": {
    "x": 0,
-   "y": 118744,
+   "y": 2660,
    "w": 1440,
    "h": 900,
-   "title": "Add people in a client space (Staff)"
+   "title": "Add people in a client space (Staff)",
+   "page": "people"
   },
   "PeopleSpaceInvite.dc.html": {
    "x": 0,
-   "y": 119764,
+   "y": 3680,
    "w": 1440,
    "h": 900,
-   "title": "Client space settings: People with an invite field"
+   "title": "Client space settings: People with an invite field",
+   "page": "people"
   },
   "PeopleWorkspace.dc.html": {
    "x": 0,
-   "y": 120784,
+   "y": 4700,
    "w": 1440,
    "h": 900,
-   "title": "Workspace settings: People, an External’s roles"
+   "title": "Workspace settings: People, an External’s roles",
+   "page": "people"
   },
   "PeopleAccess.dc.html": {
    "x": 0,
-   "y": 121804,
+   "y": 5720,
    "w": 1440,
    "h": 900,
-   "title": "Workspace settings: Access (roles)"
+   "title": "Workspace settings: Access (roles)",
+   "page": "people"
   },
   "PeopleExternalView.dc.html": {
    "x": 1520,
-   "y": 122824,
+   "y": 6740,
    "w": 1440,
    "h": 900,
-   "title": "What an External sees: Pasodrum"
+   "title": "What an External sees: Pasodrum",
+   "page": "people"
   },
   "PeopleAddExternalJP.dc.html": {
    "x": 4560,
-   "y": 117724,
+   "y": 240,
    "w": 1440,
    "h": 900,
    "title": "Add people: External (JP)",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "people"
   },
   "PeopleAccessDark.dc.html": {
    "x": 0,
-   "y": 122824,
+   "y": 6740,
    "w": 1440,
    "h": 900,
-   "title": "Access (dark)"
+   "title": "Access (dark)",
+   "page": "people"
   },
   "PeopleRules.dc.html": {
    "x": 6080,
-   "y": 117724,
+   "y": 240,
    "w": 1440,
    "h": 2300,
-   "title": "Rules: people and access (discovery)"
+   "title": "Rules: people and access (discovery)",
+   "page": "people"
   },
   "PeopleAddChannel.dc.html": {
    "x": 1520,
-   "y": 118744,
+   "y": 2660,
    "w": 1440,
    "h": 900,
-   "title": "Add people to a channel: a colleague, an External, a new email"
+   "title": "Add people to a channel: a colleague, an External, a new email",
+   "page": "people"
   },
   "PeopleAddStaffOnly.dc.html": {
    "x": 3040,
-   "y": 118744,
+   "y": 2660,
    "w": 1440,
    "h": 900,
-   "title": "Add people to a channel as Staff: colleagues only"
+   "title": "Add people to a channel as Staff: colleagues only",
+   "page": "people"
   },
   "PeopleAddDark.dc.html": {
    "x": 4560,
-   "y": 118744,
+   "y": 2660,
    "w": 1440,
    "h": 900,
    "title": "Add people: External (dark)",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "people"
   },
   "PeopleSpaceInviteJP.dc.html": {
    "x": 1520,
-   "y": 119764,
+   "y": 3680,
    "w": 1440,
    "h": 900,
-   "title": "Client space settings: People (JP)"
+   "title": "Client space settings: People (JP)",
+   "page": "people"
   },
   "PeopleSpaceInviteDark.dc.html": {
    "x": 3040,
-   "y": 119764,
+   "y": 3680,
    "w": 1440,
    "h": 900,
-   "title": "Client space settings: People (dark)"
+   "title": "Client space settings: People (dark)",
+   "page": "people"
   },
   "PeopleRemoveExternal.dc.html": {
    "x": 4560,
-   "y": 119764,
+   "y": 3680,
    "w": 1440,
    "h": 900,
-   "title": "Remove an External from Pasodrum"
+   "title": "Remove an External from Pasodrum",
+   "page": "people"
   },
   "PeopleWorkspaceJP.dc.html": {
    "x": 1520,
-   "y": 120784,
+   "y": 4700,
    "w": 1440,
    "h": 900,
-   "title": "Workspace settings: People (JP)"
+   "title": "Workspace settings: People (JP)",
+   "page": "people"
   },
   "PeopleWorkspaceDark.dc.html": {
    "x": 3040,
-   "y": 120784,
+   "y": 4700,
    "w": 1440,
    "h": 900,
-   "title": "Workspace settings: People (dark)"
+   "title": "Workspace settings: People (dark)",
+   "page": "people"
   },
   "PeopleRemoveExternalJP.dc.html": {
    "x": 4560,
-   "y": 120784,
+   "y": 4700,
    "w": 1440,
    "h": 900,
-   "title": "Remove an External (JP)"
+   "title": "Remove an External (JP)",
+   "page": "people"
   },
   "PeopleAccessNew.dc.html": {
    "x": 1520,
-   "y": 121804,
+   "y": 5720,
    "w": 1440,
    "h": 900,
-   "title": "Access: a new role"
+   "title": "Access: a new role",
+   "page": "people"
   },
   "PeopleAccessNotApplied.dc.html": {
    "x": 3040,
-   "y": 121804,
+   "y": 5720,
    "w": 1440,
    "h": 900,
-   "title": "Access: a person not applied"
+   "title": "Access: a person not applied",
+   "page": "people"
   },
   "PeopleAccessJP.dc.html": {
    "x": 4560,
-   "y": 121804,
+   "y": 5720,
    "w": 1440,
    "h": 900,
-   "title": "Access (JP)"
+   "title": "Access (JP)",
+   "page": "people"
   },
   "PeopleExternalNordlys.dc.html": {
    "x": 3040,
-   "y": 122824,
+   "y": 6740,
    "w": 1440,
    "h": 900,
-   "title": "What an External sees: a client space"
+   "title": "What an External sees: a client space",
+   "page": "people"
   },
   "PeopleExternalJP.dc.html": {
    "x": 4560,
-   "y": 122824,
+   "y": 6740,
    "w": 1440,
    "h": 900,
-   "title": "What an External sees (JP)"
+   "title": "What an External sees (JP)",
+   "page": "people"
   },
   "PeopleExternalDark.dc.html": {
    "x": 0,
-   "y": 123844,
+   "y": 7760,
    "w": 1440,
    "h": 900,
-   "title": "What an External sees (dark)"
+   "title": "What an External sees (dark)",
+   "page": "people"
   },
   "PeopleClientSeesTeam.dc.html": {
    "x": 1520,
-   "y": 123844,
+   "y": 7760,
    "w": 1440,
    "h": 900,
-   "title": "What a client sees: an External is part of the team"
+   "title": "What a client sees: an External is part of the team",
+   "page": "people"
   },
   "PeopleClientSeesTeamJP.dc.html": {
    "x": 3040,
-   "y": 123844,
+   "y": 7760,
    "w": 1440,
    "h": 900,
-   "title": "What a client sees (JP)"
+   "title": "What a client sees (JP)",
+   "page": "people"
   },
   "DocsEmptyJP.dc.html": {
    "x": 1520,
-   "y": 126864,
+   "y": 3980,
    "w": 1440,
    "h": 900,
    "title": "Docs — new page, Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsBlocksJP.dc.html": {
    "x": 4560,
-   "y": 126864,
+   "y": 3980,
    "w": 1440,
    "h": 900,
    "title": "Docs — add a block, Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsBlocksDark.dc.html": {
    "x": 6080,
-   "y": 126864,
+   "y": 3980,
    "w": 1440,
    "h": 900,
    "title": "Docs — add a block, dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsLinkJP.dc.html": {
    "x": 1520,
-   "y": 127884,
+   "y": 5000,
    "w": 1440,
    "h": 900,
    "title": "Docs — link to a page, Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsLoading.dc.html": {
    "x": 4560,
-   "y": 127884,
+   "y": 5000,
    "w": 1440,
    "h": 900,
    "title": "Docs — loading",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsNone.dc.html": {
    "x": 6080,
-   "y": 127884,
+   "y": 5000,
    "w": 1440,
    "h": 900,
    "title": "Docs — no pages yet",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsNoneJP.dc.html": {
    "x": 0,
-   "y": 128904,
+   "y": 6020,
    "w": 1440,
    "h": 900,
    "title": "Docs — no pages yet, Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsPageMenu.dc.html": {
    "x": 1520,
-   "y": 128904,
+   "y": 6020,
    "w": 1440,
    "h": 900,
    "title": "Docs — page menu",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsPageMenuJP.dc.html": {
    "x": 3040,
-   "y": 128904,
+   "y": 6020,
    "w": 1440,
    "h": 900,
    "title": "Docs — page menu, Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsPageMenuDark.dc.html": {
    "x": 4560,
-   "y": 128904,
+   "y": 6020,
    "w": 1440,
    "h": 900,
    "title": "Docs — page menu, dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsMoveTo.dc.html": {
    "x": 6080,
-   "y": 128904,
+   "y": 6020,
    "w": 1440,
    "h": 900,
    "title": "Docs — move a page",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsDeletePage.dc.html": {
    "x": 0,
-   "y": 129924,
+   "y": 7040,
    "w": 1440,
    "h": 900,
    "title": "Docs — delete a page",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsTranslatedJP.dc.html": {
    "x": 3040,
-   "y": 129924,
+   "y": 7040,
    "w": 1440,
    "h": 900,
    "title": "Docs — translate a section, Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsTranslatedDark.dc.html": {
    "x": 4560,
-   "y": 129924,
+   "y": 7040,
    "w": 1440,
    "h": 900,
    "title": "Docs — translate a section, dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "DocsTranslateStates.dc.html": {
    "x": 6080,
-   "y": 129924,
+   "y": 7040,
    "w": 1440,
    "h": 900,
    "title": "Docs — translating, couldn’t translate",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "docs"
   },
   "BoardsPageDark.dc.html": {
-   "x": 12640,
-   "y": 125844,
+   "x": 3040,
+   "y": 1020,
    "w": 1440,
    "h": 900,
    "title": "Boards — dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsIssueJP.dc.html": {
-   "x": 12640,
-   "y": 126864,
+   "x": 3040,
+   "y": 2040,
    "w": 1440,
    "h": 900,
    "title": "Boards — issue panel, Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsNewIssueJP.dc.html": {
-   "x": 12640,
-   "y": 127884,
+   "x": 3040,
+   "y": 3060,
    "w": 1440,
    "h": 900,
    "title": "Boards — new issue, Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsNewIssueDark.dc.html": {
-   "x": 14160,
-   "y": 127884,
+   "x": 4560,
+   "y": 3060,
    "w": 1440,
    "h": 900,
    "title": "Boards — new issue, dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsCreateFailed.dc.html": {
-   "x": 15680,
-   "y": 127884,
+   "x": 6080,
+   "y": 3060,
    "w": 1440,
    "h": 900,
    "title": "Boards — create failed",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsQuickAddJP.dc.html": {
-   "x": 11120,
-   "y": 128904,
+   "x": 1520,
+   "y": 4080,
    "w": 1440,
    "h": 900,
    "title": "Boards — quick add, Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsMineJP.dc.html": {
-   "x": 11120,
-   "y": 129924,
+   "x": 1520,
+   "y": 5100,
    "w": 1440,
    "h": 900,
    "title": "Boards — my issues, Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsNewProject.dc.html": {
-   "x": 12640,
-   "y": 129924,
+   "x": 3040,
+   "y": 5100,
    "w": 1440,
    "h": 900,
    "title": "Boards — new project",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsNoProjects.dc.html": {
-   "x": 14160,
-   "y": 129924,
+   "x": 4560,
+   "y": 5100,
    "w": 1440,
    "h": 900,
    "title": "Boards — no projects",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsNoProjectsJP.dc.html": {
-   "x": 15680,
-   "y": 129924,
+   "x": 6080,
+   "y": 5100,
    "w": 1440,
    "h": 900,
    "title": "Boards — no projects, Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsEmpty.dc.html": {
-   "x": 9600,
-   "y": 130944,
+   "x": 0,
+   "y": 6120,
    "w": 1440,
    "h": 900,
    "title": "Boards — empty project",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsLoading.dc.html": {
-   "x": 11120,
-   "y": 130944,
+   "x": 1520,
+   "y": 6120,
    "w": 1440,
    "h": 900,
    "title": "Boards — loading",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsCardMenu.dc.html": {
-   "x": 12640,
-   "y": 130944,
+   "x": 3040,
+   "y": 6120,
    "w": 1440,
    "h": 900,
    "title": "Boards — card menu",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsCardMenuJP.dc.html": {
-   "x": 14160,
-   "y": 130944,
+   "x": 4560,
+   "y": 6120,
    "w": 1440,
    "h": 900,
    "title": "Boards — card menu, Japanese",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsCardMenuDark.dc.html": {
-   "x": 15680,
-   "y": 130944,
+   "x": 6080,
+   "y": 6120,
    "w": 1440,
    "h": 900,
    "title": "Boards — card menu, dark",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsDeleteIssue.dc.html": {
-   "x": 9600,
-   "y": 131964,
+   "x": 0,
+   "y": 7140,
    "w": 1440,
    "h": 900,
    "title": "Boards — delete an issue",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsMoveFailed.dc.html": {
-   "x": 11120,
-   "y": 131964,
+   "x": 1520,
+   "y": 7140,
    "w": 1440,
    "h": 900,
    "title": "Boards — move failed",
    "expand": "fill",
-   "is_interactive": true
+   "is_interactive": true,
+   "page": "boards"
   },
   "BoardsLiveDark.dc.html": {
-   "x": 15680,
-   "y": 131964,
+   "x": 6080,
+   "y": 7140,
    "w": 1440,
    "h": 900,
    "title": "Boards — others moving and editing, dark",
    "expand": "fill",
+   "is_interactive": true,
+   "page": "boards"
+  },
+  "EmailConfirmGate.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email",
    "is_interactive": true
+  },
+  "EmailConfirmSent.dc.html": {
+   "x": 1520,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email",
+   "is_interactive": true
+  },
+  "EmailConfirmDone.dc.html": {
+   "x": 3040,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email"
+  },
+  "EmailConfirmHelp.dc.html": {
+   "x": 4560,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email",
+   "is_interactive": true
+  },
+  "EmailConfirmGateJP.dc.html": {
+   "x": 0,
+   "y": 2180,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email",
+   "is_interactive": true
+  },
+  "EmailConfirmSentJP.dc.html": {
+   "x": 1520,
+   "y": 2180,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email"
+  },
+  "EmailConfirmHelpJP.dc.html": {
+   "x": 3040,
+   "y": 2180,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email"
+  },
+  "EmailConfirmGateDark.dc.html": {
+   "x": 4560,
+   "y": 2180,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email",
+   "is_interactive": true
+  },
+  "EmailConfirmSentDark.dc.html": {
+   "x": 0,
+   "y": 3200,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email"
+  },
+  "EmailConfirmGateOther.dc.html": {
+   "x": 1520,
+   "y": 3200,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email",
+   "is_interactive": true
+  },
+  "EmailConfirmEmail.dc.html": {
+   "x": 3040,
+   "y": 3200,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email",
+   "is_interactive": true
+  },
+  "EmailConfirm.dc.html": {
+   "x": 4560,
+   "y": 3200,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email",
+   "is_interactive": true,
+   "title": "Component: confirm by email (desktop)"
+  },
+  "EmailConfirmLinkAsk.dc.html": {
+   "x": 0,
+   "y": 4220,
+   "w": 390,
+   "h": 844,
+   "page": "confirm-email",
+   "is_interactive": true
+  },
+  "EmailConfirmLinkOk.dc.html": {
+   "x": 470,
+   "y": 4220,
+   "w": 390,
+   "h": 844,
+   "page": "confirm-email"
+  },
+  "EmailConfirmLinkExpired.dc.html": {
+   "x": 940,
+   "y": 4220,
+   "w": 390,
+   "h": 844,
+   "page": "confirm-email"
+  },
+  "EmailConfirmLinkAskJP.dc.html": {
+   "x": 1410,
+   "y": 4220,
+   "w": 390,
+   "h": 844,
+   "page": "confirm-email",
+   "is_interactive": true
+  },
+  "EmailConfirmLinkOkJP.dc.html": {
+   "x": 1880,
+   "y": 4220,
+   "w": 390,
+   "h": 844,
+   "page": "confirm-email"
+  },
+  "EmailConfirmLinkAskDark.dc.html": {
+   "x": 2350,
+   "y": 4220,
+   "w": 390,
+   "h": 844,
+   "page": "confirm-email",
+   "is_interactive": true
+  },
+  "EmailConfirmLinkOkDark.dc.html": {
+   "x": 2820,
+   "y": 4220,
+   "w": 390,
+   "h": 844,
+   "page": "confirm-email"
+  },
+  "EmailConfirmLink.dc.html": {
+   "x": 3760,
+   "y": 4220,
+   "w": 390,
+   "h": 844,
+   "page": "confirm-email",
+   "is_interactive": true,
+   "title": "Component: the link page (phone)"
+  },
+  "EmailConfirmRules.dc.html": {
+   "x": 6080,
+   "y": 0,
+   "w": 1440,
+   "h": 2060,
+   "page": "confirm-email"
+  },
+  "EmailConfirmLinkHelped.dc.html": {
+   "x": 3290,
+   "y": 4220,
+   "w": 390,
+   "h": 844,
+   "page": "confirm-email"
+  },
+  "EmailConfirmHelped.dc.html": {
+   "x": 0,
+   "y": 5184,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email"
+  },
+  "EmailConfirmHelpedJP.dc.html": {
+   "x": 1520,
+   "y": 5184,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email"
+  },
+  "EmailConfirmHelpedDark.dc.html": {
+   "x": 3040,
+   "y": 5184,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email"
+  },
+  "EmailConfirmStaffHelp.dc.html": {
+   "x": 4560,
+   "y": 5184,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email"
+  },
+  "EmailConfirmStaffHelpJP.dc.html": {
+   "x": 0,
+   "y": 6204,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email"
+  },
+  "EmailConfirmStaffHelpDark.dc.html": {
+   "x": 1520,
+   "y": 6204,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email"
+  },
+  "EmailConfirmStaff.dc.html": {
+   "x": 3040,
+   "y": 6204,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email",
+   "title": "Component: staff help message"
+  },
+  "SwitcherSpaces.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "⌘K across spaces: the space under each channel",
+   "expand": "fill",
+   "page": "discovery"
+  },
+  "SwitcherTags.dc.html": {
+   "x": 1520,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "⌘K people tags: External, client space, team untagged",
+   "expand": "fill",
+   "page": "discovery"
+  },
+  "SwitcherSpacesJP.dc.html": {
+   "x": 3040,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "⌘K across spaces — Japanese (recent)",
+   "expand": "fill",
+   "page": "discovery"
+  },
+  "SwitcherTagsDark.dc.html": {
+   "x": 4560,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "⌘K people tags — dark",
+   "expand": "fill",
+   "page": "discovery"
+  },
+  "SwitcherWhoSees.dc.html": {
+   "x": 6080,
+   "y": 0,
+   "w": 1440,
+   "h": 620,
+   "title": "⌘K: what a client and an External see",
+   "page": "discovery"
+  },
+  "OutsideMarkSmall.dc.html": {
+   "x": 0,
+   "y": 1440,
+   "w": 1440,
+   "h": 1640,
+   "title": "Outside mark at small sizes",
+   "page": "discovery",
+   "is_interactive": false
+  },
+  "OutsideMarkIcons.dc.html": {
+   "x": 1520,
+   "y": 1440,
+   "w": 1440,
+   "h": 1380,
+   "title": "Outside mark: other glyphs",
+   "page": "discovery",
+   "is_interactive": false
+  },
+  "ClientMarkDirections.dc.html": {
+   "x": 0,
+   "y": 3200,
+   "w": 1440,
+   "h": 2080,
+   "title": "Marking client projects: four directions",
+   "page": "discovery",
+   "is_interactive": false
+  },
+  "ClientMarkRefined.dc.html": {
+   "x": 0,
+   "y": 5400,
+   "w": 1440,
+   "h": 2900,
+   "title": "Marking client projects: refined after other apps",
+   "page": "discovery",
+   "is_interactive": false
+  },
+  "ClientMarkMany.dc.html": {
+   "x": 0,
+   "y": 8420,
+   "w": 1440,
+   "h": 4000,
+   "title": "Marking client projects: many clients, many outsiders",
+   "page": "discovery",
+   "is_interactive": false
+  },
+  "ClientMarkLine.dc.html": {
+   "x": 0,
+   "y": 12540,
+   "w": 1440,
+   "h": 3400,
+   "title": "Marking client projects: their company, said once",
+   "page": "discovery",
+   "is_interactive": false
+  },
+  "ExternalMark.dc.html": {
+   "x": 0,
+   "y": 16060,
+   "w": 1440,
+   "h": 3000,
+   "title": "The External mark: not a company",
+   "page": "discovery",
+   "is_interactive": false
+  },
+  "ClientMarkFinal.dc.html": {
+   "x": 0,
+   "y": 19180,
+   "w": 1440,
+   "h": 3900,
+   "title": "Client and External marks (final)",
+   "page": "discovery",
+   "is_interactive": false
+  },
+  "ClientMarkPlaces.dc.html": {
+   "x": 1520,
+   "y": 19180,
+   "w": 1440,
+   "h": 3000,
+   "title": "Client and External marks: everywhere they show (final)",
+   "page": "discovery",
+   "is_interactive": false
   }
  },
  "order": [
@@ -3995,121 +4796,481 @@
   "BoardsCardMenuDark.dc.html",
   "BoardsDeleteIssue.dc.html",
   "BoardsMoveFailed.dc.html",
-  "BoardsLiveDark.dc.html"
+  "BoardsLiveDark.dc.html",
+  "EmailConfirmGate.dc.html",
+  "EmailConfirmSent.dc.html",
+  "EmailConfirmDone.dc.html",
+  "EmailConfirmHelp.dc.html",
+  "EmailConfirmGateJP.dc.html",
+  "EmailConfirmSentJP.dc.html",
+  "EmailConfirmHelpJP.dc.html",
+  "EmailConfirmGateDark.dc.html",
+  "EmailConfirmSentDark.dc.html",
+  "EmailConfirmGateOther.dc.html",
+  "EmailConfirmEmail.dc.html",
+  "EmailConfirm.dc.html",
+  "EmailConfirmLinkAsk.dc.html",
+  "EmailConfirmLinkOk.dc.html",
+  "EmailConfirmLinkExpired.dc.html",
+  "EmailConfirmLinkAskJP.dc.html",
+  "EmailConfirmLinkOkJP.dc.html",
+  "EmailConfirmLinkAskDark.dc.html",
+  "EmailConfirmLinkOkDark.dc.html",
+  "EmailConfirmLink.dc.html",
+  "EmailConfirmRules.dc.html",
+  "EmailConfirmLinkHelped.dc.html",
+  "EmailConfirmHelped.dc.html",
+  "EmailConfirmHelpedJP.dc.html",
+  "EmailConfirmHelpedDark.dc.html",
+  "EmailConfirmStaffHelp.dc.html",
+  "EmailConfirmStaffHelpJP.dc.html",
+  "EmailConfirmStaffHelpDark.dc.html",
+  "EmailConfirmStaff.dc.html",
+  "SwitcherSpaces.dc.html",
+  "SwitcherTags.dc.html",
+  "SwitcherSpacesJP.dc.html",
+  "SwitcherTagsDark.dc.html",
+  "SwitcherWhoSees.dc.html",
+  "OutsideMarkSmall.dc.html",
+  "OutsideMarkIcons.dc.html",
+  "ClientMarkDirections.dc.html",
+  "ClientMarkRefined.dc.html",
+  "ClientMarkMany.dc.html",
+  "ClientMarkLine.dc.html",
+  "ExternalMark.dc.html",
+  "ClientMarkFinal.dc.html",
+  "ClientMarkPlaces.dc.html"
  ],
  "notes": {
-  "title": {
+  "overview-Foundations--workspace": {
+   "x": 0,
+   "y": 0,
+   "text": "Foundations & workspace",
+   "kind": "title1",
+   "page": "overview",
+   "size": "l",
+   "maxW": 4480
+  },
+  "overview-Window-widths": {
+   "x": 0,
+   "y": 8960,
+   "text": "Window widths",
+   "kind": "title1",
+   "page": "overview",
+   "size": "l",
+   "maxW": 4480
+  },
+  "overview-Loading-connection--app-wide-st": {
+   "x": 0,
+   "y": 10520,
+   "text": "Loading, connection & app-wide states",
+   "kind": "title1",
+   "page": "overview",
+   "size": "l",
+   "maxW": 4480
+  },
+  "title-overview": {
    "x": 0,
    "y": -300,
-   "text": "Pasodrum work — messaging UI",
+   "text": "Overview & foundations",
    "kind": "title1",
-   "maxW": 2960
-  },
-  "clients": {
-   "x": 0,
-   "y": 7400,
-   "text": "Client spaces & onboarding",
-   "kind": "title1",
+   "page": "overview",
    "maxW": 4480
   },
-  "batchA": {
-   "x": 0,
-   "y": 9000,
-   "text": "Batch A — states & Japanese",
-   "kind": "title1",
-   "maxW": 4480
-  },
-  "batchB": {
-   "x": 0,
-   "y": 16720,
-   "text": "Batch B — full timeline",
-   "kind": "title1",
-   "maxW": 4480
-  },
-  "batchC": {
-   "x": 0,
-   "y": 30360,
-   "text": "Batch C — threads, mentions, drafts, DMs",
-   "kind": "title1",
-   "maxW": 4480
-  },
-  "batchCNarrow": {
-   "x": 0,
-   "y": 41960,
-   "text": "Batch C — narrow widths",
-   "kind": "title1",
-   "maxW": 4480
-  },
-  "batchD": {
-   "x": 0,
-   "y": 45220,
-   "text": "Batch D — channels, people, settings",
-   "kind": "title1",
-   "maxW": 4480
-  },
-  "batchE": {
-   "x": 0,
-   "y": 57760,
-   "text": "Batch E — client spaces & guests",
-   "kind": "title1",
-   "maxW": 4480
-  },
-  "batchF": {
-   "x": 0,
-   "y": 70244,
-   "text": "Batch F — M6 encryption",
-   "kind": "title1",
-   "maxW": 4480
-  },
-  "discTranslate": {
+  "title-signin": {
    "x": 0,
    "y": -300,
-   "text": "Discovery — Translate a message",
+   "text": "Sign in",
+   "kind": "title1",
+   "page": "signin",
+   "maxW": 4480
+  },
+  "messages-Message-rows": {
+   "x": 0,
+   "y": 0,
+   "text": "Message rows",
+   "kind": "title1",
+   "page": "messages",
+   "size": "l",
+   "maxW": 4480
+  },
+  "messages-Composer--attachments": {
+   "x": 0,
+   "y": 10740,
+   "text": "Composer & attachments",
+   "kind": "title1",
+   "page": "messages",
+   "size": "l",
+   "maxW": 4480
+  },
+  "messages-Timeline--notifications": {
+   "x": 0,
+   "y": 17400,
+   "text": "Timeline & notifications",
+   "kind": "title1",
+   "page": "messages",
+   "size": "l",
+   "maxW": 4480
+  },
+  "title-messages": {
+   "x": 0,
+   "y": -300,
+   "text": "Messages & composer",
+   "kind": "title1",
+   "page": "messages",
+   "maxW": 4480
+  },
+  "threads-Threads": {
+   "x": 0,
+   "y": 0,
+   "text": "Threads",
+   "kind": "title1",
+   "page": "threads",
+   "size": "l",
+   "maxW": 4480
+  },
+  "threads-Activity--drafts": {
+   "x": 0,
+   "y": 8700,
+   "text": "Activity & drafts",
+   "kind": "title1",
+   "page": "threads",
+   "size": "l",
+   "maxW": 4480
+  },
+  "title-threads": {
+   "x": 0,
+   "y": -300,
+   "text": "Threads, activity & drafts",
+   "kind": "title1",
+   "page": "threads",
+   "maxW": 4480
+  },
+  "dms-DMs--new-message": {
+   "x": 0,
+   "y": 0,
+   "text": "DMs & new message",
+   "kind": "title1",
+   "page": "dms",
+   "size": "l",
+   "maxW": 4480
+  },
+  "dms-Profile-card": {
+   "x": 0,
+   "y": 8700,
+   "text": "Profile card",
+   "kind": "title1",
+   "page": "dms",
+   "size": "l",
+   "maxW": 4480
+  },
+  "dms-Private-line": {
+   "x": 0,
+   "y": 12300,
+   "text": "Private line",
+   "kind": "title1",
+   "page": "dms",
+   "size": "l",
+   "maxW": 4480
+  },
+  "title-dms": {
+   "x": 0,
+   "y": -300,
+   "text": "DMs & profiles",
+   "kind": "title1",
+   "page": "dms",
+   "maxW": 4480
+  },
+  "channels-Create-browse--details": {
+   "x": 0,
+   "y": 0,
+   "text": "Create, browse & details",
+   "kind": "title1",
+   "page": "channels",
+   "size": "l",
+   "maxW": 4480
+  },
+  "channels-Rename--archive": {
+   "x": 0,
+   "y": 6660,
+   "text": "Rename & archive",
+   "kind": "title1",
+   "page": "channels",
+   "size": "l",
+   "maxW": 4480
+  },
+  "title-channels": {
+   "x": 0,
+   "y": -300,
+   "text": "Channels",
+   "kind": "title1",
+   "page": "channels",
+   "maxW": 4480
+  },
+  "channel-tabs-Tabs--pins": {
+   "x": 0,
+   "y": 0,
+   "text": "Tabs & pins",
+   "kind": "title1",
+   "page": "channel-tabs",
+   "size": "l",
+   "maxW": 4480
+  },
+  "channel-tabs-Files": {
+   "x": 0,
+   "y": 5620,
+   "text": "Files",
+   "kind": "title1",
+   "page": "channel-tabs",
+   "size": "l",
+   "maxW": 4480
+  },
+  "channel-tabs-Link-cards": {
+   "x": 0,
+   "y": 9220,
+   "text": "Link cards",
+   "kind": "title1",
+   "page": "channel-tabs",
+   "size": "l",
+   "maxW": 4480
+  },
+  "title-channel-tabs": {
+   "x": 0,
+   "y": -300,
+   "text": "Pins, files & link cards",
+   "kind": "title1",
+   "page": "channel-tabs",
+   "maxW": 4480
+  },
+  "people-People-and-access-approved-2026-1": {
+   "x": 0,
+   "y": 0,
+   "text": "People and access (approved 2026-11-21)",
+   "kind": "title1",
+   "page": "people",
+   "size": "l",
+   "maxW": 7520
+  },
+  "people-Add-people--roles-M4": {
+   "x": 0,
+   "y": 9080,
+   "text": "Add people & roles (M4)",
+   "kind": "title1",
+   "page": "people",
+   "size": "l",
+   "maxW": 7520
+  },
+  "title-people": {
+   "x": 0,
+   "y": -300,
+   "text": "People & access",
+   "kind": "title1",
+   "page": "people",
+   "maxW": 7520
+  },
+  "client-spaces-Create-a-client-space": {
+   "x": 0,
+   "y": 0,
+   "text": "Create a client space",
+   "kind": "title1",
+   "page": "client-spaces",
+   "size": "l",
+   "maxW": 4480
+  },
+  "client-spaces-Client--guest-shells-outsi": {
+   "x": 0,
+   "y": 5200,
+   "text": "Client & guest shells, outside mark",
+   "kind": "title1",
+   "page": "client-spaces",
+   "size": "l",
+   "maxW": 4480
+  },
+  "client-spaces-Client-space-settings": {
+   "x": 0,
+   "y": 10840,
+   "text": "Client space settings",
+   "kind": "title1",
+   "page": "client-spaces",
+   "size": "l",
+   "maxW": 4480
+  },
+  "title-client-spaces": {
+   "x": 0,
+   "y": -300,
+   "text": "Client spaces & guests",
+   "kind": "title1",
+   "page": "client-spaces",
+   "maxW": 4480
+  },
+  "joining-Invite--join": {
+   "x": 0,
+   "y": 0,
+   "text": "Invite & join",
+   "kind": "title1",
+   "page": "joining",
+   "size": "l",
+   "maxW": 4480
+  },
+  "joining-First-sign-in": {
+   "x": 0,
+   "y": 4620,
+   "text": "First sign-in",
+   "kind": "title1",
+   "page": "joining",
+   "size": "l",
+   "maxW": 4480
+  },
+  "joining-Another-app--phone": {
+   "x": 0,
+   "y": 6180,
+   "text": "Another app & phone",
+   "kind": "title1",
+   "page": "joining",
+   "size": "l",
+   "maxW": 4480
+  },
+  "title-joining": {
+   "x": 0,
+   "y": -300,
+   "text": "Invites, joining & first run",
+   "kind": "title1",
+   "page": "joining",
+   "maxW": 4480
+  },
+  "devices-Confirm-a-new-device-M6": {
+   "x": 0,
+   "y": 0,
+   "text": "Confirm a new device (M6)",
+   "kind": "title1",
+   "page": "devices",
+   "size": "l",
+   "maxW": 4480
+  },
+  "devices-Recovery-key-reset--sign-out": {
+   "x": 0,
+   "y": 7940,
+   "text": "Recovery key, reset & sign-out",
+   "kind": "title1",
+   "page": "devices",
+   "size": "l",
+   "maxW": 4480
+  },
+  "devices-Share-earlier-messages-SIDE-03": {
+   "x": 0,
+   "y": 15620,
+   "text": "Share earlier messages (SIDE-03)",
+   "kind": "title1",
+   "page": "devices",
+   "size": "l",
+   "maxW": 4480
+  },
+  "title-devices": {
+   "x": 0,
+   "y": -300,
+   "text": "Devices & encryption",
+   "kind": "title1",
+   "page": "devices",
+   "maxW": 4480
+  },
+  "title-confirm-email": {
+   "x": 0,
+   "y": -300,
+   "text": "Confirm by email",
+   "kind": "title1",
+   "page": "confirm-email",
+   "maxW": 7520
+  },
+  "title-search": {
+   "x": 0,
+   "y": -300,
+   "text": "Search & ⌘K",
+   "kind": "title1",
+   "page": "search",
+   "maxW": 4480
+  },
+  "title-settings": {
+   "x": 0,
+   "y": -300,
+   "text": "Settings",
+   "kind": "title1",
+   "page": "settings",
+   "maxW": 4480
+  },
+  "title-translate": {
+   "x": 0,
+   "y": -300,
+   "text": "Translate",
+   "kind": "title1",
+   "page": "translate",
+   "maxW": 4480
+  },
+  "docs-Docs-approved-2026-11-21": {
+   "x": 0,
+   "y": 0,
+   "text": "Docs (approved 2026-11-21)",
+   "kind": "title1",
+   "page": "docs",
+   "size": "l",
+   "maxW": 9040
+  },
+  "docs-Shared-with-Boards": {
+   "x": 0,
+   "y": 9380,
+   "text": "Shared with Boards",
+   "kind": "title1",
+   "page": "docs",
+   "size": "l",
+   "maxW": 9040
+  },
+  "title-docs": {
+   "x": 0,
+   "y": -300,
+   "text": "Docs",
+   "kind": "title1",
+   "page": "docs",
+   "maxW": 9040
+  },
+  "title-boards": {
+   "x": 0,
+   "y": -300,
+   "text": "Boards",
+   "kind": "title1",
+   "page": "boards",
+   "maxW": 7520
+  },
+  "discSwitcherSpaces": {
+   "x": 0,
+   "y": -280,
+   "text": "Discovery — ⌘K: which space, who’s who",
+   "kind": "title1",
+   "maxW": 7520,
+   "page": "discovery"
+  },
+  "discSwitcherSpacesRules": {
+   "x": 7600,
+   "y": 0,
+   "w": 560,
+   "page": "discovery",
+   "fill": "orange",
+   "text": "Rules (for feedback)\n\n• Space line under a channel only when your ⌘K spans more than one space: a small └ then the space name, one step smaller than the channel name. Then every channel row has it, Pasodrum too. One space: rows as today.\n\n• DMs and People: a tag right after the name. External → the yellow “External”; a client → their client space’s name in that space’s colour (“Nordlys”); team → nothing. Outside mark on the avatar as everywhere else.\n\n• Names come only from spaces you’re in yourself, so ⌘K can’t name a space you’re not in.\n\n• Clients see no tags (Externals are team to them). A client in one space sees ⌘K exactly as today.\n\n• Recent conversations use the same rows."
+  },
+  "discOutsideMark": {
+   "x": 0,
+   "y": 1180,
+   "text": "Discovery — Marking client projects",
    "kind": "title1",
    "maxW": 4480,
    "page": "discovery"
   },
-  "batchE2": {
-   "x": 0,
-   "y": 84044,
-   "text": "Batch E2 — channel rename and archive",
-   "kind": "title1",
-   "maxW": 4480
-  },
-  "batchG": {
-   "x": 0,
-   "y": 90464,
-   "text": "Batch G — M7 tabs & cards, Docs/Boards Soon, privacy line, another tab",
-   "kind": "title1",
-   "maxW": 4480
-  },
-  "batchH": {
-   "x": 0,
-   "y": 103364,
-   "text": "Batch H — M8 find (⌘K, search), SIDE-03 share earlier messages, leftovers",
-   "kind": "title1",
-   "maxW": 4480
-  },
-  "batchP": {
-   "x": 0,
-   "y": 117444,
-   "text": "People and access — approved 2026-11-21",
-   "kind": "title1",
-   "maxW": 7520
-  },
-  "batchDBDocs": {
-   "x": 0,
-   "y": 125544,
-   "text": "Docs — approved 2026-11-21",
-   "kind": "title1",
-   "maxW": 9040
-  },
-  "batchDBBoards": {
-   "x": 9600,
-   "y": 125544,
-   "text": "Boards — approved 2026-11-21",
-   "kind": "title1",
-   "maxW": 7520
+  "overview-pages": {
+   "x": 4720,
+   "y": 0,
+   "w": 520,
+   "page": "overview",
+   "fill": "gray",
+   "size": "m",
+   "text": "One page per feature\n\n• Sign in\n• Messages & composer\n• Threads, activity & drafts\n• DMs & profiles\n• Channels\n• Pins, files & link cards\n• People & access\n• Client spaces & guests\n• Invites, joining & first run\n• Devices & encryption\n• Confirm by email\n• Search & ⌘K\n• Settings\n• Translate\n• Docs\n• Boards\n• Discovery: open explorations\n\nArtboards keep their file names; only the layout moved (2026-11-21)."
   }
  },
  "designSystems": []
