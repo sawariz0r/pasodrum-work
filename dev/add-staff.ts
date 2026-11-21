@@ -12,16 +12,33 @@ if (!localpart || !name || !['admin', 'member'].includes(role)) {
 }
 
 function askHidden(question: string): Promise<string> {
-  const rl = createInterface({ input: process.stdin, output: process.stdout, terminal: true });
-  const out = rl as unknown as { _writeToOutput: (s: string) => void; output: NodeJS.WriteStream };
-  let prompted = false;
-  out._writeToOutput = (s) => {
-    if (!prompted) {
-      out.output.write(s);
-      prompted = true;
-    }
-  };
-  return new Promise((resolve) => rl.question(question, (a) => (rl.close(), process.stdout.write('\n'), resolve(a))));
+  process.stdout.write(question);
+  const stdin = process.stdin;
+  if (!stdin.isTTY) {
+    const rl = createInterface({ input: stdin });
+    return new Promise((resolve) => rl.once('line', (a) => (rl.close(), process.stdout.write('\n'), resolve(a))));
+  }
+  return new Promise((resolve) => {
+    let value = '';
+    stdin.setRawMode(true);
+    stdin.setEncoding('utf8');
+    stdin.resume();
+    const onData = (chunk: string) => {
+      for (const ch of chunk) {
+        if (ch === '\r' || ch === '\n') {
+          stdin.setRawMode(false);
+          stdin.pause();
+          stdin.off('data', onData);
+          process.stdout.write('\n');
+          return resolve(value);
+        }
+        if (ch === '\u0003') process.exit(130);
+        if (ch === '\u007f' || ch === '\b') value = value.slice(0, -1);
+        else value += ch;
+      }
+    };
+    stdin.on('data', onData);
+  });
 }
 
 const password = await askHidden(`Password for ${localpart}: `);
