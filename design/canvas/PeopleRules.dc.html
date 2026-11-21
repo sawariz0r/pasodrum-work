@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rules: people and access (discovery)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.rs-root{--cjk:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,"Noto Sans JP"}
+.rs-t{width:100%;border-collapse:collapse;font-size:13px;line-height:1.45}
+.rs-t th{text-align:left;font-size:12px;font-weight:600;color:#6E6C76;padding:0 12px 8px 0;vertical-align:bottom}
+.rs-t td{padding:9px 12px 9px 0;border-top:1px solid #F0EEE9;vertical-align:top;color:#55535C}
+.rs-t td:first-child{font-weight:700;color:#1D1C22}
+.rs-c td{text-align:center}
+.rs-c td:first-child{text-align:left}
+.rs-c th{text-align:center}
+.rs-c th:first-child{text-align:left}
+.rs-q{display:inline-block;padding:0 6px;border-radius:5px;background:#F4F3EF;color:#1D1C22;font-weight:600;white-space:nowrap}
+.rs-y{color:#0E7C66;font-weight:700}
+.rs-n{color:#B4B2BD}
+.rs-l{margin:0;padding-left:18px;font-size:13px;line-height:1.55;color:#55535C}
+.rs-l li{margin:0 0 6px}
+.rs-l b{color:#1D1C22}
+code{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:12px;background:#F4F3EF;border:1px solid #E8E6E1;border-radius:4px;padding:0 4px}
+</style>
+</helmet>
+<div class="rs-root" style="width: 1440px; min-height: 2300px; box-sizing: border-box; padding: 48px 56px; background: #FBFAF8; color: #1D1C22; font-family: Inter, var(--cjk), system-ui, sans-serif; display: flex; flex-direction: column; gap: 28px">
+<h1 style="margin: 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 36px; font-weight: 700; letter-spacing: -0.02em">Rules: people and access (discovery)</h1>
+
+<section style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 18px; padding: 24px 26px">
+<h2 style="margin: 0 0 16px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700">Who’s who</h2>
+<table class="rs-t"><colgroup><col style="width: 130px"><col style="width: 220px"><col style="width: auto"><col style="width: 330px"></colgroup>
+<thead><tr><th></th><th>Today</th><th>Reaches</th><th>Server fact</th></tr></thead>
+<tbody>
+<tr><td>Owner</td><td>Owner</td><td>Everything. Makes and removes Owners.</td><td>Level 100</td></tr>
+<tr><td>Admin</td><td>Admin</td><td>Like an Owner, but can’t change or remove Owners or other Admins.</td><td>Level 50</td></tr>
+<tr><td>Staff</td><td>Member</td><td>The whole workspace, plus the client spaces they’re put on. Invites Clients there; adds colleagues to channels.</td><td>In the workspace, level 10 everywhere</td></tr>
+<tr><td>External</td><td>Guest, grown up</td><td>Only what their roles and one-off channels give: chosen workspace channels and whole client spaces.</td><td>Not in the workspace; level 1 (a mark that grants nothing) in their rooms</td></tr>
+<tr><td>Client</td><td>Client</td><td>Their own client space.</td><td>In one client space, level 0</td></tr>
+</tbody></table>
+</section>
+
+<section style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 18px; padding: 24px 26px">
+<h2 style="margin: 0 0 16px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700">Who may do what</h2>
+<table class="rs-t rs-c"><colgroup><col style="width: auto"><col style="width: 120px"><col style="width: 160px"><col style="width: 180px"><col style="width: 110px"><col style="width: 110px"></colgroup>
+<thead><tr><th></th><th>Owner</th><th>Admin</th><th>Staff</th><th>External</th><th>Client</th></tr></thead>
+<tbody>
+<tr><td>Add Staff, put Staff on a client space</td><td class="rs-y">✓</td><td class="rs-y">✓</td><td class="rs-n">—</td><td class="rs-n">—</td><td class="rs-n">—</td></tr>
+<tr><td>Add an External; create, edit and assign roles</td><td class="rs-y">✓</td><td class="rs-y">✓</td><td class="rs-n">—</td><td class="rs-n">—</td><td class="rs-n">—</td></tr>
+<tr><td>Add an existing person to a channel</td><td class="rs-y">✓</td><td class="rs-y">✓</td><td>colleagues</td><td class="rs-n">—</td><td class="rs-n">—</td></tr>
+<tr><td>Invite Clients to a client space</td><td class="rs-y">✓</td><td class="rs-y">✓</td><td>on their client spaces</td><td class="rs-n">—</td><td class="rs-n">—</td></tr>
+<tr><td>Create client spaces</td><td class="rs-y">✓</td><td class="rs-y">✓</td><td class="rs-n">—</td><td class="rs-n">—</td><td class="rs-n">—</td></tr>
+<tr><td>Create channels</td><td class="rs-y">✓</td><td class="rs-y">✓</td><td class="rs-y">✓</td><td class="rs-n">—</td><td class="rs-n">—</td></tr>
+<tr><td>Change roles (D-25)</td><td>anyone</td><td>Staff ↔ Admin</td><td class="rs-n">—</td><td class="rs-n">—</td><td class="rs-n">—</td></tr>
+<tr><td>Remove people</td><td>anyone else</td><td>not Owners or Admins</td><td class="rs-n">—</td><td class="rs-n">—</td><td class="rs-n">—</td></tr>
+<tr><td>See role names and who has them</td><td class="rs-y">✓</td><td class="rs-y">✓</td><td>read only</td><td class="rs-n">—</td><td class="rs-n">—</td></tr>
+</tbody></table>
+</section>
+
+<section style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 18px; padding: 24px 26px">
+<h2 style="margin: 0 0 16px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700">Screens</h2>
+<table class="rs-t"><colgroup><col style="width: 170px"><col style="width: auto"><col style="width: 330px"></colgroup>
+<thead><tr><th></th><th>Rule</th><th>Boards</th></tr></thead>
+<tbody>
+<tr><td>Add people</td><td>From the sidebar or the workspace menu. Owners and Admins pick the type first: <span class="rs-q">Staff</span> <span class="rs-q">External</span> <span class="rs-q">Client</span>. Then names or emails, then where: client spaces for Staff, roles and one-off channels for Externals, the client space for Clients.</td><td>PeopleAddStaff, PeopleAddExternal, PeopleAddClient, PeopleAddExternalJP, PeopleAddDark</td></tr>
+<tr><td>In a client space</td><td>Staff add clients to that client space: no type, no “where”.</td><td>PeopleAddNordlys</td></tr>
+<tr><td>To a channel</td><td>No type picker. Names are colleagues or existing Externals. A new outside email gets the <span class="rs-q">External</span> tag and becomes a one-off for that channel. Staff can only add colleagues; an email shows <span class="rs-q">Only Owners and Admins add new people</span>.</td><td>PeopleAddChannel, PeopleAddStaffOnly</td></tr>
+<tr><td>Client space · People</td><td>An invite field at the top of the tab, then the Pasodrum team (Externals tagged), the client, and Pending with the clock.</td><td>PeopleSpaceInvite, PeopleSpaceInviteJP, PeopleSpaceInviteDark</td></tr>
+<tr><td>Workspace · People</td><td>New, from the workspace menu (Owners and Admins). Everyone but clients, with All / Staff / External filters. An External’s roles sit beside their name; the row menu ticks roles on and off. <span class="rs-q">Remove from Pasodrum</span> lists everything they lose.</td><td>PeopleWorkspace, PeopleWorkspaceJP, PeopleWorkspaceDark, PeopleRemoveExternal, PeopleRemoveExternalJP</td></tr>
+<tr><td>Workspace · Access</td><td>Roles on the left; the selected role has name, colour, channels (only ones you’re in), client spaces (with <span class="rs-q">Includes earlier messages</span>) and people. Changes save as you make them. A person whose rooms don’t match shows <span class="rs-q">Not applied</span> with <span class="rs-q">Apply</span>.</td><td>PeopleAccess, PeopleAccessNew, PeopleAccessNotApplied, PeopleAccessJP, PeopleAccessDark</td></tr>
+<tr><td>An External’s view</td><td>The Pasodrum tile with only their channels, plus a tile for each client space they’re given (all its channels). No <span class="rs-q">+</span> by Channels, no Add people, no workspace menu. They see the outside mark on clients.</td><td>PeopleExternalView, PeopleExternalNordlys, PeopleExternalJP, PeopleExternalDark</td></tr>
+<tr><td>A client’s view</td><td>Externals are part of the team: no tag, no mark.</td><td>PeopleClientSeesTeam, PeopleClientSeesTeamJP</td></tr>
+</tbody></table>
+</section>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start">
+<section style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 18px; padding: 24px 26px">
+<h2 style="margin: 0 0 16px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700">Kept apart by the server</h2>
+<ul class="rs-l">
+<li><b>Membership is the access.</b> A role is our record. Saving it invites the person to the rooms it covers and removes them from the rest. The server refuses everything else.</li>
+<li><b>Externals aren’t in the workspace,</b> so they can never join a workspace channel they weren’t invited to.</li>
+<li><b>Clients see only their client space:</b> its Staff, the Externals given that space, and their own colleagues. Never another client, never another client space, never role names.</li>
+<li><b>An External on two client spaces doesn’t join them up.</b> Auto-accept gets stricter: a room from outside my spaces waits unanswered.</li>
+<li><b>Externals add nobody and create nothing:</b> adding people and creating channels need level 10.</li>
+<li><b>Removing someone</b> takes them out of the space first, then every channel, and kills their join links.</li>
+</ul>
+</section>
+<section style="background: #FFFFFF; border: 1px solid #E8E6E1; border-radius: 18px; padding: 24px 26px">
+<h2 style="margin: 0 0 16px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 20px; font-weight: 700">Agreed with the CEO (2026-11-21)</h2>
+<ol class="rs-l">
+<li><b>Owner, Admin and Staff</b> all stay; Admins have Owner-like rights.</li>
+<li><b>Guests become Externals.</b> Nobody’s access changes.</li>
+<li><b>One-off channels</b> for Externals as well as roles.</li>
+<li><b>Owners and Admins</b> add Externals and run roles.</li>
+<li><b>Clients see Externals as part of the team,</b> with no tag or mark. The team sees the mark and the External tag.</li>
+<li><b>A client space in a role is all or nothing,</b> for now.</li>
+<li><b>Words:</b> Staff / External / Client, “Access”, “roles”. JP: スタッフ / 外部 / クライアント, アクセス, ロール.</li>
+<li><b>Staff are trusted:</b> the server doesn’t stop them adding existing accounts.</li>
+</ol>
+</section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 1440, "height": 2300}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # Discovery: Docs and Boards (concept note, 2026-11-21)
 
-Status: **discovery, not approved.** Boards are on the canvas Discovery page. Nothing gets built until boards are approved on the "ui" page.
+Status: **approved by the CEO 2026-11-21** (the batch on canvas version 45, Discovery page). The lead session moves the boards to the "ui" page, logs D-35 and writes the build tasks. The draft is in the side-session note `docs-boards-approval-handover.md`.
 
 ## CEO answers (2026-11-21)
 1. Per space, not per channel. Channel tabs for docs/boards (Slack-style) may come later; not decided.
@@ -56,7 +56,7 @@ Status: **discovery, not approved.** Boards are on the canvas Discovery page. No
 
 ## Light multiplayer on Boards (BoardsLive, BoardsLiveIssue)
 - These use the same awareness relay as doc cursors, so nothing is stored. Each client publishes {project, issue, what: drag | edit | open | typing, drop target}, rate-limited and only when it changes.
-- **Board:** a card someone is dragging lifts a little in place (shadow, no travel) with their name flag in their avatar colour, and their drop line shows in that colour where it will land. A card someone is editing gets their colour outline and flag. When the move or edit lands (the state event arrives), the card slides into place and glows briefly in their colour.
+- **Board:** a card someone is dragging lifts a little in place with a slight tilt, animated up (shadow, no travel), with their name flag in their avatar colour, and their drop line shows in that colour where it will land. A card someone is editing gets their colour outline and flag. When the move or edit lands (the state event arrives), the card slides into place and glows briefly in their colour.
 - **Issue panel:** the avatars of others who have it open sit in the header, and "Jonas Berg is typing…" shows above the comment box (`m.typing` in the project room would also do).
 - If the relay is down, the board still updates when the state events arrive; it just lacks the live hints.
 

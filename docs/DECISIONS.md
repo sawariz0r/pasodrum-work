@@ -102,6 +102,15 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-36 · People types and access roles, amends D-06/D-25/D-27/D-28 · Accepted (model + boards approved by the CEO) · 2026-11-21
+- **Owner 100, Admin 50, Staff 10** (today's Member; 10 in workspace rooms too), **External 1** (a mark that grants nothing), **Client 0**. Admins have Owner-like rights but can't change or remove Owners/Admins.
+- **Guests become Externals.** Externals never join the workspace space. Owners and Admins give them access through **access roles** (named sets of workspace channels and whole client spaces; `work.pasodrum.access_role` + `work.pasodrum.external` state in the workspace, level 50) and one-off channels; the editor's app makes membership follow (invite/kick). Membership is the access — the server enforces it.
+- `invite` 0 → 10 in workspace channels (Externals add nobody, create nothing). Invite service: client invites need level 10; roles staff/external/client; revoke-all for a person.
+- Auto-accept: channels only from inside my spaces; DMs only when every member shares a space with me (no bridge across client spaces).
+- Removal: the space first, then channels; join links killed.
+- Clients see Externals as part of the team (no tag); the team sees the outside mark and the External tag. A client space in a role is all or nothing (for now). Staff are trusted to add existing accounts.
+- Words: Staff / External / Client, Access, roles (JP スタッフ / 外部 / クライアント, アクセス, ロール). Boards: People* (rules: PeopleRules). Full model: `design/discovery/people-roles.md`.
+
 ### D-35 · Share history (SIDE-03) and local search (M8) · Accepted · 2026-11-21
 - **Share history** uses MSC4268 key bundles (`shareRoomHistoryWithUser`, internal SDK call cast inside `matrix/`; matrix-js-sdk pinned to 45.1.0). The app enforces what the SDK doesn't: only team, only in a 1:1 DM, only when my device is confirmed and I confirmed the person's *current* identity by emoji (`requestPersonConfirmation`); `not-ready` when they have no device signed by that identity.
 - **Marker:** an `m.notice` with `work.pasodrum.history_shared: { user_id }` and a full English body (D-05). It shows as a system row only in a 1:1 DM when one of its two people sent it; the receiver then accepts the bundle (`maybeAcceptKeyBundle`, retried).

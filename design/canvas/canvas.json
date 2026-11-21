@@ -2553,16 +2553,16 @@
   },
   "DocsTranslated.dc.html": {
    "x": 1520,
-   "y": 4840,
+   "y": 8920,
    "w": 1440,
    "h": 900,
-   "title": "Docs — translate one section at a time",
+   "title": "Docs — translated",
    "page": "discovery",
    "expand": "fill",
    "is_interactive": true
   },
   "DocsPageJP.dc.html": {
-   "x": 3040,
+   "x": 1520,
    "y": 4840,
    "w": 1440,
    "h": 900,
@@ -2572,8 +2572,8 @@
    "is_interactive": true
   },
   "BoardsPage.dc.html": {
-   "x": 0,
-   "y": 8200,
+   "x": 9600,
+   "y": 4840,
    "w": 1440,
    "h": 900,
    "title": "Boards — project board",
@@ -2582,18 +2582,18 @@
    "is_interactive": true
   },
   "BoardsIssue.dc.html": {
-   "x": 3040,
-   "y": 8200,
+   "x": 11120,
+   "y": 5860,
    "w": 1440,
    "h": 900,
-   "title": "Boards — issue panel, translated comment",
+   "title": "Boards — issue panel",
    "page": "discovery",
    "expand": "fill",
    "is_interactive": true
   },
   "BoardsList.dc.html": {
-   "x": 1520,
-   "y": 8200,
+   "x": 14160,
+   "y": 4840,
    "w": 1440,
    "h": 900,
    "title": "Boards — list view",
@@ -2602,17 +2602,17 @@
    "is_interactive": true
   },
   "BoardsPageJP.dc.html": {
-   "x": 0,
-   "y": 11260,
+   "x": 11120,
+   "y": 4840,
    "w": 1440,
    "h": 900,
-   "title": "Boards — project board, Japanese",
+   "title": "Boards — Japanese",
    "page": "discovery",
    "expand": "fill",
    "is_interactive": true
   },
   "DocsDark.dc.html": {
-   "x": 4560,
+   "x": 3040,
    "y": 4840,
    "w": 1440,
    "h": 900,
@@ -2632,7 +2632,7 @@
    "is_interactive": true
   },
   "DocsBlocks.dc.html": {
-   "x": 1520,
+   "x": 3040,
    "y": 5860,
    "w": 1440,
    "h": 900,
@@ -2642,8 +2642,8 @@
    "is_interactive": true
   },
   "DocsLink.dc.html": {
-   "x": 3040,
-   "y": 5860,
+   "x": 0,
+   "y": 6880,
    "w": 1440,
    "h": 900,
    "title": "Docs — link to a page",
@@ -2652,8 +2652,8 @@
    "is_interactive": true
   },
   "DocsOffline.dc.html": {
-   "x": 4560,
-   "y": 5860,
+   "x": 3040,
+   "y": 6880,
    "w": 1440,
    "h": 900,
    "title": "Docs — offline",
@@ -2662,36 +2662,36 @@
    "is_interactive": true
   },
   "DocsNordlys.dc.html": {
-   "x": 0,
-   "y": 6880,
+   "x": 4560,
+   "y": 4840,
    "w": 1440,
    "h": 900,
-   "title": "Docs — in a client space (team)",
+   "title": "Docs — in a client space",
    "page": "discovery",
    "expand": "fill",
    "is_interactive": true
   },
   "DocsClient.dc.html": {
-   "x": 1520,
-   "y": 6880,
+   "x": 6080,
+   "y": 4840,
    "w": 1440,
    "h": 900,
-   "title": "Docs — client’s view",
+   "title": "Docs — client view",
    "page": "discovery",
    "expand": "fill",
    "is_interactive": true
   },
   "DocsBoardsCards.dc.html": {
    "x": 3040,
-   "y": 6880,
+   "y": 9940,
    "w": 1100,
    "h": 520,
-   "title": "Docs and Boards — cards in chat",
+   "title": "doc and issue cards in chat",
    "page": "discovery"
   },
   "BoardsDark.dc.html": {
-   "x": 4560,
-   "y": 8200,
+   "x": 14160,
+   "y": 5860,
    "w": 1440,
    "h": 900,
    "title": "Boards — issue panel, dark",
@@ -2700,8 +2700,8 @@
    "is_interactive": true
   },
   "BoardsNewIssue.dc.html": {
-   "x": 0,
-   "y": 9220,
+   "x": 11120,
+   "y": 6880,
    "w": 1440,
    "h": 900,
    "title": "Boards — new issue",
@@ -2710,8 +2710,8 @@
    "is_interactive": true
   },
   "BoardsAssignee.dc.html": {
-   "x": 1520,
-   "y": 9220,
+   "x": 15680,
+   "y": 5860,
    "w": 1440,
    "h": 900,
    "title": "Boards — assign",
@@ -2720,8 +2720,8 @@
    "is_interactive": true
   },
   "BoardsDue.dc.html": {
-   "x": 3040,
-   "y": 9220,
+   "x": 9600,
+   "y": 6880,
    "w": 1440,
    "h": 900,
    "title": "Boards — due date",
@@ -2730,8 +2730,8 @@
    "is_interactive": true
   },
   "BoardsMine.dc.html": {
-   "x": 4560,
-   "y": 9220,
+   "x": 9600,
+   "y": 8920,
    "w": 1440,
    "h": 900,
    "title": "Boards — my issues",
@@ -2740,18 +2740,18 @@
    "is_interactive": true
   },
   "BoardsColumn.dc.html": {
-   "x": 0,
-   "y": 10240,
+   "x": 12640,
+   "y": 7900,
    "w": 1440,
    "h": 900,
-   "title": "Boards — new column (one title)",
+   "title": "Boards — new column",
    "page": "discovery",
    "expand": "fill",
    "is_interactive": true
   },
   "BoardsColumnJP.dc.html": {
-   "x": 1520,
-   "y": 10240,
+   "x": 14160,
+   "y": 7900,
    "w": 1440,
    "h": 900,
    "title": "Boards — new column, Japanese",
@@ -2760,66 +2760,66 @@
    "is_interactive": true
   },
   "BoardsNordlys.dc.html": {
-   "x": 3040,
-   "y": 10240,
+   "x": 15680,
+   "y": 4840,
    "w": 1440,
    "h": 900,
-   "title": "Boards — in a client space (team), custom column",
+   "title": "Boards — in a client space",
    "page": "discovery",
    "expand": "fill",
    "is_interactive": true
   },
   "BoardsClient.dc.html": {
-   "x": 4560,
-   "y": 10240,
+   "x": 9600,
+   "y": 5860,
    "w": 1440,
    "h": 900,
-   "title": "Boards — client’s view",
+   "title": "Boards — client view",
    "page": "discovery",
    "expand": "fill",
    "is_interactive": true
   },
   "DocsBoardsRules.dc.html": {
-   "x": 6080,
+   "x": 7600,
    "y": 4840,
    "w": 1440,
-   "h": 2040,
-   "title": "Docs and Boards — rules",
+   "h": 2600,
+   "title": "Docs and Boards — rules (for approval)",
    "page": "discovery"
   },
   "BoardsQuickAdd.dc.html": {
-   "x": 1520,
-   "y": 11260,
+   "x": 9600,
+   "y": 7900,
    "w": 1440,
    "h": 900,
-   "title": "Boards — quick add under a column",
+   "title": "Boards — quick add",
    "page": "discovery",
    "expand": "fill",
    "is_interactive": true
   },
   "BoardsCardTranslate.dc.html": {
-   "x": 3040,
-   "y": 11260,
+   "x": 15680,
+   "y": 7900,
    "w": 1440,
    "h": 900,
-   "title": "Boards — translate a card title",
+   "title": "Boards — translate a card",
    "page": "discovery",
    "expand": "fill",
    "is_interactive": true
   },
   "BoardsDrag.dc.html": {
-   "x": 0,
-   "y": 12520,
+   "x": 12640,
+   "y": 10960,
    "w": 1440,
    "h": 900,
-   "title": "Boards — dragging a card (drop line)",
+   "title": "Boards — dragging a card",
    "page": "discovery",
    "expand": "fill",
    "is_interactive": true
   },
   "DocsDragBlock.dc.html": {
-   "x": 1520,
-   "y": 12520,
+   "x": 0,
+   "y": 9940,
    "w": 1440,
    "h": 900,
    "title": "Docs — dragging a block",
@@ -2828,28 +2828,28 @@
    "is_interactive": true
   },
   "DocsDragPage.dc.html": {
-   "x": 3040,
-   "y": 12520,
+   "x": 1520,
+   "y": 9940,
    "w": 1440,
    "h": 900,
-   "title": "Docs — dragging a page into another",
+   "title": "Docs — dragging a page",
    "page": "discovery",
    "expand": "fill",
    "is_interactive": true
   },
   "BoardsLive.dc.html": {
-   "x": 4560,
-   "y": 12520,
+   "x": 14160,
+   "y": 10960,
    "w": 1440,
    "h": 900,
-   "title": "Boards — others dragging, editing, just moved",
+   "title": "Boards — others moving and editing",
    "page": "discovery",
    "expand": "fill",
    "is_interactive": true
   },
   "BoardsLiveIssue.dc.html": {
-   "x": 6080,
-   "y": 12520,
+   "x": 9600,
+   "y": 11980,
    "w": 1440,
    "h": 900,
    "title": "Boards — others in an issue",
@@ -3122,6 +3122,537 @@
    "w": 1440,
    "h": 900,
    "title": "Failed actions — Japanese",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "PeopleAddExternal.dc.html": {
+   "x": 0,
+   "y": 117724,
+   "w": 1440,
+   "h": 900,
+   "title": "Add people: External (Owner, Admin)",
+   "is_interactive": true
+  },
+  "PeopleAddStaff.dc.html": {
+   "x": 1520,
+   "y": 117724,
+   "w": 1440,
+   "h": 900,
+   "title": "Add people: Staff (Owner, Admin)",
+   "is_interactive": true
+  },
+  "PeopleAddClient.dc.html": {
+   "x": 3040,
+   "y": 117724,
+   "w": 1440,
+   "h": 900,
+   "title": "Add people: Client (Owner, Admin)",
+   "is_interactive": true
+  },
+  "PeopleAddNordlys.dc.html": {
+   "x": 0,
+   "y": 118744,
+   "w": 1440,
+   "h": 900,
+   "title": "Add people in a client space (Staff)"
+  },
+  "PeopleSpaceInvite.dc.html": {
+   "x": 0,
+   "y": 119764,
+   "w": 1440,
+   "h": 900,
+   "title": "Client space settings: People with an invite field"
+  },
+  "PeopleWorkspace.dc.html": {
+   "x": 0,
+   "y": 120784,
+   "w": 1440,
+   "h": 900,
+   "title": "Workspace settings: People, an External’s roles"
+  },
+  "PeopleAccess.dc.html": {
+   "x": 0,
+   "y": 121804,
+   "w": 1440,
+   "h": 900,
+   "title": "Workspace settings: Access (roles)"
+  },
+  "PeopleExternalView.dc.html": {
+   "x": 1520,
+   "y": 122824,
+   "w": 1440,
+   "h": 900,
+   "title": "What an External sees: Pasodrum"
+  },
+  "PeopleAddExternalJP.dc.html": {
+   "x": 4560,
+   "y": 117724,
+   "w": 1440,
+   "h": 900,
+   "title": "Add people: External (JP)",
+   "is_interactive": true
+  },
+  "PeopleAccessDark.dc.html": {
+   "x": 0,
+   "y": 122824,
+   "w": 1440,
+   "h": 900,
+   "title": "Access (dark)"
+  },
+  "PeopleRules.dc.html": {
+   "x": 6080,
+   "y": 117724,
+   "w": 1440,
+   "h": 2300,
+   "title": "Rules: people and access (discovery)"
+  },
+  "PeopleAddChannel.dc.html": {
+   "x": 1520,
+   "y": 118744,
+   "w": 1440,
+   "h": 900,
+   "title": "Add people to a channel: a colleague, an External, a new email"
+  },
+  "PeopleAddStaffOnly.dc.html": {
+   "x": 3040,
+   "y": 118744,
+   "w": 1440,
+   "h": 900,
+   "title": "Add people to a channel as Staff: colleagues only"
+  },
+  "PeopleAddDark.dc.html": {
+   "x": 4560,
+   "y": 118744,
+   "w": 1440,
+   "h": 900,
+   "title": "Add people: External (dark)",
+   "is_interactive": true
+  },
+  "PeopleSpaceInviteJP.dc.html": {
+   "x": 1520,
+   "y": 119764,
+   "w": 1440,
+   "h": 900,
+   "title": "Client space settings: People (JP)"
+  },
+  "PeopleSpaceInviteDark.dc.html": {
+   "x": 3040,
+   "y": 119764,
+   "w": 1440,
+   "h": 900,
+   "title": "Client space settings: People (dark)"
+  },
+  "PeopleRemoveExternal.dc.html": {
+   "x": 4560,
+   "y": 119764,
+   "w": 1440,
+   "h": 900,
+   "title": "Remove an External from Pasodrum"
+  },
+  "PeopleWorkspaceJP.dc.html": {
+   "x": 1520,
+   "y": 120784,
+   "w": 1440,
+   "h": 900,
+   "title": "Workspace settings: People (JP)"
+  },
+  "PeopleWorkspaceDark.dc.html": {
+   "x": 3040,
+   "y": 120784,
+   "w": 1440,
+   "h": 900,
+   "title": "Workspace settings: People (dark)"
+  },
+  "PeopleRemoveExternalJP.dc.html": {
+   "x": 4560,
+   "y": 120784,
+   "w": 1440,
+   "h": 900,
+   "title": "Remove an External (JP)"
+  },
+  "PeopleAccessNew.dc.html": {
+   "x": 1520,
+   "y": 121804,
+   "w": 1440,
+   "h": 900,
+   "title": "Access: a new role"
+  },
+  "PeopleAccessNotApplied.dc.html": {
+   "x": 3040,
+   "y": 121804,
+   "w": 1440,
+   "h": 900,
+   "title": "Access: a person not applied"
+  },
+  "PeopleAccessJP.dc.html": {
+   "x": 4560,
+   "y": 121804,
+   "w": 1440,
+   "h": 900,
+   "title": "Access (JP)"
+  },
+  "PeopleExternalNordlys.dc.html": {
+   "x": 3040,
+   "y": 122824,
+   "w": 1440,
+   "h": 900,
+   "title": "What an External sees: a client space"
+  },
+  "PeopleExternalJP.dc.html": {
+   "x": 4560,
+   "y": 122824,
+   "w": 1440,
+   "h": 900,
+   "title": "What an External sees (JP)"
+  },
+  "PeopleExternalDark.dc.html": {
+   "x": 0,
+   "y": 123844,
+   "w": 1440,
+   "h": 900,
+   "title": "What an External sees (dark)"
+  },
+  "PeopleClientSeesTeam.dc.html": {
+   "x": 1520,
+   "y": 123844,
+   "w": 1440,
+   "h": 900,
+   "title": "What a client sees: an External is part of the team"
+  },
+  "PeopleClientSeesTeamJP.dc.html": {
+   "x": 3040,
+   "y": 123844,
+   "w": 1440,
+   "h": 900,
+   "title": "What a client sees (JP)"
+  },
+  "DocsEmptyJP.dc.html": {
+   "x": 1520,
+   "y": 5860,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — new page, Japanese",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "DocsBlocksJP.dc.html": {
+   "x": 4560,
+   "y": 5860,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — add a block, Japanese",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "DocsBlocksDark.dc.html": {
+   "x": 6080,
+   "y": 5860,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — add a block, dark",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "DocsLinkJP.dc.html": {
+   "x": 1520,
+   "y": 6880,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — link to a page, Japanese",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "DocsLoading.dc.html": {
+   "x": 4560,
+   "y": 6880,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — loading",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "DocsNone.dc.html": {
+   "x": 6080,
+   "y": 6880,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — no pages yet",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "DocsNoneJP.dc.html": {
+   "x": 0,
+   "y": 7900,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — no pages yet, Japanese",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "DocsPageMenu.dc.html": {
+   "x": 1520,
+   "y": 7900,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — page menu",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "DocsPageMenuJP.dc.html": {
+   "x": 3040,
+   "y": 7900,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — page menu, Japanese",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "DocsPageMenuDark.dc.html": {
+   "x": 4560,
+   "y": 7900,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — page menu, dark",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "DocsMoveTo.dc.html": {
+   "x": 6080,
+   "y": 7900,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — move a page",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "DocsDeletePage.dc.html": {
+   "x": 0,
+   "y": 8920,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — delete a page",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "DocsTranslatedJP.dc.html": {
+   "x": 3040,
+   "y": 8920,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — translate a section, Japanese",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "DocsTranslatedDark.dc.html": {
+   "x": 4560,
+   "y": 8920,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — translate a section, dark",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "DocsTranslateStates.dc.html": {
+   "x": 6080,
+   "y": 8920,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — translating, couldn’t translate",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsPageDark.dc.html": {
+   "x": 12640,
+   "y": 4840,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — dark",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsIssueJP.dc.html": {
+   "x": 12640,
+   "y": 5860,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — issue panel, Japanese",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsNewIssueJP.dc.html": {
+   "x": 12640,
+   "y": 6880,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — new issue, Japanese",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsNewIssueDark.dc.html": {
+   "x": 14160,
+   "y": 6880,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — new issue, dark",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsCreateFailed.dc.html": {
+   "x": 15680,
+   "y": 6880,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — create failed",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsQuickAddJP.dc.html": {
+   "x": 11120,
+   "y": 7900,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — quick add, Japanese",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsMineJP.dc.html": {
+   "x": 11120,
+   "y": 8920,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — my issues, Japanese",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsNewProject.dc.html": {
+   "x": 12640,
+   "y": 8920,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — new project",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsNoProjects.dc.html": {
+   "x": 14160,
+   "y": 8920,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — no projects",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsNoProjectsJP.dc.html": {
+   "x": 15680,
+   "y": 8920,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — no projects, Japanese",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsEmpty.dc.html": {
+   "x": 9600,
+   "y": 9940,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — empty project",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsLoading.dc.html": {
+   "x": 11120,
+   "y": 9940,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — loading",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsCardMenu.dc.html": {
+   "x": 12640,
+   "y": 9940,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — card menu",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsCardMenuJP.dc.html": {
+   "x": 14160,
+   "y": 9940,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — card menu, Japanese",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsCardMenuDark.dc.html": {
+   "x": 15680,
+   "y": 9940,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — card menu, dark",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsDeleteIssue.dc.html": {
+   "x": 9600,
+   "y": 10960,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — delete an issue",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsMoveFailed.dc.html": {
+   "x": 11120,
+   "y": 10960,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — move failed",
+   "page": "discovery",
+   "expand": "fill",
+   "is_interactive": true
+  },
+  "BoardsLiveDark.dc.html": {
+   "x": 15680,
+   "y": 10960,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — others moving and editing, dark",
+   "page": "discovery",
    "expand": "fill",
    "is_interactive": true
   }
@@ -3468,7 +3999,68 @@
   "DmsEmpty.dc.html",
   "BuiltStatesM4.dc.html",
   "ActionFailed.dc.html",
-  "ActionFailedJP.dc.html"
+  "ActionFailedJP.dc.html",
+  "PeopleAddExternal.dc.html",
+  "PeopleAddStaff.dc.html",
+  "PeopleAddClient.dc.html",
+  "PeopleAddNordlys.dc.html",
+  "PeopleSpaceInvite.dc.html",
+  "PeopleWorkspace.dc.html",
+  "PeopleAccess.dc.html",
+  "PeopleExternalView.dc.html",
+  "PeopleAddExternalJP.dc.html",
+  "PeopleAccessDark.dc.html",
+  "PeopleRules.dc.html",
+  "PeopleAddChannel.dc.html",
+  "PeopleAddStaffOnly.dc.html",
+  "PeopleAddDark.dc.html",
+  "PeopleSpaceInviteJP.dc.html",
+  "PeopleSpaceInviteDark.dc.html",
+  "PeopleRemoveExternal.dc.html",
+  "PeopleWorkspaceJP.dc.html",
+  "PeopleWorkspaceDark.dc.html",
+  "PeopleRemoveExternalJP.dc.html",
+  "PeopleAccessNew.dc.html",
+  "PeopleAccessNotApplied.dc.html",
+  "PeopleAccessJP.dc.html",
+  "PeopleExternalNordlys.dc.html",
+  "PeopleExternalJP.dc.html",
+  "PeopleExternalDark.dc.html",
+  "PeopleClientSeesTeam.dc.html",
+  "PeopleClientSeesTeamJP.dc.html",
+  "DocsEmptyJP.dc.html",
+  "DocsBlocksJP.dc.html",
+  "DocsBlocksDark.dc.html",
+  "DocsLinkJP.dc.html",
+  "DocsLoading.dc.html",
+  "DocsNone.dc.html",
+  "DocsNoneJP.dc.html",
+  "DocsPageMenu.dc.html",
+  "DocsPageMenuJP.dc.html",
+  "DocsPageMenuDark.dc.html",
+  "DocsMoveTo.dc.html",
+  "DocsDeletePage.dc.html",
+  "DocsTranslatedJP.dc.html",
+  "DocsTranslatedDark.dc.html",
+  "DocsTranslateStates.dc.html",
+  "BoardsPageDark.dc.html",
+  "BoardsIssueJP.dc.html",
+  "BoardsNewIssueJP.dc.html",
+  "BoardsNewIssueDark.dc.html",
+  "BoardsCreateFailed.dc.html",
+  "BoardsQuickAddJP.dc.html",
+  "BoardsMineJP.dc.html",
+  "BoardsNewProject.dc.html",
+  "BoardsNoProjects.dc.html",
+  "BoardsNoProjectsJP.dc.html",
+  "BoardsEmpty.dc.html",
+  "BoardsLoading.dc.html",
+  "BoardsCardMenu.dc.html",
+  "BoardsCardMenuJP.dc.html",
+  "BoardsCardMenuDark.dc.html",
+  "BoardsDeleteIssue.dc.html",
+  "BoardsMoveFailed.dc.html",
+  "BoardsLiveDark.dc.html"
  ],
  "notes": {
   "title": {
@@ -3559,35 +4151,27 @@
   "discDocs": {
    "x": 0,
    "y": 4540,
-   "text": "Discovery — Docs",
+   "text": "Docs — for approval",
+   "kind": "title1",
+   "maxW": 9040,
+   "page": "discovery"
+  },
+  "discBoards": {
+   "x": 9600,
+   "y": 4540,
+   "text": "Boards — for approval",
    "kind": "title1",
    "maxW": 7520,
    "page": "discovery"
   },
-  "discBoards": {
-   "x": 0,
-   "y": 7900,
-   "text": "Discovery — Boards",
-   "kind": "title1",
-   "maxW": 5920,
-   "page": "discovery"
-  },
   "discDocsBoardsQs": {
-   "x": 6080,
-   "y": 6900,
+   "x": 7600,
+   "y": 7560,
    "w": 560,
    "page": "discovery",
    "fill": "orange",
    "size": "m",
-   "text": "CEO answers (2026-11-21)\n\n• Per space; channel tabs maybe later.\n• Clients create, edit and comment in their own client space.\n• Translate: team only. Docs translate a section at a time; cards whose title is in the other language get Translate too.\n• Columns: four defaults; team adds custom columns with one title.\n• Quick add under each column, plus the New issue dialog.\n• Cursors after typing, kept simple.\n• The space tile scopes the sidebar.\n\nConcept: design/discovery/docs-boards.md"
-  },
-  "discDnd": {
-   "x": 0,
-   "y": 12260,
-   "text": "Discovery — Drag and drop, together",
-   "kind": "title1",
-   "maxW": 7520,
-   "page": "discovery"
+   "text": "Docs and Boards: approval batch (2026-11-21)\n\nAll states, Japanese and dark versions of the main screens, and the rules board. On approval the lead moves these to the ui page, logs D-35 and writes the build tasks (draft in the side-session note docs-boards-approval-handover.md).\n\nConcept: design/discovery/docs-boards.md"
   },
   "batchH": {
    "x": 0,
@@ -3595,6 +4179,13 @@
    "text": "Batch H — M8 find (⌘K, search), SIDE-03 share earlier messages, leftovers",
    "kind": "title1",
    "maxW": 4480
+  },
+  "batchP": {
+   "x": 0,
+   "y": 117444,
+   "text": "People and access — approved 2026-11-21",
+   "kind": "title1",
+   "maxW": 7520
   }
  },
  "designSystems": []

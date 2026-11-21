@@ -1,139 +1,176 @@
 # Discovery: who gets in, and what they see (2026-11-21)
 
-Status: **discovery, not approved.** Boards are on the canvas page "discovery" (row "People & access"). Nothing gets built until the CEO approves them.
+Status: **approved by the CEO (2026-11-21): the model and all 28 boards** (canvas version 44, page "discovery", "Discovery — People and access"). For the lead:
+- move the boards to the ui page;
+- add the inventory rows below;
+- log D-35 (at the end of this note).
+
+### Proposed `design/INVENTORY.md` rows (approved 2026-11-21)
+| Screen | Boards | Status |
+|---|---|---|
+| Add people: pick a type (Staff / External / Client), then where | PeopleAddStaff, PeopleAddExternal, PeopleAddClient, PeopleAddExternalJP, PeopleAddDark | approved 2026-11-21 |
+| Add people in a client space (Staff: clients only) | PeopleAddNordlys | approved 2026-11-21 |
+| Add people to a channel; Staff colleagues only, with the error | PeopleAddChannel, PeopleAddStaffOnly | approved 2026-11-21 |
+| Client space settings → People with an invite field (replaces SpacePeople's Add people row) | PeopleSpaceInvite, PeopleSpaceInviteJP, PeopleSpaceInviteDark | approved 2026-11-21 |
+| Workspace settings → People (new) | PeopleWorkspace, PeopleWorkspaceJP, PeopleWorkspaceDark | approved 2026-11-21 |
+| Remove an External from Pasodrum | PeopleRemoveExternal, PeopleRemoveExternalJP | approved 2026-11-21 |
+| Workspace settings → Access: roles, new role, not applied | PeopleAccess, PeopleAccessNew, PeopleAccessNotApplied, PeopleAccessJP, PeopleAccessDark | approved 2026-11-21 |
+| What an External sees (Pasodrum, a client space) | PeopleExternalView, PeopleExternalNordlys, PeopleExternalJP, PeopleExternalDark | approved 2026-11-21 |
+| What a client sees of an External (part of the team) | PeopleClientSeesTeam, PeopleClientSeesTeamJP | approved 2026-11-21 |
+| Rules: people and access | PeopleRules | approved 2026-11-21 |
+
+These supersede the Guest boards (GuestShell, GuestShellJP), the Member/Guest segments in AddPeople and AddPeopleMember, and the Add people row in SpacePeople.
 
 ## The brief in one line
-Owners add Staff, Externals and Clients from one Add people. Staff on a client space invite its clients right there. Externals (freelancers) get only the access we give them, through named **access roles**. Clients never see other clients, other client spaces, or externals outside their project.
+Owners and Admins add Staff, Externals and Clients from one Add people. Staff on a client space invite its clients right there. Externals (freelancers) get only the access we give them, through named **access roles**. Clients never see other clients, other client spaces, or externals outside their project.
 
-## 1. The three people types, mapped onto today
+## 1. The people types, mapped onto today
 
-| Brief | Today (D-06, D-25, D-27) | Proposed | Matrix fact |
+| Type | Today (D-06, D-25, D-27) | Agreed | Matrix fact |
 |---|---|---|---|
-| Owner | Owner, PL 100 in the workspace | **Owner** (no change) | PL 100 |
-| Staff | Admin (PL 50) and Member (PL 0, joined to the workspace) | **Staff** = today's Member. Admin is retired (decision 1). | Joined to the workspace, **PL 10 everywhere** (today 10 only in client spaces) |
-| External | Guest: outside email, in no space, invited to single workspace channels by any Member | **External** = Guest grown up: in no workspace, access given by access roles (and one-off channels) | Not joined to the workspace. **PL 1** in each room they're in (a marker that grants nothing) |
-| Client | Client: joined to one client space, PL 0 | **Client** (no change) | Joined to one client space, PL 0 |
+| Owner | Owner | **Owner** (no change) | Level 100 |
+| Admin | Admin | **Admin** (no change): Owner-like rights, but can't change or remove Owners | Level 50 |
+| Staff | Member: joined to the workspace, level 0 | **Staff** = today's Member | Joined to the workspace, **level 10 everywhere** (today 10 only in client spaces) |
+| External | Guest: outside email, in no space, added to single workspace channels by any Member | **External** = Guest grown up. In no workspace; access comes from access roles and one-off channels | Not joined to the workspace. **Level 1** in each room they're in (a mark that grants nothing) |
+| Client | Client: joined to one client space, level 0 | **Client** (no change) | Joined to one client space, level 0 |
 
-So we keep four levels: Owner 100, Staff 10, External 1, Client/everyone else 0. Admin (50) stays as a number nothing hands out.
+Five levels: Owner 100, Admin 50, Staff 10, External 1, Client and everyone else 0.
 
-Why PL 1 for externals: every member of a room can read power levels, and our app, the server and Element X all see the same thing. A client in Nordlys can tell "Mika works with Pasodrum" from "Henrik is a fellow client" without reading anything they shouldn't. The level unlocks nothing, because no action anywhere is set to 1.
+Why level 1 for externals: every member of a room can read power levels, so our app, the server and Element X all see the same thing. It tells "works with Pasodrum" apart from "fellow client" without anyone reading what they shouldn't. It unlocks nothing, because no action anywhere is set to 1.
 
 ## 2. Access roles (for Externals)
 An **access role** is a name, a colour, and a list of places:
-- **workspace channels**, chosen one by one (public or private);
-- **client spaces**, as a whole. Joining a client space opens every channel in it, because those channels are restricted to the space (D-06). There is no per-channel pick inside a client space in v1 (decision 6).
+- **workspace channels**, chosen one by one, public or private;
+- **client spaces**, as a whole. Joining a client space opens every channel in it, because those channels are restricted to the space (D-06). There's no picking single channels inside a client space in v1 (CEO: "stick with that for now").
 
-People get roles assigned. One external can hold several roles; their access is the union of those roles plus any **one-off channels** an Owner added them to straight from a channel's Add people (today's guest flow, kept).
+People get roles assigned. One External can hold several roles. Their access is the union of those roles plus any **one-off channels**, added straight from a channel's Add people (today's guest flow, kept).
 
-Examples: "Nordlys designers" = #design + Nordlys. "Translators" = #jp-copy + #en-copy.
+Examples: "Nordlys designers" = #design-studio + Nordlys. "Translators" = #launch-site + Kumo.
 
-Roles are only for Externals. Staff see the whole workspace. Clients see their own client space.
+Roles are only for Externals. Staff see the whole workspace; Clients see their own client space.
 
-### Where it is stored
-In the **workspace space**, as state that only Owners can write (event level 100):
+### Where it's stored
+In the **workspace space**, as state that only Owners and Admins can write (event level 50):
 - `work.pasodrum.access_role` (state key = role id): `{name, colour, channels: [roomId], spaces: [roomId]}`
-- `work.pasodrum.external` (state key = user id): `{roles: [roleId], channels: [roomId]}`; `channels` holds the one-off adds
+- `work.pasodrum.external` (state key = user id): `{roles: [roleId], channels: [roomId]}`, where `channels` holds the one-off adds
 
-Externals and clients aren't in the workspace, so they can't read role names, other people's assignments, or that roles exist at all. Staff can read them, which is fine.
+Externals and clients aren't in the workspace, so they can't read role names, other people's assignments, or even that roles exist. Staff can read them, which is fine.
 
 ## 3. Enforced by the server, not the UI
-The role is our record of what someone *should* reach. What they *can* reach is only their Matrix memberships:
-- Workspace channels are restricted to the workspace space (or invite-only when private). Externals aren't in the workspace, so the server refuses every channel they weren't invited to.
-- Client spaces are invite-only and their channels are restricted to the space. An external reaches a client space only after being invited to that space.
-- **Membership follows the role:** when an Owner saves a role, or assigns or removes one, the Owner's app invites the external to newly covered rooms (and sets PL 1 there), and removes them from rooms nothing else covers. Failures show up inline on that screen. There's no background job: the invite service stays powerless (D-07).
-- If saving stops halfway, the person has less access (or keeps old access) until the Owner saves again. They never get *more* than the server membership allows. The role screen marks a person whose rooms don't match their roles ("Not applied", with Apply).
-- You can only grant what you're in: the channel picker lists channels the Owner is a member of. A private channel the Owner isn't in can't go into a role.
-- **"Not applied" compares real memberships, invites included, in both directions.** It also flags a room the Owner can no longer remove someone from, such as a private channel the Owner has since left (removing needs level 50 and a joined Owner). If two Owners save at the same moment, the last save wins.
-- **Removal order:** remove the person from the space first, then from its channels. While they're still in the space, they could rejoin its restricted channels. Today's `removeFromSpace` does it the other way round and needs flipping. Removing also clears their level-1 entry, so the same email invited later as a client doesn't show as an External.
-- **Auto-accept gets stricter** (`trusts()` in `store.ts`, found in review). Today we accept any room from someone who shares a space with me. An External on Nordlys and Kumo could make a room, invite a client from each, and both would join and see each other. New rule: accept a channel only when it's inside one of my spaces, and a DM or group DM only when every member shares one space with me. Anything else waits unanswered.
+The role records what someone *should* reach. What they *can* reach is only their Matrix memberships:
+- Workspace channels are restricted to the workspace space, or invite-only when private. Externals aren't in the workspace, so the server refuses every channel they weren't invited to.
+- Client spaces are invite-only and their channels are restricted to the space. An External reaches a client space only after being invited to it.
+- **Membership follows the role.** When an Owner or Admin saves a role, or assigns or removes one, their app does two things. It invites the External to newly covered rooms and sets level 1 there. It removes them from rooms nothing else covers. Failures show inline on that screen. There's no background job: the invite service stays powerless (D-07).
+- If saving stops halfway, the person has less access (or keeps old access) until someone applies again. They never get more than their server memberships allow.
+- **"Not applied"** marks a person whose rooms don't match their roles, with an Apply button. The check compares real memberships, invites included, in both directions. It also flags a room the editor can no longer remove them from, such as a private channel the editor has since left; removing needs level 50 and a joined remover. If two people save at the same moment, the last save wins.
+- **You can only grant what you're in.** The channel picker lists the channels you're a member of.
+- **Removal order:** out of the space first, then its channels. Otherwise the person could rejoin restricted channels in between. Today's `removeFromSpace` does it the other way round and needs flipping. Removal also clears their level-1 entry.
+- **Auto-accept gets stricter** (`trusts()` in `store.ts`, found in review). Today we accept any room from someone who shares a space with me. An External on Nordlys and Kumo could make a room and invite a client from each; both would join and see each other. New rule: accept a channel only when it's inside one of my spaces. Accept a DM or group DM only when every member shares one space with me. Anything else waits unanswered.
 
 ## 4. Who may do what
 
-| | Owner | Staff | External | Client |
-|---|---|---|---|---|
-| Add Staff (to the workspace) | ✓ | — | — | — |
-| Put Staff on a client space | ✓ | — | — | — |
-| Add an External, assign or edit access roles | ✓ | — (decision 4) | — | — |
-| Invite Clients to a client space | ✓ | ✓ on client spaces they're on | — | — |
-| Create client spaces | ✓ | — | — | — |
-| Create channels | ✓ | ✓ (workspace, and client spaces they're on) | — | — |
-| See the workspace member list | ✓ | ✓ | — | — |
-| See role names and assignments | ✓ | ✓ (read only) | — | — |
-| Join channels | all | all public in the workspace + their client spaces | only what roles and one-offs give | their client space |
-| Remove people | anyone but themselves | — | — | — |
+| | Owner | Admin | Staff | External | Client |
+|---|---|---|---|---|---|
+| Add Staff to the workspace | ✓ | ✓ | — | — | — |
+| Put Staff on a client space | ✓ | ✓ | — | — | — |
+| Add an External; create, edit and assign roles | ✓ | ✓ | — | — | — |
+| Add an existing person to a channel | ✓ | ✓ | ✓ colleagues | — | — |
+| Invite Clients to a client space | ✓ | ✓ | ✓ on their client spaces | — | — |
+| Create client spaces | ✓ | ✓ | — | — | — |
+| Create channels | ✓ | ✓ | ✓ | — | — |
+| Change roles (D-25) | anyone | Staff ↔ Admin | — | — | — |
+| Remove people | anyone but themselves | not Owners or Admins | — | — | — |
+| See role names and assignments | ✓ | ✓ | read only | — | — |
 
-**What the server enforces and what only the UI enforces.** Matrix's `invite` right can't tell *who* is being added. Staff at 10 can therefore invite any existing account, an External included, into a workspace channel or a client space they're on, using Element X or the API. Our UI doesn't offer that. We accept this because Staff are trusted. The server-side alternative is `invite` 100 in public workspace channels: colleagues join them through the workspace on their own, so only private channels would need Staff inviting. The catch is that Staff could no longer "add" a colleague to a public channel (decision 8).
+**What the server enforces and what only the UI enforces.** Matrix's `invite` right can't tell *who* is being added. Staff at 10 can therefore invite any existing account, an External included, into a workspace channel or client space they're on, through Element X or the API. Our UI doesn't offer it. Accepted: Staff are trusted (CEO).
 
 ## 5. Power-level changes (amends D-27)
-- **Workspace space:** Staff at 10 (was 0). `invite` 100 (was 50: only Owners add Staff). New event types `work.pasodrum.access_role` and `work.pasodrum.external` at 100.
-- **Workspace channels:** Staff at 10. **`invite` 0 → 10.** This closes a hole we have today: at 0, a guest can invite any account into the channel by ID, and IDs come from emails (D-07).
+- **Workspace space:** Staff at 10 (was 0). `invite` stays 50, so Owners and Admins add Staff. New event types `work.pasodrum.access_role` and `work.pasodrum.external` at 50.
+- **Workspace channels:** Staff at 10. **`invite` goes from 0 to 10.** This closes a hole we have today: at 0, a guest can invite any account into the channel by ID, and IDs come from emails (D-07).
 - **Client spaces and their channels:** unchanged (Staff 10, `invite` 10, `m.space.child` 10). Externals at 1.
 - **Externals:** 1 in every room they're in, 0 everywhere else.
-- `m.room.power_levels` stays 50, so Owners (100) set levels and Staff don't.
-- **Invite service** (`rules.ts`): roles become `staff | external | client`. Staff = Owner only, into the workspace. External = Owner only, rooms across the workspace and client spaces, each one checked with `isGenuine`. Client = PL ≥ 10 in that client space. Today the service asks for 50 for clients. That blocks Staff at 10 from inviting client emails, which is likely half of "there's no clear way to invite".
-- **Revoking codes:** today `revokePerson` revokes per space and needs level 50 there. An External's code lives under the workspace, so we add an Owner-only "revoke everything for this person".
+- `m.room.power_levels` stays 50: Owners and Admins set levels, Staff don't.
+- **Invite service** (`rules.ts`): roles become `staff | external | client`.
+  - Staff: Owner or Admin (≥ 50), into the workspace.
+  - External: Owner or Admin. Their rooms can span the workspace and client spaces, and each one is checked with `isGenuine`.
+  - Client: level ≥ 10 in that client space. Today the service asks for 50, which blocks Staff at 10 from inviting client emails. That's likely half of "there's no clear way to invite".
+- **Revoking codes:** today `revokePerson` revokes one space at a time and needs level 50 there. An External's code lives under the workspace, so we add "revoke everything for this person" for Owners and Admins.
 
-## 6. Migration (one Owner-run script, like `migrate:pins`)
-- Owners stay Owners.
-- Admins become Owners or Staff, the CEO's pick for each person (decision 1).
-- Members become Staff: PL 10 in the workspace and every workspace channel the Owner can edit. Client-space levels don't change.
-- Guests become Externals: a `work.pasodrum.external` record with their current channels as one-off channels, and PL 1 in those channels. Nobody gains or loses access.
+## 6. Migration (one script run by an Owner, like `migrate:pins`)
+- Owners and Admins stay as they are.
+- Members become Staff: level 10 in the workspace and in every workspace channel the Owner can edit. Client-space levels don't change.
+- Guests become Externals: a `work.pasodrum.external` record with their current channels as one-off channels, and level 1 in those channels. Nobody gains or loses access.
 - Clients don't change.
 - Pending invites: the service reads `member` as `staff` and `guest` as `external`.
-- The script lists private channels it couldn't edit because the Owner isn't in them, so their members can fix them by hand. Until then, `invite` stays at 0 there.
-- **The client-space mark is re-sent as an Owner.** A client space counts as genuine only if an Owner or Admin of the workspace sent its `work.pasodrum.space` event (`isGenuine`). One sent by an Admin who becomes Staff would stop counting, and invites there would fail closed. The migration re-sends that event for every client space as an Owner.
+- The script lists the private channels it couldn't edit because the Owner isn't in them, so their members can fix them by hand. Until then, `invite` stays 0 there.
+- `isGenuine` (only an Owner or Admin can mark a client space) is unaffected, because Admins stay. If an Admin who marked a client space later becomes Staff, invites there fail closed; re-sending the mark as an Owner fixes it.
 
-## 7. Isolation guarantees
-1. **A client reaches only their client space.** Unchanged: the server refuses workspace channels (restricted to the workspace) and other client spaces (invite-only). The client's-eye suite still passes.
-2. **A client sees only the people in their client space's rooms:** its Staff, the Externals given that space, and fellow clients of that space. No other clients, no other externals, no role names.
-3. **An external in two client spaces doesn't connect them.** Nordlys clients see Mika in Nordlys and nothing of Kumo. Membership in Kumo rooms isn't visible from Nordlys rooms, and the shared profile is name and avatar only (plus the work email, D-29).
-4. **An external reaches only invited rooms.** They're not in the workspace, so restricted joins never let them in, and Browse only shows channels they're in or can join (granted client spaces).
-5. **Externals add nobody and create nothing.** `invite` and `m.space.child` are 10 everywhere and externals sit at 1. They can't touch levels, and they can't read the role records.
-6. **Removing someone is complete:** they're removed from every room, and their open join codes are revoked (as Remove from space does today). Messages they already saw stay with them (Matrix can't take those back).
-7. **Known gaps (not new, accepted at our size):**
-   - Any account can send a DM invite to any ID it knows, and IDs come from emails. Our app only auto-accepts invites from inside the person's own space, so a stray invite waits unanswered.
+## 7. What people see (agreed and decided)
+- **Clients see Externals as part of the Pasodrum team** (my call, the CEO asked). They're grouped with the team in member lists and on profile cards, with no tag and no mark. From the client's side they work for us and we answer for them. A tag would invite "who's this?" and expose how we staff projects.
+- **The team sees Externals with the amber outside mark and an "External" tag**, so it's always clear who's outside.
+- **Externals see the outside mark on clients**, like Staff do (they work for us and should know when a client is present). They see no role names.
+- **An External can start DMs** only with people they share a room with. New message lists only them; the server limit comes from the stricter auto-accept rule.
+
+## 8. Isolation guarantees
+1. **A client reaches only their client space.** Unchanged. The server refuses workspace channels (restricted to the workspace) and other client spaces (invite-only). The client's-eye suite still passes.
+2. **A client sees only the people in their client space's rooms:** its Staff, the Externals given that space, and fellow clients of that space. No other clients, no other Externals, no role names.
+3. **An External in two client spaces doesn't connect them.** Nordlys clients see Ola in Nordlys and nothing of Kumo. With the stricter auto-accept rule, a room an External makes can't pull clients from different spaces together.
+4. **An External reaches only invited rooms.** They're not in the workspace, so restricted joins never let them in. Browse only shows channels they're in, or can join in client spaces they've been given.
+5. **Externals add nobody and create nothing.** `invite` and `m.space.child` are 10 everywhere, and Externals sit at 1. They can't touch levels or read the role records.
+6. **Removing someone is complete:** they're taken out of the space first, then every room, and all their open join codes are revoked. What they already read stays with them (Matrix can't take it back).
+7. **Known gaps, accepted at our size:**
+   - Any account can send a DM invite to any ID it knows, and IDs come from emails. Such an invite now simply waits unanswered.
    - Any account can create its own room. `isGenuine` already stops a home-made "client space".
-   - A room's creator outranks every level (v12, D-27). Externals and clients can't create rooms inside our spaces, so this doesn't reach them.
-   - Anyone with an account can probably check whether an account exists and read its profile by ID. That covers `/profile` (including the work email, D-29), `/keys/query` and `/register/available`. IDs are guessable from emails. We need an external's-eye probe to confirm what Continuwuity answers, and also to confirm that `/hierarchy` and `/summary` on a space you're not in return 403.
-   - An External given a client space can read all of its earlier history (`history_visibility: shared`). The role screen says so where client spaces are picked.
-   - Staff can invite existing accounts anywhere they hold `invite` (see §4).
+   - Anyone with an account can probably check that an account exists and read its profile by ID: `/profile` (work email included, D-29), `/keys/query`, `/register/available`. An external's-eye probe should confirm this, and that `/hierarchy` and `/summary` on a space you're not in return 403.
+   - An External given a client space reads its earlier history (`history_visibility: shared`). The Access screen says so beside Client spaces.
+   - Staff can invite existing accounts anywhere they hold `invite` (§4).
 
-## 8. Screens (boards on "discovery")
-1. **Add people**: one dialog. Type first (Staff / External / Client, showing only the types you may add from where you opened it), then who, then where:
-   - Staff: client spaces to put them on;
-   - External: roles, or one-off channels;
-   - Client: which client space (prefilled from the client space you opened it in).
-2. **Client space settings → People**: an invite field at the top of the tab (email, Add), then the team (Staff and Externals with their mark), Clients, and Pending.
-3. **Workspace settings → People**: Owners, Staff and Externals; each external shows their role chips. A role menu on each row.
-4. **Workspace settings → Access**: a list of roles on the left. The selected role on the right has its name, colour, channels, client spaces and people.
-5. **What an External sees**: the Pasodrum tile with only their channels, plus a tile for each client space they're given. No Browse in Pasodrum, no +, no Add people.
-6. One JP board (Add people, External).
+## 9. Screens (boards on "discovery")
+| Screen | Boards |
+|---|---|
+| **Add people** (Owner/Admin, from the sidebar or workspace menu): the type first (Staff / External / Client), then who, then where | PeopleAddExternal, PeopleAddStaff, PeopleAddClient, PeopleAddExternalJP, PeopleAddDark |
+| **Add people in a client space** (Staff): clients only, no type, no "where" | PeopleAddNordlys |
+| **Add people to a channel:** no type picker. Names are colleagues or existing Externals; a new outside email is tagged External (a one-off for that channel) | PeopleAddChannel |
+| **Add people to a channel, as Staff:** colleagues only. An email gets the "Only Owners and Admins add new people" error | PeopleAddStaffOnly |
+| **Client space settings → People:** an invite field at the top, then team (with Externals), client, pending | PeopleSpaceInvite, PeopleSpaceInviteJP, PeopleSpaceInviteDark |
+| **Workspace settings → People** (new; Owners and Admins, from the workspace menu): filters, role chips, a row menu with roles | PeopleWorkspace, PeopleWorkspaceJP, PeopleWorkspaceDark |
+| **Remove an External from Pasodrum:** lists everything they lose | PeopleRemoveExternal, PeopleRemoveExternalJP |
+| **Workspace settings → Access:** the role manager, a new role, a person not applied | PeopleAccess, PeopleAccessNew, PeopleAccessNotApplied, PeopleAccessJP, PeopleAccessDark |
+| **What an External sees,** in Pasodrum and in a client space | PeopleExternalView, PeopleExternalNordlys, PeopleExternalJP, PeopleExternalDark |
+| **What a client sees of an External** (part of the team) | PeopleClientSeesTeam, PeopleClientSeesTeamJP |
 
-## Recommendation
-Four levels (Owner 100 / Staff 10 / External 1 / Client 0). Externals stay out of the workspace space, and access roles decide which rooms they're invited to. Owners alone manage Staff, Externals and roles. Staff invite Clients on their client spaces. Guests become Externals with no change in access.
+## CEO answers (2026-11-21)
+1. **Admin:** keep all three. Owner; Admin with Owner-like rights; Staff.
+2. **Guests become Externals:** yes.
+3. **One-off channels for Externals as well as roles:** yes.
+4. **Who adds Externals:** Owners and Admins.
+5. **How clients see Externals:** CEO unsure and asked for my view. Decided: as part of the Pasodrum team, no tag (§7).
+6. **A client space in a role is all or nothing:** yes, for now.
+7. **Words:** Staff / External / Client, "Access", "roles". JP: スタッフ / 外部 / クライアント, アクセス, ロール.
+8. **Should the server also stop Staff inviting Externals:** no, Staff are trusted.
 
-## Decisions for the CEO
-1. **Retire Admin?** Recommended: yes. UI shows Owner and Staff only; existing Admins become Owner or Staff (your pick for each).
-2. **Guests become Externals?** Recommended: yes, one kind of outside person who isn't a client.
-3. **One-off channels for Externals as well as roles?** Recommended: yes, from a channel's Add people (today's guest flow). Without it, one channel for one freelancer means making a role.
-4. **Who adds Externals?** Recommended: Owners only. The alternative is that Staff may add an External to a channel they're in.
-5. **How clients see Externals:** as part of the Pasodrum team, with no mark (recommended), or tagged "External".
-6. **Client space access in a role is all-or-nothing in v1?** Recommended: yes. Per-channel inside a client space can come later.
-7. **Words:** "Staff / External / Client", tab "Access", items "roles". JP: スタッフ / 外部 / クライアント, アクセス, ロール.
-8. **Should the server also stop Staff inviting Externals?** Recommended: no. Staff are trusted, and the UI is enough. The alternative is `invite` 100 in public workspace channels, which costs "add a colleague to a public channel".
+## Proposed DECISIONS entry (for the lead to log when the boards are approved)
+**D-35 · People types and access roles, amends D-06/D-25/D-27 · Accepted (model and boards approved by the CEO) · 2026-11-21**
+- Owner 100, Admin 50, Staff 10 (today's Member, now 10 in workspace rooms too), External 1 (mark only), Client 0.
+- Guests become Externals. Externals never join the workspace space. Owners and Admins give them access through access roles (`work.pasodrum.access_role`, `work.pasodrum.external` in the workspace, level 50) and one-off channels; the editor's app makes membership follow.
+- `invite` goes from 0 to 10 in workspace channels.
+- Invite service: client invites need level 10, roles are staff/external/client, and there's a revoke-all for a person.
+- Auto-accept: channels only from inside my spaces; DMs only when every member shares a space with me.
+- Removal: the space first, then channels.
+- Clients see Externals as team. The team and Externals see the outside mark.
 
 ## Security review (Fable, 2026-11-21)
 Folded in above:
 - the auto-accept bridge across client spaces;
-- the limit on what Staff can do through the API;
-- removal order and drift in both directions;
+- what Staff can do through the API;
+- removal order and drift checked in both directions;
 - revoke-all for a person;
-- re-sending the client-space mark in the migration;
+- the client-space mark;
 - the probe and history gaps;
 - clearing level 1 on removal.
 
 Confirmed OK:
-- PL 1 grants nothing (every restricted action is at 10 or more);
+- level 1 grants nothing (every restricted action is at 10 or more);
 - removing someone who is only invited cancels the invite;
 - client spaces have no links to each other;
 - role state lives only in the workspace.

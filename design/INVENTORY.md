@@ -188,3 +188,23 @@ Approved 2026-11-21 (CEO). Rules: RulesM8. Shortcuts sheet and desktop bits drop
 | Sign-in other error, too many attempts | SignInOtherError, SignInTooMany | approved 2026-11-21 |
 | No DMs yet | DmsEmpty | approved 2026-11-21 |
 | States built without boards (M4) | BuiltStatesM4 | approved 2026-11-21 |
+
+
+## People and access (D-36)
+
+Approved 2026-11-21 (CEO). Rules: PeopleRules.
+
+| Screen | Boards | Status |
+|---|---|---|
+| Add people: pick a type (Staff / External / Client), then where | PeopleAddStaff, PeopleAddExternal, PeopleAddClient, PeopleAddExternalJP, PeopleAddDark | approved 2026-11-21 |
+| Add people in a client space (Staff: clients only) | PeopleAddNordlys | approved 2026-11-21 |
+| Add people to a channel; Staff colleagues only, with the error | PeopleAddChannel, PeopleAddStaffOnly | approved 2026-11-21 |
+| Client space settings → People with an invite field (replaces SpacePeople's Add people row) | PeopleSpaceInvite, PeopleSpaceInviteJP, PeopleSpaceInviteDark | approved 2026-11-21 |
+| Workspace settings → People (new) | PeopleWorkspace, PeopleWorkspaceJP, PeopleWorkspaceDark | approved 2026-11-21 |
+| Remove an External from Pasodrum | PeopleRemoveExternal, PeopleRemoveExternalJP | approved 2026-11-21 |
+| Workspace settings → Access: roles, new role, not applied | PeopleAccess, PeopleAccessNew, PeopleAccessNotApplied, PeopleAccessJP, PeopleAccessDark | approved 2026-11-21 |
+| What an External sees (Pasodrum, a client space) | PeopleExternalView, PeopleExternalNordlys, PeopleExternalJP, PeopleExternalDark | approved 2026-11-21 |
+| What a client sees of an External (part of the team) | PeopleClientSeesTeam, PeopleClientSeesTeamJP | approved 2026-11-21 |
+| Rules: people and access | PeopleRules | approved 2026-11-21 |
+
+These supersede the Guest boards (GuestShell, GuestShellJP), the Member/Guest segments in AddPeople and AddPeopleMember, and the Add people row in SpacePeople.
