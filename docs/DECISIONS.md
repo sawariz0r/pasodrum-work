@@ -102,6 +102,13 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-33 · M7 scope: pins, files, link cards · Accepted · 2026-11-21
+- **No add/remove tab in M7.** Pins and Files are built-in tabs (SPEC: not stored); the only addable types would be Docs/Boards "Soon", and D-19 says ship only controls that work. `work.pasodrum.tab` + the "+" arrive with the first real addable tab. Docs/Boards stay as "Soon" rail pages (SPEC M7).
+- **Anyone in a conversation can pin** (Slack-like): `m.room.pinned_events` at level 0 for new rooms; a one-off migration lifts existing rooms.
+- **Files tab:** server `contains_url` filter for unencrypted rooms; a scan of decrypted local history for encrypted ones (the server can't see inside).
+- **No link cards in encrypted conversations** (a preview sends the URL to our server; keeps D-11). Cards: first link only.
+- **Second tab (per-account crypto lock):** "Use here" asks the holding tab over a BroadcastChannel to stop and release; never steal the lock.
+
 ### D-32 · Translate (side feature), amends D-11/D-31 · Accepted · 2026-11-21
 - **CEO (via the design-discovery session; confirmed directly to the lead 2026-11-21):** Translate is approved and built now as `features/translate` (SIDE-01, branch `side/translate`, merged by the lead after M6-02).
 - **Amends D-11/D-31:** Translate also works in encrypted team conversations (team DMs, private channels). It's an internal staff tool: the person who asks sends that one message's text to the model and sees the translation only in their own client. Never in conversations with clients or guests (`Channel.outside` / `Person.external`).
