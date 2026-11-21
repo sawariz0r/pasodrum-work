@@ -15,14 +15,15 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 | M4 channels, people, invites, settings | done | yes |
 | M5 client spaces + guests | done | yes |
 | M6 encryption | done | yes |
-| M7 tabs & cards | done (ceo-review) | yes |
-| M8 find & finish | done (ceo-review) | yes |
+| M7 tabs & cards | done | yes |
+| M8 find & finish | done | yes |
+| Side: people & access (D-36), Docs & Boards (D-37), confirm by email (D-38), live relay (D-39), client/External marks (D-40) | done | yes |
 | M9 desktop shell | Batch H (desktop bits) not designed | — |
 
 ## Waiting on the CEO
 
-- Try M7, M8, SIDE-02, SIDE-03 by hand (lists in `tasks/ceo-review/`).
-- Docs + Boards, people & access, device confirmation: in discovery sessions with the CEO.
+- Test confirm by email (SIDE-04): first turn OFF click and open tracking for noreply.prpl.se in Resend.
+- Test the client DM line ("Henrik Dahl is from Nordlys") in a real DM.
 
 ## How we work (the loop that has worked)
 
@@ -59,12 +60,25 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 
 - One-day spike each: Tauri and Electron against `platform/` (notify, badge, deep links, auth redirect, openExternal, persistStorage). Build the winner: installer, update prompt, tray/badge. Re-enable "Download app" buttons (hidden since M4).
 
-## Next session — pick up here (2026-11-21 end of day)
-- **Live:** M0–M6, Translate, channel rename/archive. Push = Coolify redeploys everything incl. the Matrix server (a few seconds' restart): batch docs-only commits with real changes.
-- **CEO checks done (2026-11-21):** E2, DMs, Element X link. All M0–M6, SIDE-01, E2-01 tasks closed.
-- **Seed test accounts stay for now (CEO, 2026-11-21).** Before a second real person joins: remove/deactivate them on production (their shared password was shown in chat), wipe test rooms (D-18). Shiori may already have an account (`pnpm add:staff`).
-- **Backlog to pick from:** SIDE-02 privacy indicator (design first), SIDE-03 share history (1 h spike first), a "open in another tab" screen for the per-account tab lock (design), Batch G (M7 tabs & cards) design.
-- **Known gaps:** the join page tile ignores the space colour; raw IDs show for nameless accounts in New message (test data); crypto store isn't encrypted at rest; Continuwuity to-device race (no upstream report, CEO).
+## Next session — pick up here (2026-11-21, late)
+
+**Live on pasodrum.work:** M0–M8; SIDE-01 Translate, SIDE-02 privacy line, SIDE-03 share history, SIDE-04 confirm by email; people & access (Staff/External/Client, access roles); Docs & Boards (live editing, boards, cards in chat, unread markers); live cursors over a WebSocket relay in the invite service (CEO: "flawless"); ⌘K space line + people tags; client company tile / External ↗ / composer risk line.
+
+**Production data done:** `migrate:pins`, `migrate:people`, `migrate-docs --apply`, `seed-welcome` (Shiori's EN/JP welcome pages + example projects; Shiori added to the Nordlys team). The "Pasodrum" system account is created by the invite service at startup (env `SYSTEM_PASSWORD`, `CONFIRM_KEY_SECRET` from Coolify's `SERVICE_PASSWORD_64_*`). **Back up `CONFIRM_KEY_SECRET`** — losing it forces every client to start fresh. Seed test accounts stay for now (CEO).
+
+**Open sessions:** "Build Docs and Boards (D-37)" (keep for follow-ups), "Build confirm by email (D-38)" (archive after the CEO's test), "Design discovery" (icon/mark exploration — CEO said leave it alone). Everything else is archived.
+
+**Backlog (all need canvas boards first):** SIDE-05 client contacts, SIDE-06 quiet board rooms in Element X, SIDE-07 Docs/Boards follow the selected space + "Client boards" fold, DES-01 uniform sidebar rows. Plus INVENTORY rows marked "needs design" (Rename column, board mention row in Activity, Boards badge/unread, issue panel overlay, Docs file block, email-confirm failure states). Next milestone: M9 desktop shell (needs Batch H desktop boards).
+
+**How the lead worked today (keep doing it):**
+- CEO works in discovery sessions on the canvas; the lead only builds after the CEO says "approved" **in the lead's own chat** (a session relaying approval doesn't count). Approved boards move off Discovery to the matching feature page; `design/CANVAS-MAP.md` lists page → section → artboard (`pnpm canvas:map`).
+- Build = one session per feature (Fable/Opus plans, Opus agents in parallel on disjoint files), then a **must-fix-only** review (max ~5; CEO: drop edge cases), then the lead commits only that feature's files (use `git hash-object -w` + `git update-index --cacheinfo` for files shared with another in-flight session), verifies the commit in a clean worktree (`git worktree add /tmp/x HEAD`, `pnpm install --frozen-lockfile`, `pnpm check`, web build), pushes, waits for `/_matrix/client/versions` 200 + `/api/invites` 401.
+- Fable: use sparingly (CEO resets the budget); Opus is the default for build agents.
+- Auto mode blocks production migrations/seeds until the CEO says yes in chat; dry-run first, then apply, then dry-run again (expect 0 writes).
+- Don't chain a push after a filtered check (`pnpm check | grep … && git push` pushes on failure) — check the exit code.
+- Lint ignores `.claude/` (session worktrees live there).
+
+**Known gaps:** a client in two client spaces is treated as a client of the first only (marks); a newly-joined presence peer can briefly see a slightly older caret; page creators can't be removed from page rooms (Matrix v12 creator); Continuwuity to-device race; crypto store not encrypted at rest.
 
 ## Open follow-ups (not blocking)
 
