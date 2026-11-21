@@ -75,7 +75,13 @@ function HomeRedirect() {
   const home = useWorkspace((x) => homeChannel(x)?.id);
   const spaceId = useWorkspace((x) => homeChannel(x)?.spaceId);
   if (!home || !spaceId) return <Navigate to="/unavailable" replace />;
-  return <Navigate to={channelPath(spaceId, home)} replace />;
+  // Draws the channel while redirecting: a bare <Navigate> commits an empty frame first.
+  return (
+    <>
+      <Navigate to={channelPath(spaceId, home)} replace />
+      <ChannelRoute at={{ spaceId, channelId: home }} />
+    </>
+  );
 }
 
 function SpaceRedirect() {
@@ -90,8 +96,9 @@ function useFallbackSpace(spaceId?: string): Space | undefined {
   return fallbackSpace(spaces, spaceId);
 }
 
-function ChannelRoute() {
-  const { spaceId, channelId } = useParams();
+function ChannelRoute({ at }: { at?: { spaceId: string; channelId: string } }) {
+  const params = useParams();
+  const { spaceId, channelId } = at ?? params;
   const spaces = useWorkspace((x) => x.spaces);
   const channel = useWorkspace((x) => (spaceId && channelId ? x.channels[spaceId]?.find((c) => c.id === channelId) : undefined));
   const fallback = useFallbackSpace(spaceId);
@@ -149,17 +156,22 @@ function SpaceViewRoute({ view }: { view: 'threads' | 'drafts' }) {
 }
 
 function DmsRoute() {
-  const { dmId } = useParams();
+  const params = useParams();
   const space = useFallbackSpace();
-  const known = useWorkspace((x) => (dmId ? x.dms.some((d) => d.id === dmId) : false));
   const newest = useWorkspace((x) => x.dms[0]?.id);
-  const none = useWorkspace((x) => x.dms.length === 0);
   const narrow = useNarrow();
-  if (!dmId && newest && !narrow) return <Navigate to={dmPath(newest)} replace />;
+  // Draws the newest DM while redirecting to it: a bare <Navigate> commits an empty frame first.
+  const redirect = !params.dmId && newest && !narrow ? newest : undefined;
+  const dmId = params.dmId ?? redirect;
+  const known = useWorkspace((x) => (dmId ? x.dms.some((d) => d.id === dmId) : false));
+  const none = useWorkspace((x) => x.dms.length === 0);
   return (
-    <Frame section="dms" space={space} column={<DmsColumn activeId={dmId} />} list={{ back: '/dms', detail: !!dmId }}>
-      {known && dmId ? <DmConversation dmId={dmId} /> : dmId ? <NotAvailable /> : none ? <DmsEmpty /> : <HomePage />}
-    </Frame>
+    <>
+      {redirect && <Navigate to={dmPath(redirect)} replace />}
+      <Frame section="dms" space={space} column={<DmsColumn activeId={dmId} />} list={{ back: '/dms', detail: !!dmId }}>
+        {known && dmId ? <DmConversation dmId={dmId} /> : dmId ? <NotAvailable /> : none ? <DmsEmpty /> : <HomePage />}
+      </Frame>
+    </>
   );
 }
 

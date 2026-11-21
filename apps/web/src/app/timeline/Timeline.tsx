@@ -23,6 +23,8 @@ const jumpMs = 1000;
 /** How far back a jump from Pins pages before giving up (a pinned thread reply is never in the channel's history). */
 const jumpPages = 10;
 const loadOlderWithinPx = 400;
+/** Where a conversation left scrolled up was, to return to it: the first message on screen and its offset from the top. */
+const positions = new Map<string, { id: string; top: number }>();
 
 const skeletonRows: [string, string, string][] = [
   ['22%', '74%', '48%'], ['16%', '58%', ''], ['26%', '82%', '64%'], ['18%', '40%', ''],
@@ -188,6 +190,8 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
   const anchor = useRef<{ id: string; top: number } | null>(null);
   const lastId = useRef<string | undefined>(undefined);
   const markedId = useRef<string | null | undefined>(undefined);
+  const stuckAt = useRef<number | null>(null);
+  const restore = useRef(true);
 
   const initialLoading = timeline?.initialLoading ?? true;
   const loadingOlder = timeline?.loadingOlder ?? false;
@@ -219,11 +223,21 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
     state.current = { initialLoading, loadingOlder, hasOlder, newestId: messages.at(-1)?.id };
   });
 
+  const stickToBottom = useCallback(() => {
+    const el = scroller.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+    stuckAt.current = el.scrollTop;
+    atBottom.current = true;
+  }, []);
+
   const check = useCallback(() => {
     const el = scroller.current;
     if (!el) return;
     const st = state.current;
     if (st.initialLoading) return;
+    // Unmoved since sticking, the content grew below (the composer's height applied) before the resize observer ran: still at the bottom.
+    if (atBottom.current && el.scrollTop === stuckAt.current) stickToBottom();
     atBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight <= bottomSlackPx && performance.now() - jumpedAt.current > jumpMs;
     if (atBottom.current) setSeenId(st.newestId ?? null);
     if (atBottom.current && markedId.current !== (st.newestId ?? null)) {
@@ -235,14 +249,7 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
       if (rootId) store.loadOlderInThread(channelId, rootId);
       else store.loadOlder(channelId);
     }
-  }, [store, channelId, rootId]);
-
-  const stickToBottom = useCallback(() => {
-    const el = scroller.current;
-    if (!el) return;
-    el.scrollTop = el.scrollHeight;
-    atBottom.current = true;
-  }, []);
+  }, [store, channelId, rootId, stickToBottom]);
 
   // Keep what's on screen in place: stick to the bottom when there, otherwise hold the first message still
   // while older history or its skeleton is inserted above it.
@@ -253,7 +260,13 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
     const newest = messages.at(-1);
     const sentByMe = newest && newest.id !== lastId.current && newest.sender.id === meId && newest.status === 'sending';
     lastId.current = newest?.id;
-    if (atBottom.current || sentByMe) {
+    const saved = restore.current && !initialLoading ? positions.get(rootId ?? channelId) : undefined;
+    if (!initialLoading) restore.current = false;
+    const back = saved && Array.from(box.querySelectorAll<HTMLElement>('[data-message-id]')).find((n) => n.dataset.messageId === saved.id);
+    if (back && saved) {
+      el.scrollTop += back.getBoundingClientRect().top - el.getBoundingClientRect().top - saved.top;
+      atBottom.current = false;
+    } else if (atBottom.current || sentByMe) {
       stickToBottom();
     } else if (anchor.current) {
       const id = anchor.current.id;
@@ -263,7 +276,21 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
     const first = box.querySelector<HTMLElement>('[data-message-id]');
     anchor.current = first ? { id: first.dataset.messageId!, top: first.offsetTop } : null;
     check();
-  }, [messages, initialLoading, loadingOlder, meId, stickToBottom, check]);
+  }, [messages, initialLoading, loadingOlder, meId, stickToBottom, check, rootId, channelId]);
+
+  // Leaving scrolled up remembers the first message on screen; leaving at the bottom returns to the bottom.
+  useLayoutEffect(() => {
+    const el = scroller.current;
+    const box = content.current;
+    const key = rootId ?? channelId;
+    return () => {
+      if (!el || !box || state.current.initialLoading) return;
+      if (atBottom.current) return void positions.delete(key);
+      const top = el.getBoundingClientRect().top;
+      const first = Array.from(box.querySelectorAll<HTMLElement>('[data-message-id]')).find((n) => n.getBoundingClientRect().bottom > top);
+      if (first) positions.set(key, { id: first.dataset.messageId!, top: first.getBoundingClientRect().top - top });
+    };
+  }, [rootId, channelId]);
 
   // The composer growing, fonts loading or a language switch change sizes without new messages.
   useLayoutEffect(() => {
@@ -276,7 +303,8 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
       anchor.current = first ? { id: first.dataset.messageId!, top: first.offsetTop } : null;
     });
     ro.observe(el);
-    ro.observe(box);
+    // Border box: the composer's height arrives as the content's bottom padding.
+    ro.observe(box, { box: 'border-box' });
     return () => ro.disconnect();
   }, [stickToBottom]);
 
