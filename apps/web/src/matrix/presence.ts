@@ -16,8 +16,11 @@ const RETRY_MIN_MS = 1000;
 const RETRY_MAX_MS = 30_000;
 // The relay sends a heartbeat every 20 s; this long without a byte means the stream is dead.
 const SILENCE_MS = 45_000;
-// At most 4 posts a second (the relay's limit).
-const SEND_GAP_MS = 250;
+// About 11 posts a second, under the relay's 12/s (burst 24).
+const SEND_GAP_MS = 90;
+// A refused (429) or failed post is retried with the latest state after this, doubling up to the cap.
+const FAIL_MIN_MS = 150;
+const FAIL_MAX_MS = 300;
 
 function connId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
@@ -42,6 +45,8 @@ export function openPresence(o: PresenceOptions): Presence {
   let mine: string | undefined;
   let sent: string | undefined;
   let sentAt = 0;
+  let holdUntil = 0;
+  let failDelay = FAIL_MIN_MS;
   let sendTimer: ReturnType<typeof setTimeout> | undefined;
 
   const emit = () => {
@@ -69,7 +74,7 @@ export function openPresence(o: PresenceOptions): Presence {
 
   function schedule() {
     if (sendTimer || !live || mine === sent) return;
-    sendTimer = setTimeout(flush, Math.max(0, sentAt + SEND_GAP_MS - Date.now()));
+    sendTimer = setTimeout(flush, Math.max(0, sentAt + SEND_GAP_MS - Date.now(), holdUntil - Date.now()));
   }
 
   function flush() {
@@ -84,11 +89,20 @@ export function openPresence(o: PresenceOptions): Presence {
       body: `{"id":${JSON.stringify(conn)},"data":${value}}`,
     })
       .then((r) => {
-        if (!r.ok && sent === value) sent = undefined;
+        if (r.ok) failDelay = FAIL_MIN_MS;
+        // 403/413 won't get better by retrying; a dropped stream reconnects and re-sends anyway.
+        else failed(value, r.status === 429 || r.status >= 500);
       })
-      .catch(() => {
-        if (sent === value) sent = undefined;
-      });
+      .catch(() => failed(value, true));
+    schedule();
+  }
+
+  function failed(value: string, retry: boolean) {
+    if (sent !== value) return;
+    sent = undefined;
+    if (!retry) return;
+    holdUntil = Date.now() + failDelay;
+    failDelay = Math.min(failDelay * 2, FAIL_MAX_MS);
     schedule();
   }
 
@@ -112,6 +126,8 @@ export function openPresence(o: PresenceOptions): Presence {
       retry = RETRY_MIN_MS;
       live = true;
       sent = undefined;
+      holdUntil = 0;
+      failDelay = FAIL_MIN_MS;
       schedule();
       const reader = res.body.getReader();
       const decoder = new TextDecoder();

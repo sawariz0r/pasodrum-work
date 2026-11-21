@@ -10,7 +10,7 @@ const path = (roomId: string) => `${BASE}/api/presence/${encodeURIComponent(room
 const newConn = () => randomBytes(16).toString('base64url');
 const auth = (token: string | null): Record<string, string> => (token ? { Authorization: `Bearer ${token}` } : {});
 
-type Stream = { status: number; next(match: (l: any) => boolean): Promise<any>; close(): void };
+type Stream = { status: number; seen: any[]; next(match: (l: any) => boolean): Promise<any>; close(): void };
 const open: Stream[] = [];
 
 async function stream(token: string | null, conn: string, roomId = general): Promise<Stream> {
@@ -38,6 +38,7 @@ async function stream(token: string | null, conn: string, roomId = general): Pro
   } else await res.body?.cancel();
   const s: Stream = {
     status: res.status,
+    seen,
     async next(match) {
       const until = Date.now() + 5000;
       for (;;) {
@@ -92,6 +93,25 @@ describe('presence relay', () => {
     assert.deepEqual(await c.next((l) => l.conn === bConn), { from: userId('jonas'), conn: bConn, data: { at: 3 } });
     b.close();
     assert.deepEqual(await a.next((l) => l.conn === bConn && l.gone), { from: userId('jonas'), conn: bConn, gone: true });
+  });
+
+  it('never loses the latest of a burst', async () => {
+    const a = await stream(ingrid, newConn());
+    const conn = newConn();
+    await stream(jonas, conn);
+    // 50 moves in a second, like a fast caret. A refused post is retried with the latest state, as the app does.
+    let last = 0;
+    for (let n = 1; n <= 50; n++) {
+      last = await post(jonas, { id: conn, data: { n } });
+      await new Promise((r) => setTimeout(r, 20));
+    }
+    for (let tries = 0; last === 429 && tries < 10; tries++) {
+      await new Promise((r) => setTimeout(r, 150));
+      last = await post(jonas, { id: conn, data: { n: 50 } });
+    }
+    assert.equal(last, 204);
+    await new Promise((r) => setTimeout(r, 300));
+    assert.deepEqual(a.seen.filter((l) => l.conn === conn).at(-1)?.data, { n: 50 });
   });
 
   it('only takes posts for an open stream of the same token', async () => {

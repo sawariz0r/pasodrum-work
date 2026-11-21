@@ -2,9 +2,10 @@
 // travels over the presence relay (matrix/docsBoards.ts bridges it). y-tiptap places a zero-width anchor where each
 // caret is; the visible caret and its name flag live in an overlay, so they can glide (120 ms) instead of jumping.
 import { CollaborationCaret } from '@tiptap/extension-collaboration-caret';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
+import { Plugin, PluginKey, type EditorState } from '@tiptap/pm/state';
 import type { EditorView } from '@tiptap/pm/view';
 import { Extension, type AnyExtension } from '@tiptap/react';
+import { yCursorPluginKey } from '@tiptap/y-tiptap';
 import type { PageSession, Person } from '../../matrix';
 import { avatarColor } from '../../ui';
 import s from './Carets.module.css';
@@ -27,7 +28,14 @@ function anchor(user: Record<string, unknown>): HTMLElement {
   return el;
 }
 
-function overlay(view: EditorView) {
+type Awareness = PageSession['awareness'];
+
+/** Someone still on the page with a caret: their tab hasn't left and hasn't cleared it. */
+const hasCaret = (awareness: Awareness, id: string) => awareness.getStates().get(Number(id))?.cursor != null;
+
+const caretCount = (state: EditorState) => yCursorPluginKey.getState(state)?.find(undefined, undefined, (spec) => spec.key != null).length ?? 0;
+
+function overlay(view: EditorView, awareness: Awareness) {
   const host = view.dom.parentElement;
   if (!host) return {};
   host.classList.add(s.host!);
@@ -37,6 +45,7 @@ function overlay(view: EditorView) {
   host.appendChild(layer);
   const carets = new Map<string, { el: HTMLElement; flag: HTMLElement; at: string; timer?: ReturnType<typeof setTimeout> }>();
   let frame = 0;
+  let redraw: ReturnType<typeof setTimeout> | undefined;
 
   const measure = () => {
     frame = 0;
@@ -45,9 +54,11 @@ function overlay(view: EditorView) {
     for (const a of view.dom.querySelectorAll<HTMLElement>(`.${s.anchor}`)) {
       const id = a.dataset.caret!;
       const r = a.getBoundingClientRect();
-      if (!r.height) continue;
       seen.add(id);
       let c = carets.get(id);
+      // Inside a block that's hidden (a translation shown instead): keep it, out of sight.
+      c?.el.classList.toggle(s.hidden!, !r.height);
+      if (!r.height) continue;
       if (!c) {
         const el = document.createElement('div');
         el.className = s.caret!;
@@ -70,8 +81,10 @@ function overlay(view: EditorView) {
       const el = c.el;
       c.timer = setTimeout(() => el.classList.add(s.still!), STILL_MS);
     }
+    // A caret whose spot I can't place yet (their text is still on its way, or my own edit just remapped it) stays where it
+    // last was; it goes only when they leave the page.
     for (const [id, c] of carets) {
-      if (seen.has(id)) continue;
+      if (seen.has(id) || hasCaret(awareness, id)) continue;
       clearTimeout(c.timer);
       c.el.remove();
       carets.delete(id);
@@ -84,9 +97,20 @@ function overlay(view: EditorView) {
   resize.observe(view.dom);
   schedule();
   return {
-    update: schedule,
+    update(_view: EditorView, prev: EditorState) {
+      schedule();
+      // The caret plugin drops every remote caret on a structural edit of mine until the next awareness change; ask it
+      // to place them again once the edit has reached the Yjs doc.
+      if (view.state.doc !== prev.doc && !caretCount(view.state) && caretCount(prev) && !redraw) {
+        redraw = setTimeout(() => {
+          redraw = undefined;
+          if (!view.isDestroyed) view.dispatch(view.state.tr.setMeta(yCursorPluginKey, { awarenessUpdated: true }));
+        });
+      }
+    },
     destroy() {
       cancelAnimationFrame(frame);
+      clearTimeout(redraw);
       resize.disconnect();
       for (const c of carets.values()) clearTimeout(c.timer);
       layer.remove();
@@ -95,12 +119,13 @@ function overlay(view: EditorView) {
   };
 }
 
-const CaretOverlay = Extension.create({
-  name: 'caretOverlay',
-  addProseMirrorPlugins() {
-    return [new Plugin({ key: new PluginKey('caretOverlay'), view: overlay })];
-  },
-});
+const caretOverlay = (awareness: Awareness) =>
+  Extension.create({
+    name: 'caretOverlay',
+    addProseMirrorPlugins() {
+      return [new Plugin({ key: new PluginKey('caretOverlay'), view: (view) => overlay(view, awareness) })];
+    },
+  });
 
 export function carets(session: PageSession, me: Person): AnyExtension[] {
   const user: CaretUser = { name: me.name, userId: me.id, id: String(session.awareness.clientID) };
@@ -114,6 +139,6 @@ export function carets(session: PageSession, me: Person): AnyExtension[] {
         style: `--caret: ${colorOf(u)}`,
       }),
     }),
-    CaretOverlay,
+    caretOverlay(session.awareness),
   ];
 }

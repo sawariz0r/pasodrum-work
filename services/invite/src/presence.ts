@@ -7,7 +7,8 @@ import type { Matrix } from './matrix.ts';
 const HEARTBEAT_MS = 20_000;
 const RECHECK_MS = 5 * 60_000;
 const MAX_BODY = 4 * 1024;
-const PER_SECOND = 4;
+const PER_SECOND = 12;
+const BURST = 24;
 const PER_USER = 8;
 const PER_ROOM = 64;
 // A reader this far behind is dropped rather than buffered for.
@@ -111,7 +112,7 @@ export function createPresence({ mx, now = Date.now }: { mx: Matrix; now?: () =>
     res.flushHeaders();
     // Some proxies hold the headers until the first body byte: send one at once instead of waiting for the heartbeat.
     res.write('\n');
-    const c: Conn = { id, roomId, userId, token, tokenHash, res, last: prev?.last, tokens: PER_SECOND, at: now(), timers: [] };
+    const c: Conn = { id, roomId, userId, token, tokenHash, res, last: prev?.last, tokens: BURST, at: now(), timers: [] };
     room.set(id, c);
     rooms.set(roomId, room);
     for (const o of room.values()) if (o !== c && o.last) write(c, o.last);
@@ -136,7 +137,7 @@ export function createPresence({ mx, now = Date.now }: { mx: Matrix; now?: () =>
     const c = typeof body.id === 'string' ? rooms.get(roomId)?.get(body.id) : undefined;
     if (!c || !timingSafeEqual(c.tokenHash, sha(token))) throw new Fail(403, 'not-allowed');
     const t = now();
-    c.tokens = Math.min(PER_SECOND, c.tokens + ((t - c.at) * PER_SECOND) / 1000);
+    c.tokens = Math.min(BURST, c.tokens + ((t - c.at) * PER_SECOND) / 1000);
     c.at = t;
     if (c.tokens < 1) throw new Fail(429, 'rate-limited');
     c.tokens -= 1;
@@ -170,7 +171,7 @@ export function createPresence({ mx, now = Date.now }: { mx: Matrix; now?: () =>
         }
         if (!res.writableEnded) res.end(JSON.stringify({ error: f.error }));
       }
-      // Posts arrive up to 4/s per tab: only failures are worth a line.
+      // Posts arrive up to ~11/s per tab: only failures are worth a line.
       if (status !== 204) console.log(`${req.method} presence ${status}`);
       return true;
     },

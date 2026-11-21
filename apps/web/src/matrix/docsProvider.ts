@@ -469,73 +469,120 @@ export async function openPageSession({ client, server, whenJoined }: ProviderCo
 const FROM_RELAY = 'presence';
 // The relay takes 4 KiB a post; a caret and selection are far smaller.
 const MAX_AWARENESS = 3500;
+/** A tab missing from the relay's list this long loses its caret: a stream reconnect (theirs or mine) comes back sooner. */
+const UNHEARD_MS = 5_000;
+
+type Cursor = { anchor: unknown; head: unknown };
+type Selection = Cursor & { time?: number };
+
+/** The caret plugin clears `cursor` on blur and keeps the spot in `lastSelection`: peers keep seeing it there until I leave. */
+function withCaret(state: Record<string, unknown>): Record<string, unknown> {
+  if (state.cursor != null) return state;
+  const last = Object.values((state.lastSelection ?? {}) as Record<string, Selection | undefined>)
+    .filter((sel): sel is Selection => !!sel && sel.anchor != null && sel.head != null)
+    .sort((a, b) => (b.time ?? 0) - (a.time ?? 0))[0];
+  return last ? { ...state, cursor: { anchor: last.anchor, head: last.head } } : state;
+}
 
 /**
  * DB-04: my awareness state (caret, selection, name and colour) goes up the presence relay as `{ y }`, everyone else's
- * comes down into the awareness. A tab that leaves, goes quiet or that I can't hear while offline loses its caret.
+ * comes down into the awareness. A caret stays until its tab leaves the page (sends null) or drops off the relay; the
+ * relay, not awareness's own 30 s timeout, decides that.
  */
-export function bridgeAwareness(session: Pick<PageSession, 'awareness' | 'getState' | 'subscribe'>, presence: Presence, meId: string): () => void {
+export function bridgeAwareness(session: Pick<PageSession, 'awareness'>, presence: Presence, meId: string): () => void {
   const { awareness } = session;
-  const byConn = new Map<string, { y: string; ids: Set<number> }>();
+  const byConn = new Map<string, { y: string; ids: Set<number>; unheard?: ReturnType<typeof setTimeout> }>();
   let applying: Set<number> | null = null;
+  let stopped = false;
 
   const sendMine = () => {
-    if (!awareness.getLocalState()) return presence.set(null);
-    const y = toBase64(encodeAwarenessUpdate(awareness, [awareness.clientID]));
+    const state = awareness.getLocalState();
+    if (!state) return presence.set(null);
+    const y = toBase64(encodeAwarenessUpdate(awareness, [awareness.clientID], new Map([[awareness.clientID, withCaret(state)]])));
     if (y.length <= MAX_AWARENESS) presence.set({ y });
+  };
+  const apply = (entry: { y: string; ids: Set<number> }, name: string, userId: string) => {
+    applying = entry.ids;
+    try {
+      applyAwarenessUpdate(awareness, fromBase64(entry.y), FROM_RELAY);
+    } catch {
+      // Not an awareness update: ignore that tab.
+    } finally {
+      applying = null;
+    }
+    // Who it is comes from the relay (server-stamped), not from the tab's own payload.
+    const stamped = [...entry.ids].filter((id) => {
+      const st = awareness.getStates().get(id);
+      if (st) st.user = { ...(st.user as object), id: String(id), name, userId };
+      return !!st;
+    });
+    if (stamped.length) awareness.emit('change', [{ added: [], updated: stamped, removed: [] }, FROM_RELAY]);
+  };
+  /** Forgets the clocks too, so the same line heard again (a relay replay after a reconnect) shows the caret again. */
+  const forget = (ids: number[]) => {
+    const remote = ids.filter((id) => id !== awareness.clientID);
+    if (remote.length) removeAwarenessStates(awareness, remote, FROM_RELAY);
+    for (const id of remote) awareness.meta.delete(id);
+  };
+  const drop = (conn: string) => {
+    const entry = byConn.get(conn);
+    if (!entry) return;
+    clearTimeout(entry.unheard);
+    byConn.delete(conn);
+    forget([...entry.ids]);
   };
   const onUpdate = ({ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] }, origin: unknown) => {
     if (origin === FROM_RELAY) {
       for (const id of [...added, ...updated]) if (id !== awareness.clientID) applying?.add(id);
       return;
     }
+    // Awareness drops states not renewed for 30 s, and a background tab renews late: a tab still on the relay keeps its caret.
+    if (origin === 'timeout') {
+      queueMicrotask(() => {
+        if (stopped) return;
+        for (const p of presence.peers()) {
+          const entry = byConn.get(p.conn);
+          if (!entry || !removed.some((id) => entry.ids.has(id))) continue;
+          for (const id of removed) if (entry.ids.has(id)) awareness.meta.delete(id);
+          apply(entry, p.user.name, p.user.id);
+        }
+      });
+      return;
+    }
     if ([...added, ...updated, ...removed].includes(awareness.clientID)) sendMine();
-  };
-  const drop = (conn: string) => {
-    const ids = [...(byConn.get(conn)?.ids ?? [])].filter((id) => id !== awareness.clientID);
-    byConn.delete(conn);
-    if (ids.length) removeAwarenessStates(awareness, ids, FROM_RELAY);
   };
   const sync = () => {
     const heard = new Set<string>();
-    if (!session.getState().offline) {
-      for (const p of presence.peers()) {
-        const y = p.user.id === meId ? undefined : (p.data as { y?: unknown } | null)?.y;
-        if (typeof y !== 'string') continue;
-        heard.add(p.conn);
-        const entry = byConn.get(p.conn) ?? { y: '', ids: new Set<number>() };
-        if (entry.y === y) continue;
-        entry.y = y;
-        byConn.set(p.conn, entry);
-        applying = entry.ids;
-        try {
-          applyAwarenessUpdate(awareness, fromBase64(y), FROM_RELAY);
-        } catch {
-          // Not an awareness update: ignore that tab.
-        } finally {
-          applying = null;
-        }
-        // Who it is comes from the relay (server-stamped), not from the tab's own payload.
-        const stamped = [...entry.ids].filter((id) => {
-          const st = awareness.getStates().get(id);
-          if (st) st.user = { ...(st.user as object), id: String(id), name: p.user.name, userId: p.user.id };
-          return !!st;
-        });
-        if (stamped.length) awareness.emit('change', [{ added: [], updated: stamped, removed: [] }, FROM_RELAY]);
-      }
+    for (const p of presence.peers()) {
+      if (p.user.id === meId) continue;
+      const y = (p.data as { y?: unknown } | null)?.y;
+      // A tab that left the page says so with null: its caret goes now.
+      if (typeof y !== 'string') continue;
+      heard.add(p.conn);
+      const entry = byConn.get(p.conn) ?? { y: '', ids: new Set<number>() };
+      clearTimeout(entry.unheard);
+      entry.unheard = undefined;
+      byConn.set(p.conn, entry);
+      if (entry.y === y) continue;
+      entry.y = y;
+      apply(entry, p.user.name, p.user.id);
     }
-    for (const conn of [...byConn.keys()]) if (!heard.has(conn)) drop(conn);
+    const listed = new Set(presence.peers().map((p) => p.conn));
+    for (const [conn, entry] of byConn) {
+      if (heard.has(conn)) continue;
+      if (!listed.has(conn)) entry.unheard ??= setTimeout(() => drop(conn), UNHEARD_MS);
+      else drop(conn);
+    }
   };
 
   awareness.on('update', onUpdate);
   const offPeers = presence.subscribe(sync);
-  const offSession = session.subscribe(sync);
   sendMine();
   sync();
   return () => {
+    stopped = true;
     awareness.off('update', onUpdate);
     offPeers();
-    offSession();
     for (const conn of [...byConn.keys()]) drop(conn);
     presence.set(null);
   };
