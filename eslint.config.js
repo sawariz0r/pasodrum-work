@@ -6,7 +6,7 @@ const sdk = ['matrix-js-sdk', 'matrix-js-sdk/*', '@matrix-org/*'];
 const features = ['**/features/*/**', '!**/features/index'];
 
 export default tseslint.config(
-  { ignores: ['**/dist/**', '**/node_modules/**', 'dev/data/**', '.claude/**'] },
+  { ignores: ['**/dist/**', '**/node_modules/**', 'dev/data/**', '.claude/**', 'apps/desktop-*/**'] },
   ...tseslint.configs.recommended,
   {
     files: [`${web}/**/*.{ts,tsx}`],

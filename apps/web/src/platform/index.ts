@@ -1,3 +1,4 @@
+import { createDesktopPlatform } from './desktop';
 import { createWebPlatform } from './web';
 
 export interface Platform {
@@ -28,4 +29,5 @@ export interface TabChannel {
   close(): void;
 }
 
-export const platform: Platform = createWebPlatform();
+const shell = typeof window === 'undefined' ? undefined : window.pasodrumShell;
+export const platform: Platform = shell ? createDesktopPlatform(shell) : createWebPlatform();
