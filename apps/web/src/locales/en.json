@@ -157,7 +157,13 @@
     "play": "Play",
     "pause": "Pause",
     "downloadName": "Download {{name}}",
-    "replyInThread": "Reply in thread"
+    "replyInThread": "Reply in thread",
+    "renamedByMe": "You renamed #{{from}} to #{{to}}",
+    "renamedBy": "{{name}} renamed #{{from}} to #{{to}}",
+    "archivedByMe": "You archived the channel",
+    "archivedBy": "{{name}} archived the channel",
+    "unarchivedByMe": "You unarchived the channel",
+    "unarchivedBy": "{{name}} unarchived the channel"
   },
   "composer": {
     "label": "Message {{channel}}",
@@ -399,7 +405,16 @@
     "inSpace": "Joined",
     "added": "Added",
     "add": "Add",
-    "addName": "Add {{name}}"
+    "addName": "Add {{name}}",
+    "retry": "Retry",
+    "renameFailed": "Couldn’t rename #{{name}}",
+    "archive": "Archive channel",
+    "unarchiveChannel": "Unarchive channel",
+    "archiveTitle": "Archive #{{name}}?",
+    "archiveButton": "Archive",
+    "archived": "#{{name}} is archived",
+    "unarchive": "Unarchive",
+    "archivedGroup": "Archived"
   },
   "spaces": {
     "newClientSpace": "New client space",

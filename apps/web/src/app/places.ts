@@ -7,9 +7,9 @@ export function channelPath(spaceId: string, channelId: string) {
 
 type Places = { spaces: Space[]; channels: Record<string, Channel[]> };
 
-/** The last channel opened in this space, else its first channel. */
+/** The last channel opened in this space, else its first channel; never an archived one (E2). */
 export function spaceHome({ channels }: Places, spaceId: string): Channel | undefined {
-  const list = channels[spaceId] ?? [];
+  const list = (channels[spaceId] ?? []).filter((c) => !c.archived);
   const last = lastPlace().channels[spaceId];
   return list.find((c) => c.id === last) ?? list[0];
 }

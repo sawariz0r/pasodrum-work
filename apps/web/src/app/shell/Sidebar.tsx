@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useWorkspace, type Channel, type Dm, type Space } from '../../matrix';
@@ -23,7 +23,9 @@ export type SidebarActive = { channelId: string } | { dmId: string } | { view: '
 export function Sidebar({ space, active }: { space: Space; active?: SidebarActive }) {
   const { t } = useTranslation();
   const newMessage = useNewMessage();
-  const channels = useWorkspace((x) => x.channels[space.id] ?? noChannels);
+  const all = useWorkspace((x) => x.channels[space.id] ?? noChannels);
+  // E2: archived channels leave the sidebar (nobody is removed); Browse lists them.
+  const channels = useMemo(() => all.filter((c) => !c.archived), [all]);
   const allDms = useWorkspace((x) => x.dms);
   const threads = useWorkspace((x) => x.threads);
   const drafts = useSpaceDrafts(space.id, useDrafts());

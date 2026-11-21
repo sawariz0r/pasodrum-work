@@ -64,7 +64,7 @@ export function Rail({ section, activeSpaceId, onSignOut }: { section: Section; 
 function SpaceTile({ space, active, external }: { space: Space; active: boolean; external: boolean }) {
   const { t } = useTranslation();
   const home = useWorkspace((x) => spaceHome(x, space.id)?.id);
-  const attention = useWorkspace((x) => !active && (x.channels[space.id] ?? []).some((c) => c.unread > 0 || c.mentions > 0));
+  const attention = useWorkspace((x) => !active && (x.channels[space.id] ?? []).some((c) => !c.archived && (c.unread > 0 || c.mentions > 0)));
   const isWorkspace = space.kind === 'workspace';
   const style = { '--tile-bg': spaceColour(space) } as CSSProperties;
   // ClientSpaceCreated: a space just made here pops in once.

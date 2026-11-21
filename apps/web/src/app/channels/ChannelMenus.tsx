@@ -19,10 +19,11 @@ export function browsePath(spaceId: string) {
   return `/w/${encodeURIComponent(spaceId)}/channels`;
 }
 
-/** The channel the row under the channel list adds to: the one you're in, else the space's home channel. */
+/** The channel the row under the channel list adds to: the one you're in (unless archived), else the space's home channel. */
 function useAddTarget(space: Space, channelId?: string): string | undefined {
   const home = useWorkspace((x) => spaceHome(x, space.id)?.id);
-  return channelId ?? home;
+  const current = useWorkspace((x) => (channelId && findChannel(x, channelId)?.archived ? undefined : channelId));
+  return current ?? home;
 }
 
 /**
@@ -142,9 +143,10 @@ export function EmptyChannelAddPeople({ channelId }: { channelId: string }) {
   const { t } = useTranslation();
   const channels = useChannels();
   const spaceId = useWorkspace((x) => findChannel(x, channelId)?.spaceId);
+  const archived = useWorkspace((x) => !!findChannel(x, channelId)?.archived);
   const space = useSpace(spaceId);
   const role = useRole(spaceId);
-  if (!addRoles(space, role).length || space?.archived) return null;
+  if (!addRoles(space, role).length || space?.archived || archived) return null;
   return (
     <Button className={s.emptyAdd} icon={<UserPlusIcon size={16} strokeWidth={2} />} onClick={() => channels.addPeople(channelId)}>
       {t('common.addPeople')}
@@ -160,7 +162,7 @@ export function ChannelHeaderBar({ channel }: { channel: Channel }) {
   const space = useWorkspace((x) => x.spaces.find((sp) => sp.id === channel.spaceId));
   const role = useRole(channel.spaceId);
   const faces = useMemo(() => store.members(channel.id).slice(0, 3), [store, channel.id, channel.memberCount]); // eslint-disable-line react-hooks/exhaustive-deps
-  const mayAdd = addRoles(space, role).length > 0 && !space?.archived;
+  const mayAdd = addRoles(space, role).length > 0 && !space?.archived && !channel.archived;
   const outside = useOutside(channel.id);
   return (
     <>

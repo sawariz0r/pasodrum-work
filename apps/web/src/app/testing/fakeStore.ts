@@ -422,7 +422,10 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     me: opts.me ?? people.so!,
     connection: opts.connection ?? 'online',
     spaces,
-    channels,
+    // E2: only Owners and Admins manage channels they didn't make.
+    channels: Object.fromEntries(
+      Object.entries(channels).map(([k, v]) => [k, opts.roles?.[k] && opts.roles[k] !== 'owner' && opts.roles[k] !== 'admin' ? v.map((c) => ({ ...c, manageable: false })) : v]),
+    ),
     timelines: {},
     sessionExpired: false,
     typing: { '!eng': [people.jb!] },
@@ -704,12 +707,12 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       if (names.includes(name)) throw new Error('taken');
       const id = `!ch-${localId++}`;
       memberIds[id] = [snapshot.me.id];
-      set({ channels: { ...snapshot.channels, [spaceId]: [...(snapshot.channels[spaceId] ?? []), { id, spaceId, name, topic, private: isPrivate, unread: 0, mentions: 0, memberCount: 1 }].sort((a, b) => a.name.localeCompare(b.name)) } });
+      set({ channels: { ...snapshot.channels, [spaceId]: [...(snapshot.channels[spaceId] ?? []), { id, spaceId, name, topic, private: isPrivate, unread: 0, mentions: 0, memberCount: 1, manageable: true }].sort((a, b) => a.name.localeCompare(b.name)) } });
       return id;
     },
     browseChannels: (spaceId) =>
       Promise.resolve([
-        ...(snapshot.channels[spaceId] ?? []).map((c) => ({ id: c.id, spaceId, name: c.name, topic: c.topic, private: c.private, memberCount: c.memberCount, joined: true })),
+        ...(snapshot.channels[spaceId] ?? []).map((c) => ({ id: c.id, spaceId, name: c.name, topic: c.topic, private: c.private, memberCount: c.memberCount, joined: true, ...(c.archived ? { archived: true } : {}) })),
         ...(browse[spaceId] ?? []).map((c) => ({ ...c, joined: false })),
       ]),
     async joinChannel(channelId) {

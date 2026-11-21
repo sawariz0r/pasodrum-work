@@ -5,11 +5,12 @@ import { AlertIcon } from '../../ui/icons';
 import { MessageEditor } from '../composer/MessageEditor';
 import { useProfileCard } from '../people/ProfileCardContext';
 import { formatList, formatTime } from '../format';
-import { BoxIcon, TrashIcon, UserPlusIcon } from '../icons';
+import { BoxIcon, EditIcon, TrashIcon, UserPlusIcon } from '../icons';
+import { ArchiveIcon } from '../channels/icons';
 import { useTimeline } from './context';
 import { AudioPlayer, FileCard, ImageGrid, ImageSingle, VideoPlayer } from './Media';
 import { MessageActions } from './MessageActions';
-import { useArchivedSpace } from './ArchivedBar';
+import { useArchived } from './ArchivedBar';
 import { Reactions } from './Reactions';
 import { PlainText, RichText } from './RichText';
 import r from './Rich.module.css';
@@ -193,11 +194,26 @@ function DeletedRow({ m }: { m: Message }) {
   );
 }
 
-function SystemRow({ m }: { m: Message }) {
+function SystemRow({ m, meId }: { m: Message; meId: string }) {
   const { t } = useTranslation();
   const names = (list: { name: string }[]) => formatList(list.map((p) => t('timeline.person', { name: p.name })));
   const joined = m.system?.joined ?? [];
   const left = m.system?.left ?? [];
+  const renamed = m.system?.renamed;
+  const archived = m.system?.archived;
+  if (renamed || archived) {
+    const by = (renamed ?? archived)!.by;
+    const me = by.id === meId;
+    const text = renamed
+      ? t(me ? 'timeline.renamedByMe' : 'timeline.renamedBy', { name: by.name, from: renamed.from, to: renamed.to })
+      : t(`timeline.${archived!.archived ? 'archived' : 'unarchived'}${me ? 'ByMe' : 'By'}`, { name: by.name });
+    return (
+      <div className={s.systemRow} data-message-id={m.id} data-ids={m.id}>
+        <span className={s.systemIcon}>{renamed ? <EditIcon /> : <ArchiveIcon size={16} />}</span>
+        <span>{text}</span>
+      </div>
+    );
+  }
   return (
     <div className={s.systemRow} data-message-id={m.id} data-ids={m.id}>
       <span className={s.systemIcon}>
@@ -231,11 +247,11 @@ export const MessageRow = memo(function MessageRow({
   const tl = useTimeline();
   const profile = useProfileCard();
   const [force, setForce] = useState(false);
-  const archived = useArchivedSpace(tl.channelId);
+  const archived = useArchived(tl.channelId);
   // M6: a message whose key arrives later fades in where it is.
   const [wasUnavailable] = useState(m.kind === 'undecryptable');
   if (m.kind === 'deleted') return <DeletedRow m={m} />;
-  if (m.kind === 'system') return <SystemRow m={m} />;
+  if (m.kind === 'system') return <SystemRow m={m} meId={meId} />;
 
   const sending = m.status === 'sending';
   const failed = m.status === 'failed';

@@ -94,6 +94,14 @@ export const ArchiveIcon = icon(
   </>,
   { size: 17, strokeWidth: 1.9 },
 );
+export const UnarchiveIcon = icon(
+  <>
+    <rect x="3" y="4" width="18" height="4" rx="1" />
+    <path d="M5 8v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8" />
+    <path d="m9.5 14.5 2.5-2.5 2.5 2.5M12 12v5" />
+  </>,
+  { size: 17, strokeWidth: 2 },
+);
 export const GearIcon = icon(
   <>
     <circle cx="12" cy="12" r="3" />

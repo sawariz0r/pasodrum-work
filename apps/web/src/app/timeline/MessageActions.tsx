@@ -8,7 +8,7 @@ import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '../../u
 import { useComposer } from '../composer/context';
 import { CopyIcon, EditIcon, LinkIcon, MoreIcon, ReplyIcon, SmileIcon, TrashIcon } from '../icons';
 import { ThreadIcon } from '../thread/icons';
-import { useArchivedSpace } from './ArchivedBar';
+import { useArchived } from './ArchivedBar';
 import { useTimeline } from './context';
 import { ReactionPicker } from './ReactionPicker';
 import s from './Timeline.module.css';
@@ -45,8 +45,8 @@ export function MessageActions({
   const { messageActions } = useRegistry();
   const composer = useComposer();
   const tl = useTimeline();
-  // Archived client space: read-only, so only the actions that don't write stay (thread, copy).
-  const writable = !useArchivedSpace(tl.channelId);
+  // Archived client space or channel: read-only, so only the actions that don't write stay (thread, copy).
+  const writable = !useArchived(tl.channelId);
   // The bar goes away while editing; a menu closed by unmounting never reports it.
   useEffect(() => () => onOpenChange(false), [onOpenChange]);
   const react = (key: string) => {

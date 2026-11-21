@@ -12,8 +12,8 @@ import { roleEvents, useProfileCard } from '../people/ProfileCardContext';
 import { channelPath, dmPath, spaceHome } from '../places';
 import { BubbleIcon, MailIcon, SearchIcon } from '../shell/icons';
 import s from './Channels.module.css';
-import { LeaveIcon, LinkIcon, PendingIcon, UserPlusIcon, XIcon } from './icons';
-import { addRoles, canManage } from './roles';
+import { AlertIcon, ArchiveIcon, CheckIcon, LeaveIcon, LinkIcon, PendingIcon, UnarchiveIcon, UserPlusIcon, XIcon } from './icons';
+import { addRoles, canManage, channelSlug } from './roles';
 import { channelLink, copyText, isInviteFor, useChannel, useCopy, useRole, useSpace } from './shared';
 
 export type DetailsTab = 'about' | 'members' | 'settings';
@@ -25,6 +25,7 @@ export function ChannelDetailsDialog({ open, channelId, tab: initialTab, onClose
   const channel = useChannel(channelId);
   const [tab, setTab] = useState(initialTab);
   const [leaving, setLeaving] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const store = useStore();
   const navigate = useNavigate();
 
@@ -43,7 +44,7 @@ export function ChannelDetailsDialog({ open, channelId, tab: initialTab, onClose
   return (
     <>
       <Dialog
-        open={open && !leaving}
+        open={open && !leaving && !archiving}
         onOpenChange={(o) => !o && onClose()}
         title={
           <span className={s.detailsTitle}>
@@ -68,10 +69,18 @@ export function ChannelDetailsDialog({ open, channelId, tab: initialTab, onClose
         <div key={tab} role="tabpanel" aria-labelledby={`details-${tab}`} className={s.panel}>
           {tab === 'about' && <About channel={channel} onLeave={() => (channel.private ? setLeaving(true) : void leave().catch(() => {}))} />}
           {tab === 'members' && <Members channel={channel} onAddPeople={onAddPeople} onLeave={onClose} />}
-          {tab === 'settings' && <Settings channel={channel} />}
+          {tab === 'settings' && <Settings channel={channel} onArchive={() => setArchiving(true)} />}
         </div>
       </Dialog>
       {leaving && <LeaveDialog open={open} channel={channel} onCancel={onClose} onLeave={() => void leave().catch(() => {})} />}
+      {archiving && (
+        <ArchiveDialog
+          open={open}
+          channel={channel}
+          onCancel={() => setArchiving(false)}
+          onArchive={() => void store.setChannelArchived(channel.id, true).then(onClose, () => setArchiving(false))}
+        />
+      )}
     </>
   );
 }
@@ -236,7 +245,7 @@ function Members({ channel, onAddPeople, onLeave }: { channel: Channel; onAddPeo
           <input type="search" aria-label={t('channels.findMembers')} placeholder={t('channels.findMembers')} value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
       </div>
-      {mayAdd && !space?.archived && (
+      {mayAdd && !space?.archived && !channel.archived && (
         <button type="button" className={s.addPeopleRow} onClick={onAddPeople}>
           <span className={s.addPeopleIcon}>
             <UserPlusIcon size={17} />
@@ -334,7 +343,7 @@ function RowMenu({ label, children, up }: { label: string; children: ReactNode; 
   );
 }
 
-function Settings({ channel }: { channel: Channel }) {
+function Settings({ channel, onArchive }: { channel: Channel; onArchive: () => void }) {
   const { t } = useTranslation();
   const store = useStore();
   const [level, setLevel] = useState<NotifyLevel>(() => store.notifyLevel(channel.id));
@@ -350,6 +359,7 @@ function Settings({ channel }: { channel: Channel }) {
   };
   return (
     <div className={s.settingsPanel}>
+      {channel.manageable && <NameField channel={channel} />}
       <div>
         <div id="channel-notify" className={s.fieldLabel}>
           {t('channels.notifications')}
@@ -362,7 +372,167 @@ function Settings({ channel }: { channel: Channel }) {
           ))}
         </div>
       </div>
+      {channel.manageable && (
+        <div className={`${s.box} ${s.actions}`}>
+          {channel.archived ? (
+            <button type="button" className={s.action} onClick={() => void store.setChannelArchived(channel.id, false).catch(() => {})}>
+              <span>
+                <UnarchiveIcon />
+              </span>
+              {t('channels.unarchiveChannel')}
+            </button>
+          ) : (
+            <button type="button" className={`${s.action} ${s.danger}`} onClick={onArchive}>
+              <span>
+                <ArchiveIcon />
+              </span>
+              {t('channels.archive')}
+            </button>
+          )}
+        </div>
+      )}
     </div>
+  );
+}
+
+/** RenameChannel: rules as New channel; Save sits in the field once the name differs, Enter saves, Escape puts the old name back. */
+function NameField({ channel }: { channel: Channel }) {
+  const { t } = useTranslation();
+  const store = useStore();
+  const joined = useWorkspace((x) => x.channels[channel.spaceId]);
+  const [name, setName] = useState(channel.name);
+  const [known, setKnown] = useState<string[]>([]);
+  const [rejected, setRejected] = useState<string[]>([]);
+  const [failed, setFailed] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [was, setWas] = useState(channel.name);
+
+  // Renamed elsewhere (or just now): the field follows unless I'm mid-edit.
+  if (was !== channel.name) {
+    if (name.trim() === was || name.trim() === channel.name) setName(channel.name);
+    setWas(channel.name);
+  }
+
+  useEffect(() => {
+    let live = true;
+    store.browseChannels(channel.spaceId).then(
+      (list) => live && setKnown(list.filter((c) => c.id !== channel.id).map((c) => c.name)),
+      () => {},
+    );
+    return () => {
+      live = false;
+    };
+  }, [store, channel.spaceId, channel.id]);
+
+  const clean = name.trim().replace(/-+$/, '');
+  const changed = !!clean && clean !== channel.name;
+  const taken = changed && [...(joined ?? []).filter((c) => c.id !== channel.id).map((c) => c.name), ...known, ...rejected].some((n) => n.toLowerCase() === clean);
+  const error = changed && !taken && failed === clean;
+
+  const save = async () => {
+    if (!changed || taken || busy) return;
+    setBusy(true);
+    setFailed(null);
+    try {
+      await store.renameChannel(channel.id, clean);
+      setName(clean);
+      setSaved(true);
+    } catch (e) {
+      if (e instanceof Error && e.message === 'name-taken') setRejected((r) => [...r, clean]);
+      else setFailed(clean);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div>
+      <label htmlFor="channel-name" className={s.fieldLabel}>
+        {t('channels.name')}
+      </label>
+      <div className={[s.rnField, changed && s.rnChanged, taken && s.invalid].filter(Boolean).join(' ')}>
+        <span className={s.nameIcon}>{channel.private ? <LockIcon size={16} strokeWidth={2.1} /> : <HashIcon size={16} strokeWidth={2.1} />}</span>
+        <input
+          id="channel-name"
+          className={s.spNameInput}
+          autoComplete="off"
+          maxLength={80}
+          aria-invalid={taken || undefined}
+          aria-describedby="channel-name-msg"
+          value={name}
+          onChange={(e) => {
+            setName(channelSlug(e.target.value));
+            setSaved(false);
+          }}
+          onKeyDown={(e) => {
+            if (isImeEnter(e)) {
+              e.preventDefault();
+              void save();
+            } else if (e.key === 'Escape' && changed) {
+              e.preventDefault();
+              e.stopPropagation();
+              setName(channel.name);
+            }
+          }}
+        />
+        {changed && !taken && (
+          <Button className={s.rnSave} disabled={busy} onClick={() => void save()}>
+            {error ? t('channels.retry') : t('channels.save')}
+          </Button>
+        )}
+        {saved && !changed && (
+          <span className={s.rnDone}>
+            <CheckIcon size={17} />
+          </span>
+        )}
+      </div>
+      {(taken || error) && (
+        <p id="channel-name-msg" role="alert" className={s.error}>
+          <AlertIcon />
+          {taken ? t('channels.taken', { name: clean }) : t('channels.renameFailed', { name: channel.name })}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ArchiveDialog({ open, channel, onCancel, onArchive }: { open: boolean; channel: Channel; onCancel: () => void; onArchive: () => void }) {
+  const { t } = useTranslation();
+  const store = useStore();
+  const faces = store.members(channel.id).slice(0, 4);
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => !o && onCancel()}
+      role="alertdialog"
+      width={440}
+      top={168}
+      title={t('channels.archiveTitle', { name: channel.name })}
+      closeLabel={t('people.close')}
+      bodyClassName={s.spConfirmBody}
+      footer={
+        <>
+          <span className={s.spacer} />
+          <Button variant="secondary" onClick={onCancel}>
+            {t('people.cancel')}
+          </Button>
+          <Button variant="danger" onClick={onArchive}>
+            {t('channels.archiveButton')}
+          </Button>
+        </>
+      }
+    >
+      <div className={`${s.spCard} ${s.spCardRow}`}>
+        <span className={s.browseIcon}>{channel.private ? <LockIcon size={17} strokeWidth={2} /> : <HashIcon size={17} strokeWidth={2} />}</span>
+        <span className={s.spCardName}>{channel.name}</span>
+        <span className={s.spPile}>
+          {faces.map((p) => (
+            <Face key={p.id} person={p} size={26} className={s.spPileFace} />
+          ))}
+        </span>
+      </div>
+    </Dialog>
   );
 }
 

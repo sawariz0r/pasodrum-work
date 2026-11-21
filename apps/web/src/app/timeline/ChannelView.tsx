@@ -8,7 +8,7 @@ import { useDmName } from '../people/names';
 import { ConfirmGate, KeyGate, useGate } from '../security/Gate';
 import { ThreadPanel } from '../thread/ThreadPanel';
 import { useOpenThread, useThreadNav } from '../thread/useThread';
-import { ArchivedBar, useArchivedSpace } from './ArchivedBar';
+import { ArchivedBar, useArchived } from './ArchivedBar';
 import { Composer } from './Composer';
 import { Timeline, TimelineSkeleton } from './Timeline';
 import { TypingIndicator } from './TypingIndicator';
@@ -43,7 +43,7 @@ function Conversation({ channelId, fadeIn }: { channelId: string; fadeIn: boolea
   const dmName = useDmName();
   const name = channelName ?? (dm ? dmName(dm) : '');
   const meId = useWorkspace((snap) => snap.me.id);
-  const archived = useArchivedSpace(channelId);
+  const archived = useArchived(channelId);
   const [unreadAtOpen] = useState(() => {
     const snap = store.getSnapshot();
     return findChannel(snap, channelId)?.unread ?? snap.dms.find((d) => d.id === channelId)?.unread ?? 0;
@@ -93,7 +93,7 @@ function Conversation({ channelId, fadeIn }: { channelId: string; fadeIn: boolea
           <TypingIndicator channelId={channelId} />
         </div>
         <div className={s.dockSlot} ref={dockRef}>
-          {archived ? <ArchivedBar space={archived} /> : <Composer channelId={channelId} channelName={name} isDm={!!dm} />}
+          {archived ? <ArchivedBar archived={archived} /> : <Composer channelId={channelId} channelName={name} isDm={!!dm} />}
         </div>
       </div>
       {threadId && row !== undefined && (

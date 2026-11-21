@@ -6,7 +6,7 @@ import { useStore, useWorkspace, type Message, type Timeline as TimelineData, ty
 import { IconButton } from '../../ui';
 import { CloseIcon } from '../../ui/icons';
 import { Composer } from '../composer/Composer';
-import { ArchivedBar, useArchivedSpace } from '../timeline/ArchivedBar';
+import { ArchivedBar, useArchived } from '../timeline/ArchivedBar';
 import { ComposerProvider } from '../composer/context';
 import { Timeline, TimelineSkeleton, type ThreadMode } from '../timeline/Timeline';
 import tl from '../timeline/Timeline.module.css';
@@ -70,7 +70,7 @@ function ThreadBody({ channelId, channelName, rootId }: Omit<Props, 'onClose'>) 
   const store = useStore();
   const raw = useWorkspace((snap) => snap.threadTimelines[rootId]) as ThreadTimeline | undefined;
   const root = useWorkspace((snap) => findRoot(snap, channelId, rootId));
-  const archived = useArchivedSpace(channelId);
+  const archived = useArchived(channelId);
   const meId = useWorkspace((snap) => snap.me.id);
 
   useEffect(() => {
@@ -105,7 +105,7 @@ function ThreadBody({ channelId, channelName, rootId }: Omit<Props, 'onClose'>) 
     <div className={tl.view} style={{ '--dock-h': `${dockHeight}px` } as CSSProperties}>
       <Timeline channelId={channelId} channelName={channelName} timeline={timeline} meId={meId} thread={thread} />
       <div className={tl.dockSlot} ref={dockRef}>
-        {archived ? <ArchivedBar space={archived} /> : <Composer channelId={channelId} channelName={channelName} threadRootId={rootId} />}
+        {archived ? <ArchivedBar archived={archived} /> : <Composer channelId={channelId} channelName={channelName} threadRootId={rootId} />}
       </div>
     </div>
   );

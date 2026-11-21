@@ -322,3 +322,33 @@ describe('add people', () => {
     expect(JSON.stringify(en.channels)).not.toMatch(/invit/i);
   });
 });
+
+describe('rename and archive (E2): who sees them', () => {
+  const settings = async (name: string) => {
+    fireEvent.click(within(header()).getByRole('button', { name }));
+    fireEvent.click(await within(dialog()).findByRole('tab', { name: 'Settings' }));
+    return within(screen.getByRole('tabpanel'));
+  };
+
+  it('Owners get Name and Archive channel; #general never does', async () => {
+    renderApp('/w/!pasodrum/c/!design');
+    const panel = await settings('design');
+    expect(panel.getByRole('textbox', { name: 'Name' })).toBeTruthy();
+    expect(panel.getByRole('button', { name: 'Archive channel' })).toBeTruthy();
+    cleanup();
+
+    renderApp('/w/!pasodrum/c/!general');
+    const general = await settings('general');
+    expect(general.queryByRole('textbox', { name: 'Name' })).toBeNull();
+    expect(general.queryByRole('button', { name: 'Archive channel' })).toBeNull();
+    expect(general.getByRole('radiogroup', { name: 'Notifications' })).toBeTruthy();
+  });
+
+  it('Members see Notifications only', async () => {
+    renderApp('/w/!pasodrum/c/!design', { '!pasodrum': 'member', '!nordlys': 'member' });
+    const panel = await settings('design');
+    expect(panel.queryByRole('textbox', { name: 'Name' })).toBeNull();
+    expect(panel.queryByRole('button', { name: 'Archive channel' })).toBeNull();
+    expect(panel.getByRole('radiogroup', { name: 'Notifications' })).toBeTruthy();
+  });
+});

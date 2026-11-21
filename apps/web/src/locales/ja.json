@@ -155,7 +155,13 @@
     "play": "再生",
     "pause": "一時停止",
     "downloadName": "{{name}} をダウンロード",
-    "replyInThread": "スレッドで返信"
+    "replyInThread": "スレッドで返信",
+    "renamedByMe": "#{{from}} の名前を #{{to}} に変更しました",
+    "renamedBy": "{{name}}さんが #{{from}} の名前を #{{to}} に変更しました",
+    "archivedByMe": "チャンネルをアーカイブしました",
+    "archivedBy": "{{name}}さんがチャンネルをアーカイブしました",
+    "unarchivedByMe": "チャンネルのアーカイブを解除しました",
+    "unarchivedBy": "{{name}}さんがチャンネルのアーカイブを解除しました"
   },
   "composer": {
     "label": "{{channel}} へのメッセージ",
@@ -394,7 +400,16 @@
     "inSpace": "参加済み",
     "added": "追加済み",
     "add": "追加",
-    "addName": "{{name}} を追加"
+    "addName": "{{name}} を追加",
+    "retry": "再試行",
+    "renameFailed": "#{{name}} の名前を変更できませんでした",
+    "archive": "チャンネルをアーカイブ",
+    "unarchiveChannel": "チャンネルのアーカイブを解除",
+    "archiveTitle": "#{{name}} をアーカイブしますか？",
+    "archiveButton": "アーカイブ",
+    "archived": "#{{name}} はアーカイブ済みです",
+    "unarchive": "アーカイブを解除",
+    "archivedGroup": "アーカイブ済み"
   },
   "spaces": {
     "newClientSpace": "新しいクライアントスペース",

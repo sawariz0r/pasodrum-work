@@ -1,21 +1,26 @@
-// Browse channels (BrowseChannels): every channel in the space you're in; private ones only if the server shows them.
+// Browse channels (BrowseChannels, BrowseArchived): every channel in the space you're in; private ones only if the server shows them.
+// Archived channels come last under Archived; their row opens the channel read-only.
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
-import { useStore, type JoinableChannel, type Space } from '../../matrix';
+import { Link, useNavigate } from 'react-router';
+import { useStore, useWorkspace, type Channel, type JoinableChannel, type Space } from '../../matrix';
 import { HashIcon, LockIcon } from '../icons';
 import { channelPath } from '../places';
 import { DrawerToggle } from '../shell/Drawer';
 import { SearchIcon } from '../shell/icons';
 import s from './Channels.module.css';
 import { useChannels } from './ChannelsProvider';
-import { CheckIcon, PlusIcon, UsersIcon } from './icons';
+import { ArchiveIcon, CheckIcon, PlusIcon, UsersIcon } from './icons';
 import { canCreateIn } from './roles';
 import { useRole } from './shared';
+
+const noChannels: Channel[] = [];
 
 export function BrowseChannels({ space }: { space: Space }) {
   const { t } = useTranslation();
   const store = useStore();
+  const navigate = useNavigate();
+  const mine = useWorkspace((x) => x.channels[space.id] ?? noChannels);
   const channels = useChannels();
   const role = useRole(space.id);
   const [list, setList] = useState<JoinableChannel[]>([]);
@@ -45,8 +50,25 @@ export function BrowseChannels({ space }: { space: Space }) {
     }
   };
 
+  const open = async (c: JoinableChannel) => {
+    if (!c.joined) await store.joinChannel(c.id);
+    navigate(channelPath(space.id, c.id));
+  };
+
+  // Channels I'm in follow the snapshot (renamed, archived or unarchived since the list loaded).
+  const live = list.map((c) => {
+    const m = mine.find((x) => x.id === c.id);
+    return m ? { ...c, name: m.name, archived: !!m.archived } : c;
+  });
   const q = query.trim().toLowerCase();
-  const shown = q ? list.filter((c) => c.name.toLowerCase().includes(q) || c.topic?.toLowerCase().includes(q)) : list;
+  const shown = (q ? live.filter((c) => c.name.toLowerCase().includes(q) || c.topic?.toLowerCase().includes(q)) : live).sort((a, b) => a.name.localeCompare(b.name));
+  const archived = shown.filter((c) => c.archived);
+  const count = (c: JoinableChannel) => (
+    <span role="img" className={s.count} aria-label={t('channels.memberCount', { count: c.memberCount })}>
+      <UsersIcon />
+      {c.memberCount}
+    </span>
+  );
 
   return (
     <div className={s.page}>
@@ -68,7 +90,7 @@ export function BrowseChannels({ space }: { space: Space }) {
         </label>
       </div>
       <ul className={s.list} aria-label={t('channels.title')}>
-        {shown.map((c) => (
+        {shown.filter((c) => !c.archived).map((c) => (
           <li key={c.id} className={s.browseRow}>
             <span className={s.browseIcon}>{c.private ? <LockIcon size={17} strokeWidth={2} /> : <HashIcon size={17} strokeWidth={2} />}</span>
             <span className={s.browseText}>
@@ -81,10 +103,7 @@ export function BrowseChannels({ space }: { space: Space }) {
               )}
               {c.topic && <span className={s.browseTopic}>{c.topic}</span>}
             </span>
-            <span role="img" className={s.count} aria-label={t('channels.memberCount', { count: c.memberCount })}>
-              <UsersIcon />
-              {c.memberCount}
-            </span>
+            {count(c)}
             <span className={s.joinCell}>
               {c.joined ? (
                 <span className={s.joined}>
@@ -94,6 +113,32 @@ export function BrowseChannels({ space }: { space: Space }) {
               ) : (
                 <button type="button" className={s.joinButton} disabled={joining[c.id]} aria-label={t('channels.joinName', { name: c.name })} onClick={() => void join(c)}>
                   {t('channels.join')}
+                </button>
+              )}
+            </span>
+          </li>
+        ))}
+        {archived.length > 0 && (
+          <li className={s.archivedLabel} key="archived">
+            {t('channels.archivedGroup')}
+          </li>
+        )}
+        {archived.map((c) => (
+          <li key={c.id} className={`${s.browseRow} ${s.archivedRow}`}>
+            <span className={`${s.browseIcon} ${s.browseIconArchived}`}>
+              <ArchiveIcon />
+            </span>
+            <span className={s.browseText}>
+              <button type="button" className={`${s.browseName} ${s.browseNameArchived}`} onClick={() => void open(c).catch(() => {})}>
+                {c.name}
+              </button>
+              {c.topic && <span className={s.browseTopic}>{c.topic}</span>}
+            </span>
+            {count(c)}
+            <span className={s.joinCell}>
+              {mine.find((x) => x.id === c.id)?.manageable && (
+                <button type="button" className={s.joinButton} onClick={() => void store.setChannelArchived(c.id, false).catch(() => {})}>
+                  {t('channels.unarchive')}
                 </button>
               )}
             </span>

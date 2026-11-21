@@ -71,6 +71,12 @@ const spaceStateOf = (room: Room): Record<string, unknown> => room.currentState.
 const isClientSpace = (room: Room) => spaceStateOf(room).kind === 'client';
 const joined = (room: Room) => room.getMyMembership() === KnownMembership.Join;
 const SETTINGS = 'work.pasodrum.settings';
+/** E2: `{archived: true}` on an archived channel; the same flag rides on its m.space.child so Browse knows without joining. */
+const CHANNEL_STATE = 'work.pasodrum.channel';
+const ARCHIVED_CHILD = 'work.pasodrum.archived';
+const channelArchived = (room: Room) => room.currentState.getStateEvents(CHANNEL_STATE, '')?.getContent().archived === true;
+/** Where people added to the workspace land (found by its name): it keeps its name and is never archived (RulesE2). */
+const isGeneral = (room: Room) => room.name.trim().toLowerCase() === 'general';
 const MEGOLM = { algorithm: 'm.megolm.v1.aes-sha2' };
 /** RulesM6: an undecryptable message shimmers this long while its key may still come. */
 const ARRIVING = 10_000;
@@ -94,6 +100,12 @@ function powerFacts(room: Room): PowerFacts {
   return { creators, users: pl.users as Record<string, unknown> | undefined, usersDefault: pl.users_default };
 }
 const levelIn = (room: Room | null | undefined, userId: string) => (room ? powerLevel(powerFacts(room), userId) : 0);
+/** The level a state event needs, judged by our own power math (room v12 creators outrank every level). */
+const mayState = (room: Room, userId: string, type: string) => {
+  const pl = room.currentState.getStateEvents(EventType.RoomPowerLevels, '')?.getContent() ?? {};
+  const need = (pl.events as Record<string, unknown> | undefined)?.[type];
+  return levelIn(room, userId) >= (typeof need === 'number' ? need : typeof pl.state_default === 'number' ? pl.state_default : LEVEL.admin);
+};
 
 /** The UIA session when the server wants the user to authenticate again. */
 const uiaSession = (e: unknown) => (e instanceof MatrixError && e.httpStatus === 401 && Array.isArray(e.data.flows) ? String(e.data.session ?? '') : undefined);
@@ -441,6 +453,14 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         run.push(ev);
         continue;
       }
+      if (ev.getType() === EventType.RoomName || ev.getType() === CHANNEL_STATE) {
+        const row = stateRowOf(ev, room);
+        if (row) {
+          flush();
+          out.push(row);
+        }
+        continue;
+      }
       const m = messageOf(ev, room);
       if (!m) continue;
       flush();
@@ -448,6 +468,19 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     }
     flush();
     return out;
+  };
+
+  /** E2: one row per rename (not the first name) and per archive/unarchive. */
+  const stateRowOf = (ev: MatrixEvent, room: Room): Message | null => {
+    const by = personOf(room, ev.getSender() ?? '');
+    const base = { id: ev.getId()!, channelId: room.roomId, sender: by, body: '', ts: ev.getTs(), status: 'sent' as const, kind: 'system' as const };
+    if (ev.getType() === EventType.RoomName) {
+      const from = str(ev.getPrevContent().name);
+      const to = str(ev.getContent().name);
+      return from && to && from !== to ? { ...base, system: { joined: [], left: [], renamed: { from, to, by } } } : null;
+    }
+    const now = ev.getContent().archived === true;
+    return now !== (ev.getPrevContent().archived === true) ? { ...base, system: { joined: [], left: [], archived: { by, archived: now } } } : null;
   };
 
   /**
@@ -980,8 +1013,20 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       }),
     );
 
-  const withEncrypted = (channels: Record<string, Channel[]>) =>
-    Object.fromEntries(Object.entries(channels).map(([spaceId, list]) => [spaceId, list.map((c) => (client.getRoom(c.id)?.hasEncryptionStateEvent() ? { ...c, encrypted: true } : c))]));
+  /** E2: Owners, Admins and the channel's creator (exactly who may set its name and levels, D-27); never #general. */
+  const manageable = (room: Room) => joined(room) && !isGeneral(room) && mayState(room, me.id, EventType.RoomName) && mayState(room, me.id, EventType.RoomPowerLevels);
+  const withFlags = (channels: Record<string, Channel[]>) =>
+    Object.fromEntries(
+      Object.entries(channels).map(([spaceId, list]) => [
+        spaceId,
+        list.map((c) => {
+          const room = client.getRoom(c.id);
+          if (!room) return c;
+          const flags = { ...(room.hasEncryptionStateEvent() ? { encrypted: true } : {}), ...(channelArchived(room) ? { archived: true } : {}), ...(manageable(room) ? { manageable: true } : {}) };
+          return Object.keys(flags).length ? { ...c, ...flags } : c;
+        }),
+      ]),
+    );
 
   /**
    * createClientSpace: a space I made stays out of the snapshot (with its channels) until it is whole, i.e. every channel
@@ -1019,7 +1064,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       me,
       connection: connectionOf(syncState, synced),
       spaces: workspace.spaces,
-      channels: withEncrypted(withOutside(workspace.channels, myRoles)),
+      channels: withFlags(withOutside(workspace.channels, myRoles)),
       timelines: Object.fromEntries([...open].map(([id, flags]) => [id, timelineOf(id, flags)])),
       sessionExpired,
       typing: Object.fromEntries([...open.keys()].map((id) => [id, typingOf(id)] as const).filter(([, people]) => people.length)),
@@ -1260,17 +1305,17 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
    * Read-modify-write of a state event, one at a time per room and built from the server's copy: the synced one lags
    * our own last write, so two quick edits (colour, then archive) would otherwise undo each other.
    */
-  const writeState = (roomId: string, type: string, change: (content: Record<string, unknown>) => Record<string, unknown>) => {
+  const writeState = (roomId: string, type: string, change: (content: Record<string, unknown>) => Record<string, unknown>, stateKey = '') => {
     const next = (chains.get(roomId) ?? Promise.resolve())
       .catch(noop)
       .then(async () => {
-        const current = (await client.getStateEvent(roomId, type, '').catch((e: unknown) => {
+        const current = (await client.getStateEvent(roomId, type, stateKey).catch((e: unknown) => {
           if (e instanceof MatrixError && e.httpStatus === 404) return {};
           throw e;
         })) as Record<string, unknown>;
         const changed = change(current);
         if (JSON.stringify(changed) === JSON.stringify(current)) return false;
-        await client.sendStateEvent(roomId, type as never, changed as never, '');
+        await client.sendStateEvent(roomId, type as never, changed as never, stateKey);
         return true;
       });
     chains.set(roomId, next);
@@ -1366,7 +1411,9 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   /** Where someone added to a whole space lands: the workspace's #general (else its first public channel), a client space's first channel. */
   const homeOf = (space: Room) => {
     const made = (r: Room) => r.currentState.getStateEvents(EventType.RoomCreate, '')?.getTs() ?? 0;
-    const rooms = childRooms(space).sort((a, b) => made(a) - made(b));
+    const rooms = childRooms(space)
+      .filter((r) => !channelArchived(r))
+      .sort((a, b) => made(a) - made(b));
     if (isClientSpace(space)) return rooms[0];
     return rooms.find((r) => r.name.toLowerCase() === 'general') ?? rooms.find((r) => r.getJoinRule() === 'restricted' || r.getJoinRule() === 'public');
   };
@@ -1719,6 +1766,9 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
             private: isPrivate,
             memberCount: r.num_joined_members,
             joined: isJoined,
+            ...((room && isJoined ? channelArchived(room) : client.getRoom(spaceId)?.currentState.getStateEvents(EventType.SpaceChild, r.room_id)?.getContent()[ARCHIVED_CHILD] === true)
+              ? { archived: true }
+              : {}),
           };
         })
         .filter((c): c is JoinableChannel => !!c)
@@ -2053,8 +2103,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       await ready;
       const space = client.getRoom(spaceId);
       if (!space || !joined(space) || !isClientSpace(space) || !space.currentState.maySendStateEvent(EventType.RoomPowerLevels, me.id)) throw new Error('not-allowed');
-      // Every channel first, the flag last; if any channel refuses, the ones already changed go back.
-      const rooms = childRooms(space);
+      // Every channel first, the flag last; if any channel refuses, the ones already changed go back. A channel archived on its own stays so.
+      const rooms = childRooms(space).filter((r) => archived || !channelArchived(r));
       const results = await Promise.allSettled(rooms.map((r) => writeState(r.roomId, EventType.RoomPowerLevels, (c) => archivedLevels(c, 'client', archived))));
       const failed = results.find((r) => r.status === 'rejected');
       if (failed) {
@@ -2072,9 +2122,55 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     },
     translate: (segments, to) => translateSegments(session.accessToken, segments, to),
     anotherApp: () => ({ server: new URL(client.baseUrl).host, username: client.getUserId()!.slice(1, client.getUserId()!.indexOf(':')) }),
-    // E2 — stubs until E2-01 lands.
-    renameChannel: () => Promise.reject(new Error('not-implemented')),
-    setChannelArchived: () => Promise.reject(new Error('not-implemented')),
+    // E2
+    async renameChannel(channelId, name) {
+      await ready;
+      const room = client.getRoom(channelId);
+      if (!room || !manageable(room)) throw new Error('not-allowed');
+      const wanted = name.trim();
+      const space = spaceOf(channelId);
+      if (space) {
+        const known = [...(await hierarchy(space.roomId)).filter((r) => r.room_id !== channelId).map((r) => r.name ?? ''), ...(snapshot.channels[space.roomId] ?? []).filter((c) => c.id !== channelId).map((c) => c.name)];
+        if (known.some((n) => n.toLowerCase() === wanted.toLowerCase())) throw new Error('name-taken');
+      }
+      await client.setRoomName(channelId, wanted).catch((e: unknown) => Promise.reject(forbidden(e)));
+      await settle(() => Object.values(snapshot.channels).some((list) => list.some((c) => c.id === channelId && c.name === wanted)));
+    },
+    async setChannelArchived(channelId, archived) {
+      await ready;
+      const room = client.getRoom(channelId);
+      if (!room || !manageable(room)) throw new Error('not-allowed');
+      const space = spaceOf(channelId);
+      const kind = space && isClientSpace(space) ? 'client' : 'workspace';
+      // D-28 levels, then the flag; inside an archived client space the levels stay archived.
+      if (archived || !(space && spaceStateOf(space).archived === true)) {
+        await writeState(channelId, EventType.RoomPowerLevels, (c) => archivedLevels(c, kind, archived)).catch((e: unknown) => Promise.reject(forbidden(e)));
+      }
+      await writeState(channelId, CHANNEL_STATE, (content) => {
+        const next = { ...content };
+        if (archived) next.archived = true;
+        else delete next.archived;
+        return next;
+      }).catch(async (e: unknown) => {
+        await writeState(channelId, EventType.RoomPowerLevels, (c) => archivedLevels(c, kind, !archived)).catch(noop);
+        throw forbidden(e);
+      });
+      if (space) {
+        await writeState(
+          space.roomId,
+          EventType.SpaceChild,
+          (content) => {
+            if (!Array.isArray(content.via) || !content.via.length) return content;
+            const next = { ...content };
+            if (archived) next[ARCHIVED_CHILD] = true;
+            else delete next[ARCHIVED_CHILD];
+            return next;
+          },
+          channelId,
+        ).catch(noop);
+      }
+      await settle(() => Object.values(snapshot.channels).some((list) => list.some((c) => c.id === channelId && !!c.archived === archived)));
+    },
     // M6
     requestConfirmation: () => security.requestConfirmation(),
     acceptConfirmation: () => security.acceptConfirmation(),
