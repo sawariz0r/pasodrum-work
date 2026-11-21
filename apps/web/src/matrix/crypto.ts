@@ -6,6 +6,7 @@ import {
 } from 'matrix-js-sdk/lib/crypto-api';
 import type { UIAuthCallback } from 'matrix-js-sdk/lib/interactive-auth';
 import { platform } from '../platform';
+import { createTabs, type Tabs } from './tabs';
 import type { Confirmation, SasEmoji, Security } from './types';
 
 export const CRYPTO_DB = 'pasodrum-crypto';
@@ -85,6 +86,8 @@ export interface SecurityController {
   newRecoveryKey(password?: string): Promise<string>;
   resetEncryption(password: string): Promise<string>;
   signOutRisk(hasEncrypted: boolean): Promise<'none' | 'last-device' | 'no-backup'>;
+  /** D-33, device 'elsewhere': ask the tab holding this device to stop; this tab starts once it has. */
+  useHere(): void;
   /** Stops for good: timers, the in-memory recovery key, and the store lock. */
   stop(): void;
 }
@@ -99,6 +102,7 @@ export function createSecurity(client: MatrixClient, keys: KeyHolder, userId: st
   let cancelledHere = false;
   let stopped = false;
   let release = noop;
+  let tabs: Tabs | null = null;
   /** A newRecoveryKey / resetEncryption that changed something and didn't finish: the save step must come back. */
   let unfinished = false;
   let backupChecked = false;
@@ -382,45 +386,64 @@ export function createSecurity(client: MatrixClient, keys: KeyHolder, userId: st
     );
   };
 
+  const setDevice = (device: Security['device']) => set({ ...state, device });
+
+  /** Resolves once no reset / new recovery key is running (one may be queued behind another). */
+  const settledSerial = async () => {
+    for (let b = busy; ; b = busy) {
+      await b.catch(noop);
+      if (b === busy) return;
+    }
+  };
+
+  /** D-33: waits for this browser's crypto store; another tab holding it means 'elsewhere' until it yields. */
+  const acquire = async () => {
+    // Per account: tabs signed in to another account never ask this one (they share the store lock, D-33).
+    tabs = createTabs(platform, CRYPTO_DB, `${CRYPTO_DB}-tabs:${userId}`, settledSerial);
+    const unlock = await tabs.acquire(() => setDevice('elsewhere'));
+    if (stopped) {
+      unlock();
+      return false;
+    }
+    release = unlock;
+    if (state.device === 'elsewhere') setDevice('starting');
+    return true;
+  };
+
+  /** One running crypto per store: a second tab waits (D-33). */
+  const start = async () => {
+    const useIndexedDB = typeof indexedDB !== 'undefined';
+    if (useIndexedDB && !(await acquire())) return false;
+    for (let wait = 2_000; !stopped; wait = Math.min(wait * 2, 30_000)) {
+      try {
+        await client.initRustCrypto({ useIndexedDB, cryptoDatabasePrefix: CRYPTO_DB });
+        break;
+      } catch (e) {
+        // Only a store that belongs to another account or device is wiped; anything else (WASM didn't load,
+        // IndexedDB hiccup) leaves it alone and tries again.
+        if (isStoreMismatch(e)) await withTimeout(client.clearStores({ cryptoDatabasePrefix: CRYPTO_DB }));
+        else await sleep(wait);
+      }
+    }
+    crypto = client.getCrypto();
+    if (!crypto || stopped) return false;
+    void platform.persistStorage().catch(noop);
+    client.on(CryptoEvent.VerificationRequestReceived, (r) => void incoming(r));
+    client.on(CryptoEvent.UserTrustStatusChanged, (id) => refreshOn([id]));
+    client.on(CryptoEvent.DevicesUpdated, refreshOn);
+    client.on(CryptoEvent.KeysChanged, refresh);
+    client.on(CryptoEvent.KeyBackupStatus, refresh);
+    client.on(CryptoEvent.KeyBackupDecryptionKeyCached, refresh);
+    client.on(ClientEvent.AccountData, onAccountData);
+    return true;
+  };
+
   const refreshOn = (ids: string[]) => ids.includes(userId) && refresh();
   const onAccountData = (ev: MatrixEvent) => (ev.getType().startsWith('m.secret_storage') || ev.getType().startsWith('m.cross_signing')) && refresh();
 
   return {
     state: () => state,
-    async init() {
-      const useIndexedDB = typeof indexedDB !== 'undefined';
-      // One running crypto per store: a second tab waits here (and stays 'starting') until the first lets go.
-      if (useIndexedDB) {
-        const unlock = await platform.lock(CRYPTO_DB);
-        if (stopped) {
-          unlock();
-          return false;
-        }
-        release = unlock;
-      }
-      for (let wait = 2_000; !stopped; wait = Math.min(wait * 2, 30_000)) {
-        try {
-          await client.initRustCrypto({ useIndexedDB, cryptoDatabasePrefix: CRYPTO_DB });
-          break;
-        } catch (e) {
-          // Only a store that belongs to another account or device is wiped; anything else (WASM didn't load,
-          // IndexedDB hiccup) leaves it alone and tries again.
-          if (isStoreMismatch(e)) await withTimeout(client.clearStores({ cryptoDatabasePrefix: CRYPTO_DB }));
-          else await sleep(wait);
-        }
-      }
-      crypto = client.getCrypto();
-      if (!crypto || stopped) return false;
-      void platform.persistStorage().catch(noop);
-      client.on(CryptoEvent.VerificationRequestReceived, (r) => void incoming(r));
-      client.on(CryptoEvent.UserTrustStatusChanged, (id) => refreshOn([id]));
-      client.on(CryptoEvent.DevicesUpdated, refreshOn);
-      client.on(CryptoEvent.KeysChanged, refresh);
-      client.on(CryptoEvent.KeyBackupStatus, refresh);
-      client.on(CryptoEvent.KeyBackupDecryptionKeyCached, refresh);
-      client.on(ClientEvent.AccountData, onAccountData);
-      return true;
-    },
+    init: start,
     refresh,
     async confirmed(ids) {
       const out = new Set<string>();
@@ -538,8 +561,13 @@ export function createSecurity(client: MatrixClient, keys: KeyHolder, userId: st
       }
       return signOutRiskOf({ confirmed: state.device === 'confirmed', others: state.otherConfirmedDevices, hasEncrypted, backupWorks, ...(counts ? { counts } : {}) });
     },
+    useHere() {
+      if (state.device === 'elsewhere') tabs?.useHere();
+    },
     stop() {
       stopped = true;
+      tabs?.close();
+      tabs = null;
       clearTimeout(timer);
       clearTimeout(retry);
       keys.current = null;

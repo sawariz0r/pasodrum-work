@@ -16,7 +16,7 @@ function startOfDay(ts: number): Date {
 
 const quiet = (m: Message) => m.kind === 'deleted' || m.kind === 'system';
 /** M6: a message this device can't open (not one whose key may still arrive). One with a thread or reactions stays on its own. */
-const unavailable = (m: Message) => m.kind === 'undecryptable' && !m.arriving && !m.thread && !m.reactions?.length;
+const unavailable = (m: Message) => m.kind === 'undecryptable' && !m.arriving && !m.thread && !m.reactions?.length && !m.pinned;
 
 /** Images and files without a caption of their own can join a neighbour's grid or card. */
 function groupKind(m: Message): 'image' | 'file' | null {
@@ -50,7 +50,8 @@ export function buildItems(messages: readonly Message[], newFrom?: string | null
       continue;
     }
     const switched = !!prev && (prev.kind === 'undecryptable') !== (m.kind === 'undecryptable');
-    const head = newDay || isNew || !prev || quiet(prev) || quiet(m) || switched || !sameSender || m.ts - prev.ts > groupWindowMs;
+    // M7: a pinned message always shows its name line, where the pin sits (RulesM7).
+    const head = newDay || isNew || !prev || quiet(prev) || quiet(m) || switched || !sameSender || !!m.pinned || m.ts - prev.ts > groupWindowMs;
     const kind = groupKind(m);
     if (!head && kind && open && groupKind(open.message) === kind) {
       open.group = [...(open.group ?? [open.message]), m];

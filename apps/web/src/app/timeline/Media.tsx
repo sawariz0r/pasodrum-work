@@ -192,7 +192,7 @@ const TILE: [RegExp, string][] = [
   [/^(m4a|mp3|wav|ogg|oga|flac|aac|opus)$/, '#7E22CE'],
 ];
 
-function tileOf(media: Media): { ext: string; color: string } {
+export function tileOf(media: Media): { ext: string; color: string } {
   const dot = media.name.lastIndexOf('.');
   const ext = dot > 0 ? media.name.slice(dot + 1).toLowerCase() : (media.mimetype?.split('/')[1] ?? '');
   const color = TILE.find(([re]) => re.test(ext))?.[1] ?? '#475569';

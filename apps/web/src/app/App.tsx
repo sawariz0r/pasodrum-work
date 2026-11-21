@@ -7,6 +7,7 @@ import { matrixBackend, type Backend } from './backend';
 import { FirstRun, startFirstRun } from './join/FirstRun';
 import { JoinRoute, JoinRouteSignedIn } from './join/JoinRoute';
 import { lastIdentifier, rememberIdentifier } from './prefs';
+import { OpenElsewhere } from './security/OpenElsewhere';
 import { SecurityProvider, useSecurityUi } from './security/SecurityProvider';
 import { SettingsSync, WithSettings } from './settings/SettingsRoute';
 import { Workspace } from './shell/Shell';
@@ -124,9 +125,11 @@ export function AppRoutes({ backend }: { backend: Backend }) {
   );
 }
 
-/** M6: sign-out asks first when this is the last confirmed device (SignOutWarn, SignOutNoBackup). */
+/** M6: sign-out asks first when this is the last confirmed device (SignOutWarn, SignOutNoBackup). D-33: one tab at a time. */
 function GuardedWorkspace() {
   const ui = useSecurityUi();
+  const elsewhere = useWorkspace((x) => x.security.device === 'elsewhere');
+  if (elsewhere) return <OpenElsewhere />;
   return <Workspace onSignOut={ui.signOut} />;
 }
 

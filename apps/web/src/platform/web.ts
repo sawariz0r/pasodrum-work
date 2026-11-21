@@ -1,6 +1,7 @@
 import type { Platform } from './index';
 
 const badgePrefix = /^\(\d+\) /;
+const yieldedKey = 'pasodrum.yielded';
 
 export function createWebPlatform(): Platform {
   const routeListeners = new Set<(route: string) => void>();
@@ -40,12 +41,53 @@ export function createWebPlatform(): Platform {
       return (await navigator.storage?.persist?.()) ?? false;
     },
 
-    lock(name) {
+    lock(name, onWaiting) {
       const locks = typeof navigator === 'undefined' ? undefined : navigator.locks;
       if (!locks) return Promise.resolve(() => {});
       return new Promise((acquired) => {
-        void locks.request(name, () => new Promise<void>((release) => acquired(release)));
+        const hold = () => new Promise<void>((release) => acquired(release));
+        void locks.request(name, { ifAvailable: true }, (lock) => {
+          if (lock) return hold();
+          onWaiting?.();
+          void locks.request(name, hold);
+          return undefined;
+        });
       });
+    },
+
+    channel(name) {
+      if (typeof BroadcastChannel === 'undefined') return null;
+      const bc = new BroadcastChannel(name);
+      return {
+        post: (message) => bc.postMessage(message),
+        listen(cb) {
+          const onMessage = (e: MessageEvent) => typeof e.data === 'string' && cb(e.data);
+          bc.addEventListener('message', onMessage);
+          return () => bc.removeEventListener('message', onMessage);
+        },
+        close: () => bc.close(),
+      };
+    },
+
+    reload() {
+      location.reload();
+    },
+
+    yielded() {
+      try {
+        return sessionStorage.getItem(yieldedKey) === '1';
+      } catch {
+        return false;
+      }
+    },
+
+    setYielded(yielded) {
+      try {
+        if (yielded) sessionStorage.setItem(yieldedKey, '1');
+        else sessionStorage.removeItem(yieldedKey);
+      } catch {
+        // Storage blocked: a yielded tab then waits in the queue instead (still safe).
+      }
     },
 
     deviceName() {

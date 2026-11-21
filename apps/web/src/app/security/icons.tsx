@@ -71,3 +71,10 @@ export const BubbleDashIcon = icon(<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6
   size: 15,
   strokeWidth: 1.9,
 });
+export const TabIcon = icon(
+  <>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="M3 9h18M9 4v5" />
+  </>,
+  { size: 30, strokeWidth: 1.8 },
+);

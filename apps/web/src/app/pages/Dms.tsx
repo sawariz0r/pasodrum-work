@@ -13,6 +13,7 @@ import { noStoredTabs } from '../registry';
 import { ChannelTabs } from '../shell/ChannelTabs';
 import { ChevronDownIcon, ComposeIcon } from '../shell/icons';
 import { OutsideHeaderMark } from '../channels/OutsideMark';
+import { PrivacyLock, usePrivacyText } from '../security/Privacy';
 import { DrawerToggle } from '../shell/Drawer';
 import shell from '../shell/Shell.module.css';
 import { useListTime } from './lists';
@@ -86,9 +87,11 @@ export function DmConversation({ dmId }: { dmId: string }) {
   const showExternal = useShowExternal();
   const card = useProfileCard();
   const title = useRef<HTMLButtonElement>(null);
+  const privacy = usePrivacyText(dm);
   if (!dm) return null;
   const list = others(dm, meId);
   const single = list.length === 1 ? list[0] : undefined;
+  const outside = showExternal ? list.filter((p) => p.external) : [];
 
   return (
     <>
@@ -114,7 +117,8 @@ export function DmConversation({ dmId }: { dmId: string }) {
             <span>{name(dm)}</span>
           </h1>
         )}
-        <OutsideHeaderMark people={showExternal ? list.filter((p) => p.external) : []} />
+        {privacy && <PrivacyLock text={privacy} gap={outside.length > 0} />}
+        <OutsideHeaderMark people={outside} />
       </header>
       <ChannelTabs key={dm.id} channelId={dm.id} stored={noStoredTabs} />
     </>

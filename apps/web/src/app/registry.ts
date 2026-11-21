@@ -11,11 +11,26 @@ export interface RailItem {
 }
 
 export interface ChannelTabType {
-  /** Matches the `type` of a tab stored on the channel. */
+  /** Matches the `type` of a tab stored on the channel; a built-in tab's id in `?tab=`. */
   type: string;
   icon: ReactNode;
   useLabel: () => string;
-  View: ComponentType<{ channelId: string }>;
+  /** `jumpTo` opens Messages at that message and flashes it. */
+  View: ComponentType<{ channelId: string; jumpTo: (messageId: string) => void }>;
+  /** In every channel and DM after Messages, in registry order; never stored (D-33). */
+  builtIn?: boolean;
+}
+
+/** A signed-in page of its own, drawn beside the rail (M7, first use: Docs and Boards "Soon"). */
+export interface FeatureRoute {
+  path: string;
+  element: ReactNode;
+}
+
+/** Drawn under a message's text (M7, first use: link cards). Returns null when it doesn't apply. */
+export interface MessagePart {
+  id: string;
+  Part: ComponentType<{ message: Message }>;
 }
 
 /** What a feature draws instead of a message's text (SIDE-01, first use: translate). */
@@ -37,8 +52,10 @@ export interface MessageAction {
 export interface Feature {
   id: string;
   rail?: RailItem[];
+  routes?: FeatureRoute[];
   channelTabs?: ChannelTabType[];
   messageActions?: MessageAction[];
+  messageParts?: MessagePart[];
 }
 
 export function defineFeature<F extends Feature>(feature: F): F {
@@ -47,17 +64,25 @@ export function defineFeature<F extends Feature>(feature: F): F {
 
 export interface Registry {
   rail: RailItem[];
+  routes: FeatureRoute[];
   channelTabs: ReadonlyMap<string, ChannelTabType>;
   messageActions: MessageAction[];
+  messageParts: MessagePart[];
 }
 
 export function buildRegistry(features: readonly Feature[]): Registry {
   const channelTabs = new Map<string, ChannelTabType>();
   for (const f of features) for (const tab of f.channelTabs ?? []) channelTabs.set(tab.type, tab);
-  return { rail: features.flatMap((f) => f.rail ?? []), channelTabs, messageActions: features.flatMap((f) => f.messageActions ?? []) };
+  return {
+    rail: features.flatMap((f) => f.rail ?? []),
+    routes: features.flatMap((f) => f.routes ?? []),
+    channelTabs,
+    messageActions: features.flatMap((f) => f.messageActions ?? []),
+    messageParts: features.flatMap((f) => f.messageParts ?? []),
+  };
 }
 
-/** A tab saved on a channel. Saved tabs arrive with M7; until then every channel has none. */
+/** A tab saved on a channel. Nothing is stored yet: the first addable tab brings `work.pasodrum.tab` (D-33). */
 export interface StoredTab {
   id: string;
   type: string;
@@ -65,13 +90,18 @@ export interface StoredTab {
 
 export const noStoredTabs: readonly StoredTab[] = [];
 
-/** Stored ∩ registered: a tab whose feature was removed is skipped, never an error. Messages is implicit. */
+/** Built-in tabs, then stored ∩ registered: a tab whose feature was removed is skipped, never an error. Messages is implicit. */
 export function visibleTabs(stored: readonly StoredTab[], registry: Registry) {
   const seen = new Set<string>();
   const out: { id: string; tab: ChannelTabType }[] = [];
+  for (const tab of registry.channelTabs.values()) {
+    if (!tab.builtIn) continue;
+    seen.add(tab.type);
+    out.push({ id: tab.type, tab });
+  }
   for (const s of stored) {
     const tab = registry.channelTabs.get(s.type);
-    if (!tab || seen.has(s.id)) continue;
+    if (!tab || tab.builtIn || seen.has(s.id)) continue;
     seen.add(s.id);
     out.push({ id: s.id, tab });
   }

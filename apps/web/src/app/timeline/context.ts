@@ -8,7 +8,8 @@ export interface TimelineActions {
   openViewer(messageId: string): void;
   askDelete(messages: Message[]): void;
   linkCopied(): void;
-  jumpTo(messageId: string): void;
+  /** Scrolls to the row and flashes it; `instant` when opening the conversation there (from Pins). */
+  jumpTo(messageId: string, instant?: boolean): void;
   /** Long messages stay expanded until you leave the channel. */
   isExpanded(messageId: string): boolean;
   expand(messageId: string): void;

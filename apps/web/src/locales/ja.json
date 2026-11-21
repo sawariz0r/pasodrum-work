@@ -59,8 +59,6 @@
       "home": "ホーム",
       "dms": "DM",
       "activity": "通知",
-      "docs": "ドキュメント",
-      "boards": "ボード",
       "lightTheme": "ライトテーマに切り替え",
       "darkTheme": "ダークテーマに切り替え",
       "profileActive": "プロフィール：{{name}}（アクティブ）",
@@ -82,16 +80,11 @@
     },
     "header": {
       "members_other": "メンバー {{count}} 人",
-      "pinned": "ピン留めしたメッセージ",
       "details": "チャンネルの詳細"
     },
     "tabs": {
       "label": "チャンネルのビュー",
-      "messages": "メッセージ",
-      "files": "ファイル",
-      "pins": "ピン留め",
-      "soon": "近日公開",
-      "addTab": "タブを追加"
+      "messages": "メッセージ"
     },
     "connection": {
       "offline": "オフライン",
@@ -110,7 +103,8 @@
       "title": "このページは利用できません",
       "openChannel": "#{{channel}} を開く"
     },
-    "back": "戻る"
+    "back": "戻る",
+    "soon": "近日公開"
   },
   "timeline": {
     "today": "今日",
@@ -130,6 +124,9 @@
     "edit": "編集",
     "copyText": "テキストをコピー",
     "copyLink": "リンクをコピー",
+    "pin": "ピン留め",
+    "unpin": "ピン留めを外す",
+    "pinned": "ピン留め済み",
     "close": "閉じる",
     "linkCopied": "リンクをコピーしました",
     "newLine": "新着",
@@ -508,6 +505,10 @@
     "close": "閉じる",
     "failed": "うまくいきませんでした。もう一度お試しください。",
     "keyFailed": "リカバリーキーを作成できませんでした",
-    "retry": "再試行"
+    "retry": "再試行",
+    "elsewhereTitle": "Pasodrum work は別のタブで開いています",
+    "useHere": "このタブで使う",
+    "privacyOne": "この会話を読めるのは、あなたと {{name}} さんだけです。",
+    "privacyMany": "この会話を読めるのは、ここにいる人だけです。"
   }
 }

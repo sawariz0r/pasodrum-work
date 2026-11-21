@@ -605,6 +605,10 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     reconnectNow() {
       set({ connection: 'online' });
     },
+    // D-33: the other tab lets go at once.
+    useHere() {
+      if (snapshot.security.device === 'elsewhere') setSecurity({ device: 'confirmed' });
+    },
     async signOut() {},
     send(channelId, draft) {
       const original = draft.replyTo ? listOf(channelId, draft).find((x) => x.id === draft.replyTo) : undefined;

@@ -117,7 +117,7 @@ describe('shell', () => {
     expect(renderApp('/').where()).toBe('/w/!nordlys/c/!questions');
   });
 
-  it('shows rail tiles, channels with lock, unread and mentions, the channel name and only Messages', () => {
+  it('shows rail tiles, channels with lock, unread and mentions, the channel name and the built-in tabs', () => {
     renderApp('/w/!pasodrum/c/!design');
     const rail = screen.getByRole('navigation', { name: 'Workspaces and sections' });
     const pasodrum = within(rail).getByRole('link', { name: 'Pasodrum workspace' });
@@ -134,7 +134,7 @@ describe('shell', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'design' })).toBeTruthy();
     const tabs = within(screen.getByRole('tablist', { name: 'Channel views' })).getAllByRole('tab');
-    expect(tabs.map((t) => t.textContent)).toEqual(['Messages']);
+    expect(tabs.map((t) => t.textContent)).toEqual(['Messages', 'Pins', 'Files']);
     expect(tabs[0]!.getAttribute('aria-selected')).toBe('true');
     expect(screen.getByRole('tabpanel')).toBeTruthy();
   });
@@ -189,7 +189,7 @@ describe('shell', () => {
     expect(localStorage.getItem('pasodrum.language')).toBe('ja');
     fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
     await flush();
-    expect(screen.getByRole('tab').textContent).toBe('メッセージ');
+    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['メッセージ', 'ピン留め', 'ファイル']);
   });
 
   it('signs out from the profile menu', async () => {

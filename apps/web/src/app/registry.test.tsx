@@ -80,6 +80,23 @@ describe('feature registry', () => {
     expect(screen.getByRole('link', { name: 'Pinboard' })).toBeTruthy();
   });
 
+  it('draws feature message parts under messages and built-in tabs before stored ones; none without features', async () => {
+    const parts = defineFeature({
+      id: 'parts',
+      messageParts: [{ id: 'part', Part: ({ message }) => (message.links?.length ? <p>card for {message.links[0]}</p> : null) }],
+      channelTabs: [{ type: 'files', builtIn: true, icon: null, useLabel: () => 'Files', View: () => null }],
+    });
+    renderShell([parts, pins], storedFixture);
+    expect(tabNames()).toEqual(['Messages', 'Files', 'Pins']);
+    cleanup();
+    renderShell([parts]);
+    expect((await screen.findAllByText(/^card for https:/)).length).toBeGreaterThan(0);
+    cleanup();
+    renderShell([]);
+    await screen.findByRole('log');
+    expect(screen.queryByText(/^card for/)).toBeNull();
+  });
+
   it('computes visible tabs as stored ∩ registered without duplicates', () => {
     const registry = buildRegistry([pins]);
     expect(visibleTabs([...storedFixture, { id: 'tab-pins', type: 'pins' }], registry).map((t) => t.id)).toEqual(['tab-pins']);

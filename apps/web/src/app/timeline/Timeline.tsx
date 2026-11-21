@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useInRouterContext, useSearchParams } from 'react-router';
 import { useStore, type Message, type Timeline as TimelineData } from '../../matrix';
 import { Skeleton } from '../../ui';
 import { AlertIcon } from '../../ui/icons';
 import { useComposer } from '../composer/context';
 import { ArrowDownIcon, CheckIcon } from '../icons';
-import { TimelineContext, type TimelineActions } from './context';
+import { TimelineContext, useTimeline, type TimelineActions } from './context';
 import { DayDivider } from './DayDivider';
 import { DeleteConfirm } from '../composer/DeleteConfirm';
 import { ImageViewer } from './ImageViewer';
@@ -17,6 +18,10 @@ const toastMs = 2000;
 const flashMs = 1240;
 
 const bottomSlackPx = 40;
+/** A jump's smooth scroll starts at the bottom: for this long the view doesn't count as "at the bottom" (or stick to it). */
+const jumpMs = 1000;
+/** How far back a jump from Pins pages before giving up (a pinned thread reply is never in the channel's history). */
+const jumpPages = 10;
 const loadOlderWithinPx = 400;
 
 const skeletonRows: [string, string, string][] = [
@@ -118,6 +123,37 @@ function useRowKeys(messages: readonly Message[], ready: boolean, paging: boolea
   return { keyOf: (m: Message) => current.keys.get(m.id) ?? m.id, arrived: current.arrived };
 }
 
+/** `?msg=<id>` (from the Pins tab): scroll to that message and flash it, paging older history until it loads. */
+function JumpTarget({ messages, hasOlder, busy }: { messages: readonly Message[]; hasOlder: boolean; busy: boolean }) {
+  const store = useStore();
+  const tl = useTimeline();
+  const [params, setParams] = useSearchParams();
+  const target = params.get('msg');
+  const pages = useRef(0);
+  useEffect(() => {
+    if (!target || busy) return;
+    const done = () =>
+      setParams(
+        (p) => {
+          const next = new URLSearchParams(p);
+          next.delete('msg');
+          return next;
+        },
+        { replace: true },
+      );
+    if (messages.some((m) => m.id === target)) {
+      tl.jumpTo(target, true);
+      done();
+    } else if (hasOlder && pages.current < jumpPages) {
+      pages.current++;
+      store.loadOlder(tl.channelId);
+    } else {
+      done();
+    }
+  }, [target, busy, messages, hasOlder, store, tl, setParams]);
+  return null;
+}
+
 type Props = {
   channelId: string;
   channelName: string;
@@ -131,19 +167,23 @@ type Props = {
   thread?: ThreadMode;
   /** Shown in place of the channel's empty state (the start of a DM, Batch C DMEmpty). */
   intro?: ReactNode;
+  /** At the conversation start, also above its first message; replaces `intro` and the empty state (SIDE-02). */
+  start?: ReactNode;
   /** Under the empty channel's name (Add people). */
   emptyAction?: ReactNode;
 };
 
 export type ThreadMode = { rootId: string; root?: Message; failed?: boolean; onRetry: () => void };
 
-export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen = 0, onOpenThread, thread, intro, emptyAction }: Props) {
+export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen = 0, onOpenThread, thread, intro, start, emptyAction }: Props) {
   const { t } = useTranslation();
   const store = useStore();
   const composer = useComposer();
   const scroller = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const atBottom = useRef(true);
+  const jumpedAt = useRef(Number.NEGATIVE_INFINITY);
+  const jumpTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const anchor = useRef<{ id: string; top: number } | null>(null);
   const lastId = useRef<string | undefined>(undefined);
   const markedId = useRef<string | null | undefined>(undefined);
@@ -172,6 +212,7 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
   const now = new Date();
 
   const rootId = thread?.rootId;
+  const routed = useInRouterContext();
   const state = useRef({ initialLoading, loadingOlder, hasOlder, newestId: undefined as string | undefined });
   useLayoutEffect(() => {
     state.current = { initialLoading, loadingOlder, hasOlder, newestId: messages.at(-1)?.id };
@@ -182,7 +223,7 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
     if (!el) return;
     const st = state.current;
     if (st.initialLoading) return;
-    atBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight <= bottomSlackPx;
+    atBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight <= bottomSlackPx && performance.now() - jumpedAt.current > jumpMs;
     if (atBottom.current) setSeenId(st.newestId ?? null);
     if (atBottom.current && markedId.current !== (st.newestId ?? null)) {
       markedId.current = st.newestId ?? null;
@@ -262,18 +303,25 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
       openViewer: setViewing,
       askDelete: setDeleting,
       linkCopied: () => setToast((n) => n + 1),
-      jumpTo(id) {
+      jumpTo(id, instant) {
         const row = content.current?.querySelector<HTMLElement>(`[data-ids~="${CSS.escape(id)}"]`);
         if (!row) return;
-        row.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+        // Leaving the bottom: size changes (images, fonts) must not pull the view back down mid-scroll.
+        atBottom.current = false;
+        jumpedAt.current = performance.now();
+        // A target in the last screenful scrolls little or not at all: look again once the window ends.
+        clearTimeout(jumpTimer.current);
+        jumpTimer.current = setTimeout(check, jumpMs + 50);
+        row.scrollIntoView?.({ block: 'center', behavior: instant ? 'instant' : 'smooth' });
         setFlash(row.dataset.messageId ?? id);
       },
       isExpanded: (id) => expanded.current.has(id),
       expand: (id) => void expanded.current.add(id),
       openThread: onOpenThread,
     }),
-    [channelId, meId, onOpenThread],
+    [channelId, meId, onOpenThread, check],
   );
+  useEffect(() => () => clearTimeout(jumpTimer.current), []);
 
   // Messages from others that arrived below while scrolled up.
   const seenAt = seenId ? messages.findIndex((m) => m.id === seenId) : -1;
@@ -287,6 +335,7 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
 
   return (
     <TimelineContext.Provider value={actions}>
+    {routed && !thread && <JumpTarget messages={messages} hasOlder={hasOlder} busy={busy} />}
     <div className={s.pane}>
     <div ref={scroller} className={s.scroller} onScroll={check} aria-busy={busy}>
       <div ref={content} className={thread ? `${s.content} ${s.threadContent}` : s.content}>
@@ -323,8 +372,9 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
                 <span className={s.rule} />
               </div>
             )}
-            {!thread && items.length === 0 && !hasOlder && intro}
-            {!thread && items.length === 0 && !hasOlder && !intro && (
+            {!thread && !hasOlder && start}
+            {!thread && items.length === 0 && !hasOlder && !start && intro}
+            {!thread && items.length === 0 && !hasOlder && !start && !intro && (
               <div className={s.empty}>
                 <div className={s.emptyIcon}>
                   <HashIcon />

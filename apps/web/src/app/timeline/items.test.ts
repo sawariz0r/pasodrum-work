@@ -14,6 +14,11 @@ const media = (id: string, who: string, ts: number, kind: 'image' | 'file', body
 });
 
 describe('buildItems', () => {
+  it('gives a pinned message its own name line, where the pin sits (RulesM7)', () => {
+    const items = buildItems([m('a', 'jonas', base), { ...m('b', 'jonas', base + min), pinned: true }, m('c', 'jonas', base + 2 * min)]);
+    expect(items.map(show)).toEqual(['day', 'a:head', 'b:head', 'c:cont']);
+  });
+
   it('collapses a run of messages this device can\'t open from one sender, but never one still arriving', () => {
     const utd = (id: string, who: string, ts: number, arriving = false): Message => ({ ...m(id, who, ts), body: '', kind: 'undecryptable', arriving });
     const items = buildItems([

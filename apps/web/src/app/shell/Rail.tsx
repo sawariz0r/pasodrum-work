@@ -16,8 +16,8 @@ import { ProfileMenu } from './ProfileMenu';
 import { useMediaUrl } from '../timeline/Media';
 import s from './Shell.module.css';
 
-/** Which rail section the page belongs to (D-23): a space's sidebar (Home), DMs or Activity. */
-export type Section = 'home' | 'dms' | 'activity';
+/** Which rail section the page belongs to (D-23): a space's sidebar (Home), DMs, Activity, or a feature's own page. */
+export type Section = 'home' | 'dms' | 'activity' | 'feature';
 
 export function Rail({ section, activeSpaceId, onSignOut }: { section: Section; activeSpaceId?: string; onSignOut: () => void }) {
   const { t } = useTranslation();

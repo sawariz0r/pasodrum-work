@@ -1,12 +1,12 @@
 // Hover bar (Thread · React · Reply · More, MsgHoverM3) and the More menu. The bar is right-anchored; Thread is left out inside a thread.
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useStore, type Message } from '../../matrix';
+import { useStore, useWorkspace, type Message, type WorkspaceSnapshot } from '../../matrix';
 import type { MessageAction } from '../registry';
 import { useRegistry } from '../RegistryProvider';
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '../../ui';
 import { useComposer } from '../composer/context';
-import { CopyIcon, EditIcon, LinkIcon, MoreIcon, ReplyIcon, SmileIcon, TrashIcon } from '../icons';
+import { CopyIcon, EditIcon, LinkIcon, MoreIcon, PinIcon, ReplyIcon, SmileIcon, TrashIcon, UnpinIcon } from '../icons';
 import { ThreadIcon } from '../thread/icons';
 import { useArchived } from './ArchivedBar';
 import { useTimeline } from './context';
@@ -23,6 +23,15 @@ function FeatureTool({ action, message, own }: { action: MessageAction; message:
       {button.icon}
     </button>
   );
+}
+
+/** M7: anyone in the conversation may pin (D-33); the store says false while archived. */
+function canPinIn(x: WorkspaceSnapshot, channelId: string) {
+  for (const list of Object.values(x.channels)) {
+    const c = list.find((ch) => ch.id === channelId);
+    if (c) return !!c.canPin;
+  }
+  return !!x.dms.find((d) => d.id === channelId)?.canPin;
 }
 
 function copy(text: string) {
@@ -47,6 +56,9 @@ export function MessageActions({
   const tl = useTimeline();
   // Archived client space or channel: read-only, so only the actions that don't write stay (thread, copy).
   const writable = !useArchived(tl.channelId);
+  const canPin = useWorkspace((x) => canPinIn(x, tl.channelId));
+  // No dialog, no toast: the glyph appears or goes (RulesM7). A failure leaves it as it was.
+  const togglePin = () => void (m.pinned ? store.unpin(tl.channelId, m.id) : store.pin(tl.channelId, m.id)).catch(() => {});
   // The bar goes away while editing; a menu closed by unmounting never reports it.
   useEffect(() => () => onOpenChange(false), [onOpenChange]);
   const react = (key: string) => {
@@ -98,6 +110,11 @@ export function MessageActions({
           >
             {t('timeline.copyLink')}
           </MenuItem>
+          {writable && canPin && (
+            <MenuItem icon={m.pinned ? <UnpinIcon /> : <PinIcon />} onSelect={togglePin}>
+              {t(m.pinned ? 'timeline.unpin' : 'timeline.pin')}
+            </MenuItem>
+          )}
           {writable && own && (
             <>
               <MenuSeparator className={s.menuSep} />

@@ -5,7 +5,7 @@ import { AlertIcon } from '../../ui/icons';
 import { MessageEditor } from '../composer/lazy';
 import { useProfileCard } from '../people/ProfileCardContext';
 import { formatList, formatTime } from '../format';
-import { BoxIcon, EditIcon, TrashIcon, UserPlusIcon } from '../icons';
+import { BoxIcon, EditIcon, PinIcon, TrashIcon, UserPlusIcon } from '../icons';
 import { ArchiveIcon } from '../channels/icons';
 import { useTimeline } from './context';
 import { AudioPlayer, FileCard, ImageGrid, ImageSingle, VideoPlayer } from './Media';
@@ -163,6 +163,12 @@ function Content({ m, group, tail, compact }: { m: Message; group?: Message[]; t
   );
 }
 
+/** What registered features draw under the text (link cards). Nothing when none are registered. */
+function Parts({ m }: { m: Message }) {
+  const { messageParts } = useRegistry();
+  return messageParts.map(({ id, Part }) => <Part key={id} message={m} />);
+}
+
 /** Under a thread root: who replied and how many (Main, ClientThread). */
 function ThreadSummary({ thread, onOpen }: { thread: NonNullable<Message['thread']>; onOpen: () => void }) {
   const { t } = useTranslation();
@@ -307,6 +313,11 @@ export const MessageRow = memo(function MessageRow({
             ) : (
               <span className={s.time}>{time}</span>
             )}
+            {m.pinned && (
+              <span role="img" aria-label={t('timeline.pinned')} title={t('timeline.pinned')} className={s.pinned}>
+                <PinIcon size={13} strokeWidth={2.2} />
+              </span>
+            )}
           </div>
         )}
         {m.replyTo && <ReplyQuote reply={m.replyTo} original={original} />}
@@ -317,6 +328,7 @@ export const MessageRow = memo(function MessageRow({
             <Content m={m} group={group} tail={tail} compact={compact} />
           </div>
         )}
+        {!editing && !unavailable && <Parts m={m} />}
         {failed && (
           <div role="alert" className={s.failed}>
             <AlertIcon className={s.failedIcon} size={15} strokeWidth={2.2} />

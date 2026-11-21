@@ -544,3 +544,128 @@
     animation: none;
   }
 }
+
+/* Open in another tab (D-33, OpenElsewhere) */
+.elsewhere {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  padding: 24px 24px 96px;
+  background: var(--bg);
+  color: var(--ink);
+  animation: fade-in var(--dur-2) var(--ease-out);
+}
+
+.elsewhereInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  word-break: auto-phrase;
+  text-wrap: pretty;
+  animation: rise var(--dur-2) var(--ease-out);
+}
+
+.elsewhereTile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--accentsoft);
+  color: var(--accent);
+}
+
+.elsewhereTitle {
+  margin: 20px 0 0;
+  font-family: var(--font-title);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+:lang(ja) .elsewhereTitle {
+  letter-spacing: 0;
+}
+
+.elsewhereUse {
+  height: 40px;
+  margin-top: 24px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-size: 15px;
+  animation: pop var(--dur-2) var(--ease-out);
+}
+
+/* SIDE-02: who can read an encrypted conversation (PrivateDM, PrivateGroupDM, PrivateChannel) */
+.privacyLine {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.privacyLine > svg {
+  flex-shrink: 0;
+}
+
+.privacyLock {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: -8px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--subtle);
+  cursor: default;
+}
+
+.privacyLock:hover,
+.privacyLock:focus-visible {
+  background: var(--hover);
+}
+
+.privacyTip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 14px;
+  z-index: 30;
+  display: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--tip);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  color: var(--ontip);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateX(-50%);
+  animation: fade-in var(--dur-1) var(--ease-out);
+}
+
+.privacyLock:hover .privacyTip,
+.privacyLock:focus-visible .privacyTip {
+  display: block;
+}
+
+.privacyLockGap {
+  margin-right: 6px;
+}

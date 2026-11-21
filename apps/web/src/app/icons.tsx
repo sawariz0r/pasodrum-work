@@ -136,6 +136,21 @@ export const TrashIcon = icon(
   </>,
   { size: 16, strokeWidth: 1.9 },
 );
+export const PinIcon = icon(
+  <>
+    <path d="M12 17v5" />
+    <path d="M9 4h6l-1 6 4 4H6l4-4Z" />
+  </>,
+  { size: 16, strokeWidth: 1.9 },
+);
+export const UnpinIcon = icon(
+  <>
+    <path d="M12 17v5" />
+    <path d="M9 4h6l-1 6 4 4H6l4-4Z" />
+    <path d="m3 3 18 18" />
+  </>,
+  { size: 16, strokeWidth: 1.9 },
+);
 export const BoxIcon = icon(
   <>
     <path d="M21 8 12 3 3 8v8l9 5 9-5Z" />

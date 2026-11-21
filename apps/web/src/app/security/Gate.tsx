@@ -24,7 +24,7 @@ export function useGate(channelId: string): 'gate' | 'wait' | 'key' | 'open' {
     if (!encrypted(snap, channelId)) return 'open';
     const { device, needsRecoveryKey } = snap.security;
     if (device === 'unconfirmed') return 'gate';
-    if (device === 'starting') return 'wait';
+    if (device === 'starting' || device === 'elsewhere') return 'wait';
     return needsRecoveryKey || firstKey !== 'idle' ? 'key' : 'open';
   });
 }

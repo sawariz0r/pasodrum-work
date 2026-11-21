@@ -59,8 +59,6 @@
       "home": "Home",
       "dms": "DMs",
       "activity": "Activity",
-      "docs": "Docs",
-      "boards": "Boards",
       "lightTheme": "Switch to light theme",
       "darkTheme": "Switch to dark theme",
       "profileActive": "Your profile: {{name}}, active",
@@ -83,16 +81,11 @@
     "header": {
       "members_one": "{{count}} member",
       "members_other": "{{count}} members",
-      "pinned": "Pinned messages",
       "details": "Channel details"
     },
     "tabs": {
       "label": "Channel views",
-      "messages": "Messages",
-      "files": "Files",
-      "pins": "Pins",
-      "soon": "Soon",
-      "addTab": "Add a tab"
+      "messages": "Messages"
     },
     "connection": {
       "offline": "Offline",
@@ -111,7 +104,8 @@
       "title": "This page isn’t available",
       "openChannel": "Open #{{channel}}"
     },
-    "back": "Back"
+    "back": "Back",
+    "soon": "Soon"
   },
   "timeline": {
     "today": "Today",
@@ -131,6 +125,9 @@
     "edit": "Edit",
     "copyText": "Copy text",
     "copyLink": "Copy link",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "pinned": "Pinned",
     "close": "Close",
     "linkCopied": "Link copied",
     "newLine": "New",
@@ -514,6 +511,10 @@
     "close": "Close",
     "failed": "Something went wrong. Try again.",
     "keyFailed": "Couldn’t make a recovery key",
-    "retry": "Retry"
+    "retry": "Retry",
+    "elsewhereTitle": "Pasodrum work is open in another tab",
+    "useHere": "Use here",
+    "privacyOne": "Only you and {{name}} can read this conversation.",
+    "privacyMany": "Only the people here can read this conversation."
   }
 }

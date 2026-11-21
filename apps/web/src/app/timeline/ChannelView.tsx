@@ -5,7 +5,9 @@ import { EmptyChannelAddPeople } from '../channels/ChannelMenus';
 import { ComposerProvider } from '../composer/context';
 import { DmIntro } from '../people/DmIntro';
 import { useDmName } from '../people/names';
+import { LockIcon } from '../icons';
 import { ConfirmGate, KeyGate, useGate } from '../security/Gate';
+import { PrivacyLine, usePrivacyText } from '../security/Privacy';
 import { ThreadPanel } from '../thread/ThreadPanel';
 import { useOpenThread, useThreadNav } from '../thread/useThread';
 import { ArchivedBar, useArchived } from './ArchivedBar';
@@ -37,11 +39,31 @@ function ChannelPane({ channelId }: { channelId: string }) {
 function Conversation({ channelId, fadeIn }: { channelId: string; fadeIn: boolean }) {
   const store = useStore();
   const timeline = useWorkspace((snap) => snap.timelines[channelId]);
-  const channelName = useWorkspace((snap) => findChannel(snap, channelId)?.name);
+  const channel = useWorkspace((snap) => findChannel(snap, channelId));
+  const channelName = channel?.name;
   // A DM's room id works as a channel id (D-24); it reads its name from the people in it.
   const dm = useWorkspace((snap) => (channelName === undefined ? snap.dms.find((d) => d.id === channelId) : undefined));
   const dmName = useDmName();
   const name = channelName ?? (dm ? dmName(dm) : '');
+  const privacy = usePrivacyText(channel ?? dm);
+  const emptyAction = !dm && <EmptyChannelAddPeople channelId={channelId} />;
+  // SIDE-02: an encrypted conversation's start says who can read it (PrivateDM, PrivateGroupDM, PrivateChannel).
+  const start =
+    privacy &&
+    (dm ? (
+      <DmIntro dm={dm}>
+        <PrivacyLine text={privacy} />
+      </DmIntro>
+    ) : (
+      <div className={s.empty}>
+        <div className={s.emptyIcon}>
+          <LockIcon size={28} strokeWidth={2} />
+        </div>
+        <h2 className={s.emptyTitle}>{name}</h2>
+        <PrivacyLine text={privacy} />
+        {!timeline?.messages.length && emptyAction && <div className={s.emptyAction}>{emptyAction}</div>}
+      </div>
+    ));
   const meId = useWorkspace((snap) => snap.me.id);
   const archived = useArchived(channelId);
   const [unreadAtOpen] = useState(() => {
@@ -87,7 +109,8 @@ function Conversation({ channelId, fadeIn }: { channelId: string; fadeIn: boolea
           unreadAtOpen={unreadAtOpen}
           onOpenThread={threads.open}
           intro={dm && <DmIntro dm={dm} />}
-          emptyAction={!dm && <EmptyChannelAddPeople channelId={channelId} />}
+          start={start}
+          emptyAction={emptyAction}
         />
         <div className={s.floor}>
           <TypingIndicator channelId={channelId} />

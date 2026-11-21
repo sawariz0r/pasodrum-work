@@ -531,6 +531,10 @@
   min-height: 0;
 }
 
+.panelIn {
+  animation: fade-in var(--dur-2) var(--ease-out);
+}
+
 /* Not available */
 .unavailable {
   animation: fade-in var(--dur-2) var(--ease-out);
@@ -839,4 +843,55 @@
   .shell.listPage:global(.pane-list) .main {
     display: none;
   }
+}
+
+/* M7 "Soon" rail pages (DocsSoon, BoardsSoon) */
+.soon {
+  animation: fade-in var(--dur-2) var(--ease-out);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px 120px;
+  text-align: center;
+}
+
+.soonIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--well);
+  color: var(--subtle);
+}
+
+.soonTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0 0;
+  font-family: var(--font-title);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.soonPill {
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: var(--accentsoft);
+  color: var(--accent);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 18px;
+}
+
+:lang(ja) .soonTitle,
+:lang(ja) .soonPill {
+  letter-spacing: 0;
 }

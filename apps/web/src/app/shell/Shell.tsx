@@ -16,6 +16,7 @@ import { rememberPlace } from '../prefs';
 import { ThreadPanel } from '../thread/ThreadPanel';
 import { useOpenThread, useThreadNav } from '../thread/useThread';
 import { noStoredTabs } from '../registry';
+import { useRegistry } from '../RegistryProvider';
 import { AppStart } from './AppStart';
 import { ChannelTabs } from './ChannelTabs';
 import { ConnectionBanner } from './ConnectionBanner';
@@ -31,6 +32,7 @@ const SignOut = createContext<() => void>(() => {});
 export function Workspace({ onSignOut }: { onSignOut: () => void }) {
   const starting = useWorkspace((x) => x.connection === 'starting');
   const meId = useWorkspace((x) => x.me.id);
+  const { routes } = useRegistry();
   useDraftsFor(meId);
   if (starting) return <AppStart />;
   return (
@@ -49,6 +51,9 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
               <Route path="dms" element={<DmsRoute />} />
               <Route path="dms/:dmId" element={<DmsRoute />} />
               <Route path="activity" element={<ActivityRoute />} />
+              {routes.map((r) => (
+                <Route key={r.path} path={r.path} element={<Frame section="feature" column={null}>{r.element}</Frame>} />
+              ))}
               <Route path="*" element={<UnknownRoute />} />
             </Routes>
           </ChannelsProvider>

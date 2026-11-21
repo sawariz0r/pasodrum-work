@@ -306,8 +306,11 @@ export interface Confirmation {
 
 /** M6. This device and the account's encryption setup (D-31). */
 export interface Security {
-  /** 'starting' until crypto is ready; 'unconfirmed' = encrypted conversations show the confirm gate. */
-  device: 'starting' | 'confirmed' | 'unconfirmed';
+  /**
+   * 'starting' until crypto is ready; 'unconfirmed' = encrypted conversations show the confirm gate.
+   * 'elsewhere' (D-33): another tab of this browser holds this device; `useHere()` asks it to stop.
+   */
+  device: 'starting' | 'confirmed' | 'unconfirmed' | 'elsewhere';
   /** Other confirmed devices signed in now (0 → only the recovery key option, ConfirmGateNoDevice). */
   otherConfirmedDevices: number;
   /** The account has no recovery key yet: show RecoveryKeySave before the first DM/private-channel view or send. */
@@ -354,6 +357,8 @@ export interface WorkspaceStore {
   discard(channelId: string, messageId: string): void;
   markRead(channelId: string): void;
   reconnectNow(): void;
+  /** D-33, device 'elsewhere': the other tab stops and shows 'elsewhere'; this one starts. */
+  useHere(): void;
   signOut(): Promise<void>;
   // M2
   /** Sends text (with optional formatting, mentions, reply) plus any finished uploads in the tray, then clears the tray. */

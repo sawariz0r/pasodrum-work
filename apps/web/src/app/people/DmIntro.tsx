@@ -1,5 +1,5 @@
 // The start of a DM with no messages yet (Batch C DMEmpty): the person, big, and their local time.
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useStore, useWorkspace, type Dm, type Profile } from '../../matrix';
 import { ClockIcon } from '../shell/icons';
 import { DmFace, Face, others } from './Face';
@@ -7,7 +7,7 @@ import { useLocalTime } from './localTime';
 import { useDmName, useShowExternal } from './names';
 import s from './People.module.css';
 
-export function DmIntro({ dm }: { dm: Dm }) {
+export function DmIntro({ dm, children }: { dm: Dm; children?: ReactNode }) {
   const store = useStore();
   const meId = useWorkspace((x) => x.me.id);
   const name = useDmName();
@@ -42,6 +42,7 @@ export function DmIntro({ dm }: { dm: Dm }) {
           <span>{local}</span>
         </div>
       )}
+      {children}
     </div>
   );
 }

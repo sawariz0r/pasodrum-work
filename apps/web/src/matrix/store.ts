@@ -1583,6 +1583,9 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     reconnectNow() {
       client.retryImmediately();
     },
+    useHere() {
+      security.useHere();
+    },
     async signOut() {
       for (const items of trays.values()) items.forEach(dropUpload);
       trays.clear();
