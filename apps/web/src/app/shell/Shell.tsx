@@ -46,7 +46,7 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
         <NewMessageProvider>
           <ChannelsProvider>
             <Routes>
-              <Route index element={<HomeRedirect />} />
+              <Route index element={<ChannelRoute />} />
               <Route path="w/:spaceId" element={<SpaceRedirect />} />
               <Route path="w/:spaceId/c/:channelId" element={<ChannelRoute />} />
               <Route path="w/:spaceId/channels" element={<BrowseRoute />} />
@@ -71,19 +71,6 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
   );
 }
 
-function HomeRedirect() {
-  const home = useWorkspace((x) => homeChannel(x)?.id);
-  const spaceId = useWorkspace((x) => homeChannel(x)?.spaceId);
-  if (!home || !spaceId) return <Navigate to="/unavailable" replace />;
-  // Draws the channel while redirecting: a bare <Navigate> commits an empty frame first.
-  return (
-    <>
-      <Navigate to={channelPath(spaceId, home)} replace />
-      <ChannelRoute at={{ spaceId, channelId: home }} />
-    </>
-  );
-}
-
 function SpaceRedirect() {
   const { spaceId = '' } = useParams();
   const home = useWorkspace((x) => spaceHome(x, spaceId)?.id);
@@ -96,23 +83,33 @@ function useFallbackSpace(spaceId?: string): Space | undefined {
   return fallbackSpace(spaces, spaceId);
 }
 
-function ChannelRoute({ at }: { at?: { spaceId: string; channelId: string } }) {
+/** Also the index route: it draws the home channel while redirecting to it. The channel's route is this same element, so
+ * nothing remounts after the redirect (a bare <Navigate>, or another element, commits an empty or fresh frame first). */
+function ChannelRoute() {
   const params = useParams();
-  const { spaceId, channelId } = at ?? params;
+  const homeId = useWorkspace((x) => homeChannel(x)?.id);
+  const homeSpaceId = useWorkspace((x) => homeChannel(x)?.spaceId);
+  const redirect = !params.channelId && homeId && homeSpaceId ? channelPath(homeSpaceId, homeId) : undefined;
+  const spaceId = params.channelId ? params.spaceId : homeSpaceId;
+  const channelId = params.channelId ?? homeId;
   const spaces = useWorkspace((x) => x.spaces);
   const channel = useWorkspace((x) => (spaceId && channelId ? x.channels[spaceId]?.find((c) => c.id === channelId) : undefined));
   const fallback = useFallbackSpace(spaceId);
   const space = channel ? spaces.find((x) => x.id === channel.spaceId) : fallback;
 
-  // Only the real route remembers the place; the redirect's inline draw must not (it may be replaced at once).
+  // Only the channel's own path remembers the place; the redirect's draw must not (it may be replaced at once).
   useEffect(() => {
-    if (channel && !at) rememberPlace(channel.spaceId, channel.id);
-  }, [channel, at]);
+    if (channel && !redirect) rememberPlace(channel.spaceId, channel.id);
+  }, [channel, redirect]);
 
+  if (!channelId) return <Navigate to="/unavailable" replace />;
   return (
-    <Frame section="home" space={space} column={space && <Sidebar space={space} active={channel ? { channelId: channel.id } : undefined} />}>
-      {channel ? <ChannelPage channel={channel} /> : <NotAvailable />}
-    </Frame>
+    <>
+      {redirect && <Navigate to={redirect} replace />}
+      <Frame section="home" space={space} column={space && <Sidebar space={space} active={channel ? { channelId: channel.id } : undefined} />}>
+        {channel ? <ChannelPage channel={channel} /> : <NotAvailable />}
+      </Frame>
+    </>
   );
 }
 

@@ -346,8 +346,7 @@ function Activity({ project, issue }: { project: Project; issue: Issue }) {
   };
   const line = (key: string, text: string, ts: number): ReactNode => (
     <div key={key} className={s.change}>
-      <span aria-hidden="true" className={s.changeDot} />
-      <span>{t('oneLine', { text, when: when(ts) })}</span>
+      {t('oneLine', { text, when: when(ts) })}
     </div>
   );
 

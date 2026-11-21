@@ -1,6 +1,6 @@
-import { useEffect, useMemo, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { useStore, useWorkspace, type Message, type WorkspaceSnapshot } from '../../matrix';
-import { contentKey, fits, looksForeign, readableText } from '../../app/translate';
+import { fits, looksForeign, readableText } from '../../app/translate';
 import type { BodyOverride } from '../../app/registry';
 import { sourceOf, toggle, translate, useEntry } from './state';
 import { useT } from './strings';
@@ -52,8 +52,8 @@ function useEligible(m: Message) {
 export function useTranslateButton(m: Message) {
   const { t } = useT();
   const store = useStore();
-  const entry = useEntry(m.id);
   const { eligible, foreign, target } = useEligible(m);
+  const entry = useEntry(m, target);
   if (!eligible || (entry.status === 'none' && !foreign)) return null;
   return {
     icon: <LanguagesIcon />,
@@ -66,12 +66,8 @@ export function useTranslateButton(m: Message) {
 export function TranslateBody({ message: m, render }: { message: Message; render: (override?: BodyOverride) => ReactNode }) {
   const { t } = useT();
   const store = useStore();
-  const entry = useEntry(m.id);
   const { eligible, target } = useEligible(m);
-  const stale = eligible && entry.status === 'translated' && entry.key !== contentKey(sourceOf(m), target);
-  useEffect(() => {
-    if (stale) translate(store, m, target);
-  }, [stale, store, m, target]);
+  const entry = useEntry(m, target);
 
   if (!eligible || entry.status === 'none') return render();
   const text = entry.status === 'translated' && entry.result ? render({ ...entry.result, lang: target }) : render();

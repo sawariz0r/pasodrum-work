@@ -1,7 +1,7 @@
 ---
 id: M7-01
 title: M7 tabs & cards — Pins, Files, link cards, Docs/Boards Soon; second-tab handover
-stage: ceo-review
+stage: done
 area: fullstack
 milestone: M7
 priority: P1

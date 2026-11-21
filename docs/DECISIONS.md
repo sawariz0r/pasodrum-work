@@ -128,7 +128,7 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
   - One room per project (custom type).
   - Issue = a root `m.room.message` with a full body, plus state `work.pasodrum.boards.issue` (state key = root event id) holding {title, column, assignee, due, order}. Last write wins.
   - Comments are thread replies to the root.
-  - Columns live in `work.pasodrum.boards.columns` [{id, title?}]. Default columns get their names from the locale files; a custom column has one title, as typed.
+  - Columns live in `work.pasodrum.boards.columns` [{id, title?}]. A custom column has one title, as typed. (Default column names: see Amended at build.)
 - **Power levels:** new page and project rooms set their custom state types to level 0, as pins did (D-33).
 - **Presence:**
   - "Typing…" uses `m.typing`.
@@ -148,11 +148,13 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Amended at build (2026-11-21):**
   - The page tree lives in the space room's own state: `work.pasodrum.docs.page`, state key = page room id, `{title, parent?, order, links?}`, level 0 in spaces. `/hierarchy` can't return custom state, and clients can't add `m.space.child`. Page rooms carry `m.space.parent` and a restricted join only. Existing spaces need `node dev/migrate-docs.ts --apply`, run once by an Owner (done locally; production pending).
   - Projects stay `m.space.child` and team-only, as the rules say. Clients create pages and issues, not projects or columns.
+  - Project rooms are joined in the background after the first sync (and again when a space gains a child), not when Boards opens, so issue mentions and assignments reach Activity and the Boards rail badge.
   - An issue's description is state (`work.pasodrum.boards.description`, key = root event id, last write wins), because only the sender can edit a message. Change one-liners are derived from the issue state's history.
   - Links use ids: `/docs/<pageRoomId>` and `/boards/<projectRoomId>/<issueEventId>`.
   - A page room is joined on open and **never left**: on our single server, the last member leaving makes the room unjoinable for everyone.
   - Presence (`/api/presence/<roomId>`, NDJSON stream) skips Caddy's `encode` in production, otherwise each stream waits for its first heartbeat.
   - Translate for other features goes through the registry (`Feature.translation`), so deleting `features/translate` removes it from Docs and Boards too.
+  - **Columns are never translated (CEO).** A column's name is fixed text in the language of whoever created the project: `createProject` stores the four default titles in the creator's UI language (the UI passes them; `matrix/` knows no copy). Rename a column from its header menu (`renameColumn`, one state write, same level as adding a column). Older projects with untitled default columns: the first person who may edit columns to open the board titles them once, in their language (`titleColumns` fills only what is still untitled; once per session per project). Until then, and for viewers who can't edit, untitled columns fall back to locale names. `done` stays the semantic id; nothing keys on titles.
 
 ### D-36 · People types and access roles, amends D-06/D-25/D-27/D-28 · Accepted (model + boards approved by the CEO) · 2026-11-21
 - **Owner 100, Admin 50, Staff 10** (today's Member; 10 in workspace rooms too), **External 1** (a mark that grants nothing), **Client 0**. Admins have Owner-like rights but can't change or remove Owners/Admins.

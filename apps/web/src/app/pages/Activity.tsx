@@ -1,5 +1,6 @@
 // Activity (Batch C Activity / Mentions / ActivityEmpty): mentions of you and replies to you, across every space.
 // A row opens the message in its channel (or thread) beside the list and marks it read; the list keeps its order while open.
+// Boards issues (D-37: mentioned in a comment, or assigned) open the issue instead.
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -7,7 +8,7 @@ import { useStore, useWorkspace, type ActivityItem, type WorkspaceSnapshot } fro
 import { HashIcon, LockIcon } from '../icons';
 import { Face } from '../people/Face';
 import { useDmName } from '../people/names';
-import { AtIcon, BellIcon, ReplyKindIcon, ThreadIcon } from '../shell/icons';
+import { AssignKindIcon, AtIcon, BellIcon, ReplyKindIcon, ThreadIcon } from '../shell/icons';
 import { useListTime, useStableOrder } from './lists';
 import s from './Pages.module.css';
 import { previewParts } from './Preview';
@@ -29,7 +30,7 @@ export function ActivityColumn({ selectedId }: { selectedId?: string }) {
     if (item.unread) store.markActivityRead(item.id);
     const q = new URLSearchParams({ item: item.id });
     if (item.threadRootId) q.set('thread', item.threadRootId);
-    navigate(`/activity?${q}`);
+    navigate(item.issue ? `/boards/${encodeURIComponent(item.channelId)}/${encodeURIComponent(item.issue.id)}` : `/activity?${q}`);
   };
 
   return (
@@ -78,8 +79,10 @@ function Row({ item, selected, onOpen }: { item: ActivityItem; selected: boolean
   const unread = item.unread && !selected;
   // M6: no text of an encrypted conversation before this device is confirmed.
   const hidden = useHiddenText(item.channelId);
-  const where = !place ? '' : 'people' in place ? dmName(place) : place.name;
-  const whereIcon = item.threadRootId ? <ThreadIcon size={12} strokeWidth={2.2} /> : place && 'private' in place && place.private ? <LockIcon size={12} strokeWidth={2.2} /> : <HashIcon size={12} strokeWidth={2.2} />;
+  const where = item.issue
+    ? t(item.kind === 'assigned' ? 'pages.activity.issueAssigned' : 'pages.activity.issueMention', { issue: item.issue.key })
+    : !place ? '' : 'people' in place ? dmName(place) : place.name;
+  const whereIcon = item.issue ? null : item.threadRootId ? <ThreadIcon size={12} strokeWidth={2.2} /> : place && 'private' in place && place.private ? <LockIcon size={12} strokeWidth={2.2} /> : <HashIcon size={12} strokeWidth={2.2} />;
 
   return (
     <button
@@ -90,8 +93,8 @@ function Row({ item, selected, onOpen }: { item: ActivityItem; selected: boolean
     >
       <span className={s.actFace}>
         <Face person={message.sender} size={36} />
-        <span role="img" aria-label={t(item.kind === 'mention' ? 'pages.activity.mention' : 'pages.activity.reply')} className={[s.kind, item.kind === 'mention' && s.kindMention].filter(Boolean).join(' ')}>
-          {item.kind === 'mention' ? <AtIcon /> : <ReplyKindIcon />}
+        <span role="img" aria-label={t(`pages.activity.${item.kind}`)} className={[s.kind, item.kind === 'mention' && s.kindMention].filter(Boolean).join(' ')}>
+          {item.kind === 'mention' ? <AtIcon /> : item.kind === 'assigned' ? <AssignKindIcon /> : <ReplyKindIcon />}
         </span>
       </span>
       <span className={s.rowMain}>

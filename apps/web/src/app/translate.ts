@@ -11,7 +11,7 @@ export interface Translated {
 export interface Source {
   body: string;
   html?: string;
-  /** Message id and sender: part of the cache key, so two messages never share a translation. */
+  /** Message id and sender: part of the cache key with the text, so two messages never share a translation and an edit is translated anew. */
   id?: string;
   senderId?: string;
 }
@@ -186,7 +186,7 @@ export function onForget(f: () => void): () => void {
 }
 
 export function contentKey(source: Source, to: Target): string {
-  const s = [to, source.id ?? '', source.senderId ?? '', source.html ?? source.body].join('\u0000');
+  const s = [to, source.id ?? '', source.senderId ?? '', source.body, source.html ?? ''].join('\u0000');
   let h = 0x811c9dc5;
   for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
   return `${to}:${source.id ?? ''}:${s.length}:${(h >>> 0).toString(36)}`;

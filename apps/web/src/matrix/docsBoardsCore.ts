@@ -546,7 +546,7 @@ export function createDocsBoardsCore(ctx: DocsBoardsContext): DocsBoardsCore {
     setTyping,
 
     ensureProjects,
-    async createProject({ spaceId, name, colour }) {
+    async createProject({ spaceId, name, colour, columns }) {
       await ready;
       const space = client.getRoom(spaceId);
       if (!joined(space) || !space.currentState.maySendStateEvent(EventType.SpaceChild, userId)) throw new Error('not-allowed');
@@ -564,7 +564,7 @@ export function createDocsBoardsCore(ctx: DocsBoardsContext): DocsBoardsCore {
         initial_state: [
           ...childState(spaceId),
           { type: PROJECT, state_key: '', content: { key, colour } },
-          { type: COLUMNS, state_key: '', content: { columns: DEFAULT_COLUMNS.map((id) => ({ id })) } },
+          { type: COLUMNS, state_key: '', content: { columns } },
         ],
       });
       try {
@@ -583,6 +583,22 @@ export function createDocsBoardsCore(ctx: DocsBoardsContext): DocsBoardsCore {
       if (!room.currentState.maySendStateEvent(COLUMNS, userId)) throw new Error('not-allowed');
       const id = `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
       await write(projectId, COLUMNS, '', { columns: [...columnsOf(room), { id, title: title.trim() }] });
+    },
+    async renameColumn(projectId, columnId, title) {
+      const room = projectRoom(projectId);
+      if (!room.currentState.maySendStateEvent(COLUMNS, userId)) throw new Error('not-allowed');
+      const columns = columnsOf(room);
+      if (!columns.some((c) => c.id === columnId)) throw new Error('not-found');
+      await write(projectId, COLUMNS, '', { columns: columns.map((c) => (c.id === columnId ? { ...c, title: title.trim() } : c)) });
+    },
+    async titleColumns(projectId, titles) {
+      const room = projectRoom(projectId);
+      if (!room.currentState.maySendStateEvent(COLUMNS, userId)) throw new Error('not-allowed');
+      // A room whose columns haven't arrived yet (just created or joined) shows the untitled fallback: not a project to title.
+      if (!room.currentState.getStateEvents(COLUMNS, '')) return;
+      const columns = columnsOf(room);
+      if (columns.every((c) => c.title || !titles[c.id])) return;
+      await write(projectId, COLUMNS, '', { columns: columns.map((c) => (c.title || !titles[c.id] ? c : { ...c, title: titles[c.id] })) });
     },
     async createIssue(projectId, o) {
       const room = projectRoom(projectId);

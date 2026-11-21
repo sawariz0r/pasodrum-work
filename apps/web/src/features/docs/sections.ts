@@ -125,6 +125,19 @@ export function sectionPlugin(view: SectionView) {
 
   return new Plugin({
     key: sectionKey,
+    // A section whose text changed (anyone's edit, or the title) drops its translation, so Translate is offered again.
+    view: () => ({
+      update(v) {
+        const states = view.states();
+        if (!states.size) return;
+        const secs = sectionsOf(v.state.doc);
+        for (const [first, st] of states) {
+          const sec = secs.find((x) => x.first === first);
+          const source = sec ? sectionSource(v.state.doc, v.state.schema, sec, view.title()).html : first < 0 ? `<h1>${escapeHtml(view.title())}</h1>` : null;
+          if (source !== st.source) view.onShowOriginal(first);
+        }
+      },
+    }),
     props: {
       decorations(state) {
         const states = view.states();

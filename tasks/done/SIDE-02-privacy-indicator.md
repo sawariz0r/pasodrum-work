@@ -1,7 +1,7 @@
 ---
 id: SIDE-02
 title: Show clearly that a conversation is private (end-to-end encrypted), in plain words
-stage: ceo-review
+stage: done
 area: frontend
 milestone: side
 priority: P2

@@ -256,7 +256,10 @@
       "empty": "Nothing new",
       "mention": "Mention",
       "reply": "Reply to you",
-      "unread": "Unread"
+      "unread": "Unread",
+      "assigned": "Assigned to you",
+      "issueMention": "mentioned you in {{issue}}",
+      "issueAssigned": "assigned you {{issue}}"
     },
     "threads": {
       "empty": "No threads yet"

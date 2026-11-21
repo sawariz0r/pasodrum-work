@@ -1,7 +1,7 @@
 ---
 id: M8-01
 title: M8 find & finish — ⌘K switcher, message search, failed actions, sign-in errors, DMs empty
-stage: ceo-review
+stage: done
 area: fullstack
 milestone: M8
 priority: P1

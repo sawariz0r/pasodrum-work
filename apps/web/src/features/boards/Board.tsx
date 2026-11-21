@@ -1,6 +1,7 @@
 // Board view (BoardsPage, BoardsDrag, BoardsQuickAdd, BoardsEmpty, BoardsCardTranslate).
 // Drag: pragmatic-drag-and-drop on fine pointers; the board is one drop target and the landing place is worked out
 // from the pointer (column by x, index by card midpoints), as on the canvas. A move is one moveIssue (fractional order).
+import * as DM from '@radix-ui/react-dropdown-menu';
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { draggable, dropTargetForElements, monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
@@ -47,9 +48,10 @@ type BoardProps = {
   onOpen: (issue: Issue) => void;
   onDelete: (issue: Issue) => void;
   onNewColumn: () => void;
+  onRenameColumn: (column: Column) => void;
 };
 
-export function Board({ project, issues, selectedId, translator, onOpen, onDelete, onNewColumn }: BoardProps) {
+export function Board({ project, issues, selectedId, translator, onOpen, onDelete, onNewColumn, onRenameColumn }: BoardProps) {
   const t = useT();
   const store = useStore();
   const toast = useToast();
@@ -128,6 +130,7 @@ export function Board({ project, issues, selectedId, translator, onOpen, onDelet
                 adding={adding === c.id}
                 onStartAdd={() => setAdding(c.id)}
                 onStopAdd={() => setAdding((a) => (a === c.id ? null : a))}
+                onRename={project.canAddColumn ? () => onRenameColumn(c) : undefined}
                 project={project}
               >
                 {cards.map((i) => (
@@ -167,6 +170,7 @@ function ColumnSection({
   adding,
   onStartAdd,
   onStopAdd,
+  onRename,
   project,
   children,
 }: {
@@ -177,6 +181,7 @@ function ColumnSection({
   adding: boolean;
   onStartAdd: () => void;
   onStopAdd: () => void;
+  onRename?: () => void;
   project: Project;
   children: ReactNode;
 }) {
@@ -190,6 +195,25 @@ function ColumnSection({
         <ColumnIcon id={column.id} />
         <span className={s.colName}>{name}</span>
         <span className={s.colCount}>{count}</span>
+        {onRename && (
+          <>
+            <span className={s.spacer} />
+            <DM.Root modal={false}>
+              <DM.Trigger asChild>
+                <button type="button" className={`${s.tool} ${s.reveal}`} aria-label={t('more')}>
+                  <MoreIcon />
+                </button>
+              </DM.Trigger>
+              <DM.Portal>
+                <DM.Content className={s.menu} align="end" sideOffset={4} collisionPadding={12} aria-label={name}>
+                  <DM.Item className={s.opt} onSelect={onRename}>
+                    <span>{t('rename')}</span>
+                  </DM.Item>
+                </DM.Content>
+              </DM.Portal>
+            </DM.Root>
+          </>
+        )}
       </div>
       {children}
       {adding ? (

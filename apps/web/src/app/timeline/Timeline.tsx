@@ -25,6 +25,9 @@ const jumpPages = 10;
 const loadOlderWithinPx = 400;
 /** Where a conversation left scrolled up was, to return to it: the first message on screen and its offset from the top. */
 const positions = new Map<string, { id: string; top: number }>();
+/** Conversations showing their messages now. A rail page switch remounts the page around one (Activity → Home on the same
+ * channel); its messages stay put instead of fading in again from blank. */
+const shown = new Map<string, number>();
 
 const skeletonRows: [string, string, string][] = [
   ['22%', '74%', '48%'], ['16%', '58%', ''], ['26%', '82%', '64%'], ['18%', '40%', ''],
@@ -223,6 +226,18 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
     state.current = { initialLoading, loadingOlder, hasOlder, newestId: messages.at(-1)?.id };
   });
 
+  const shownKey = rootId ?? channelId;
+  const [still] = useState(() => shown.has(shownKey));
+  useLayoutEffect(() => {
+    if (initialLoading) return;
+    shown.set(shownKey, (shown.get(shownKey) ?? 0) + 1);
+    return () => {
+      const n = shown.get(shownKey)! - 1;
+      if (n) shown.set(shownKey, n);
+      else shown.delete(shownKey);
+    };
+  }, [shownKey, initialLoading]);
+
   const stickToBottom = useCallback(() => {
     const el = scroller.current;
     if (!el) return;
@@ -415,7 +430,7 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
             <div
               role="log"
               aria-label={thread ? t('thread.title') : t('common.channelName', { name: channelName })}
-              className={thread ? `${s.log} ${s.replies}` : s.log}
+              className={[s.log, thread && s.replies, still && s.still].filter(Boolean).join(' ')}
             >
               {items.map((item) => {
                 if (item.kind === 'day') return <DayDivider key={item.key} day={item.day} now={now} />;

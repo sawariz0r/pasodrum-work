@@ -133,11 +133,15 @@ export interface ThreadSummary {
 /** M3. Something aimed at me: a mention, or a reply to my message (in a channel or thread). */
 export interface ActivityItem {
   id: string;
-  kind: 'mention' | 'reply';
+  /** 'assigned': D-37, someone else assigned me a Boards issue. */
+  kind: 'mention' | 'reply' | 'assigned';
   channelId: string;
   threadRootId?: string;
+  /** For 'assigned': the change, with the issue's title as `body`. */
   message: Message;
   unread: boolean;
+  /** D-37. A Boards issue (channelId = its project): opens `/boards/<channelId>/<id>`. `key` as shown, e.g. 'PDW-3'. */
+  issue?: { id: string; key: string };
 }
 
 /** M3. A direct conversation with one or more people. */

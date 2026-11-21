@@ -458,6 +458,8 @@
 
 .card:hover .reveal,
 .card:focus-within .reveal,
+.colHeadRow:hover .reveal,
+.colHeadRow:focus-within .reveal,
 .cardForce .reveal,
 .reveal[aria-expanded='true'] {
   opacity: 1;
@@ -1247,15 +1249,22 @@
 }
 
 /* ---------- Issue panel ---------- */
+/* Over the board at every width, so opening an issue never squeezes the columns. */
 .panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
   display: flex;
-  flex: 0 0 470px;
   flex-direction: column;
   box-sizing: border-box;
   width: 470px;
+  max-width: 100%;
   min-height: 0;
   border-left: 1px solid var(--line);
   background: var(--bg);
+  box-shadow: var(--shadow);
   animation: panel-in var(--dur-2) var(--ease-out);
 }
 
@@ -1269,18 +1278,6 @@
 @media (prefers-reduced-motion: reduce) {
   .panel {
     animation: fade-in var(--dur-2) var(--ease-out);
-  }
-}
-
-@media (max-width: 1279px) {
-  .panel {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 5;
-    max-width: 100%;
-    box-shadow: var(--shadow);
   }
 }
 
@@ -1480,29 +1477,10 @@
 }
 
 .change {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 2px 0;
+  padding: 2px 0 2px 40px;
   color: var(--subtle);
   font-size: 12.5px;
   line-height: 18px;
-}
-
-.changeDot {
-  display: flex;
-  flex: none;
-  justify-content: center;
-  width: 30px;
-}
-
-.changeDot::before {
-  width: 5px;
-  height: 5px;
-  border-radius: 3px;
-  background: var(--subtle);
-  content: '';
-  opacity: 0.5;
 }
 
 .comment {

@@ -4,15 +4,18 @@
 import { createElement } from 'react';
 import { lazyComponent } from '../../app/lazy';
 import { defineFeature } from '../../app/registry';
+import { useWorkspace } from '../../matrix';
 import { BoardsIcon, useBoardsLabel } from './Boards';
 import { IssueCard } from './IssueCard';
 
 const BoardsScreen = lazyComponent(() => import('./BoardsScreen').then((m) => m.BoardsScreen));
 const BoardsColumn = lazyComponent(() => import('./BoardsColumn').then((m) => m.BoardsColumn));
+/** Unread issue mentions and assignments (the same items Activity lists). */
+const useBoardsBadge = () => useWorkspace((x) => x.activity.filter((a) => a.unread && a.issue).length);
 
 export default defineFeature({
   id: 'boards',
-  rail: [{ id: 'boards', to: '/boards', icon: createElement(BoardsIcon), useLabel: useBoardsLabel }],
+  rail: [{ id: 'boards', to: '/boards', icon: createElement(BoardsIcon), useLabel: useBoardsLabel, useBadge: useBoardsBadge }],
   routes: [{ path: 'boards/*', element: createElement(BoardsScreen), column: createElement(BoardsColumn) }],
   messageParts: [{ id: 'issue-card', Part: IssueCard }],
 });

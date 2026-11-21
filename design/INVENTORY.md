@@ -227,6 +227,7 @@ Approved 2026-11-21 (CEO). Rules: DocsBoardsRules. Components: DocsPage, BoardsP
 | Issue panel, translated comment; assign; due date | BoardsIssue(+JP, Dark), BoardsAssignee, BoardsDue | approved 2026-11-21 |
 | New issue, quick add, create failed | BoardsNewIssue(+JP, Dark), BoardsQuickAdd(+JP), BoardsCreateFailed | approved 2026-11-21 |
 | New column (one title), translate a card | BoardsColumn(+JP), BoardsCardTranslate | approved 2026-11-21 |
+| Gap (built as shown, needs a board): Rename column — column header ⋯ (team, on hover) → Rename; the New column dialog titled "Rename column", field prefilled, Save | — | needs design |
 | My issues | BoardsMine(+JP) | approved 2026-11-21 |
 | New project, no projects yet, empty project, loading | BoardsNewProject, BoardsNoProjects(+JP), BoardsEmpty, BoardsLoading | approved 2026-11-21 |
 | Card menu, delete issue, move failed | BoardsCardMenu(+JP, Dark), BoardsDeleteIssue, BoardsMoveFailed | approved 2026-11-21 |

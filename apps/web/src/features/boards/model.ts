@@ -1,8 +1,8 @@
 // Shared by the Boards column and screen: routes, scope, names, dates, small per-browser memory.
-import { useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { useParams } from 'react-router';
 import { fallbackSpace } from '../../app/places';
-import { scopeOf, useWorkspace, type Column, type Issue, type Project, type Space } from '../../matrix';
+import { DEFAULT_COLUMNS, scopeOf, useStore, useWorkspace, type Column, type Issue, type Project, type Space } from '../../matrix';
 import { useT } from './strings';
 
 const enc = encodeURIComponent;
@@ -39,9 +39,32 @@ export function useIsTeam(): boolean {
 
 export const issueKey = (project: Pick<Project, 'key'>, issue: Pick<Issue, 'n'>) => `${project.key}-${issue.n}`;
 
+/** Columns are never translated: the stored title, else (an untitled default column) the name in my language. */
 export function useColumnName() {
   const t = useT();
   return (c: Column) => c.title ?? (c.id === 'todo' ? t('columnTodo') : c.id === 'doing' ? t('columnDoing') : c.id === 'review' ? t('columnReview') : c.id === 'done' ? t('columnDone') : c.id);
+}
+
+/** A new project's columns, titled in my language. */
+export function useDefaultColumns(): () => Column[] {
+  const name = useColumnName();
+  return () => DEFAULT_COLUMNS.map((id) => ({ id, title: name({ id }) }));
+}
+
+const titled = new Set<string>();
+
+/** Projects made before titles were stored: the first editor to open the board titles its default columns in their language, once per session. */
+export function useTitleColumns(project: Project | undefined) {
+  const store = useStore();
+  const name = useColumnName();
+  const untitled = project && !project.loading && project.canAddColumn ? project.columns.filter((c) => !c.title && DEFAULT_COLUMNS.includes(c.id)) : [];
+  const id = untitled.length ? project!.id : undefined;
+  useEffect(() => {
+    if (!id || titled.has(id)) return;
+    titled.add(id);
+    void store.docsBoards.titleColumns(id, Object.fromEntries(untitled.map((c) => [c.id, name(c)]))).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per project; the titles are read when it runs
+  }, [store, id]);
 }
 
 // Dates are 'YYYY-MM-DD' in local time.

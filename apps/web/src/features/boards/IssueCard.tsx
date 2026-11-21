@@ -3,7 +3,7 @@ import { Link, useInRouterContext } from 'react-router';
 import { useDocsBoards, useStore, type DocsBoardsSnapshot, type Issue, type Message, type Project } from '../../matrix';
 import { PersonAvatar } from '../../app/timeline/PersonAvatar';
 import { formatDate } from '../../app/format';
-import { useT } from './strings';
+import { useColumnName } from './model';
 import s from './IssueCard.module.css';
 
 /** DB-05: a card under a message for its first link to one of our issues. The body keeps the plain link (D-05). */
@@ -15,7 +15,7 @@ export function IssueCard({ message }: { message: Message }) {
 type Found = { project: Project; issue: Issue };
 
 function Card({ projectId, issueId }: { projectId: string; issueId: string }) {
-  const t = useT();
+  const columnName = useColumnName();
   const store = useStore();
   const project = useDocsBoards((d) => findProject(d.projects, projectId));
   const known = project && !project.loading;
@@ -38,8 +38,6 @@ function Card({ projectId, issueId }: { projectId: string; issueId: string }) {
   // Unknown or deleted issue, or a project I can't see: the plain link stays on its own.
   if (!issue || !from) return null;
 
-  const column = from.columns.find((c) => c.id === issue.column);
-  const columnName = column?.title ?? (isDefault(issue.column) ? t(defaultNames[issue.column]) : issue.column);
   return (
     <CardLink to={`/boards/${encodeURIComponent(projectId)}/${encodeURIComponent(issueId)}`}>
       <span className={s.icon}>
@@ -51,7 +49,7 @@ function Card({ projectId, issueId }: { projectId: string; issueId: string }) {
           <span className={s.title}>{issue.title}</span>
         </span>
         <span className={s.meta}>
-          <span>{columnName}</span>
+          <span>{columnName(from.columns.find((c) => c.id === issue.column) ?? { id: issue.column })}</span>
           {issue.due && (
             <span className={s.due}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -68,8 +66,6 @@ function Card({ projectId, issueId }: { projectId: string; issueId: string }) {
   );
 }
 
-const defaultNames = { todo: 'columnTodo', doing: 'columnDoing', review: 'columnReview', done: 'columnDone' } as const;
-const isDefault = (id: string): id is keyof typeof defaultNames => id in defaultNames;
 
 /** The column glyphs from the board (BoardsPage): a custom column gets the dashed one. */
 function ColumnIcon({ column }: { column: string }) {

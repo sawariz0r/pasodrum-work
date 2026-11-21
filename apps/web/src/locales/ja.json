@@ -253,7 +253,10 @@
       "empty": "新しい通知はありません",
       "mention": "メンション",
       "reply": "あなたへの返信",
-      "unread": "未読"
+      "unread": "未読",
+      "assigned": "あなたに割り当て",
+      "issueMention": "{{issue}} であなたをメンションしました",
+      "issueAssigned": "{{issue}} をあなたに割り当てました"
     },
     "threads": {
       "empty": "スレッドはまだありません"

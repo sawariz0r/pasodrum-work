@@ -37,7 +37,8 @@ export interface PageSession {
 
 export interface Column {
   id: string;
-  /** Absent for the default columns (todo, doing, review, done): their names come from the locale files. */
+  /** Fixed text in the creator's language, never translated. Absent only on default columns (todo, doing, review, done)
+   *  of projects made before titles were stored: those fall back to locale names until an editor titles them. */
   title?: string;
 }
 
@@ -130,8 +131,12 @@ export interface DocsBoards {
   // Boards
   /** Lists and joins the projects of every space I'm in; safe to call on every visit. */
   ensureProjects(): Promise<void>;
-  createProject(o: { spaceId: string; name: string; colour: string }): Promise<string>;
+  /** `columns`: the default columns, titled in the creator's language. */
+  createProject(o: { spaceId: string; name: string; colour: string; columns: Column[] }): Promise<string>;
   createColumn(projectId: string, title: string): Promise<void>;
+  renameColumn(projectId: string, columnId: string, title: string): Promise<void>;
+  /** Gives the columns that still have no title one from `titles` (by id), in one write; nothing when none is missing. */
+  titleColumns(projectId: string, titles: Record<string, string>): Promise<void>;
   createIssue(projectId: string, o: { title: string; column: string; assignee?: string; due?: string }): Promise<string>;
   updateIssue(projectId: string, issueId: string, patch: Partial<{ title: string; assignee: string | null; due: string | null }>): Promise<void>;
   moveIssue(projectId: string, issueId: string, to: { column: string; before?: string; after?: string }): Promise<void>;

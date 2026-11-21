@@ -60,12 +60,14 @@ describe('translateText', () => {
     expect(out.text).toBe(body.replace('見て', 'look'));
   });
 
-  it('caches per message: the same text in another message is translated again', async () => {
+  it('caches per message and text: another message or an edit is translated again', async () => {
     const { store, translate } = storeWith((segments) => segments.map(() => 'hi'));
     await translateText(store, { id: '$5', body: 'やあ' }, 'en');
     await translateText(store, { id: '$5', body: 'やあ' }, 'en');
     await translateText(store, { id: '$6', body: 'やあ' }, 'en');
     expect(translate).toHaveBeenCalledTimes(2);
+    await translateText(store, { id: '$5', body: 'やあ、元気？' }, 'en');
+    expect(translate).toHaveBeenCalledTimes(3);
   });
 
   it('does not offer what the service would refuse', () => {

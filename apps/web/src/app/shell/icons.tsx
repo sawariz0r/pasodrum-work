@@ -72,6 +72,13 @@ export const ReplyKindIcon = icon(
   </>,
   { size: 10, strokeWidth: 2.8 },
 );
+export const AssignKindIcon = icon(
+  <>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
+  </>,
+  { size: 10, strokeWidth: 2.8 },
+);
 export const TrashIcon = icon(
   <>
     <path d="M3 6h18" />

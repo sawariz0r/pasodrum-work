@@ -95,15 +95,18 @@ export function useTranslator(spaceId: string | undefined): Translator | null {
 export function useTranslated(translator: Translator | null, id: string, body: string, html?: string) {
   const [state, setState] = useState<{ phase: 'original' | 'translating' | 'translated' | 'failed'; text?: string; html?: string; of?: string }>({ phase: 'original' });
   const offered = !!translator && !!body.trim() && translator.offers(body, html);
-  const current = state.of === body ? state : { phase: 'original' as const };
+  // A result belongs to the text and language it was made from: an edit (mine or anyone's) shows the new text again.
+  const of = [translator?.target ?? '', body, html ?? ''].join('\u0000');
+  const current = state.of === of ? state : { phase: 'original' as const };
   const run = useCallback(() => {
     if (!translator) return;
-    setState({ phase: 'translating', of: body });
+    setState({ phase: 'translating', of });
+    const settle = (next: typeof state) => setState((prev) => (prev.of === of && prev.phase === 'translating' ? next : prev));
     translator.translate({ id, body, ...(html ? { html } : {}) }).then(
-      (r) => setState({ phase: 'translated', of: body, ...r }),
-      () => setState({ phase: 'failed', of: body }),
+      (r) => settle({ phase: 'translated', of, ...r }),
+      () => settle({ phase: 'failed', of }),
     );
-  }, [translator, id, body, html]);
+  }, [translator, id, body, html, of]);
   const toggle = () => (current.phase === 'translated' ? setState({ phase: 'original' }) : run());
   return { offered, phase: current.phase, text: current.text, html: current.html, toggle, retry: run };
 }

@@ -11,6 +11,10 @@
   border-right: 1px solid var(--line);
   background: var(--side);
   color: var(--sidetext);
+}
+
+/* The list fades in, not the column: a transparent column shows the shell's base through it for the first frame. */
+.column > * {
   animation: fade-in var(--dur-2) var(--ease-out);
 }
 
@@ -679,6 +683,10 @@ button.dmTitle:hover {
       transform var(--dur-3) var(--ease-out),
       box-shadow var(--dur-3) var(--ease-out),
       visibility 0s linear var(--dur-3);
+  }
+
+  :global(.thread-fold) .column > * {
+    animation: none;
   }
 
   :global(.thread-fold.drawer-open) .column {

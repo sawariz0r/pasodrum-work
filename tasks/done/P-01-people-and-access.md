@@ -1,7 +1,7 @@
 ---
 id: P-01
 title: People and access (D-36): Staff/External/Client, access roles, stricter auto-accept, migration
-stage: ceo-review
+stage: done
 area: frontend
 milestone: side
 priority: P0

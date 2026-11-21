@@ -115,12 +115,18 @@ function SectionLink({ to, label, icon, current, badge = 0 }: { to: string; labe
   );
 }
 
+const noBadge = () => 0;
+
 function RailLink({ item }: { item: RailItem }) {
+  const { t } = useTranslation();
   const label = item.useLabel();
+  const useBadge = item.useBadge ?? noBadge;
+  const badge = useBadge();
   return (
-    <NavLink to={item.to} className={s.railItem}>
+    <NavLink to={item.to} className={s.railItem} aria-label={badge > 0 ? t('shell.rail.unread', { label, count: badge }) : undefined}>
       <span className={s.railIcon}>{item.icon}</span>
       {label}
+      <Badge count={badge} size="sm" className={s.railBadge} />
     </NavLink>
   );
 }

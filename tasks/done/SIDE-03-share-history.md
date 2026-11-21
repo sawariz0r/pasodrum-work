@@ -1,7 +1,7 @@
 ---
 id: SIDE-03
 title: "Share history" — staff restore a client's DM history after a lost recovery key
-stage: ceo-review
+stage: done
 area: frontend
 milestone: side
 priority: P2

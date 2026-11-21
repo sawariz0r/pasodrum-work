@@ -15,7 +15,14 @@ const ISSUE = 'work.pasodrum.boards.issue';
 const DESCRIPTION = 'work.pasodrum.boards.description';
 const UPDATE = 'work.pasodrum.docs.update';
 const SNAPSHOT = 'work.pasodrum.docs.snapshot';
-const DEFAULT_COLUMNS = ['todo', 'doing', 'review', 'done'];
+// Columns are never translated (D-37): the seeded projects store their default titles in English.
+const boardsEn = JSON.parse(readFileSync(new URL('../apps/web/src/features/boards/locales/en.json', import.meta.url), 'utf8'));
+const COLUMN_TITLES = [
+  { id: 'todo', title: boardsEn.columnTodo },
+  { id: 'doing', title: boardsEn.columnDoing },
+  { id: 'review', title: boardsEn.columnReview },
+  { id: 'done', title: boardsEn.columnDone },
+];
 
 // The web app's own packages (pnpm keeps them in apps/web), loaded as ESM so yjs is the one y-tiptap uses.
 async function webPackage(name: string): Promise<any> {
@@ -182,7 +189,7 @@ const jaBody = (en: string): J => ({
     h('クライアントとのやりとりも安心'),
     ul('あとからチャンネルに加わった人にも、以前のメッセージを共有できます。', 'クライアントが新しいデバイスでサインインするときは、メールで本人確認をします。'),
     h('さっそく試してみましょう'),
-    todo('ボードの「ドラッグしてみて →」を「進行中」へ動かす', 'このページのどこかで [[ と入力してみる', '⌘K を押してみる'),
+    todo('ボードの「ドラッグしてみて →」を「In progress」へ動かす', 'このページのどこかで [[ と入力してみる', '⌘K を押してみる'),
     p('English: ', link(en, EN_TITLE)),
   ],
 });
@@ -343,7 +350,7 @@ async function ensureProject(spaceId: string, name: string, key: string, colour:
         initial_state: [
           ...childState(spaceId),
           { type: PROJECT, state_key: '', content: { key, colour } },
-          { type: COLUMNS, state_key: '', content: { columns: DEFAULT_COLUMNS.map((id) => ({ id })) } },
+          { type: COLUMNS, state_key: '', content: { columns: COLUMN_TITLES } },
         ],
       }));
       await state(token, spaceId, 'm.space.child', projectId!, { via: [SERVER] });
@@ -412,7 +419,7 @@ async function ensureProject(spaceId: string, name: string, key: string, colour:
 }
 
 await ensureProject(workspace, 'Pasodrum work', 'PDW', '#0F766E', [
-  { title: 'ドラッグしてみて →', column: 'todo', assignee: 'shiori', description: 'このカードを「進行中」へドラッグしてみてください。' },
+  { title: 'ドラッグしてみて →', column: 'todo', assignee: 'shiori', description: 'このカードを「In progress」へドラッグしてみてください。' },
   { title: 'Write the onboarding checklist for new clients', column: 'todo', due: 7 },
   { title: '社内用語の翻訳ルールをまとめる', column: 'doing', assignee: 'shiori', due: 3, comment: true },
   { title: 'Desktop app: try Electron and Tauri', column: 'doing', assignee: 'sofia', due: 10 },

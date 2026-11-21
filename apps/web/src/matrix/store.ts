@@ -45,6 +45,7 @@ import { ACCESS_ROLE, archivedLevels, channelUsers, dmLevels, EXTERNAL, external
 import { defaultLevel, defaultOps, roomLevel, roomOps, type PushOp, type PushRules } from './push';
 import { createSearch } from './search';
 import { createDocsBoards, pageRoomsOf } from './docsBoards';
+import { issueActivityOf, PROJECT_TYPE } from './issueActivity';
 import { send, sendEdit, sendReaction, type MsgType, type TextMessage } from './send';
 import { createBundleReceiver, markerFor, shareHistory } from './shareHistory';
 import { clearSession } from './session';
@@ -880,6 +881,15 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       const room = client.getRoom(st.roomId);
       if (room && joined(room) && !room.getType()) st.replies.forEach((ev) => consider(room, ev));
     }
+    const projects = client.getRooms().filter((r) => joined(r) && r.getType() === PROJECT_TYPE);
+    items.push(
+      ...issueActivityOf(projects, {
+        me: me.id,
+        message: (ev, room) => messageOf(ev, room, false, true),
+        person: (room, userId) => personOf(room, userId),
+        unread: (room, ev, root) => !readItems.has(ev.getId()!) && ev.getTs() > readUpTo(room, root),
+      }),
+    );
     return items.sort((a, b) => b.message.ts - a.message.ts);
   };
 
@@ -2070,6 +2080,15 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   };
 
   const docsBoards = createDocsBoards({ client, userId: session.userId, server, ready, person: (id, roomId) => personOf(roomId ? client.getRoom(roomId) : null, id, client.getUser(id)?.displayName) });
+  // D-37: issue mentions and assignments reach Activity only through joined project rooms (few and quiet), so join them
+  // after the first sync and again when a space gains a child, not only when Boards opens.
+  void docsBoards.ensureProjects().catch(noop);
+  let projectsLater: ReturnType<typeof setTimeout> | undefined;
+  client.on(RoomStateEvent.Events, (ev) => {
+    if (!synced || ev.getType() !== EventType.SpaceChild || !client.getRoom(ev.getRoomId())?.isSpaceRoom()) return;
+    clearTimeout(projectsLater);
+    projectsLater = setTimeout(() => void docsBoards.ensureProjects().catch(noop), 2000);
+  });
 
   return {
     getSnapshot: () => snapshot,
@@ -2320,6 +2339,21 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       schedule();
       const room = item && client.getRoom(item.channelId);
       const ev = room && eventOf(room, itemId);
+      if (item?.issue) {
+        // It opens the issue, which reads all of it. The server keeps one read position per project room: move it only
+        // when no older item about another issue there is still unread.
+        const issueId = item.issue.id;
+        const unread = snapshot.activity.filter((a) => a.unread && a.channelId === item.channelId);
+        const newest = unread.filter((a) => a.issue?.id === issueId).reduce((x, a) => (a.message.ts > x.message.ts ? a : x), item);
+        unread.forEach((a) => a.issue?.id === issueId && readItems.add(a.id));
+        const last = room && eventOf(room, newest.id);
+        const older = unread.some((a) => a.issue?.id !== issueId && a.message.ts <= newest.message.ts);
+        if (!room || !last || older || last.getTs() <= readUpTo(room)) return;
+        // Known here before the echo, so the issue panel's thread receipt doesn't move the position back.
+        for (const key of [MAIN, issueId]) receipts.set(`${room.roomId}|${key}`, Math.max(receipts.get(`${room.roomId}|${key}`) ?? 0, last.getTs()));
+        client.http.authedRequest(Method.Post, `/rooms/${enc(room.roomId)}/receipt/${ReceiptType.Read}/${enc(newest.id)}`, undefined, {}).catch(noop);
+        return;
+      }
       if (room && ev && ev.getTs() > readUpTo(room, item.threadRootId)) sendReceipt(room, ev, item.threadRootId ?? MAIN);
     },
     async searchPeople(query) {

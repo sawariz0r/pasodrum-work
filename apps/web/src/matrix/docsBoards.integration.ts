@@ -10,6 +10,7 @@ globalThis.location = { origin: BASE } as Location;
 
 const E = encodeURIComponent;
 const stamp = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+const columns = ['todo', 'doing', 'review', 'done'].map((id) => ({ id, title: id }));
 const rejection = (p: Promise<unknown>) => p.then(() => null, (e: unknown) => e as Error & { httpStatus?: number });
 
 type Account = Awaited<ReturnType<typeof open>>;
@@ -54,8 +55,8 @@ beforeAll(async () => {
   ({ spaceId: otherSpace } = await ingrid.store.createClientSpace({ name: `DB-01 other ${stamp()}`, colour: '#2F4A6D', channels: ['general'], team: [], clientEmails: [] }));
   made.push(otherSpace);
   otherPage = await ingrid.store.docsBoards.createPage({ spaceId: otherSpace, title: 'Secret plan' });
-  otherProject = await ingrid.store.docsBoards.createProject({ spaceId: otherSpace, name: 'Secret project', colour: '#BE123C' });
-  project = await ingrid.store.docsBoards.createProject({ spaceId: nordlys, name: `DB-01 ${stamp()}`, colour: '#2F4A6D' });
+  otherProject = await ingrid.store.docsBoards.createProject({ spaceId: otherSpace, name: 'Secret project', colour: '#BE123C', columns });
+  project = await ingrid.store.docsBoards.createProject({ spaceId: nordlys, name: `DB-01 ${stamp()}`, colour: '#2F4A6D', columns });
   made.push(otherPage, otherProject, project);
 });
 
@@ -114,10 +115,23 @@ describe('client isolation (test b)', () => {
     expect(ingrid.store.getSnapshot().threads.some((th) => th.rootId === issueId)).toBe(false);
     expect(ingrid.store.getSnapshot().activity.some((a) => a.channelId === project)).toBe(false);
 
+    // …except what's aimed at me: a comment mentioning me, and being assigned (both open the issue).
+    henrik.store.send(project, { body: 'Ingrid Holm can you look?', mentions: [ingrid.session.userId], threadRootId: issueId });
+    await db.updateIssue(project, issueId, { assignee: ingrid.session.userId });
+    const aimed = await until(ingrid.store, (s) => {
+      const items = s.activity.filter((a) => a.channelId === project && a.unread);
+      return items.length === 2 && items;
+    });
+    expect(aimed.map((a) => [a.kind, a.issue]).sort()).toEqual([
+      ['assigned', { id: issueId, key: `${p.key}-1` }],
+      ['mention', { id: issueId, key: `${p.key}-1` }],
+    ]);
+
     expect((await rejection(db.createColumn(project, 'Waiting')))?.message).toBe('not-allowed');
+    expect((await rejection(db.renameColumn(project, 'todo', 'Mine')))?.message).toBe('not-allowed');
     const t = henrik.session.accessToken;
     expect((await mx(t, 'PUT', `/_matrix/client/v3/rooms/${E(project)}/state/work.pasodrum.boards.columns/`, { columns: [{ id: 'x', title: 'x' }] })).status).toBe(403);
-    expect((await rejection(db.createProject({ spaceId: nordlys, name: 'Mine', colour: '#BE123C' })))?.message).toBe('not-allowed');
+    expect((await rejection(db.createProject({ spaceId: nordlys, name: 'Mine', colour: '#BE123C', columns })))?.message).toBe('not-allowed');
     expect((await mx(t, 'PUT', `/_matrix/client/v3/rooms/${E(nordlys)}/state/m.space.child/${E(otherPage)}`, { via: ['pasodrum.localhost'] })).status).toBe(403);
   });
 });

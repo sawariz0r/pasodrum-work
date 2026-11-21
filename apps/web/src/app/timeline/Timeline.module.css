@@ -118,6 +118,10 @@
   animation: fade-in var(--dur-2) var(--ease-out);
 }
 
+.log.still {
+  animation: none;
+}
+
 .row {
   position: relative;
   display: flex;

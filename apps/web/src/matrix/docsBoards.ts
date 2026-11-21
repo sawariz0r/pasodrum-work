@@ -123,6 +123,8 @@ export function createDocsBoards(ctx: DocsBoardsContext): DocsBoards {
     ensureProjects: async () => (await core()).ensureProjects(),
     createProject: async (o) => (await core()).createProject(o),
     createColumn: async (projectId, title) => (await core()).createColumn(projectId, title),
+    renameColumn: async (projectId, columnId, title) => (await core()).renameColumn(projectId, columnId, title),
+    titleColumns: async (projectId, titles) => (await core()).titleColumns(projectId, titles),
     createIssue: async (projectId, o) => (await core()).createIssue(projectId, o),
     updateIssue: async (projectId, issueId, patch) => (await core()).updateIssue(projectId, issueId, patch),
     moveIssue: async (projectId, issueId, to) => (await core()).moveIssue(projectId, issueId, to),

@@ -1,16 +1,16 @@
 // Boards main area (BoardsPage and its states): a project's board or list, My issues, the issue panel and dialogs.
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router';
 import { NotAvailable } from '../../app/shell/NotAvailable';
 import { DrawerToggle } from '../../app/shell/Drawer';
-import { myIssues, useDocsBoards, useStore, useWorkspace, type DocsBoardsSnapshot, type Issue, type Person, type Project } from '../../matrix';
+import { myIssues, useDocsBoards, useStore, useWorkspace, type Column, type DocsBoardsSnapshot, type Issue, type Person, type Project } from '../../matrix';
 import { Button, Skeleton } from '../../ui';
 import { Board } from './Board';
-import { DeleteIssueDialog, NewColumnDialog, NewIssueDialog, NewProjectDialog } from './Dialogs';
+import { ColumnDialog, DeleteIssueDialog, NewIssueDialog, NewProjectDialog } from './Dialogs';
 import { BoardsGlyph, BoardViewIcon, ListViewIcon, PersonIcon, PlusIcon } from './icons';
 import { IssuePanel } from './IssuePanel';
 import { ListView, MineView } from './Lists';
-import { boardsPath, lastProject, minePath, openNewProject, rememberProject, useBoardsRoute, useIsTeam, useNewProjectSpace, useScope, useView } from './model';
+import { boardsPath, lastProject, minePath, openNewProject, rememberProject, useBoardsRoute, useIsTeam, useNewProjectSpace, useScope, useTitleColumns, useView } from './model';
 import { faceStyle, faceText, useTranslator } from './parts';
 import s from './Boards.module.css';
 import { useT } from './strings';
@@ -31,9 +31,10 @@ export function BoardsScreen() {
   const issue = panelProject?.issues.find((i) => i.id === route.issueId);
   const [view, setView] = useView(project?.id);
   const [filter, setFilter] = useState<{ projectId: string; person: string } | null>(null);
-  const [dialog, setDialog] = useState<{ kind: 'issue' } | { kind: 'column' } | { kind: 'delete'; project: Project; issue: Issue } | null>(null);
+  const [dialog, setDialog] = useState<{ kind: 'issue' } | { kind: 'column'; column?: Column } | { kind: 'delete'; project: Project; issue: Issue } | null>(null);
   const newProjectIn = useNewProjectSpace();
   const translator = useTranslator(panelProject?.spaceId ?? project?.spaceId);
+  const viewRef = useRef<HTMLDivElement>(null);
 
   const [listed, setListed] = useState(false);
   useEffect(() => {
@@ -50,6 +51,7 @@ export function BoardsScreen() {
   useEffect(() => {
     if (project && selected && scope.some((x) => x.id === project.spaceId)) rememberProject(selected.id, project.id);
   }, [project, selected, scope]);
+  useTitleColumns(project);
 
   const inScope = useMemo(() => scope.flatMap((x) => all[x.id] ?? []), [scope, all]);
   // A space I only have a channel in (D-06) never gets a list: once listing is done, it has no projects.
@@ -81,7 +83,15 @@ export function BoardsScreen() {
     return knownLoaded && scopeLoaded ? <NotAvailable /> : <Loading />;
   }
 
-  const close = () => navigate(route.mine ? minePath() : boardsPath(route.projectId), { replace: true });
+  const close = () => {
+    const opener = viewRef.current?.querySelector<HTMLElement>(`.${s.cardSelected}, .${s.rowSelected}`);
+    navigate(route.mine ? minePath() : boardsPath(route.projectId), { replace: true });
+    opener?.focus();
+  };
+  // The panel lies over the board: a click on the board itself (not a card, control or menu) closes it.
+  const onViewClick = (e: MouseEvent) => {
+    if (issue && e.target instanceof Element && !e.target.closest('button, a, input, textarea, select, [role="button"], [role="radio"], [role^="menu"]')) close();
+  };
   const openIssue = (p: Project, i: Issue) => navigate(route.mine ? minePath(p.id, i.id) : boardsPath(p.id, i.id));
   const activeFilter = project && filter?.projectId === project.id ? filter.person : undefined;
   const shown = project ? (activeFilter ? project.issues.filter((i) => i.assignee?.id === activeFilter) : project.issues) : [];
@@ -125,7 +135,7 @@ export function BoardsScreen() {
         )}
       </header>
       <div className={s.body}>
-        <div className={s.view}>
+        <div ref={viewRef} className={s.view} onClick={onViewClick}>
           {route.mine ? (
             scopeLoaded ? (
               <MineView groups={mineGroups} selectedId={route.issueId} onOpen={openIssue} />
@@ -145,6 +155,7 @@ export function BoardsScreen() {
               onOpen={(i) => openIssue(project!, i)}
               onDelete={(i) => setDialog({ kind: 'delete', project: project!, issue: i })}
               onNewColumn={() => setDialog({ kind: 'column' })}
+              onRenameColumn={(column) => setDialog({ kind: 'column', column })}
             />
           )}
         </div>
@@ -160,7 +171,7 @@ export function BoardsScreen() {
         )}
       </div>
       {dialog?.kind === 'issue' && <NewIssueDialog projects={projectsForNew} projectId={project?.id ?? projectsForNew[0]!.id} onClose={() => setDialog(null)} />}
-      {dialog?.kind === 'column' && project && <NewColumnDialog project={project} onClose={() => setDialog(null)} />}
+      {dialog?.kind === 'column' && project && <ColumnDialog project={project} column={dialog.column} onClose={() => setDialog(null)} />}
       {dialog?.kind === 'delete' && (
         <DeleteIssueDialog
           project={dialog.project}

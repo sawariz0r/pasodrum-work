@@ -8,6 +8,8 @@ export interface RailItem {
   icon: ReactNode;
   /** A hook so the feature can read its own strings. */
   useLabel: () => string;
+  /** A hook: the unread count on the rail item, like Activity's (D-37, first use: Boards). */
+  useBadge?: () => number;
 }
 
 export interface ChannelTabType {

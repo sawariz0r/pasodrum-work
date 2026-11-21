@@ -1,14 +1,14 @@
-// BoardsNewIssue, BoardsCreateFailed, BoardsNewProject, BoardsColumn, BoardsDeleteIssue.
+// BoardsNewIssue, BoardsCreateFailed, BoardsNewProject, BoardsColumn (also Rename column), BoardsDeleteIssue.
 import * as RD from '@radix-ui/react-dialog';
 import * as DM from '@radix-ui/react-dropdown-menu';
 import { useState, type KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router';
-import { useStore, type Issue, type Project } from '../../matrix';
+import { useStore, type Column, type Issue, type Project } from '../../matrix';
 import { Button, Dialog, IconButton, isImeEnter } from '../../ui';
 import { AlertIcon } from '../../ui/icons';
 import { useAssignable } from './CardMenu';
 import { CalendarIcon, CheckIcon, CloseIcon, ColumnIcon, PersonIcon } from './icons';
-import { boardsPath, issueKey, useColumnName } from './model';
+import { boardsPath, issueKey, useColumnName, useDefaultColumns } from './model';
 import { useDueText, Who } from './parts';
 import { AssigneePicker, DuePicker } from './Pickers';
 import s from './Boards.module.css';
@@ -193,6 +193,7 @@ export function NewProjectDialog({ spaceId, onClose }: { spaceId: string; onClos
   const t = useT();
   const store = useStore();
   const navigate = useNavigate();
+  const defaultColumns = useDefaultColumns();
   const [name, setName] = useState('');
   const [colour, setColour] = useState<string>(swatches[0][0]);
   const [busy, setBusy] = useState(false);
@@ -201,7 +202,7 @@ export function NewProjectDialog({ spaceId, onClose }: { spaceId: string; onClos
     if (!name.trim() || busy) return;
     setBusy(true);
     setFailed(false);
-    store.docsBoards.createProject({ spaceId, name: name.trim(), colour }).then(
+    store.docsBoards.createProject({ spaceId, name: name.trim(), colour, columns: defaultColumns() }).then(
       (id) => {
         onClose();
         navigate(boardsPath(id));
@@ -265,21 +266,26 @@ export function NewProjectDialog({ spaceId, onClose }: { spaceId: string; onClos
   );
 }
 
-export function NewColumnDialog({ project, onClose }: { project: Project; onClose: () => void }) {
+/** New column, or Rename when `column` is given: one title, as typed. */
+export function ColumnDialog({ project, column, onClose }: { project: Project; column?: Column; onClose: () => void }) {
   const t = useT();
   const store = useStore();
-  const [title, setTitle] = useState('');
+  const name = useColumnName();
+  const before = column ? name(column) : '';
+  const [title, setTitle] = useState(column ? before : '');
   const [busy, setBusy] = useState(false);
-  const add = () => {
-    if (!title.trim() || busy) return;
+  const ready = !!title.trim() && !busy && (!column || title.trim() !== before);
+  const save = () => {
+    if (!ready) return;
     setBusy(true);
-    store.docsBoards.createColumn(project.id, title.trim()).then(onClose, () => setBusy(false));
+    const clean = title.trim();
+    (column ? store.docsBoards.renameColumn(project.id, column.id, clean) : store.docsBoards.createColumn(project.id, clean)).then(onClose, () => setBusy(false));
   };
   return (
     <Dialog
       open
       onOpenChange={(o) => !o && onClose()}
-      title={t('newColumn')}
+      title={t(column ? 'renameColumn' : 'newColumn')}
       width={440}
       top={120}
       busy={busy}
@@ -288,8 +294,8 @@ export function NewColumnDialog({ project, onClose }: { project: Project; onClos
           <Button variant="secondary" onClick={onClose}>
             {t('cancel')}
           </Button>
-          <Button onClick={add} disabled={!title.trim() || busy}>
-            {t('addColumn')}
+          <Button onClick={save} disabled={!ready}>
+            {t(column ? 'save' : 'addColumn')}
           </Button>
         </div>
       }
@@ -300,11 +306,12 @@ export function NewColumnDialog({ project, onClose }: { project: Project; onClos
           className={s.field}
           value={title}
           autoFocus
+          onFocus={(e) => e.currentTarget.select()}
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={(e) => {
             if (!isImeEnter(e)) return;
             e.preventDefault();
-            add();
+            save();
           }}
         />
       </label>

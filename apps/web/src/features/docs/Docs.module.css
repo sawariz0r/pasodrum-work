@@ -540,10 +540,18 @@
 
 /* Block handle: Translate, + and the grip beside the hovered block */
 .handle {
+  position: relative;
   display: flex;
   gap: 2px;
   padding: 2px 8px 0 0;
   color: var(--subtle);
+}
+
+/* Hangs left of + so the placed handle keeps its width when the button appears after hover. */
+.handle .handleTranslate {
+  position: absolute;
+  top: 2px;
+  right: calc(100% + 2px);
 }
 
 .handleButton {

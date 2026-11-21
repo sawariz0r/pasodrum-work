@@ -322,11 +322,11 @@ export function createFakeDocsBoards(opts: FakeDocsBoardsOptions = {}): FakeDocs
       loaded = 'yes';
       notify();
     },
-    async createProject({ spaceId, name, colour }) {
+    async createProject({ spaceId, name, colour, columns }) {
       if (outsider || !visible(spaceId)) throw new Error('not-allowed');
       const id = `!proj-new-${++seq}`;
       const base = name.normalize('NFKD').replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 3) || 'PRJ';
-      projects.set(id, { id, spaceId, name: name.trim(), key: base, colour, columns: defaultColumns, issues: [] });
+      projects.set(id, { id, spaceId, name: name.trim(), key: base, colour, columns, issues: [] });
       if (loaded === 'no') loaded = 'yes';
       notify();
       return id;
@@ -335,6 +335,20 @@ export function createFakeDocsBoards(opts: FakeDocsBoardsOptions = {}): FakeDocs
       if (outsider) throw new Error('not-allowed');
       const p = project(projectId);
       p.columns = [...p.columns, { id: `c${++seq}`, title: title.trim() }];
+      notify();
+    },
+    async renameColumn(projectId, columnId, title) {
+      if (outsider) throw new Error('not-allowed');
+      const p = project(projectId);
+      if (!p.columns.some((c) => c.id === columnId)) throw new Error('not-found');
+      p.columns = p.columns.map((c) => (c.id === columnId ? { ...c, title: title.trim() } : c));
+      notify();
+    },
+    async titleColumns(projectId, titles) {
+      if (outsider) throw new Error('not-allowed');
+      const p = project(projectId);
+      if (p.columns.every((c) => c.title || !titles[c.id])) return;
+      p.columns = p.columns.map((c) => (c.title || !titles[c.id] ? c : { ...c, title: titles[c.id] }));
       notify();
     },
     async createIssue(projectId, o) {
