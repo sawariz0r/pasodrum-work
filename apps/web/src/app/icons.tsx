@@ -89,7 +89,8 @@ export const CloudOffIcon = icon(
   { size: 18, strokeWidth: 2 },
 );
 export const ChevronRightIcon = icon(<path d="m9 6 6 6-6 6" />, { size: 13, strokeWidth: 2.4 });
-export const ExternalIcon = icon(<path d="M7 17 17 7M8 7h9v9" />, { size: 9, strokeWidth: 3 });
+/** The outside mark: someone from another company (client or guest). */
+export const ExternalIcon = icon(<path d="M3 21h18M6 21V4h12v17M10 21v-4h4v4M10 8h.01M14 8h.01M10 12h.01M14 12h.01" />, { size: 9, strokeWidth: 2.6 });
 
 export const SmileIcon = icon(
   <>
