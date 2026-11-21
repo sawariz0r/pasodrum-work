@@ -2072,6 +2072,9 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     },
     translate: (segments, to) => translateSegments(session.accessToken, segments, to),
     anotherApp: () => ({ server: new URL(client.baseUrl).host, username: client.getUserId()!.slice(1, client.getUserId()!.indexOf(':')) }),
+    // E2 — stubs until E2-01 lands.
+    renameChannel: () => Promise.reject(new Error('not-implemented')),
+    setChannelArchived: () => Promise.reject(new Error('not-implemented')),
     // M6
     requestConfirmation: () => security.requestConfirmation(),
     acceptConfirmation: () => security.acceptConfirmation(),

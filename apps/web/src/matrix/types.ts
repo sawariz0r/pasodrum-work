@@ -43,6 +43,10 @@ export interface Channel {
   outsidePending?: boolean;
   /** M6. End-to-end encrypted (private channels, D-11): opening it on an unconfirmed device shows the confirm gate. */
   encrypted?: boolean;
+  /** E2. Read-only for everyone; kept in the snapshot so it can be opened from Browse, but the sidebar leaves it out. */
+  archived?: boolean;
+  /** E2. I may rename/archive it: Owner, Admin or its creator (what the server allows, D-27); never #general. */
+  manageable?: boolean;
 }
 
 export interface Message {
@@ -67,8 +71,8 @@ export interface Message {
   reactions?: Reaction[];
   /** M2. This message mentions the signed-in person. */
   mentionsMe?: boolean;
-  /** M2. For kind 'system': collapsed joins/leaves between messages. */
-  system?: { joined: Person[]; left: Person[] };
+  /** M2. For kind 'system': collapsed joins/leaves between messages. E2: a rename or archive row (never collapsed with joins). */
+  system?: { joined: Person[]; left: Person[]; renamed?: { from: string; to: string; by: Person }; archived?: { by: Person; archived: boolean } };
   /** M3. On a thread root: summary of its replies. */
   thread?: ThreadInfo;
   /** M6. kind 'undecryptable' only: a key may still arrive (backup, another device) — show the shimmer, not the quiet line. */
@@ -136,6 +140,8 @@ export interface JoinableChannel {
   private: boolean;
   memberCount: number;
   joined: boolean;
+  /** E2. Shown under "Archived" in Browse. */
+  archived?: boolean;
 }
 
 export interface PendingInvite {
@@ -392,6 +398,11 @@ export interface WorkspaceStore {
   anotherApp(): AnotherAppInfo;
   /** SIDE-01. Our translation service: same number of segments back, in order. Rejects with Error('rate-limited' | 'unavailable' | 'failed'). */
   translate(segments: string[], to: 'en' | 'ja'): Promise<string[]>;
+  // E2
+  /** Same name rules as createChannel; rejects Error('name-taken') / Error('not-allowed'). */
+  renameChannel(channelId: string, name: string): Promise<void>;
+  /** Read-only for everyone (D-28 levels on that channel); unarchive restores D-27. */
+  setChannelArchived(channelId: string, archived: boolean): Promise<void>;
   // M6 (D-31)
   /** New device: ask my other confirmed devices (phase 'waiting'). */
   requestConfirmation(): void;

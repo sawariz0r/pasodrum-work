@@ -39,7 +39,7 @@ const spaceOrder = (a: Space, b: Space) =>
   (a.kind === 'workspace' ? -1 : b.kind === 'workspace' ? 1 : 0) || Number(!!a.archived) - Number(!!b.archived) || a.name.localeCompare(b.name);
 
 const ch = (id: string, spaceId: string, name: string, extra: Partial<Channel> = {}): Channel => ({
-  id, spaceId, name, private: false, unread: 0, mentions: 0, memberCount: 4, ...extra,
+  id, spaceId, name, private: false, unread: 0, mentions: 0, memberCount: 4, manageable: name !== 'general', ...extra,
 });
 
 const channels: Record<string, Channel[]> = {
@@ -916,6 +916,15 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       if (password === 'wrong') throw new Error('wrong-password');
       setSecurity({ device: 'confirmed', needsRecoveryKey: false, confirmation: undefined });
       return FAKE_RECOVERY_KEY;
+    },
+    // E2: "general" can't be managed; names already used in the space are taken.
+    async renameChannel(channelId, name) {
+      const spaceId = Object.keys(snapshot.channels).find((k) => snapshot.channels[k]!.some((c) => c.id === channelId))!;
+      if (snapshot.channels[spaceId]!.some((c) => c.id !== channelId && c.name === name)) throw new Error('name-taken');
+      patchChannel(channelId, { name });
+    },
+    async setChannelArchived(channelId, archived) {
+      patchChannel(channelId, { archived });
     },
     signOutRisk: () => Promise.resolve(opts.signOutRisk ?? 'none'),
   };
