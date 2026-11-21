@@ -32,3 +32,11 @@ When a client loses their recovery key and resets, a staff member can give back 
 - Fallback (worse): per-room `exportRoomKeys` filter + `encryptToDeviceMessages` + `importRoomKeys` — keys show as unauthenticated.
 
 **Next:** 1–2 h live test on dev (staff + a client after `resetEncryption`), then design boards (staff "Share history" with the confirm step; client "History restored" row), then build (S–M).
+
+## Live test (2026-11-21, local server, `dev/spike-share-history.ts`)
+**Works.** After a reset the client read 0/6 old messages; after staff verified (SAS) and called `shareRoomHistoryWithUser`, 6/6. Messages show a grey shield ("authenticity not guaranteed", forwarded by staff); restored keys go into the client's new backup. Continuwuity: bundle upload + authenticated download 200, to-device < 1 s.
+- **App must enforce:** (1) staff verified the client's *current* identity — the SDK shares even if unverified; (2) staff's own device is confirmed — otherwise the call succeeds but sends nothing (SDK log warning only).
+- Refused (good): staff verified the old identity; client reset again after verification.
+- **Client trigger:** `maybeAcceptKeyBundle(dmId, staffId)` after the bundle arrived (no 24 h limit) — fire it on a "history shared" marker event in the DM; or `markRoomAsPendingKeyBundle` right after the reset (24 h window).
+- Element X not tested.
+**Next:** design boards (staff: Share history with verify-on-a-call + confirm step; client: "history restored" row, grey-shield wording) → build (S–M).
