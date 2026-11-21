@@ -1,3 +1,4 @@
+import { platform } from '../platform';
 import { loginCandidates } from './map';
 import { SignInError, type Session, type SignInFailure } from './types';
 
@@ -38,7 +39,7 @@ export async function signIn(baseUrl: string, identifier: string, password: stri
       res = await fetch(`${baseUrl}/_matrix/client/v3/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'm.login.password', identifier: candidate, password, initial_device_display_name: 'Pasodrum work' }),
+        body: JSON.stringify({ type: 'm.login.password', identifier: candidate, password, initial_device_display_name: platform.deviceName() }),
       });
     } catch {
       throw new SignInError('unreachable');

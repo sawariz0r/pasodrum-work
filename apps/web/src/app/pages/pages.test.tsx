@@ -47,10 +47,10 @@ describe('navigation (D-23)', () => {
     expect(within(rail()).getByRole('link', { name: 'Activity, 2 unread' })).toBeTruthy();
   });
 
-  it('lists Threads, Drafts, channels, the space’s DMs and client spaces in the sidebar', () => {
+  it('lists Threads, Drafts, channels and the space’s DMs in the sidebar; client spaces only on the rail', () => {
     renderApp('/w/!pasodrum/c/!design');
     const names = within(sidebar()).getAllByRole('link').map((l) => l.textContent);
-    expect(names).toEqual(['Threads1', 'Drafts', 'design', 'eng', 'general', 'lead2', 'JBJonas Berg1', 'IHIngrid Holm', '2Erik Kvam, Lea Aune', 'MLMaja Lind', 'TRTove Rask', 'NNordlys']);
+    expect(names).toEqual(['Threads1', 'Drafts', 'design', 'eng', 'general', 'lead2', 'JBJonas Berg1', 'IHIngrid Holm', '2Erik Kvam, Lea Aune', 'MLMaja Lind', 'TRTove Rask']);
     expect(within(sidebar()).queryByText('Henrik Dahl')).toBeNull();
     expect(within(sidebar()).getByRole('button', { name: 'Channels' }).getAttribute('aria-expanded')).toBe('true');
     fireEvent.click(within(sidebar()).getByRole('button', { name: 'Channels' }));

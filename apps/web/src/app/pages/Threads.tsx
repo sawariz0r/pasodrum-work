@@ -9,6 +9,7 @@ import { ThreadIcon } from '../shell/icons';
 import { useListTime, useStableOrder } from './lists';
 import s from './Pages.module.css';
 import { previewParts, previewText } from './Preview';
+import { useHiddenText } from '../security/Gate';
 
 const none: Channel[] = [];
 
@@ -50,6 +51,10 @@ function Card({ thread, channel, selected, onOpen }: { thread: ThreadSummary; ch
   const time = useListTime();
   const { root, lastReply } = thread;
   const unread = thread.unread && !selected;
+  // M6: messages this device can't open, or any text of an encrypted channel before it is confirmed.
+  const hidden = useHiddenText(thread.channelId);
+  const unavailable = t('security.unavailable');
+  const shown = (m: typeof root) => !hidden && m.kind !== 'undecryptable';
   return (
     <button
       type="button"
@@ -67,12 +72,12 @@ function Card({ thread, channel, selected, onOpen }: { thread: ThreadSummary; ch
         <Face person={root.sender} size={32} />
         <div className={s.rowMain}>
           <div className={s.cardName}>{root.sender.name}</div>
-          <div className={`${s.cardText} ${s.clamp2}`}>{previewParts(root)}</div>
+          <div className={[s.cardText, s.clamp2, !shown(root) && s.quietText].filter(Boolean).join(' ')}>{shown(root) ? previewParts(root) : unavailable}</div>
           {lastReply && (
             <div className={s.cardLast}>
               <Face person={lastReply.sender} size={20} />
               <span className={s.lastName}>{lastReply.sender.name}</span>
-              <span className={s.lastText}>{previewText(lastReply)}</span>
+              <span className={[s.lastText, !shown(lastReply) && s.quietText].filter(Boolean).join(' ')}>{shown(lastReply) ? previewText(lastReply) : unavailable}</span>
             </div>
           )}
         </div>

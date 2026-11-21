@@ -381,31 +381,6 @@
   padding-left: 8px;
 }
 
-.spaceChip {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 6px;
-  background: var(--tile-bg);
-  color: #ffffff;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.chipArchived {
-  opacity: 0.5;
-}
-
-.spaceChip img {
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  object-fit: cover;
-}
-
 .sectionLabel {
   margin: 4px 0 2px;
   padding: 4px 4px 4px 10px;

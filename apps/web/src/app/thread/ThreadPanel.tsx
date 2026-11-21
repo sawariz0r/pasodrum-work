@@ -8,8 +8,9 @@ import { CloseIcon } from '../../ui/icons';
 import { Composer } from '../composer/Composer';
 import { ArchivedBar, useArchivedSpace } from '../timeline/ArchivedBar';
 import { ComposerProvider } from '../composer/context';
-import { Timeline, type ThreadMode } from '../timeline/Timeline';
+import { Timeline, TimelineSkeleton, type ThreadMode } from '../timeline/Timeline';
 import tl from '../timeline/Timeline.module.css';
+import { ConfirmGate, KeyGate, useGate } from '../security/Gate';
 import { BackIcon } from './icons';
 import s from './Thread.module.css';
 
@@ -30,6 +31,42 @@ type Props = { channelId: string; channelName: string; rootId: string; onClose: 
 
 export function ThreadPanel({ channelId, channelName, rootId, onClose }: Props) {
   const { t } = useTranslation();
+  // M6: in the Threads view the panel stands alone, so it gates encrypted channels itself (in a channel, ChannelView already has).
+  const gate = useGate(channelId);
+
+  const close = useRef(onClose);
+  useLayoutEffect(() => {
+    close.current = onClose;
+  });
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented || e.isComposing) return;
+      // Esc belongs to whatever is open on top (viewer, menus, profile card, pickers).
+      if (document.querySelector('[role="dialog"], [role="menu"], [role="listbox"]')) return;
+      close.current();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
+  return (
+    <ComposerProvider>
+      <aside className={s.panel} aria-label={t('thread.title')}>
+        <header className={s.header}>
+          <IconButton className={s.back} label={t('thread.back', { channel: channelName })} icon={<BackIcon />} onClick={onClose} />
+          <h2 className={s.title}>
+            <span>{t('thread.title')}</span>
+            <span className={s.channel}>{t('common.channelName', { name: channelName })}</span>
+          </h2>
+          <IconButton className={s.close} label={t('thread.close')} icon={<CloseIcon />} onClick={onClose} />
+        </header>
+        {gate === 'gate' ? <ConfirmGate /> : gate === 'key' ? <KeyGate /> : gate === 'wait' ? <TimelineSkeleton small /> : <ThreadBody channelId={channelId} channelName={channelName} rootId={rootId} />}
+      </aside>
+    </ComposerProvider>
+  );
+}
+
+function ThreadBody({ channelId, channelName, rootId }: Omit<Props, 'onClose'>) {
   const store = useStore();
   const raw = useWorkspace((snap) => snap.threadTimelines[rootId]) as ThreadTimeline | undefined;
   const root = useWorkspace((snap) => findRoot(snap, channelId, rootId));
@@ -51,21 +88,6 @@ export function ThreadPanel({ channelId, channelName, rootId, onClose }: Props) 
     [rootId, root, failed, store, channelId],
   );
 
-  const close = useRef(onClose);
-  useLayoutEffect(() => {
-    close.current = onClose;
-  });
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || e.defaultPrevented || e.isComposing) return;
-      // Esc belongs to whatever is open on top (viewer, menus, profile card, pickers).
-      if (document.querySelector('[role="dialog"], [role="menu"], [role="listbox"]')) return;
-      close.current();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, []);
-
   const dockRef = useRef<HTMLDivElement>(null);
   const [dockHeight, setDockHeight] = useState(0);
   useLayoutEffect(() => {
@@ -80,23 +102,11 @@ export function ThreadPanel({ channelId, channelName, rootId, onClose }: Props) 
   }, []);
 
   return (
-    <ComposerProvider>
-      <aside className={s.panel} aria-label={t('thread.title')}>
-        <header className={s.header}>
-          <IconButton className={s.back} label={t('thread.back', { channel: channelName })} icon={<BackIcon />} onClick={onClose} />
-          <h2 className={s.title}>
-            <span>{t('thread.title')}</span>
-            <span className={s.channel}>{t('common.channelName', { name: channelName })}</span>
-          </h2>
-          <IconButton className={s.close} label={t('thread.close')} icon={<CloseIcon />} onClick={onClose} />
-        </header>
-        <div className={tl.view} style={{ '--dock-h': `${dockHeight}px` } as CSSProperties}>
-          <Timeline channelId={channelId} channelName={channelName} timeline={timeline} meId={meId} thread={thread} />
-          <div className={tl.dockSlot} ref={dockRef}>
-            {archived ? <ArchivedBar space={archived} /> : <Composer channelId={channelId} channelName={channelName} threadRootId={rootId} />}
-          </div>
-        </div>
-      </aside>
-    </ComposerProvider>
+    <div className={tl.view} style={{ '--dock-h': `${dockHeight}px` } as CSSProperties}>
+      <Timeline channelId={channelId} channelName={channelName} timeline={timeline} meId={meId} thread={thread} />
+      <div className={tl.dockSlot} ref={dockRef}>
+        {archived ? <ArchivedBar space={archived} /> : <Composer channelId={channelId} channelName={channelName} threadRootId={rootId} />}
+      </div>
+    </div>
   );
 }

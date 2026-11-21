@@ -14,6 +14,31 @@ const media = (id: string, who: string, ts: number, kind: 'image' | 'file', body
 });
 
 describe('buildItems', () => {
+  it('collapses a run of messages this device can\'t open from one sender, but never one still arriving', () => {
+    const utd = (id: string, who: string, ts: number, arriving = false): Message => ({ ...m(id, who, ts), body: '', kind: 'undecryptable', arriving });
+    const items = buildItems([
+      utd('u1', 'jonas', base),
+      utd('u2', 'jonas', base + 30 * min),
+      utd('u3', 'jonas', base + 31 * min),
+      utd('u4', 'sofia', base + 32 * min),
+      m('t', 'sofia', base + 33 * min),
+      utd('a1', 'sofia', base + 34 * min, true),
+      utd('u5', 'sofia', base + 35 * min),
+    ]);
+    expect(items.map(show)).toEqual(['day', 'u1:head[u1,u2,u3]', 'u4:head', 't:head', 'a1:head', 'u5:cont']);
+  });
+
+  it('keeps an unavailable message with a thread or reactions out of a run, so they stay visible', () => {
+    const utd = (id: string, extra: Partial<Message> = {}): Message => ({ ...m(id, 'jonas', base), body: '', kind: 'undecryptable', ...extra });
+    const items = buildItems([
+      utd('u1'),
+      utd('u2', { thread: { count: 2, lastTs: base, participants: [], unread: false } }),
+      utd('u3'),
+      utd('u4', { reactions: [{ key: '👍', count: 1, mine: false, senders: [] }] }),
+    ]);
+    expect(items.map(show)).toEqual(['day', 'u1:head', 'u2:cont', 'u3:cont', 'u4:cont']);
+  });
+
   it('joins consecutive images (and files) from one sender without a caption into one row', () => {
     const items = buildItems([
       m('t', 'ingrid', base),

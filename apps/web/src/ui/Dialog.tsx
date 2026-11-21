@@ -9,7 +9,10 @@ export type DialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: ReactNode;
-  closeLabel: string;
+  /** Absent: no close button (a step that must be finished, RecoveryKeySave). */
+  closeLabel?: string;
+  /** A round tile above a centred title, no close button (ConfirmDone, ConfirmDeclined). */
+  tile?: ReactNode;
   children?: ReactNode;
   footer?: ReactNode;
   width?: number;
@@ -23,16 +26,25 @@ export type DialogProps = {
   busy?: boolean;
 };
 
-export function Dialog({ open, onOpenChange, title, closeLabel, children, footer, width = 540, top, role, className, bodyClassName, aside, busy }: DialogProps) {
+export function Dialog({ open, onOpenChange, title, closeLabel, tile, children, footer, width = 540, top, role, className, bodyClassName, aside, busy }: DialogProps) {
   const returnFocus = useMenuReturnFocus(open);
   const column = (
     <>
-      <div className={s.header}>
-        <RD.Title className={s.title}>{title}</RD.Title>
-        <RD.Close asChild>
-          <IconButton label={closeLabel} icon={<CloseIcon />} />
-        </RD.Close>
-      </div>
+      {tile ? (
+        <div className={s.centred}>
+          {tile}
+          <RD.Title className={s.centredTitle}>{title}</RD.Title>
+        </div>
+      ) : (
+        <div className={[s.header, !closeLabel && s.headerBare].filter(Boolean).join(' ')}>
+          <RD.Title className={s.title}>{title}</RD.Title>
+          {closeLabel && (
+            <RD.Close asChild>
+              <IconButton label={closeLabel} icon={<CloseIcon />} />
+            </RD.Close>
+          )}
+        </div>
+      )}
       {children && <div className={[s.body, bodyClassName].filter(Boolean).join(' ')}>{children}</div>}
       {footer && <div className={s.footer}>{footer}</div>}
     </>

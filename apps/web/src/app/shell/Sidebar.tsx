@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useWorkspace, type Channel, type Dm, type Space } from '../../matrix';
@@ -8,37 +8,27 @@ import { HashIcon, LockIcon } from '../icons';
 import { DmFace } from '../people/Face';
 import { useDmName, useShowExternal } from '../people/names';
 import { useNewMessage } from '../people/NewMessage';
-import { channelPath, draftsPath, spaceDmPath, spaceHome, threadsPath } from '../places';
+import { channelPath, draftsPath, spaceDmPath, threadsPath } from '../places';
 import { ChevronDownIcon, ComposeIcon, PlusIcon, SendIcon, ThreadIcon } from './icons';
-import { useMediaUrl } from '../timeline/Media';
 import s from './Shell.module.css';
 import { useSpaceDrafts } from './spaceRooms';
 import { ChannelsPlusMenu, SidebarAddPeople, WorkspaceMenu } from '../channels/ChannelMenus';
-import { useChannels } from '../channels/ChannelsProvider';
 import { OutsideRowMark } from '../channels/OutsideMark';
-import { canManage } from '../channels/roles';
-import { spaceColour } from '../channels/shared';
 
 const noChannels: Channel[] = [];
 
 export type SidebarActive = { channelId: string } | { dmId: string } | { view: 'threads' | 'drafts' };
 
-/** The space you're in (D-23): Threads, Drafts, channels, its DMs, client spaces. */
+/** The space you're in (D-23): Threads, Drafts, channels, its DMs. Client spaces live on the rail. */
 export function Sidebar({ space, active }: { space: Space; active?: SidebarActive }) {
   const { t } = useTranslation();
   const newMessage = useNewMessage();
   const channels = useWorkspace((x) => x.channels[space.id] ?? noChannels);
   const allDms = useWorkspace((x) => x.dms);
-  const spaces = useWorkspace((x) => x.spaces);
   const threads = useWorkspace((x) => x.threads);
   const drafts = useSpaceDrafts(space.id, useDrafts());
   const dms = allDms.filter((d) => d.spaceIds.includes(space.id));
-  const role = useWorkspace((x) => x.myRoles[space.id]);
   const showExternal = useShowExternal();
-  const channelsApi = useChannels();
-  // Client spaces are listed for the team only (RulesM5: clients and guests never see the list).
-  const team = role === 'owner' || role === 'admin' || role === 'member';
-  const clients = space.kind === 'workspace' && team ? spaces.filter((x) => x.kind === 'client') : [];
   const unreadThreads = threads.filter((th) => th.unread && channels.some((c) => c.id === th.channelId)).length;
   const is = (key: string, value: string) => !!active && key in active && (active as Record<string, string>)[key] === value;
 
@@ -96,27 +86,6 @@ export function Sidebar({ space, active }: { space: Space; active?: SidebarActiv
             <DmRow key={d.id} dm={d} spaceId={space.id} current={is('dmId', d.id)} />
           ))}
         </Section>
-
-        {(clients.length > 0 || (team && space.kind === 'workspace' && canManage(role))) && (
-          <Section
-            label={t('shell.sidebar.clientSpaces')}
-            action={
-              canManage(role) && (
-                <IconButton
-                  size={24}
-                  className={s.sectionAction}
-                  label={t('spaces.newClientSpace')}
-                  icon={<PlusIcon size={14} strokeWidth={2.2} />}
-                  onClick={() => channelsApi.newClientSpace()}
-                />
-              )
-            }
-          >
-            {clients.map((c) => (
-              <ClientRow key={c.id} space={c} />
-            ))}
-          </Section>
-        )}
       </div>
     </aside>
   );
@@ -149,23 +118,6 @@ function DmRow({ dm, spaceId, current }: { dm: Dm; spaceId: string; current: boo
       icon={<DmFace dm={dm} meId={meId} size={20} showExternal={showExternal} />}
       name={name(dm)}
       end={!current && <Badge count={dm.unread} />}
-    />
-  );
-}
-
-function ClientRow({ space }: { space: Space }) {
-  const home = useWorkspace((x) => spaceHome(x, space.id)?.id);
-  const avatar = useMediaUrl(space.avatarUrl, true);
-  return (
-    <NavRow
-      to={home ? channelPath(space.id, home) : `/w/${encodeURIComponent(space.id)}`}
-      current={false}
-      icon={
-        <span className={[s.spaceChip, space.archived && s.chipArchived].filter(Boolean).join(' ')} style={{ '--tile-bg': spaceColour(space) } as CSSProperties} aria-hidden="true">
-          {avatar ? <img src={avatar} alt="" /> : (Array.from(space.name.trim())[0] ?? '').toUpperCase()}
-        </span>
-      }
-      name={space.name}
     />
   );
 }

@@ -399,9 +399,9 @@ export interface WorkspaceStore {
   confirmEmoji(match: boolean): void;
   /** Close a finished confirmation (done/declined/timeout/mismatch). */
   dismissConfirmation(): void;
-  /** Spaces and case don't matter. Rejects Error('wrong-key'). Resolves once the device is confirmed and older messages start loading from the backup. */
+  /** Whitespace and dashes don't matter, full-width input is folded (NFKC); case does (base58). Rejects Error('wrong-key'). Resolves once the device is confirmed and older messages start loading from the backup. */
   useRecoveryKey(key: string): Promise<void>;
-  /** Creates (or replaces) the account's recovery key and backup and resolves to the key to show once. Rejects Error('password-required') when the server wants the password (call again with it) or Error('wrong-password'). */
+  /** Creates (or replaces) the account's recovery key and backup and resolves to the key to show once. Rejects Error('password-required') when the server wants the password (call again with it), Error('wrong-password'), or Error('backup-unreadable') when a backup exists that this device can't open (ask for the current key with useRecoveryKey first, then call again). */
   newRecoveryKey(password?: string): Promise<string>;
   /** "Reset and start fresh": new identity + backup; resolves to the new recovery key. Rejects Error('wrong-password'). */
   resetEncryption(password: string): Promise<string>;

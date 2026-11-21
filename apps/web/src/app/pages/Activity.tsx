@@ -11,6 +11,7 @@ import { AtIcon, BellIcon, ReplyKindIcon, ThreadIcon } from '../shell/icons';
 import { useListTime, useStableOrder } from './lists';
 import s from './Pages.module.css';
 import { previewParts } from './Preview';
+import { useHiddenText } from '../security/Gate';
 
 type Filter = 'all' | 'mentions' | 'replies';
 const filters: Filter[] = ['all', 'mentions', 'replies'];
@@ -75,6 +76,8 @@ function Row({ item, selected, onOpen }: { item: ActivityItem; selected: boolean
   const { message } = item;
   const quote = message.replyTo;
   const unread = item.unread && !selected;
+  // M6: no text of an encrypted conversation before this device is confirmed.
+  const hidden = useHiddenText(item.channelId);
   const where = !place ? '' : 'people' in place ? dmName(place) : place.name;
   const whereIcon = item.threadRootId ? <ThreadIcon size={12} strokeWidth={2.2} /> : place && 'private' in place && place.private ? <LockIcon size={12} strokeWidth={2.2} /> : <HashIcon size={12} strokeWidth={2.2} />;
 
@@ -103,8 +106,8 @@ function Row({ item, selected, onOpen }: { item: ActivityItem; selected: boolean
             <span>{where}</span>
           </span>
         )}
-        {item.kind === 'reply' && quote && <span className={s.quote}>{quote.body}</span>}
-        <span className={`${s.actText} ${s.clamp2}`}>{previewParts(message)}</span>
+        {item.kind === 'reply' && quote && !hidden && <span className={s.quote}>{quote.body}</span>}
+        <span className={[s.actText, s.clamp2, hidden && s.quietText].filter(Boolean).join(' ')}>{hidden ? t('security.unavailable') : previewParts(message)}</span>
       </span>
     </button>
   );

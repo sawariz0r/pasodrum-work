@@ -47,7 +47,7 @@ const channels: Record<string, Channel[]> = {
     ch('!design', '!pasodrum', 'design', { topic: 'Product design, critiques and Figma links', memberCount: 8, outside: [ola] }),
     ch('!eng', '!pasodrum', 'eng', { unread: 3, topic: 'Builds, releases and the occasional fire' }),
     ch('!general', '!pasodrum', 'general', { topic: 'Company-wide news and announcements' }),
-    ch('!lead', '!pasodrum', 'lead', { private: true, unread: 2, mentions: 2, memberCount: 2, topic: 'Planning and people topics' }),
+    ch('!lead', '!pasodrum', 'lead', { private: true, encrypted: true, unread: 2, mentions: 2, memberCount: 2, topic: 'Planning and people topics' }),
   ],
   '!nordlys': [
     ch('!project-updates', '!nordlys', 'project-updates', { memberCount: 3, outside: [people.hd!] }),
@@ -183,6 +183,12 @@ const threadReplies: Record<string, () => Message[]> = {
     reply('$!general-1', '!general', 'jb', at(0, 9, 41), 'Perfect. Board and shared docs for them; internal channels stay invisible.'),
     reply('$!general-1', '!general', 'ml', at(0, 10, 8), 'I’ll draft the welcome note they see the first time they open it.'),
   ],
+  // M6 (UndecryptableThread): one reply this device can't open, one whose key is still arriving.
+  '$!lead-q1': () => [
+    reply('$!lead-q1', '!lead', 'jb', at(0, 8, 10), 'Added ours. Hiring is the big one.'),
+    { ...reply('$!lead-q1', '!lead', 'la', at(0, 8, 22), ''), kind: 'undecryptable' },
+    { ...reply('$!lead-q1', '!lead', 'ek', at(0, 8, 31), ''), id: '$!lead-q1-arriving', kind: 'undecryptable', arriving: true },
+  ],
   '$!eng-sync': () => [
     reply('$!eng-sync', '!eng', 'jb', at(0, 8, 47), 'Great news. Who should test sign-in on Safari?'),
     reply('$!eng-sync', '!eng', 'ek', at(0, 9, 2), 'Sofia offered. I’ll send the build link.'),
@@ -200,6 +206,9 @@ function withThread(m: Message, unread = false): Message {
 // M3 (Batch C DMs, Threads, Activity boards): DMs with history, followed threads, mentions and replies to Sofia.
 const dmHistory: Record<string, () => Message[]> = {
   '!dm-jonas': () => [
+    // M6 (UndecryptableDM): from before this device was confirmed; a run from one sender collapses.
+    ...[0, 1, 2].map((i) => rich('!dm-jonas', 'jb', at(1, 16, 40 + i), { kind: 'undecryptable' })),
+    rich('!dm-jonas', 'so', at(1, 16, 52), { kind: 'undecryptable' }),
     rich('!dm-jonas', 'jb', at(0, 9, 2), { body: 'Can you look at the client welcome copy today?' }),
     rich('!dm-jonas', 'so', at(0, 9, 5), { body: 'Yes, right after standup.' }),
     rich('!dm-jonas', 'so', at(0, 9, 5), { body: 'Drafting it in the thread so Maja sees it too.' }),
@@ -209,7 +218,7 @@ const dmHistory: Record<string, () => Message[]> = {
     rich('!dm-henrik', 'hd', at(0, 9, 40), { body: 'Morning! Where can I find the new screens?' }),
     rich('!dm-henrik', 'so', at(0, 9, 58), { body: 'I’ll send the sign-in screens tomorrow.' }),
   ],
-  '!dm-ingrid': () => [rich('!dm-ingrid', 'ih', at(0, 9, 40), { body: 'Lunch at 12?' })],
+  '!dm-ingrid': () => [rich('!dm-ingrid', 'ih', at(0, 9, 40), { body: 'Lunch at 12?' }), ingridLast],
   '!dm-erik-lea': () => [
     rich('!dm-erik-lea', 'ek', at(1, 15, 2), { body: 'Is the M2 summary ready?' }),
     rich('!dm-erik-lea', 'la', at(1, 15, 20), { body: 'Release notes are in the doc.' }),
@@ -217,14 +226,18 @@ const dmHistory: Record<string, () => Message[]> = {
   '!dm-maja': () => [rich('!dm-maja', 'so', at(4, 11, 0), { body: 'Thanks!' })],
 };
 
+// M6: the DM list preview of a message this device can't open.
+const ingridLast = rich('!dm-ingrid', 'ih', at(0, 9, 41), { kind: 'undecryptable' });
+
+// M6: every DM is end-to-end encrypted (D-11).
 function sampleDms() {
   const dm = (id: string, who: (keyof typeof people)[], lastTs: number, spaceIds: string[], unread = 0) => ({
-    id, people: who.map((k) => people[k]!), unread, mentions: unread, lastTs, spaceIds,
+    id, people: who.map((k) => people[k]!), unread, mentions: unread, lastTs, spaceIds, encrypted: true,
   });
   return [
     dm('!dm-jonas', ['jb'], at(0, 10, 12), ['!pasodrum', '!nordlys'], 1),
     dm('!dm-henrik', ['hd'], at(0, 9, 58), ['!nordlys']),
-    dm('!dm-ingrid', ['ih'], at(0, 9, 40), ['!pasodrum', '!nordlys']),
+    { ...dm('!dm-ingrid', ['ih'], at(0, 9, 41), ['!pasodrum', '!nordlys']), last: ingridLast },
     dm('!dm-erik-lea', ['ek', 'la'], at(1, 15, 20), ['!pasodrum']),
     dm('!dm-maja', ['ml'], at(4, 11, 0), ['!pasodrum', '!nordlys']),
     dm('!dm-tove', ['tr'], at(9, 16, 0), ['!pasodrum']),
@@ -289,8 +302,22 @@ function sampleActivity(): ActivityItem[] {
   ];
 }
 
+// M6 (UndecryptableThread): a private channel; this device can't open the first message.
+function leadHistory(): Message[] {
+  return [
+    rich('!lead', 'ek', at(0, 7, 41), { kind: 'undecryptable' }),
+    withThread(rich('!lead', 'ih', at(0, 7, 55), {
+      id: '$!lead-q1',
+      body: 'Q1 planning doc is up. Sofia Olsen Jonas Berg please add your team’s priorities by Friday.',
+      html: `Q1 planning doc is up. ${pill('so')} ${pill('jb')} please add your team’s priorities by Friday.`,
+      mentionsMe: true,
+    })),
+  ];
+}
+
 const history: Record<string, () => Message[]> = {
   '!general': () => generalHistory().map((m) => withThread(m, true)),
+  '!lead': leadHistory,
   '!eng': () => engHistory().map((m) => withThread(m)),
   ...dmHistory,
 };
@@ -330,15 +357,18 @@ export interface FakeStoreOptions {
   security?: Partial<Security>;
   /** M6. newRecoveryKey asks for the password first (RecoveryKeyPassword). */
   keyNeedsPassword?: boolean;
+  /** M6. A backup exists this device can't open: newRecoveryKey rejects 'backup-unreadable' until useRecoveryKey succeeds. */
+  backupUnreadable?: boolean;
   /** M6. signOutRisk answer (default 'none'). */
   signOutRisk?: 'none' | 'last-device' | 'no-backup';
 }
 
-/** M6. The fake account's recovery key; useRecoveryKey accepts it with any spacing/case. */
+/** M6. The fake account's recovery key; useRecoveryKey accepts it without spaces (the UI strips them), case-sensitive. */
 export const FAKE_RECOVERY_KEY = 'EsTc 3vJH 9pLm Qx2R 7nWd Kf4A Zb8Y Hu6G Ve1T Rs5C Pj0N Mq3X';
+// Indexes into the Matrix SAS emoji table (as on the ConfirmCompare board).
 const SAS: SasEmoji[] = [
-  { emoji: '🐶', index: 0 }, { emoji: '🔑', index: 33 }, { emoji: '🎸', index: 46 }, { emoji: '🌍', index: 23 },
-  { emoji: '🍕', index: 27 }, { emoji: '🚀', index: 52 }, { emoji: '🎩', index: 37 },
+  { emoji: '🐶', index: 0 }, { emoji: '🦄', index: 4 }, { emoji: '🌵', index: 17 }, { emoji: '🍕', index: 27 },
+  { emoji: '🚀', index: 54 }, { emoji: '🎸', index: 57 }, { emoji: '🐧', index: 10 },
 ];
 
 /** M5. What a client or guest gets from the server (RulesM5 shells): their spaces and channels, no outside marks, no client spaces. */
@@ -454,11 +484,12 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
   let myZone: string | undefined;
   const levels: Record<string, NotifyLevel> = {};
   const settings: Record<string, string> = {};
+  // M6: this device follows security.device; Safari on Mac signed in a minute ago and isn't confirmed (SettingsDevicesM6).
   let devices: Device[] = [
-    { id: 'WEB1', name: 'Chrome on Mac', lastSeenTs: Date.now(), current: true },
-    { id: 'IOS1', name: 'Safari on iPhone', lastSeenTs: Date.now() - 2 * 3_600_000, current: false },
-    { id: 'IOS2', name: 'Element X on iPhone', lastSeenTs: Date.now() - 86_400_000, current: false },
-    { id: 'WIN1', name: 'Firefox on Windows', lastSeenTs: Date.now() - 8 * 86_400_000, current: false },
+    { id: 'WEB1', name: 'Chrome on Mac', lastSeenTs: Date.now(), current: true, confirmed: snapshot.security.device !== 'unconfirmed' },
+    { id: 'IOS1', name: 'Safari on Mac', lastSeenTs: Date.now() - 60_000, current: false, confirmed: false },
+    { id: 'IOS2', name: 'Element X on iPhone', lastSeenTs: Date.now() - 86_400_000, current: false, confirmed: true },
+    { id: 'WIN1', name: 'Firefox on Windows', lastSeenTs: Date.now() - 8 * 86_400_000, current: false, confirmed: true },
   ];
   // M4: workspace roles, channel members and pending people.
   const roleOf: Record<string, Role> = { [people.ih!.id]: 'owner', [people.jb!.id]: 'admin', [people.hd!.id]: 'client', [ola.id]: 'guest' };
@@ -488,6 +519,7 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
   const rosterOf = (spaceId: string) => (spaceRoster[spaceId] ??= { team: [snapshot.me.id], clients: [] });
   const failedOnce = new Set<string>();
   const setSecurity = (patch: Partial<Security>) => set({ security: { ...snapshot.security, ...patch } });
+  let backupReadable = !opts.backupUnreadable;
   const setConfirmation = (confirmation: Security['confirmation']) => setSecurity({ confirmation });
   const finishLoad = (channelId: string) => setTimeline(channelId, { messages: history[channelId]?.() ?? [], initialLoading: false });
 
@@ -627,6 +659,10 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
           // Like matrix/: the root (with its summary) first, then the replies.
           const root = messagesOf(channelId).find((x) => x.id === rootId) ?? snapshot.threads.find((x) => x.rootId === rootId)?.root;
           setThread(rootId, { messages: [...(root ? [root] : []), ...(threadReplies[rootId]?.() ?? [])], initialLoading: false });
+          // M6: the key for the arriving reply comes from the backup a moment later; the message fades in where it is.
+          if (rootId === '$!lead-q1' && opts.loadMs) {
+            setTimeout(() => patchMessage(channelId, '$!lead-q1-arriving', (m) => ({ ...m, kind: 'text', arriving: undefined, body: 'Ours too. Two hires in Q1.' })), 4000);
+          }
         }
       };
       if (opts.loadMs) setTimeout(finish, opts.loadMs);
@@ -858,13 +894,15 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       setConfirmation(undefined);
     },
     async useRecoveryKey(key) {
-      const norm = (k: string) => k.replace(/\s+/g, '').toLowerCase();
+      const norm = (k: string) => k.replace(/\s+/g, '');
       if (norm(key) !== norm(FAKE_RECOVERY_KEY)) throw new Error('wrong-key');
+      backupReadable = true;
       setSecurity({ device: 'confirmed', confirmation: undefined });
     },
     async newRecoveryKey(password) {
       if (opts.keyNeedsPassword && !password) throw new Error('password-required');
       if (password === 'wrong') throw new Error('wrong-password');
+      if (!backupReadable) throw new Error('backup-unreadable');
       setSecurity({ needsRecoveryKey: false });
       return FAKE_RECOVERY_KEY;
     },

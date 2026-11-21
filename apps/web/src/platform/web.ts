@@ -39,5 +39,20 @@ export function createWebPlatform(): Platform {
     async persistStorage() {
       return (await navigator.storage?.persist?.()) ?? false;
     },
+
+    lock(name) {
+      const locks = typeof navigator === 'undefined' ? undefined : navigator.locks;
+      if (!locks) return Promise.resolve(() => {});
+      return new Promise((acquired) => {
+        void locks.request(name, () => new Promise<void>((release) => acquired(release)));
+      });
+    },
+
+    deviceName() {
+      const ua = typeof navigator === 'undefined' ? '' : navigator.userAgent;
+      const browser = /Edg\//.test(ua) ? 'Edge' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : null;
+      const os = /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android' : /Mac OS X|Macintosh/.test(ua) ? 'Mac' : /Windows/.test(ua) ? 'Windows' : /Linux/.test(ua) ? 'Linux' : null;
+      return browser && os ? `${browser} on ${os}` : 'Pasodrum work';
+    },
   };
 }

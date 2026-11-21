@@ -15,6 +15,7 @@ import { PlainText, RichText } from './RichText';
 import r from './Rich.module.css';
 import s from './Timeline.module.css';
 import { PersonAvatar } from './PersonAvatar';
+import { Undecryptable } from '../security/Undecryptable';
 
 type Props = {
   message: Message;
@@ -102,7 +103,9 @@ function ReplyQuote({ reply, original }: { reply: NonNullable<Message['replyTo']
   const text = found
     ? original.kind === 'deleted'
       ? t('timeline.deleted')
-      : original.body || original.media?.name || ''
+      : original.kind === 'undecryptable'
+        ? t('security.unavailable')
+        : original.body || original.media?.name || ''
     : reply.body;
   const inner = (
     <>
@@ -120,11 +123,12 @@ function ReplyQuote({ reply, original }: { reply: NonNullable<Message['replyTo']
   );
 }
 
-function Content({ m, group, tail }: { m: Message; group?: Message[]; tail?: ReactNode }) {
+function Content({ m, group, tail, compact }: { m: Message; group?: Message[]; tail?: ReactNode; compact?: boolean }) {
   const { t } = useTranslation();
   const tl = useTimeline();
   const caption = m.body && m.body !== m.media?.name ? <PlainText text={m.body} /> : null;
   const kind = m.kind ?? 'text';
+  if (kind === 'undecryptable') return <Undecryptable count={group?.length ?? 1} arriving={m.arriving} compact={compact} />;
   if (m.media && (kind === 'image' || kind === 'video' || kind === 'audio' || kind === 'file')) {
     return (
       <>
@@ -217,6 +221,8 @@ export const MessageRow = memo(function MessageRow({
   const profile = useProfileCard();
   const [force, setForce] = useState(false);
   const archived = useArchivedSpace(tl.channelId);
+  // M6: a message whose key arrives later fades in where it is.
+  const [wasUnavailable] = useState(m.kind === 'undecryptable');
   if (m.kind === 'deleted') return <DeletedRow m={m} />;
   if (m.kind === 'system') return <SystemRow m={m} />;
 
@@ -237,8 +243,10 @@ export const MessageRow = memo(function MessageRow({
     if (!m.reactions?.some((x) => x.key === key && x.mine)) store.react(tl.channelId, m.id, key);
   };
 
+  const unavailable = m.kind === 'undecryptable';
   const cls = [
     s.row,
+    wasUnavailable && !unavailable && s.revealed,
     head ? s.head : s.cont,
     compact && s.compact,
     arrive && s.arrive,
@@ -279,7 +287,7 @@ export const MessageRow = memo(function MessageRow({
           <MessageEditor message={m} onDone={onEditDone} />
         ) : (
           <div className={[s.body, sending && s.dim, !head && m.media && !(m.body && m.body !== m.media.name) && s.mediaOnly].filter(Boolean).join(' ')}>
-            <Content m={m} group={group} tail={tail} />
+            <Content m={m} group={group} tail={tail} compact={compact} />
           </div>
         )}
         {failed && (
@@ -299,7 +307,7 @@ export const MessageRow = memo(function MessageRow({
         {m.reactions && m.reactions.length > 0 && <Reactions reactions={m.reactions} meId={meId} {...(!archived && { onToggle: toggle, onPick: pick })} />}
         {m.thread && m.thread.count > 0 && tl.openThread && <ThreadSummary thread={m.thread} onOpen={() => tl.openThread?.(m.id)} />}
       </div>
-      {m.status === 'sent' && !editing && <MessageActions message={m} group={group} own={own} onOpenChange={setForce} />}
+      {m.status === 'sent' && !editing && !unavailable && <MessageActions message={m} group={group} own={own} onOpenChange={setForce} />}
     </div>
   );
 });

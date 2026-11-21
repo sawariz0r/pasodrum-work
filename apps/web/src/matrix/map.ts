@@ -133,7 +133,9 @@ const MEDIA = new Set(['m.image', 'm.video', 'm.audio', 'm.file']);
 
 /** m.image/m.video/m.audio/m.file (and m.sticker) content → Media plus the caption ('' when the body is just the file name). */
 export function mediaOf(content: Record<string, unknown>, sticker = false): { media: Media; caption: string } | null {
-  const ref = str(content.url);
+  // Encrypted media (M6) carries its URL inside `file` / `thumbnail_file`.
+  const urlOf = (v: unknown) => str((v as { url?: unknown } | null | undefined)?.url);
+  const ref = str(content.url) ?? urlOf(content.file);
   if (!ref || (!sticker && !MEDIA.has(String(content.msgtype)))) return null;
   const body = str(content.body) ?? '';
   const filename = str(content.filename);
@@ -144,7 +146,7 @@ export function mediaOf(content: Record<string, unknown>, sticker = false): { me
     size: num(info.size),
     width: num(info.w),
     height: num(info.h),
-    thumbnailRef: str(info.thumbnail_url),
+    thumbnailRef: str(info.thumbnail_url) ?? urlOf(info.thumbnail_file),
     durationMs: num(info.duration),
   };
   for (const [k, v] of Object.entries(fields)) if (v !== undefined) (media as unknown as Record<string, unknown>)[k] = v;

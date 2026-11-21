@@ -150,11 +150,11 @@ describe('DMs', () => {
     for (const { token, roomId } of created) await mx(token(), 'POST', `/_matrix/client/v3/rooms/${E(roomId)}/leave`);
   });
 
-  it('creates an unencrypted DM, the other side opens it without accepting, and both reuse it', async () => {
+  it('creates an encrypted DM (M6), the other side opens it without accepting, and both reuse it', async () => {
     const id = await jonas.store.openDm([INGRID]);
     created.push({ token: () => jonas.session.accessToken, roomId: id }, { token: () => ingrid.session.accessToken, roomId: id });
     const state = (await mx(jonas.session.accessToken, 'GET', `/_matrix/client/v3/rooms/${E(id)}/state`)).body as unknown as { type: string; state_key: string; content: Record<string, unknown> }[];
-    expect(state.some((e) => e.type === 'm.room.encryption')).toBe(false);
+    expect(state.filter((e) => e.type === 'm.room.encryption')).toHaveLength(1);
     const direct = (await mx(jonas.session.accessToken, 'GET', `/_matrix/client/v3/user/${E(JONAS)}/account_data/m.direct`)).body;
     expect(direct[INGRID]).toContain(id);
 

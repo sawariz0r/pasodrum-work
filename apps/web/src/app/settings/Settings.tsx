@@ -5,6 +5,8 @@ import { PasswordRequired, useStore, useWorkspace, type Device, type NotifyLevel
 import { avatarColor, Button, Dialog, IconButton, initialsOf, isCjk, isImeEnter, TextField, useMenuReturnFocus } from '../../ui';
 import { currentLanguage, setLanguage, type Language } from '../i18n';
 import { timeIn, useCityName } from '../people/localTime';
+import { KeyIcon } from '../security/icons';
+import { useSecurityUi } from '../security/SecurityProvider';
 import { setThemePref, useThemePref, type ThemePref } from '../prefs';
 import { useMediaUrl } from '../timeline/Media';
 import {
@@ -372,6 +374,16 @@ function DevicesPane() {
   const [busy, setBusy] = useState<string>();
   const [failed, setFailed] = useState(false);
   const [ask, setAsk] = useState<{ title: string; retry: (password: string) => Promise<void>; keep: (d: Device) => boolean }>();
+  // M6 (SettingsDevicesM6, SettingsDevicesUnconfirmed): this device follows the live state; others carry `confirmed`.
+  const security = useSecurityUi();
+  const unconfirmed = useWorkspace((x) => x.security.device === 'unconfirmed');
+  const confirmed = useWorkspace((x) => x.security.device === 'confirmed');
+  const [keyFailed, setKeyFailed] = useState(false);
+  const newKey = () => {
+    if (security.keyBusy) return;
+    setKeyFailed(false);
+    void security.newKey().then((ok) => setKeyFailed(!ok));
+  };
 
   useEffect(() => {
     let live = true;
@@ -415,11 +427,17 @@ function DevicesPane() {
                 <span className={s.deviceNameRow}>
                   <span className={s.deviceName}>{d.name}</span>
                   {d.current && <span className={s.thisDevice}>{t('settings.devices.thisDevice')}</span>}
+                  {(d.current ? unconfirmed : d.confirmed === false) && <span className={s.notConfirmed}>{t('security.notConfirmed')}</span>}
                 </span>
                 <span className={s.deviceMeta}>
                   {lastSeen(d, now, lng, t('settings.devices.yesterday'), t('settings.devices.activeNow'))}
                 </span>
               </span>
+              {d.current && unconfirmed && (
+                <button type="button" className={s.deviceConfirm} onClick={security.confirm}>
+                  {t('security.confirm')}
+                </button>
+              )}
               {!d.current && (
                 <button
                   type="button"
@@ -447,7 +465,19 @@ function DevicesPane() {
           {t('settings.devices.signOutOthers')}
         </button>
       )}
+      {confirmed && devices && (
+        <div className={s.recoveryKey}>
+          <span className={s.deviceIcon}>
+            <KeyIcon size={19} />
+          </span>
+          <span className={s.recoveryKeyName}>{t('security.recoveryKey')}</span>
+          <button type="button" className={s.deviceSignOut} aria-busy={security.keyBusy || undefined} onClick={newKey}>
+            {t('security.newKeyShort')}
+          </button>
+        </div>
+      )}
       {failed && <Failed text={t('settings.devices.failed')} />}
+      {keyFailed && <Failed text={t('security.keyFailed')} />}
       {ask && (
         <PasswordPrompt
           title={ask.title}

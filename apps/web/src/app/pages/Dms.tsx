@@ -18,6 +18,7 @@ import shell from '../shell/Shell.module.css';
 import { useListTime } from './lists';
 import s from './Pages.module.css';
 import { previewText } from './Preview';
+import { useHiddenText } from '../security/Gate';
 
 export function DmsColumn({ activeId }: { activeId?: string }) {
   const { t } = useTranslation();
@@ -48,7 +49,11 @@ function DmRow({ dm, current }: { dm: Dm; current: boolean }) {
   const unread = dm.unread > 0 && !current;
   const group = others(dm, meId).length > 1;
   let preview = '';
-  if (last) {
+  // M6: the same quiet words as in the conversation (UndecryptableDM); none of its text before this device is confirmed.
+  const hidden = useHiddenText(dm.id);
+  const unavailable = !!last && (hidden || last.kind === 'undecryptable');
+  if (unavailable) preview = t('security.unavailable');
+  else if (last) {
     const text = previewText(last);
     if (last.sender.id === meId) preview = t('pages.dms.you', { text });
     else if (group) preview = t('pages.dms.from', { name: last.sender.name.split(/\s+/)[0], text });
@@ -64,7 +69,7 @@ function DmRow({ dm, current }: { dm: Dm; current: boolean }) {
         </span>
         {(preview || unread) && (
           <span className={s.dmPreview}>
-            <span>{preview}</span>
+            <span className={unavailable ? s.quietPreview : undefined}>{preview}</span>
             {unread && <Badge count={dm.unread} />}
           </span>
         )}

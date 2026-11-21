@@ -8,6 +8,7 @@
 }
 
 :80 {
+	encode zstd gzip
 	handle /_matrix/* {
 		reverse_proxy continuwuity:6167
 	}

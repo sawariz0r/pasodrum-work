@@ -5,11 +5,12 @@ import { EmptyChannelAddPeople } from '../channels/ChannelMenus';
 import { ComposerProvider } from '../composer/context';
 import { DmIntro } from '../people/DmIntro';
 import { useDmName } from '../people/names';
+import { ConfirmGate, KeyGate, useGate } from '../security/Gate';
 import { ThreadPanel } from '../thread/ThreadPanel';
 import { useOpenThread, useThreadNav } from '../thread/useThread';
 import { ArchivedBar, useArchivedSpace } from './ArchivedBar';
 import { Composer } from './Composer';
-import { Timeline } from './Timeline';
+import { Timeline, TimelineSkeleton } from './Timeline';
 import { TypingIndicator } from './TypingIndicator';
 import s from './Timeline.module.css';
 
@@ -21,7 +22,19 @@ function findChannel(snapshot: WorkspaceSnapshot, channelId: string) {
   return undefined;
 }
 
+/** M6: an encrypted conversation shows the confirm card (unconfirmed device) or the key card (no recovery key yet) instead (RulesM6). */
 function ChannelPane({ channelId }: { channelId: string }) {
+  const gate = useGate(channelId);
+  // After confirming, the card fades and the conversation fades in.
+  const [gated, setGated] = useState(gate !== 'open');
+  if (gate !== 'open' && !gated) setGated(true);
+  if (gate === 'gate') return <ConfirmGate />;
+  if (gate === 'key') return <KeyGate />;
+  if (gate === 'wait') return <TimelineSkeleton />;
+  return <Conversation channelId={channelId} fadeIn={gated} />;
+}
+
+function Conversation({ channelId, fadeIn }: { channelId: string; fadeIn: boolean }) {
   const store = useStore();
   const timeline = useWorkspace((snap) => snap.timelines[channelId]);
   const channelName = useWorkspace((snap) => findChannel(snap, channelId)?.name);
@@ -65,7 +78,7 @@ function ChannelPane({ channelId }: { channelId: string }) {
 
   return (
     <ComposerProvider>
-      <div ref={viewRef} className={s.view} style={{ '--dock-h': `${dockHeight}px` } as CSSProperties}>
+      <div ref={viewRef} className={[s.view, fadeIn && s.fadeIn].filter(Boolean).join(' ')} style={{ '--dock-h': `${dockHeight}px` } as CSSProperties}>
         <Timeline
           channelId={channelId}
           channelName={name}

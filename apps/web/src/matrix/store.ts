@@ -29,6 +29,9 @@ import {
   type MatrixEvent,
   type Room,
 } from 'matrix-js-sdk';
+import { DecryptionFailureCode } from 'matrix-js-sdk/lib/crypto-api';
+import { decryptAttachment, encryptAttachment, sealedFileOf, type SealedFile } from './attachments';
+import { CRYPTO_DB, createSecurity, cryptoCallbacks, withTimeout, type KeyHolder } from './crypto';
 import { sanitizeHtml, type SanitizedHtml } from './html';
 import { createInvite, InviteError, listInvites, normalizeEmail, resendInvite, revokeInvitesFor, revokeInvite } from './invites';
 import {
@@ -42,7 +45,7 @@ import { send, sendEdit, sendReaction, type MsgType, type TextMessage } from './
 import { clearSession } from './session';
 import {
   PasswordRequired,
-  type ActivityItem, type AddPeopleResult, type Channel, type Dm, type JoinableChannel, type Member, type Message, type MessageKind, type Person, type Role, type Session, type Space,
+  type ActivityItem, type AddPeopleResult, type Channel, type Dm, type JoinableChannel, type Media, type Member, type Message, type MessageKind, type Person, type Role, type Session, type Space,
   type ThreadInfo, type ThreadSummary, type Timeline, type Upload, type WorkspaceSnapshot, type WorkspaceStore,
 } from './types';
 
@@ -67,6 +70,15 @@ const spaceStateOf = (room: Room): Record<string, unknown> => room.currentState.
 const isClientSpace = (room: Room) => spaceStateOf(room).kind === 'client';
 const joined = (room: Room) => room.getMyMembership() === KnownMembership.Join;
 const SETTINGS = 'work.pasodrum.settings';
+const MEGOLM = { algorithm: 'm.megolm.v1.aes-sha2' };
+/** RulesM6: an undecryptable message shimmers this long while its key may still come. */
+const ARRIVING = 10_000;
+const ENCRYPT_AFTER = 15_000;
+const NO_KEY_COMING = new Set<string>([
+  DecryptionFailureCode.MEGOLM_KEY_WITHHELD,
+  DecryptionFailureCode.MEGOLM_KEY_WITHHELD_FOR_UNVERIFIED_DEVICE,
+  DecryptionFailureCode.HISTORICAL_MESSAGE_USER_NOT_JOINED,
+]);
 const SPACES = 'work.pasodrum.spaces';
 const isMember = (room: Room | null | undefined, userId: string) => {
   const m = room?.getMember(userId)?.membership;
@@ -92,6 +104,7 @@ const threadRootOf = (ev: MatrixEvent) => (!ev.isState() && relationOf(ev)?.rel_
 /** A real reply; the m.in_reply_to a thread reply carries for clients without threads doesn't count. */
 const replyIdOf = (ev: MatrixEvent) => (relationOf(ev)?.is_falling_back ? undefined : ev.replyEventId);
 const sent = (ev: MatrixEvent) => !ev.status && !!ev.getId()?.startsWith('$');
+const isMessage = (ev: MatrixEvent) => ev.getType() === EventType.RoomMessage || ev.getType() === EventType.RoomMessageEncrypted;
 const replyOfEvent = (ev: MatrixEvent): ThreadReply => ({ id: ev.getId()!, ts: ev.getTs(), sender: ev.getSender() ?? '' });
 
 interface ThreadBundle {
@@ -158,9 +171,9 @@ function factsOf(room: Room): RoomFacts {
 const statusOf = (ev: MatrixEvent): Message['status'] =>
   ev.status === EventStatus.NOT_SENT ? 'failed' : ev.status && ev.status !== EventStatus.SENT ? 'sending' : 'sent';
 
-const hasOlder = (room: Room) => {
+const hasOlder = (room: Room, start?: { index: number }) => {
   const live = room.getLiveTimeline();
-  return live.getPaginationToken(Direction.Backward) !== null && !live.getEvents().some((e) => e.getType() === EventType.RoomCreate);
+  return !start && live.getPaginationToken(Direction.Backward) !== null && !live.getEvents().some((e) => e.getType() === EventType.RoomCreate);
 };
 
 const msgtypeOf = (mimetype: string): MsgType =>
@@ -183,12 +196,46 @@ interface TrayItem {
   file: File;
   info: Record<string, unknown>;
   url?: string;
+  sealed?: SealedFile;
   abort?: AbortController;
 }
 
+/**
+ * Continuwuity (26.9) drops about 1 in 30 to-device messages that reach a device at the same moment as another, so ours
+ * go out one at a time (verification start + cancel to my other devices were going out together and getting lost).
+ */
+function serialToDeviceFetch(): typeof fetch {
+  let queue: Promise<unknown> = Promise.resolve();
+  return (input, init) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    if (!url.includes('/sendToDevice/')) return fetch(input, init);
+    const sent = queue.catch(noop).then(() => fetch(input, init));
+    queue = sent;
+    return sent;
+  };
+}
+
 export function createWorkspaceStore(session: Session): WorkspaceStore {
-  const client = createClient({ baseUrl: session.baseUrl, userId: session.userId, deviceId: session.deviceId, accessToken: session.accessToken, disableVoip: true });
+  const serialToDevice = serialToDeviceFetch();
+  const keys: KeyHolder = { current: null };
+  const client = createClient({
+    baseUrl: session.baseUrl,
+    userId: session.userId,
+    deviceId: session.deviceId,
+    accessToken: session.accessToken,
+    disableVoip: true,
+    cryptoCallbacks: cryptoCallbacks(keys),
+    fetchFn: serialToDevice,
+    verificationMethods: ['m.sas.v1'],
+  });
   const listeners = new Set<() => void>();
+  const security = createSecurity(client, keys, session.userId, session.deviceId, () => schedule());
+  let cryptoReady = false;
+  const encrypting = new Set<string>();
+  /** Encrypted media by its per-message ref (`mxc#eventId`): key, iv, hash and MIME type from that message. */
+  const sealed = new Map<string, { file: SealedFile; mimetype?: string }>();
+  /** When each undecryptable message was first seen (for `arriving`). */
+  const failedAt = new Map<string, number>();
   const open = new Map<string, Pick<Timeline, 'initialLoading' | 'loadingOlder'>>();
   const sanitized = new WeakMap<object, SanitizedHtml>();
   /** Reply originals outside the loaded timeline: fetched once; null while fetching or when unavailable. */
@@ -217,6 +264,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   let synced = false;
   let sessionExpired = false;
   let uploadSeq = 0;
+  let stopped = false;
   let markReady = noop;
   const ready = new Promise<void>((resolve) => (markReady = resolve));
 
@@ -277,6 +325,12 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     const base = { id: ev.getId()!, channelId: room.roomId, sender: personOf(room, senderId, ev.sender?.name), ts: ev.getTs(), status: statusOf(ev) };
     const content = ev.getContent() as Record<string, unknown>;
 
+    // A failed decryption reads as m.room.message / m.bad.encrypted; one still decrypting as m.room.encrypted.
+    if (ev.isDecryptionFailure() || type === EventType.RoomMessageEncrypted) {
+      if (ev.isRedacted()) return { ...base, body: '', kind: 'deleted' };
+      if (ev.isRelation() && !ev.isRelation(THREAD)) return null;
+      return { ...base, body: '', kind: 'undecryptable', ...(arriving(ev) ? { arriving: true } : {}) };
+    }
     if (type !== EventType.RoomMessage && type !== EventType.Sticker) {
       // D-05: unknown content with a text fallback shows it; anything else (reactions, encrypted, poll votes…) is hidden.
       const text = content.body ?? content['org.matrix.msc1767.text'];
@@ -296,6 +350,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     } else {
       kind = TEXT_KINDS.has(msgtype) ? (msgtype.slice(2) as MessageKind) : 'unsupported';
     }
+    if (file) seal(file.media, content, base.id);
     const html = !file || file.caption ? htmlOf(content) : null;
     const mentioned = (content['m.mentions'] as { user_ids?: unknown } | undefined)?.user_ids;
     const mentionsMe = senderId !== me.id && ((Array.isArray(mentioned) && mentioned.includes(me.id)) || !!html?.mentions.includes(me.id));
@@ -316,6 +371,34 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     };
     if (replyId && withReply) message.replyTo = replyOf(room, replyId, ev);
     return message;
+  }
+
+  /** Still decrypting, or failed but a key may yet come (backup, another device): at most ARRIVING after first sight. */
+  function arriving(ev: MatrixEvent) {
+    if (ev.isDecryptionFailure() && NO_KEY_COMING.has(ev.decryptionFailureReason ?? '')) return false;
+    const id = ev.getId()!;
+    let at = failedAt.get(id);
+    if (at === undefined) {
+      failedAt.set(id, (at = Date.now()));
+      setTimeout(schedule, ARRIVING + 50);
+    }
+    return Date.now() - at < ARRIVING;
+  }
+
+  /** Encrypted media gets a ref of its own per message, so one message's key never opens (or breaks) another's file. */
+  function seal(m: Media, content: Record<string, unknown>, eventId: string) {
+    const info = (content.info ?? {}) as Record<string, unknown>;
+    const main = sealedFileOf(content.file);
+    const thumb = sealedFileOf(info.thumbnail_file);
+    if (main) {
+      m.ref = `${main.url}#${eventId}`;
+      sealed.set(m.ref, { file: main, ...(str(info.mimetype) ? { mimetype: str(info.mimetype) } : {}) });
+    }
+    if (thumb) {
+      m.thumbnailRef = `${thumb.url}#${eventId}:thumbnail`;
+      const thumbType = str((info.thumbnail_info as Record<string, unknown> | undefined)?.mimetype);
+      sealed.set(m.thumbnailRef, { file: thumb, ...(thumbType ? { mimetype: thumbType } : {}) });
+    }
   }
 
   function replyOf(room: Room, replyId: string, ev: MatrixEvent): NonNullable<Message['replyTo']> {
@@ -351,7 +434,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       }
       run = [];
     };
-    for (const ev of [...room.getLiveTimeline().getEvents(), ...room.getPendingEvents()]) {
+    const from = startOf(room)?.index ?? 0;
+    for (const ev of [...room.getLiveTimeline().getEvents().slice(from), ...room.getPendingEvents()]) {
       if (ev.getType() === EventType.RoomMember) {
         run.push(ev);
         continue;
@@ -365,11 +449,33 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     return out;
   };
 
-  const visibleCount = (room: Room) => room.getLiveTimeline().getEvents().filter((e) => e.getType() !== EventType.RoomMember && messageOf(e, room, false)).length;
+  /**
+   * Encrypted private channels start at my join (D-31): the timeline position of my latest change to "joined", once
+   * it's loaded. The previous membership comes from prev_content, else from my earlier member event in the timeline.
+   */
+  function startOf(room: Room): { index: number } | undefined {
+    if (!room.hasEncryptionStateEvent() || isDirect(room, directRooms())) return undefined;
+    const events = room.getLiveTimeline().getEvents();
+    let index: number | undefined;
+    let last: string | undefined;
+    events.forEach((e, i) => {
+      if (e.getType() !== EventType.RoomMember || e.getStateKey() !== me.id) return;
+      const next = e.getContent().membership as string | undefined;
+      const prev = (e.getPrevContent().membership as string | undefined) ?? last;
+      if (next === KnownMembership.Join && prev !== KnownMembership.Join) index = i;
+      last = next;
+    });
+    return index === undefined ? undefined : { index };
+  }
+
+  const visibleCount = (room: Room) => {
+    const from = startOf(room)?.index ?? 0;
+    return room.getLiveTimeline().getEvents().slice(from).filter((e) => e.getType() !== EventType.RoomMember && messageOf(e, room, false)).length;
+  };
 
   const timelineOf = (channelId: string, flags: Pick<Timeline, 'initialLoading' | 'loadingOlder'>): Timeline => {
     const room = client.getRoom(channelId);
-    return { messages: room ? messagesOf(room) : [], ...flags, hasOlder: !!room && hasOlder(room) };
+    return { messages: room ? messagesOf(room) : [], ...flags, hasOlder: !!room && hasOlder(room, startOf(room)) };
   };
 
   const typingOf = (channelId: string): Person[] =>
@@ -645,7 +751,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   };
   const lastTsOf = (room: Room) => {
     const events = room.getLiveTimeline().getEvents();
-    const last = events.findLast((ev) => ev.getType() === EventType.RoomMessage && !threadRootOf(ev)) ?? events.at(-1);
+    const last = events.findLast((ev) => isMessage(ev) && !threadRootOf(ev)) ?? events.at(-1);
     return last?.getTs() ?? 0;
   };
 
@@ -653,7 +759,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     const events = room.getLiveTimeline().getEvents();
     for (let i = events.length - 1; i >= 0; i--) {
       const ev = events[i]!;
-      if (ev.getType() !== EventType.RoomMessage || threadRootOf(ev)) continue;
+      if (!isMessage(ev) || threadRootOf(ev)) continue;
       const m = messageOf(ev, room);
       if (m) return m;
     }
@@ -675,6 +781,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
           lastTs: lastTsOf(room),
           last: lastMessageOf(room),
           spaceIds: spaceRooms.filter((s) => others.length && others.every((id) => s.getMember(id)?.membership === KnownMembership.Join)).map((s) => s.roomId),
+          ...(room.hasEncryptionStateEvent() ? { encrypted: true } : {}),
         };
       })
       .sort((a, b) => b.lastTs - a.lastTs);
@@ -760,6 +867,41 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       if (!room.isSpaceRoom()) listThreads(room);
     }
     acceptInvites();
+    encryptRooms(direct);
+  };
+
+  /** D-11: every DM and every private workspace channel; client-space and public channels never. */
+  const wantsEncryption = (room: Room, direct: Map<string, string[]>) => {
+    if (room.isSpaceRoom()) return false;
+    if (isDirect(room, direct)) return true;
+    const space = spaceOf(room.roomId);
+    return room.getJoinRule() === 'invite' && !!space && !isClientSpace(space);
+  };
+  /**
+   * D-31: turns encryption on once, where I may (irreversible, D-24); the server's copy decides, not a lagging sync.
+   * Rooms younger than ENCRYPT_AFTER are left alone: Continuwuity writes a new room's initial state after createRoom
+   * returns (it 404s meanwhile), and ours are made encrypted anyway.
+   */
+  const encryptRooms = (direct: Map<string, string[]>) => {
+    if (!cryptoReady) return;
+    for (const room of roomsJoined()) {
+      if (encrypting.has(room.roomId) || discarded.has(room.roomId) || visiting.has(room.roomId) || room.hasEncryptionStateEvent()) continue;
+      const created = room.currentState.getStateEvents(EventType.RoomCreate, '')?.getTs();
+      if (!created || Date.now() - created < ENCRYPT_AFTER) continue;
+      if (!wantsEncryption(room, direct) || !room.currentState.maySendStateEvent(EventType.RoomEncryption, me.id)) continue;
+      encrypting.add(room.roomId);
+      void ensureEncrypted(room.roomId).catch(() => encrypting.delete(room.roomId));
+    }
+  };
+  const ensureEncrypted = async (roomId: string) => {
+    const present = await client.getStateEvent(roomId, EventType.RoomEncryption, '').then(
+      () => true,
+      (e: unknown) => {
+        if (e instanceof MatrixError && e.httpStatus === 404) return false;
+        throw e;
+      },
+    );
+    if (!present) await client.sendStateEvent(roomId, EventType.RoomEncryption, MEGOLM as never, '');
   };
 
   const whenJoined = (roomId: string) =>
@@ -794,8 +936,13 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       await addDirect(hit.roomId, want).catch(noop);
       return hit.roomId;
     }
-    // D-24: no m.room.encryption until M6.
-    const { room_id } = await client.createRoom({ preset: Preset.PrivateChat, visibility: Visibility.Private, is_direct: true, invite: want });
+    const { room_id } = await client.createRoom({
+      preset: Preset.PrivateChat,
+      visibility: Visibility.Private,
+      is_direct: true,
+      invite: want,
+      initial_state: [{ type: EventType.RoomEncryption, state_key: '', content: MEGOLM }],
+    });
     await addDirect(room_id, want).catch(noop);
     await whenJoined(room_id);
     return room_id;
@@ -829,6 +976,9 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         ];
       }),
     );
+
+  const withEncrypted = (channels: Record<string, Channel[]>) =>
+    Object.fromEntries(Object.entries(channels).map(([spaceId, list]) => [spaceId, list.map((c) => (client.getRoom(c.id)?.hasEncryptionStateEvent() ? { ...c, encrypted: true } : c))]));
 
   /**
    * createClientSpace: a space I made stays out of the snapshot (with its channels) until it is whole, i.e. every channel
@@ -866,7 +1016,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       me,
       connection: connectionOf(syncState, synced),
       spaces: workspace.spaces,
-      channels: withOutside(workspace.channels, myRoles),
+      channels: withEncrypted(withOutside(workspace.channels, myRoles)),
       timelines: Object.fromEntries([...open].map(([id, flags]) => [id, timelineOf(id, flags)])),
       sessionExpired,
       typing: Object.fromEntries([...open.keys()].map((id) => [id, typingOf(id)] as const).filter(([, people]) => people.length)),
@@ -876,8 +1026,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       threadTimelines: Object.fromEntries([...openThreads].map(([id, flags]) => [id, threadTimelineOf(id, flags)])),
       activity: activityOf(),
       myRoles,
-      // M6 stub: no crypto yet, so nothing is gated.
-      security: { device: 'confirmed', otherConfirmedDevices: 0, needsRecoveryKey: false },
+      security: security.state(),
     };
   };
 
@@ -910,7 +1059,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   const fill = async (channelId: string, want: number) => {
     await ready;
     const room = client.getRoom(channelId);
-    while (room && visibleCount(room) < want && hasOlder(room)) {
+    while (room && visibleCount(room) < want && hasOlder(room, startOf(room))) {
       if (!(await client.paginateEventTimeline(room.getLiveTimeline(), { backwards: true, limit: PAGE }))) break;
     }
   };
@@ -938,16 +1087,21 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     const abort = new AbortController();
     const id = item.upload.id;
     updateUpload(channelId, id, { status: 'uploading', progress: 0 }, { abort });
-    client
-      .uploadContent(item.file, {
-        name: item.file.name,
-        type: item.file.type || undefined,
+    const encrypted = !!client.getRoom(channelId)?.hasEncryptionStateEvent();
+    (async () => {
+      const box = encrypted ? await encryptAttachment(await item.file.arrayBuffer()) : null;
+      const { content_uri } = await client.uploadContent(box ? new Blob([box.data]) : item.file, {
+        name: box ? undefined : item.file.name,
+        type: box ? 'application/octet-stream' : item.file.type || undefined,
+        includeFilename: !box,
         abortController: abort,
         progressHandler: ({ loaded, total }) => updateUpload(channelId, id, { progress: total ? Math.min(loaded / total, 1) : 0 }),
-      })
-      .then(async ({ content_uri }) => {
+      });
+      return { content_uri, sealed: box && { ...box.file, url: content_uri } };
+    })()
+      .then(async ({ content_uri, sealed: file }) => {
         const size = await imageSize(item.file);
-        updateUpload(channelId, id, { status: 'done', progress: 1 }, { url: content_uri, info: size ?? {} });
+        updateUpload(channelId, id, { status: 'done', progress: 1 }, { url: content_uri, info: size ?? {}, ...(file ? { sealed: file } : {}) });
       })
       .catch(() => {
         if (!abort.signal.aborted) updateUpload(channelId, id, { status: 'failed' });
@@ -982,6 +1136,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   client.on(ClientEvent.Sync, (state) => {
     syncState = state;
     if (state === SyncState.Prepared || state === SyncState.Syncing) {
+      if (!synced) security.refresh();
       synced = true;
       markReady();
       housekeeping();
@@ -1022,14 +1177,22 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   client.on(ClientEvent.AccountData, schedule);
   client.on(RoomMemberEvent.Typing, schedule);
   client.on(RoomStateEvent.Members, schedule);
-  client.on(HttpApiEvent.SessionLoggedOut, () => {
+  client.on(HttpApiEvent.SessionLoggedOut, (e) => {
     sessionExpired = true;
     client.stopClient();
     clearSession();
+    // A soft logout keeps the device on the server, so its keys stay too.
+    const soft = !!(e as MatrixError | undefined)?.data?.soft_logout;
+    void (soft ? Promise.resolve() : withTimeout(client.clearStores({ cryptoDatabasePrefix: CRYPTO_DB }))).finally(() => security.stop());
     schedule();
   });
 
-  void client.startClient({ lazyLoadMembers: true, initialSyncLimit: PAGE, pendingEventOrdering: PendingEventOrdering.Detached });
+  client.on(MatrixEventEvent.Decrypted, schedule);
+  void security.init().then((ok) => {
+    cryptoReady = ok;
+    if (sessionExpired || stopped) return;
+    void client.startClient({ lazyLoadMembers: true, initialSyncLimit: PAGE, pendingEventOrdering: PendingEventOrdering.Detached });
+  });
   client
     .getProfileInfo(session.userId)
     .then((p) => {
@@ -1275,10 +1438,17 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       typingSent.forEach((t) => clearTimeout(t.idle));
       for (const url of media.values()) url.then(URL.revokeObjectURL, noop);
       media.clear();
-      await client.logout(true).catch(noop);
+      stopped = true;
+      const loggedOut = await client.logout(true).then(
+        () => true,
+        () => false,
+      );
       client.stopClient();
       client.removeAllListeners();
       clearSession();
+      // The server forgot this device, so its keys go too. If it couldn't be told (offline), they stay.
+      if (loggedOut) await withTimeout(client.clearStores({ cryptoDatabasePrefix: CRYPTO_DB }));
+      security.stop();
     },
     send(channelId, draft) {
       const room = client.getRoom(channelId);
@@ -1303,13 +1473,17 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         replyTo = undefined;
       }
       const items = trays.get(channelId) ?? [];
+      // Encryption is decided now: a file uploaded in the clear before the room turned encrypted isn't sent; it
+      // stays in the tray as failed, and Retry uploads it encrypted.
+      const encrypted = !!room?.hasEncryptionStateEvent();
+      const unsafe = items.filter((i) => i.upload.status === 'done' && encrypted && !i.sealed);
       for (const item of items) {
-        if (item.upload.status !== 'done' || !item.url) continue;
+        if (item.upload.status !== 'done' || !item.url || unsafe.includes(item)) continue;
         const { name, mimetype, size } = item.upload;
         sendText(channelId, {
           msgtype: msgtypeOf(mimetype),
           body: name,
-          file: { url: item.url, info: { ...(mimetype ? { mimetype } : {}), size, ...item.info } },
+          file: { url: item.url, info: { ...(mimetype ? { mimetype } : {}), size, ...item.info }, ...(item.sealed ? { sealed: item.sealed } : {}) },
           mentions: replyTo ? withReply([]) : [],
           replyTo,
           thread,
@@ -1317,8 +1491,9 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         replyTo = undefined;
       }
       // Clears the tray; uploads still in flight stay so they aren't lost.
-      items.filter((i) => i.upload.status !== 'uploading').forEach(dropUpload);
-      trays.set(channelId, items.filter((i) => i.upload.status === 'uploading'));
+      const keep = (i: TrayItem) => i.upload.status === 'uploading' || unsafe.includes(i);
+      items.filter((i) => !keep(i)).forEach(dropUpload);
+      trays.set(channelId, items.filter(keep).map((i) => (unsafe.includes(i) ? { ...i, url: undefined, upload: { ...i.upload, status: 'failed' as const } } : i)));
       schedule();
     },
     edit(channelId, messageId, draft) {
@@ -1394,6 +1569,20 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     mediaUrl(ref, opts) {
       const key = `${ref}|${opts?.thumbnail ? 'thumbnail' : 'download'}`;
       let url = media.get(key);
+      const box = sealed.get(ref);
+      if (!url && box) {
+        // Encrypted media: the server only has ciphertext, so no thumbnails; download, check and decrypt here.
+        const http = client.mxcUrlToHttp(box.file.url, undefined, undefined, undefined, false, true, true);
+        url = (async () => {
+          if (!http) throw new Error('not a media reference');
+          const res = await fetch(http, { headers: { Authorization: `Bearer ${session.accessToken}` } });
+          if (!res.ok) throw new Error(String(res.status));
+          const plain = await decryptAttachment(await res.arrayBuffer(), box.file);
+          return URL.createObjectURL(new Blob([plain], box.mimetype ? { type: box.mimetype } : {}));
+        })();
+        url.catch(() => media.delete(key));
+        media.set(key, url);
+      }
       if (!url) {
         const http = opts?.thumbnail
           ? client.mxcUrlToHttp(ref, THUMBNAIL.width, THUMBNAIL.height, 'scale', false, true, true)
@@ -1488,6 +1677,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       // D-27: the space's Owners, Admins and team keep their level; I'm the creator (room version 12: not listed).
       const facts = powerFacts(space);
       const levels = powerLevels(isClientSpace(space) ? 'client' : 'workspace', 'channel', channelUsers(facts.users ?? {}, facts.creators, me.id));
+      const encrypted = isPrivate && !isClientSpace(space);
       const { room_id } = await client.createRoom({
         name: wanted,
         ...(topic?.trim() ? { topic: topic.trim() } : {}),
@@ -1497,8 +1687,9 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         initial_state: [
           { type: EventType.SpaceParent, state_key: spaceId, content: { via: [server], canonical: true } },
           { type: EventType.RoomHistoryVisibility, state_key: '', content: { history_visibility: 'shared' } },
-          // D-24: private = invite-only, no encryption until M6. Public = restricted to the space (D-06).
+          // Private = invite-only, encrypted in the workspace (D-11). Public = restricted to the space (D-06).
           { type: EventType.RoomJoinRules, state_key: '', content: isPrivate ? { join_rule: 'invite' } : { join_rule: 'restricted', allow: [{ type: 'm.room_membership', room_id: spaceId }] } },
+          ...(encrypted ? [{ type: EventType.RoomEncryption, state_key: '', content: MEGOLM }] : []),
         ],
       });
       await client.sendStateEvent(spaceId, EventType.SpaceChild, { via: [server] }, room_id);
@@ -1644,8 +1835,15 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     },
     async devices() {
       const { devices } = await client.getDevices();
+      const confirmed = await security.confirmed(devices.map((d) => d.device_id)).catch(() => new Set<string>());
       return devices
-        .map((d) => ({ id: d.device_id, name: d.display_name || d.device_id, ...(d.last_seen_ts ? { lastSeenTs: d.last_seen_ts } : {}), current: d.device_id === session.deviceId }))
+        .map((d) => ({
+          id: d.device_id,
+          name: d.display_name || d.device_id,
+          ...(d.last_seen_ts ? { lastSeenTs: d.last_seen_ts } : {}),
+          current: d.device_id === session.deviceId,
+          confirmed: confirmed.has(d.device_id),
+        }))
         .sort((a, b) => Number(b.current) - Number(a.current) || (b.lastSeenTs ?? 0) - (a.lastSeenTs ?? 0));
     },
     async signOutDevice(deviceId) {
@@ -1870,15 +2068,15 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       await settle(() => !!snapshot.spaces.find((s) => s.id === spaceId)?.archived === archived);
     },
     anotherApp: () => ({ server: new URL(client.baseUrl).host, username: client.getUserId()!.slice(1, client.getUserId()!.indexOf(':')) }),
-    // M6 — stubs until M6-01 lands.
-    requestConfirmation: noop,
-    acceptConfirmation: noop,
-    declineConfirmation: noop,
-    confirmEmoji: noop,
-    dismissConfirmation: noop,
-    useRecoveryKey: () => Promise.reject(new Error('not-implemented')),
-    newRecoveryKey: () => Promise.reject(new Error('not-implemented')),
-    resetEncryption: () => Promise.reject(new Error('not-implemented')),
-    signOutRisk: () => Promise.resolve('none'),
+    // M6
+    requestConfirmation: () => security.requestConfirmation(),
+    acceptConfirmation: () => security.acceptConfirmation(),
+    declineConfirmation: () => security.declineConfirmation(),
+    confirmEmoji: (match) => security.confirmEmoji(match),
+    dismissConfirmation: () => security.dismissConfirmation(),
+    useRecoveryKey: (key) => security.useRecoveryKey(key),
+    newRecoveryKey: (password) => security.newRecoveryKey(password),
+    resetEncryption: (password) => security.resetEncryption(password),
+    signOutRisk: () => security.signOutRisk(roomsJoined().some((r) => r.hasEncryptionStateEvent())),
   };
 }

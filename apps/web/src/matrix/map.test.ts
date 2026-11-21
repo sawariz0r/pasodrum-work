@@ -164,7 +164,11 @@ describe('mediaOf', () => {
       caption: 'listen',
     });
     expect(mediaOf({ body: 'sticker', url: 'mxc://s/st', info: {} }, true)).toEqual({ media: { ref: 'mxc://s/st', name: 'sticker' }, caption: '' });
-    expect(mediaOf({ msgtype: 'm.file', body: 'x', file: { url: 'mxc://enc' } })).toBeNull();
+    // M6: encrypted media carries its URL in `file` (and `thumbnail_file`).
+    expect(mediaOf({ msgtype: 'm.image', body: 'x', file: { url: 'mxc://enc' }, info: { thumbnail_file: { url: 'mxc://thumb' } } })).toEqual({
+      media: { ref: 'mxc://enc', name: 'x', thumbnailRef: 'mxc://thumb' },
+      caption: '',
+    });
     expect(mediaOf({ msgtype: 'm.text', body: 'x', url: 'mxc://s/a' })).toBeNull();
   });
 });

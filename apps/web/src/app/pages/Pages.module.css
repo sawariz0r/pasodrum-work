@@ -278,6 +278,16 @@
   white-space: nowrap;
 }
 
+.card .quietText,
+.lrow .quietText {
+  color: var(--subtle);
+}
+
+.dmPreview span.quietPreview:first-child,
+.unread .dmPreview span.quietPreview:first-child {
+  color: var(--subtle);
+}
+
 .unread .dmPreview span:first-child {
   color: var(--ink);
 }

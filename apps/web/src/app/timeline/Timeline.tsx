@@ -37,6 +37,21 @@ function Skeletons({ count, small = false }: { count: number; small?: boolean })
   ));
 }
 
+/** M6: the loading timeline on its own, while this device's encryption is still starting (or another tab holds it). */
+export function TimelineSkeleton({ small = false }: { small?: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <div className={s.pane}>
+      <div className={s.scroller} aria-busy="true">
+        <div className={small ? `${s.content} ${s.threadContent}` : s.content}>
+          <span className={s.srOnly}>{t('common.loading')}</span>
+          <Skeletons count={small ? 3 : 7} small={small} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function HashIcon() {
   return (
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">

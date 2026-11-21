@@ -130,6 +130,16 @@
   animation: arrive var(--dur-2) var(--ease-out) both;
 }
 
+/* M6: the conversation after the confirm card. */
+.fadeIn {
+  animation: fade-in var(--dur-2) var(--ease-out);
+}
+
+/* M6: the key came after all; the message fades in where it is. */
+.revealed .body {
+  animation: fade-in var(--dur-2) var(--ease-out);
+}
+
 .row:hover,
 .force {
   background: var(--hover);

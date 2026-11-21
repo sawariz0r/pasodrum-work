@@ -7,6 +7,7 @@ import { matrixBackend, type Backend } from './backend';
 import { FirstRun, startFirstRun } from './join/FirstRun';
 import { JoinRoute, JoinRouteSignedIn } from './join/JoinRoute';
 import { lastIdentifier, rememberIdentifier } from './prefs';
+import { SecurityProvider, useSecurityUi } from './security/SecurityProvider';
 import { SettingsSync, WithSettings } from './settings/SettingsRoute';
 import { Workspace } from './shell/Shell';
 import { SignIn, type Expired } from './signin/SignIn';
@@ -85,7 +86,9 @@ export function AppRoutes({ backend }: { backend: Backend }) {
         element={
           signed ? (
             <WorkspaceProvider store={signed.store}>
-              <JoinRouteSignedIn backend={backend} onJoined={onJoined} onSignOut={() => end(undefined, location.pathname)} />
+              <SecurityProvider onSignOut={() => end(undefined, location.pathname)}>
+                <GuardedJoin backend={backend} onJoined={onJoined} />
+              </SecurityProvider>
             </WorkspaceProvider>
           ) : (
             <JoinRoute backend={backend} onJoined={onJoined} />
@@ -102,12 +105,12 @@ export function AppRoutes({ backend }: { backend: Backend }) {
               {phone ? (
                 <PhoneHandoffSignedIn />
               ) : (
-                <>
+                <SecurityProvider onSignOut={() => end()}>
                   <FirstRun />
                   <WithSettings>
-                    <Workspace onSignOut={() => end()} />
+                    <GuardedWorkspace />
                   </WithSettings>
-                </>
+                </SecurityProvider>
               )}
             </WorkspaceProvider>
           ) : (
@@ -117,6 +120,17 @@ export function AppRoutes({ backend }: { backend: Backend }) {
       />
     </Routes>
   );
+}
+
+/** M6: sign-out asks first when this is the last confirmed device (SignOutWarn, SignOutNoBackup). */
+function GuardedWorkspace() {
+  const ui = useSecurityUi();
+  return <Workspace onSignOut={ui.signOut} />;
+}
+
+function GuardedJoin({ backend, onJoined }: { backend: Backend; onJoined: (session: Session, identifier: string, preview: InvitePreview) => void }) {
+  const ui = useSecurityUi();
+  return <JoinRouteSignedIn backend={backend} onJoined={onJoined} onSignOut={ui.signOut} />;
 }
 
 function OnExpired({ onExpired }: { onExpired: () => void }) {

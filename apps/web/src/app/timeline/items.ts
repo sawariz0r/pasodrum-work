@@ -5,7 +5,7 @@ const groupWindowMs = 5 * 60_000;
 export type TimelineItem =
   | { kind: 'day'; key: string; day: Date }
   | { kind: 'new'; key: 'new' }
-  /** `group`: consecutive images (one grid) or files (one card) from one sender, `message` first. */
+  /** `group`: consecutive images (one grid) or files (one card) from one sender, `message` first; or a run of messages this device can't open (M6). */
   | { kind: 'message'; key: string; message: Message; head: boolean; group?: Message[] };
 
 function startOfDay(ts: number): Date {
@@ -15,6 +15,8 @@ function startOfDay(ts: number): Date {
 }
 
 const quiet = (m: Message) => m.kind === 'deleted' || m.kind === 'system';
+/** M6: a message this device can't open (not one whose key may still arrive). One with a thread or reactions stays on its own. */
+const unavailable = (m: Message) => m.kind === 'undecryptable' && !m.arriving && !m.thread && !m.reactions?.length;
 
 /** Images and files without a caption of their own can join a neighbour's grid or card. */
 function groupKind(m: Message): 'image' | 'file' | null {
@@ -40,14 +42,22 @@ export function buildItems(messages: readonly Message[], newFrom?: string | null
     }
     const isNew = m.id === newFrom;
     if (isNew) items.push({ kind: 'new', key: 'new' });
-    const head = newDay || isNew || !prev || quiet(prev) || quiet(m) || prev.sender.id !== m.sender.id || m.ts - prev.ts > groupWindowMs;
+    const sameSender = !!prev && prev.sender.id === m.sender.id;
+    // M6: a run of messages from one sender that this device can't open collapses into one row (RulesM6).
+    if (open && unavailable(m) && unavailable(open.message) && !newDay && !isNew && sameSender) {
+      open.group = [...(open.group ?? [open.message]), m];
+      prev = m;
+      continue;
+    }
+    const switched = !!prev && (prev.kind === 'undecryptable') !== (m.kind === 'undecryptable');
+    const head = newDay || isNew || !prev || quiet(prev) || quiet(m) || switched || !sameSender || m.ts - prev.ts > groupWindowMs;
     const kind = groupKind(m);
     if (!head && kind && open && groupKind(open.message) === kind) {
       open.group = [...(open.group ?? [open.message]), m];
     } else {
       const item: Extract<TimelineItem, { kind: 'message' }> = { kind: 'message', key: m.id, message: m, head };
       items.push(item);
-      open = kind ? item : undefined;
+      open = kind || unavailable(m) ? item : undefined;
     }
     prev = m;
   }
