@@ -44,7 +44,9 @@ for (const roomId of rooms) {
     const f = await factsOf(parent);
     const users = { ...((levels.users as Record<string, number> | undefined) ?? {}) };
     for (const [id, level] of Object.entries(channelUsers(f.users, f.creators, create.sender))) {
-      if ((users[id] ?? levels.users_default ?? 0) < level) (users[id] = level), raised.push(id.split(':')[0]!);
+      if ((users[id] ?? levels.users_default ?? 0) >= level) continue;
+      users[id] = level;
+      raised.push(id.split(':')[0]!);
     }
     next.users = users;
   }
