@@ -9,7 +9,7 @@ const cryptoWasm = dirname(createRequire(sdk).resolve('@matrix-org/matrix-sdk-cr
 
 export default defineConfig({
   plugins: [react()],
-  server: { proxy: { '/api': 'http://localhost:8008' } },
+  server: { proxy: { '/api': { target: 'http://localhost:8008', ws: true } } },
   resolve: { alias: { '@matrix-org/matrix-sdk-crypto-wasm': join(cryptoWasm, 'index.mjs') } },
   // Pre-bundling moves the crypto module away from its .wasm file (loaded via new URL(…, import.meta.url)).
   optimizeDeps: { exclude: ['@matrix-org/matrix-sdk-crypto-wasm'] },

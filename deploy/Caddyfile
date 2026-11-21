@@ -8,9 +8,7 @@
 }
 
 :80 {
-	# encode holds back a stream's first bytes, so presence goes out unencoded.
-	@compress not path /api/presence/*
-	encode @compress zstd gzip
+	encode zstd gzip
 	handle /_matrix/* {
 		reverse_proxy continuwuity:6167
 	}
@@ -20,13 +18,8 @@
 	handle /.well-known/matrix/* {
 		reverse_proxy continuwuity:6167
 	}
-	@presence path /api/presence/*
-	handle @presence {
-		reverse_proxy invite:8080 {
-			flush_interval -1
-		}
-	}
-	@invite path /api/invites /api/invites/* /api/translate
+	# /api/presence/* is a WebSocket; reverse_proxy passes the upgrade through.
+	@invite path /api/invites /api/invites/* /api/translate /api/presence/*
 	handle @invite {
 		reverse_proxy invite:8080
 	}

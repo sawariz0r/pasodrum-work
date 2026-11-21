@@ -27,7 +27,7 @@ export interface PageSession {
   pageId: string;
   /** XmlFragment 'default' is the TipTap Collaboration document. */
   doc: Y.Doc;
-  /** Local until the presence relay (DB-04) carries it. */
+  /** Other people's carets come in over the live relay (DB-04). */
   awareness: Awareness;
   getState(): { status: 'loading' | 'ready' | 'failed'; offline: boolean };
   subscribe(cb: () => void): () => void;
@@ -92,9 +92,13 @@ export interface PresencePeer {
 }
 
 export interface Presence {
+  /** My state in this room: the latest wins, and whoever opens the room later gets it. */
   set(data: unknown): void;
   peers(): PresencePeer[];
   subscribe(cb: () => void): () => void;
+  /** Something passing, to whoever is here now; lost if nobody is, or I'm cut off. */
+  send(event: unknown): void;
+  onEvent(cb: (event: unknown, from: Person) => void): () => void;
   close(): void;
 }
 

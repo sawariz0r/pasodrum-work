@@ -21,7 +21,7 @@ export interface DocsBoardsContext {
 export const pageRoomsOf = (space: Room): string[] => space.currentState.getStateEvents(PAGES).map((e) => e.getStateKey()!).filter(Boolean);
 
 const empty: DocsBoardsSnapshot = { pages: {}, projects: {}, typing: {} };
-const nobody: Presence = { set() {}, peers: () => [], subscribe: () => () => {}, close() {} };
+const nobody: Presence = { set() {}, peers: () => [], subscribe: () => () => {}, send() {}, onEvent: () => () => {}, close() {} };
 const enc = encodeURIComponent;
 
 export function createDocsBoards(ctx: DocsBoardsContext): DocsBoards {
@@ -40,7 +40,7 @@ export function createDocsBoards(ctx: DocsBoardsContext): DocsBoards {
   loading.catch(() => {});
   const core = () => loading;
 
-  // One relay connection per room, however many hold it (the page header, the caret bridge, a board and its panel).
+  // One relay connection per room, however many hold it (the page header, the page's live bridge, a board and its panel).
   // It closes a moment after the last holder lets go, so a remount (or React's strict-mode double effect) keeps it.
   const shared = new Map<string, { presence: Presence; refs: number; closing?: ReturnType<typeof setTimeout> }>();
   const presence = (roomId: string): Presence => {
@@ -59,6 +59,8 @@ export function createDocsBoards(ctx: DocsBoardsContext): DocsBoards {
       set: (data) => h.presence.set(data),
       peers: () => h.presence.peers(),
       subscribe: (cb) => h.presence.subscribe(cb),
+      send: (event) => h.presence.send(event),
+      onEvent: (cb) => h.presence.onEvent(cb),
       close() {
         if (closed) return;
         closed = true;
@@ -71,15 +73,15 @@ export function createDocsBoards(ctx: DocsBoardsContext): DocsBoards {
     };
   };
 
-  // One caret bridge per open page, however many openPage calls share its session.
+  // One live bridge per open page, however many openPage calls share its session.
   const bridges = new Map<string, { refs: number; stop: () => void }>();
   const openPage = async (pageId: string) => {
     const session = await (await core()).openPage(pageId);
-    const { bridgeAwareness } = await import('./docsProvider');
+    const { bridgeLive } = await import('./docsProvider');
     let bridge = bridges.get(pageId);
     if (!bridge) {
       const relay = presence(pageId);
-      const stop = bridgeAwareness(session, relay, ctx.userId);
+      const stop = bridgeLive(session, relay, ctx.userId);
       bridge = {
         refs: 0,
         stop: () => {

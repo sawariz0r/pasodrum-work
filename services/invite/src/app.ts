@@ -400,8 +400,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
     return fail(405, 'method-not-allowed');
   }
 
-  return async function handle(req: IncomingMessage, res: ServerResponse) {
-    if (await presence.handle(req, res)) return;
+  async function handle(req: IncomingMessage, res: ServerResponse) {
     const started = Date.now();
     const meta = { name: '?' };
     let reply: Reply;
@@ -418,7 +417,8 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
     res.end(reply.body === undefined ? undefined : JSON.stringify(reply.body));
     // Paths carry codes, so only the route name is logged.
     console.log(`${req.method} ${meta.name} ${reply.status} ${Date.now() - started}ms`);
-  };
+  }
+  return Object.assign(handle, { upgrade: presence.upgrade, closeSockets: presence.close });
 }
 
 function clientIp(req: IncomingMessage): string {

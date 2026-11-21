@@ -51,7 +51,7 @@ Status (2026-11-21): M0–M8 live; M7, M8, SIDE-02, SIDE-03 (share history), SID
 ## 3. Stack
 
 - **Web app** (`apps/web`): Vite, React, TypeScript, React Router, CSS Modules over design tokens, Radix primitives, TipTap composer, i18next (`en`, `ja`), matrix-js-sdk with Rust crypto. See [[D-02]].
-- **Invite service** (`services/invite`): Node 24 running TypeScript directly, `node:http`, `node:sqlite`, no npm dependencies; mail via Resend (prod) or Mailpit's HTTP API (dev). See [[D-07]], [[D-26]].
+- **Invite service** (`services/invite`): Node 24 running TypeScript directly, `node:http`, `node:sqlite`, one npm dependency (`ws`, for the live relay); mail via Resend (prod) or Mailpit's HTTP API (dev). See [[D-07]], [[D-26]], [[D-39]].
 - **Server:** Continuwuity behind Caddy; Mailpit for local mail (`dev/`).
 - **Tests:** Vitest; Playwright on Chromium **and** WebKit.
 - **Repo:** pnpm workspace. Node ≥ 22.

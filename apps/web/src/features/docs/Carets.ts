@@ -1,5 +1,5 @@
-// Other people's carets and selections on a page (D-37, DB-04; DocsPage, rules "Together" and "Motion"). The awareness
-// travels over the presence relay (matrix/docsBoards.ts bridges it). y-tiptap places a zero-width anchor where each
+// Other people's carets and selections on a page (D-37, DB-04; DocsPage, rules "Together" and "Motion"). They come in
+// over the live relay (matrix/docsProvider.ts bridges them into the awareness). y-tiptap places a zero-width anchor where each
 // caret is; the visible caret and its name flag live in an overlay, so they can glide (120 ms) instead of jumping.
 import { CollaborationCaret } from '@tiptap/extension-collaboration-caret';
 import { Plugin, PluginKey, type EditorState } from '@tiptap/pm/state';

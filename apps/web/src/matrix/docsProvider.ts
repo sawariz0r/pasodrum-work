@@ -1,12 +1,14 @@
 // Yjs over Matrix (D-37, build plan §2): one page room, updates as timeline events, a media snapshot every ~200 updates.
 // Loaded with the first open page (dynamic import from docsBoards.ts), so yjs stays out of the first load.
 import { ClientEvent, KnownMembership, MatrixError, Method, RoomEvent, SyncState, type IEvent, type MatrixClient, type MatrixEvent, type Room } from 'matrix-js-sdk';
-import { applyAwarenessUpdate, Awareness, encodeAwarenessUpdate, removeAwarenessStates } from 'y-protocols/awareness';
+import { Awareness } from 'y-protocols/awareness';
 import * as Y from 'yjs';
 import type { PageSession, Presence } from './docsBoardsTypes';
 
 export const UPDATE = 'work.pasodrum.docs.update';
 export const SNAPSHOT = 'work.pasodrum.docs.snapshot';
+/** Origin of everything applied from elsewhere (the room or the live relay): never sent on. */
+const REMOTE = {};
 const FLUSH_MS = 1_500;
 /** Events are capped at 64 KiB; anything bigger than this goes up as media with a pointer event. */
 const MEDIA_OVER = 40 * 1024;
@@ -58,7 +60,7 @@ export interface ProviderContext {
 export async function openPageSession({ client, server, whenJoined }: ProviderContext, pageId: string): Promise<PageCore> {
   const doc = new Y.Doc();
   const awareness = new Awareness(doc);
-  const remote = {};
+  const remote = REMOTE;
   const listeners = new Set<() => void>();
   let status: 'loading' | 'ready' | 'failed' = 'loading';
   let online = isOnline(client.getSyncState());
@@ -466,124 +468,95 @@ export async function openPageSession({ client, server, whenJoined }: ProviderCo
   };
 }
 
-const FROM_RELAY = 'presence';
-// The relay takes 4 KiB a post; a caret and selection are far smaller.
-const MAX_AWARENESS = 3500;
-/** A tab missing from the relay's list this long loses its caret: a stream reconnect (theirs or mine) comes back sooner. */
-const UNHEARD_MS = 5_000;
+/** A live edit over this (base64) waits for the room instead. The relay takes 16 KiB a message. */
+const MAX_LIVE = 12_000;
+/** A tab that dropped off the relay without saying goodbye keeps its caret this long: a reconnect comes back sooner. */
+const GONE_MS = 5_000;
 
 type Cursor = { anchor: unknown; head: unknown };
 type Selection = Cursor & { time?: number };
 
 /** The caret plugin clears `cursor` on blur and keeps the spot in `lastSelection`: peers keep seeing it there until I leave. */
-function withCaret(state: Record<string, unknown>): Record<string, unknown> {
-  if (state.cursor != null) return state;
-  const last = Object.values((state.lastSelection ?? {}) as Record<string, Selection | undefined>)
+function caretOf(state: Record<string, unknown> | null): Cursor | undefined {
+  if (state?.cursor != null) return state.cursor as Cursor;
+  return Object.values((state?.lastSelection ?? {}) as Record<string, Selection | undefined>)
     .filter((sel): sel is Selection => !!sel && sel.anchor != null && sel.head != null)
-    .sort((a, b) => (b.time ?? 0) - (a.time ?? 0))[0];
-  return last ? { ...state, cursor: { anchor: last.anchor, head: last.head } } : state;
+    .sort((a, b) => (b.time ?? 0) - (a.time ?? 0))
+    .map(({ anchor, head }) => ({ anchor, head }))[0];
 }
 
 /**
- * DB-04: my awareness state (caret, selection, name and colour) goes up the presence relay as `{ y }`, everyone else's
- * comes down into the awareness. A caret stays until its tab leaves the page (sends null) or drops off the relay; the
- * relay, not awareness's own 30 s timeout, decides that.
+ * DB-04, D-39: what makes a page live. My edits go over the relay the moment they happen (and to the room every
+ * 1–2 s as before, which is what lasts), so the other tabs have the text a caret points into. My caret goes up as
+ * `{ id, cursor }`, the latest wins; everyone else's is put straight into the awareness, named by the relay's own
+ * record of who sent it. A caret goes when its tab leaves the page, or a few seconds after it drops off the relay.
  */
-export function bridgeAwareness(session: Pick<PageSession, 'awareness'>, presence: Presence, meId: string): () => void {
-  const { awareness } = session;
-  const byConn = new Map<string, { y: string; ids: Set<number>; unheard?: ReturnType<typeof setTimeout> }>();
-  let applying: Set<number> | null = null;
-  let stopped = false;
+export function bridgeLive(session: Pick<PageSession, 'doc' | 'awareness'>, presence: Presence, meId: string): () => void {
+  const { doc, awareness } = session;
+  const me = awareness.clientID;
+  const shown = new Map<number, { conn: string; cursor: string; gone?: ReturnType<typeof setTimeout> }>();
 
-  const sendMine = () => {
-    const state = awareness.getLocalState();
-    if (!state) return presence.set(null);
-    const y = toBase64(encodeAwarenessUpdate(awareness, [awareness.clientID], new Map([[awareness.clientID, withCaret(state)]])));
-    if (y.length <= MAX_AWARENESS) presence.set({ y });
+  const onEdit = (update: Uint8Array, origin: unknown) => {
+    if (origin === REMOTE) return;
+    const u = toBase64(update);
+    if (u.length <= MAX_LIVE) presence.send({ u });
   };
-  const apply = (entry: { y: string; ids: Set<number> }, name: string, userId: string) => {
-    applying = entry.ids;
+  const offEvent = presence.onEvent((event) => {
+    const u = (event as { u?: unknown } | null)?.u;
+    if (typeof u !== 'string') return;
     try {
-      applyAwarenessUpdate(awareness, fromBase64(entry.y), FROM_RELAY);
+      Y.applyUpdate(doc, fromBase64(u), REMOTE);
     } catch {
-      // Not an awareness update: ignore that tab.
-    } finally {
-      applying = null;
+      // Not a Yjs update: skip it.
     }
-    // Who it is comes from the relay (server-stamped), not from the tab's own payload.
-    const stamped = [...entry.ids].filter((id) => {
-      const st = awareness.getStates().get(id);
-      if (st) st.user = { ...(st.user as object), id: String(id), name, userId };
-      return !!st;
-    });
-    if (stamped.length) awareness.emit('change', [{ added: [], updated: stamped, removed: [] }, FROM_RELAY]);
+  });
+
+  const sendMine = () => presence.set({ id: me, cursor: caretOf(awareness.getLocalState()) });
+  const onAwareness = (_: unknown, origin: unknown) => {
+    if (origin !== presence) sendMine();
   };
-  /** Forgets the clocks too, so the same line heard again (a relay replay after a reconnect) shows the caret again. */
-  const forget = (ids: number[]) => {
-    const remote = ids.filter((id) => id !== awareness.clientID);
-    if (remote.length) removeAwarenessStates(awareness, remote, FROM_RELAY);
-    for (const id of remote) awareness.meta.delete(id);
-  };
-  const drop = (conn: string) => {
-    const entry = byConn.get(conn);
-    if (!entry) return;
-    clearTimeout(entry.unheard);
-    byConn.delete(conn);
-    forget([...entry.ids]);
-  };
-  const onUpdate = ({ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] }, origin: unknown) => {
-    if (origin === FROM_RELAY) {
-      for (const id of [...added, ...updated]) if (id !== awareness.clientID) applying?.add(id);
-      return;
-    }
-    // Awareness drops states not renewed for 30 s, and a background tab renews late: a tab still on the relay keeps its caret.
-    if (origin === 'timeout') {
-      queueMicrotask(() => {
-        if (stopped) return;
-        for (const p of presence.peers()) {
-          const entry = byConn.get(p.conn);
-          if (!entry || !removed.some((id) => entry.ids.has(id))) continue;
-          for (const id of removed) if (entry.ids.has(id)) awareness.meta.delete(id);
-          apply(entry, p.user.name, p.user.id);
-        }
-      });
-      return;
-    }
-    if ([...added, ...updated, ...removed].includes(awareness.clientID)) sendMine();
+  const changed = (ids: { added?: number[]; updated?: number[]; removed?: number[] }) =>
+    awareness.emit('change', [{ added: [], updated: [], removed: [], ...ids }, presence]);
+  const remove = (id: number) => {
+    clearTimeout(shown.get(id)?.gone);
+    shown.delete(id);
+    if (awareness.states.delete(id)) changed({ removed: [id] });
   };
   const sync = () => {
-    const heard = new Set<string>();
+    const here = new Set<string>();
+    const live = new Set<number>();
     for (const p of presence.peers()) {
-      if (p.user.id === meId) continue;
-      const y = (p.data as { y?: unknown } | null)?.y;
-      // A tab that left the page says so with null: its caret goes now.
-      if (typeof y !== 'string') continue;
-      heard.add(p.conn);
-      const entry = byConn.get(p.conn) ?? { y: '', ids: new Set<number>() };
-      clearTimeout(entry.unheard);
-      entry.unheard = undefined;
-      byConn.set(p.conn, entry);
-      if (entry.y === y) continue;
-      entry.y = y;
-      apply(entry, p.user.name, p.user.id);
+      here.add(p.conn);
+      const { id, cursor } = (p.data ?? {}) as { id?: unknown; cursor?: Partial<Cursor> | null };
+      if (p.user.id === meId || typeof id !== 'number' || id === me || cursor?.anchor == null || cursor.head == null) continue;
+      live.add(id);
+      const text = JSON.stringify(cursor);
+      const was = shown.get(id);
+      clearTimeout(was?.gone);
+      shown.set(id, { conn: p.conn, cursor: text });
+      if (was?.cursor === text) continue;
+      awareness.states.set(id, { cursor, user: { id: String(id), name: p.user.name, userId: p.user.id } });
+      changed(was ? { updated: [id] } : { added: [id] });
     }
-    const listed = new Set(presence.peers().map((p) => p.conn));
-    for (const [conn, entry] of byConn) {
-      if (heard.has(conn)) continue;
-      if (!listed.has(conn)) entry.unheard ??= setTimeout(() => drop(conn), UNHEARD_MS);
-      else drop(conn);
+    for (const [id, s] of shown) {
+      if (live.has(id)) continue;
+      // Still connected and no caret: its tab left the page. Off the relay: give it a moment to come back.
+      if (here.has(s.conn)) remove(id);
+      else s.gone ??= setTimeout(() => remove(id), GONE_MS);
     }
   };
 
-  awareness.on('update', onUpdate);
+  doc.on('update', onEdit);
+  awareness.on('update', onAwareness);
   const offPeers = presence.subscribe(sync);
   sendMine();
   sync();
   return () => {
-    stopped = true;
-    awareness.off('update', onUpdate);
+    doc.off('update', onEdit);
+    awareness.off('update', onAwareness);
+    offEvent();
     offPeers();
-    for (const conn of [...byConn.keys()]) drop(conn);
+    for (const id of [...shown.keys()]) remove(id);
     presence.set(null);
   };
 }

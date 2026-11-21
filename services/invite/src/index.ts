@@ -44,4 +44,12 @@ const port = Number(env('PORT', '8080'));
 const server = createServer(app).listen(port, () => {
   console.log(`invite service on :${port} (${serverName}, mail via ${process.env.RESEND_API_KEY ? 'Resend' : 'Mailpit'}, translate ${translate ? `on, ${dailyLimit}/day` : 'off'})`);
 });
-for (const sig of ['SIGTERM', 'SIGINT'] as const) process.on(sig, () => server.close(() => process.exit(0)));
+server.on('upgrade', (req, socket, head) => {
+  if (!app.upgrade(req, socket, head)) socket.destroy();
+});
+for (const sig of ['SIGTERM', 'SIGINT'] as const) {
+  process.on(sig, () => {
+    server.close(() => process.exit(0));
+    app.closeSockets();
+  });
+}

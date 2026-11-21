@@ -411,7 +411,7 @@ export function createFakeDocsBoards(opts: FakeDocsBoardsOptions = {}): FakeDocs
     uploadMedia: async (_roomId, file) => URL.createObjectURL(file),
     presence(roomId): Presence {
       const peers = opts.live ? (scripted[roomId] ?? []).filter((x) => x.user.id !== me.id) : [];
-      return { set() {}, peers: () => peers, subscribe: () => () => {}, close() {} };
+      return { set() {}, peers: () => peers, subscribe: () => () => {}, send() {}, onEvent: () => () => {}, close() {} };
     },
     async stop() {},
   };

@@ -1,194 +1,133 @@
-// Presence relay (D-37): carets and board hints between the open tabs of one room. A streamed GET carries the room's
-// lines down, a POST sends mine up. In memory only; nothing is stored, and nothing logged but the route and status.
-import { createHash, timingSafeEqual } from 'node:crypto';
-import type { IncomingMessage, ServerResponse } from 'node:http';
+// Live relay (D-37, D-39): carets, board hints and page edits between the open tabs of one room, over one WebSocket
+// per tab at /api/presence/<roomId>. The first message is { token }; then { data } is my state (kept, the latest wins,
+// sent to whoever opens next) and { event } is passed on and forgotten. In memory only; nothing stored or logged.
+import { randomUUID } from 'node:crypto';
+import type { IncomingMessage } from 'node:http';
+import type { Duplex } from 'node:stream';
+import { WebSocketServer, type WebSocket } from 'ws';
 import type { Matrix } from './matrix.ts';
 
-const HEARTBEAT_MS = 20_000;
+const PING_MS = 20_000;
+const AUTH_MS = 10_000;
 const RECHECK_MS = 5 * 60_000;
-const MAX_BODY = 4 * 1024;
-const PER_SECOND = 12;
-const BURST = 24;
+const MAX_MESSAGE = 16 * 1024;
+// Far above what a tab sends (about 30 states and a few edits a second); past it the tab is cut off.
+const PER_SECOND = 100;
+const BURST = 200;
 const PER_USER = 8;
 const PER_ROOM = 64;
 // A reader this far behind is dropped rather than buffered for.
 const MAX_BACKLOG = 256 * 1024;
-const CONN_ID = /^[A-Za-z0-9_-]{22,64}$/;
 
-type Conn = {
-  id: string;
-  roomId: string;
-  userId: string;
-  token: string;
-  tokenHash: Buffer;
-  res: ServerResponse;
-  /** My last line, replayed to whoever connects next. */
-  last?: string;
-  tokens: number;
-  at: number;
-  timers: NodeJS.Timeout[];
-  dropped?: boolean;
-};
+const UNAUTHORIZED = 4401;
+const NOT_ALLOWED = 4403;
+const TOO_MANY = 4429;
 
-class Fail {
-  status: number;
-  error: string;
-  constructor(status: number, error: string) {
-    this.status = status;
-    this.error = error;
-  }
-}
-
-const sha = (s: string) => createHash('sha256').update(s).digest();
-const line = (o: unknown) => JSON.stringify(o) + '\n';
-
-function bearer(req: IncomingMessage): string | null {
-  return req.headers.authorization?.match(/^Bearer (\S+)$/)?.[1] ?? null;
-}
+type Conn = { id: string; roomId: string; userId: string; ws: WebSocket; data?: unknown; tokens: number; at: number; alive: boolean };
 
 export function createPresence({ mx, now = Date.now }: { mx: Matrix; now?: () => number }) {
   const rooms = new Map<string, Map<string, Conn>>();
-  let shutdownHooked = false;
-  let closing = false;
+  const wss = new WebSocketServer({ noServer: true, maxPayload: MAX_MESSAGE });
 
-  function write(c: Conn, s: string) {
-    if (c.res.writableLength > MAX_BACKLOG) drop(c, true);
-    else c.res.write(s);
+  function send(c: Conn, message: object) {
+    if (c.ws.bufferedAmount > MAX_BACKLOG) c.ws.terminate();
+    else c.ws.send(JSON.stringify(message));
   }
 
-  function drop(c: Conn, announce: boolean) {
-    if (c.dropped) return;
-    c.dropped = true;
-    c.timers.forEach(clearInterval);
-    const room = rooms.get(c.roomId);
-    if (room?.get(c.id) === c) {
-      room.delete(c.id);
-      if (!room.size) rooms.delete(c.roomId);
-      if (announce && c.last) {
-        const gone = line({ from: c.userId, conn: c.id, gone: true });
-        for (const o of room.values()) write(o, gone);
-      }
-    }
-    if (!c.res.writableEnded) c.res.end();
+  function others(c: Conn, message: object) {
+    for (const o of rooms.get(c.roomId)?.values() ?? []) if (o !== c) send(o, message);
   }
 
-  function hookShutdown() {
-    if (shutdownHooked) return;
-    shutdownHooked = true;
-    // Ends every stream so server.close() in index.ts can return; a proxy's pooled connection mustn't open new ones.
-    const endAll = () => {
-      closing = true;
-      for (const room of [...rooms.values()]) for (const c of [...room.values()]) drop(c, false);
-    };
-    process.once('SIGTERM', endAll);
-    process.once('SIGINT', endAll);
-  }
-
-  async function stream(req: IncomingMessage, res: ServerResponse, roomId: string, id: string | null): Promise<number> {
-    if (closing) throw new Fail(503, 'closing');
-    if (!id || !CONN_ID.test(id)) throw new Fail(400, 'bad-request');
-    const token = bearer(req);
-    const userId = token ? await mx.whoami(token) : null;
-    if (!token || !userId) throw new Fail(401, 'unauthorized');
-    if ((await mx.membership(token, roomId, userId)) !== 'join') throw new Fail(403, 'not-allowed');
-    if (res.destroyed) return 499;
-
-    const tokenHash = sha(token);
+  async function admit(ws: WebSocket, roomId: string, token: unknown): Promise<Conn | number> {
+    const userId = typeof token === 'string' && token ? await mx.whoami(token) : null;
+    if (typeof token !== 'string' || !userId) return UNAUTHORIZED;
+    if ((await mx.membership(token, roomId, userId)) !== 'join') return NOT_ALLOWED;
     const room = rooms.get(roomId) ?? new Map<string, Conn>();
-    const prev = room.get(id);
-    if (prev && !timingSafeEqual(prev.tokenHash, tokenHash)) throw new Fail(409, 'conflict');
-    // The same tab reconnecting before we noticed its old stream close: take over quietly.
-    if (prev) drop(prev, false);
     let mine = 0;
     for (const r of rooms.values()) for (const o of r.values()) if (o.userId === userId) mine++;
-    if (mine >= PER_USER || room.size >= PER_ROOM) throw new Fail(429, 'too-many');
-
-    // text/event-stream: proxies in front of us (Coolify's Traefik) never compress or buffer it; ndjson was held back ~20 s.
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-store, no-transform',
-      'X-Accel-Buffering': 'no',
-    });
-    res.flushHeaders();
-    // Some proxies hold the headers until the first body byte: send one at once instead of waiting for the heartbeat.
-    res.write('\n');
-    const c: Conn = { id, roomId, userId, token, tokenHash, res, last: prev?.last, tokens: BURST, at: now(), timers: [] };
-    room.set(id, c);
+    if (mine >= PER_USER || room.size >= PER_ROOM) return TOO_MANY;
+    // The sender is who the homeserver says the token belongs to, never what a message claims.
+    const c: Conn = { id: randomUUID(), roomId, userId, ws, tokens: BURST, at: now(), alive: true };
+    const peers = [...room.values()].filter((o) => o.data !== undefined).map((o) => ({ from: o.userId, conn: o.id, data: o.data }));
+    room.set(c.id, c);
     rooms.set(roomId, room);
-    for (const o of room.values()) if (o !== c && o.last) write(c, o.last);
-    c.timers.push(
-      setInterval(() => write(c, '\n'), HEARTBEAT_MS),
-      setInterval(() => {
-        mx.membership(token, roomId, userId).then(
-          (m) => m !== 'join' && drop(c, true),
-          () => drop(c, true),
-        );
-      }, RECHECK_MS),
-    );
-    res.on('close', () => drop(c, true));
-    hookShutdown();
-    return 200;
+    const recheck = setInterval(() => {
+      mx.membership(token, roomId, userId).then(
+        (m) => m !== 'join' && ws.close(NOT_ALLOWED),
+        () => {},
+      );
+    }, RECHECK_MS);
+    const ping = setInterval(() => {
+      if (!c.alive) return ws.terminate();
+      c.alive = false;
+      send(c, { ping: 1 });
+    }, PING_MS);
+    ws.on('close', () => {
+      clearInterval(recheck);
+      clearInterval(ping);
+      room.delete(c.id);
+      if (!room.size && rooms.get(roomId) === room) rooms.delete(roomId);
+      others(c, { from: userId, conn: c.id, gone: true });
+    });
+    send(c, { ready: true, peers });
+    return c;
   }
 
-  async function post(req: IncomingMessage, roomId: string): Promise<number> {
-    const token = bearer(req);
-    if (!token) throw new Fail(401, 'unauthorized');
-    const body = await readJson(req);
-    const c = typeof body.id === 'string' ? rooms.get(roomId)?.get(body.id) : undefined;
-    if (!c || !timingSafeEqual(c.tokenHash, sha(token))) throw new Fail(403, 'not-allowed');
+  function onMessage(c: Conn, m: Record<string, unknown>) {
+    c.alive = true;
     const t = now();
     c.tokens = Math.min(BURST, c.tokens + ((t - c.at) * PER_SECOND) / 1000);
     c.at = t;
-    if (c.tokens < 1) throw new Fail(429, 'rate-limited');
+    if (c.tokens < 1) return c.ws.close(TOO_MANY);
     c.tokens -= 1;
-    c.last = line({ from: c.userId, conn: c.id, data: body.data ?? null });
-    for (const o of rooms.get(roomId)!.values()) if (o !== c) write(o, c.last);
-    return 204;
+    if ('data' in m) {
+      c.data = m.data ?? null;
+      others(c, { from: c.userId, conn: c.id, data: c.data });
+    } else if ('event' in m) others(c, { from: c.userId, conn: c.id, event: m.event });
+  }
+
+  function accept(ws: WebSocket, roomId: string) {
+    let conn: Conn | null = null;
+    let asked = false;
+    const late = setTimeout(() => ws.close(UNAUTHORIZED), AUTH_MS);
+    ws.on('error', () => ws.terminate());
+    ws.on('close', () => clearTimeout(late));
+    ws.on('message', (raw, binary) => {
+      let m: unknown;
+      try {
+        m = binary ? null : JSON.parse(raw.toString());
+      } catch { /* stays undefined */ }
+      if (!m || typeof m !== 'object' || Array.isArray(m)) return ws.close(1003);
+      if (conn) return onMessage(conn, m as Record<string, unknown>);
+      // Anything sent before I've answered the token is dropped; the app waits for { ready }.
+      if (asked) return;
+      asked = true;
+      admit(ws, roomId, (m as { token?: unknown }).token).then(
+        (r) => {
+          clearTimeout(late);
+          if (typeof r === 'number') ws.close(r);
+          else if (ws.readyState === ws.OPEN) conn = r;
+        },
+        () => ws.close(1011),
+      );
+    });
   }
 
   return {
-    /** Answers /api/presence/*; false for anything else. */
-    async handle(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
-      const url = new URL(req.url ?? '/', 'http://invite');
-      if (!/^\/api\/presence(\/|$)/.test(url.pathname)) return false;
-      let status: number;
+    /** Takes the upgrade for /api/presence/<roomId>; false for anything else. */
+    upgrade(req: IncomingMessage, socket: Duplex, head: Buffer): boolean {
+      const m = new URL(req.url ?? '/', 'http://invite').pathname.match(/^\/api\/presence\/([^/]+)$/);
+      let roomId = '';
       try {
-        const m = url.pathname.match(/^\/api\/presence\/([^/]+)$/);
-        let roomId = '';
-        try {
-          roomId = decodeURIComponent(m?.[1] ?? '');
-        } catch { /* stays empty */ }
-        if (!roomId.startsWith('!')) throw new Fail(404, 'not-found');
-        if (req.method === 'GET') status = await stream(req, res, roomId, url.searchParams.get('id'));
-        else if (req.method === 'POST') status = await post(req, roomId);
-        else throw new Fail(405, 'method-not-allowed');
-        if (status === 204) res.writeHead(204).end();
-      } catch (e) {
-        const f = e instanceof Fail ? e : new Fail(502, 'server');
-        status = f.status;
-        if (!res.headersSent) {
-          res.writeHead(f.status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...(closing ? { Connection: 'close' } : {}) });
-        }
-        if (!res.writableEnded) res.end(JSON.stringify({ error: f.error }));
-      }
-      // Posts arrive up to ~11/s per tab: only failures are worth a line.
-      if (status !== 204) console.log(`${req.method} presence ${status}`);
+        roomId = decodeURIComponent(m?.[1] ?? '');
+      } catch { /* stays empty */ }
+      if (!roomId.startsWith('!')) return false;
+      wss.handleUpgrade(req, socket, head, (ws) => accept(ws, roomId));
       return true;
     },
+    /** Ends every socket, so the HTTP server can close. */
+    close() {
+      for (const ws of wss.clients) ws.terminate();
+    },
   };
-}
-
-async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> {
-  const chunks: Buffer[] = [];
-  let size = 0;
-  for await (const chunk of req as AsyncIterable<Buffer>) {
-    size += chunk.length;
-    if (size > MAX_BODY) throw new Fail(413, 'too-large');
-    chunks.push(chunk);
-  }
-  try {
-    const body: unknown = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-    if (body && typeof body === 'object' && !Array.isArray(body)) return body as Record<string, unknown>;
-  } catch { /* fall through */ }
-  throw new Fail(400, 'bad-request');
 }

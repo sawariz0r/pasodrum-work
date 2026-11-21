@@ -1,7 +1,7 @@
 # Production on Coolify (Docker Compose build pack, D-17/D-18). Coolify's proxy terminates TLS.
 # Coolify: Base Directory "/deploy", Docker Compose Location "/docker-compose.yml".
 # Set SERVER_NAME (e.g. pasodrum.work). Only the web service gets a domain: https://<SERVER_NAME>:80.
-# web serves the app and forwards /_matrix, /_continuwuity and /.well-known/matrix to continuwuity, /api/invites, /api/translate and /api/presence (streamed) to invite.
+# web serves the app and forwards /_matrix, /_continuwuity and /.well-known/matrix to continuwuity, /api/invites, /api/translate and /api/presence (a WebSocket) to invite.
 # Set RESEND_API_KEY (sending-only, noreply.prpl.se) for invite mail (D-26); MAIL_FROM is optional.
 # Resend's open and click tracking are per domain: keep both off for noreply.prpl.se (confirm links are single use).
 # Coolify generates CONFIRM_KEY_SECRET and SYSTEM_PASSWORD (D-38); losing CONFIRM_KEY_SECRET means every client starts fresh.
