@@ -125,6 +125,7 @@ const emailScreens: { id: string; screen: EmailScreen; otherDevice?: boolean }[]
   { id: 'gate-other', screen: 'gate', otherDevice: true },
   { id: 'sent', screen: 'sent' },
   { id: 'done', screen: 'done' },
+  { id: 'no-link', screen: 'noLink' },
   { id: 'help', screen: 'help' },
   { id: 'helped', screen: 'helped' },
 ];

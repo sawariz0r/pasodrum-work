@@ -414,7 +414,7 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [HistoryRestoredRowJP](canvas/HistoryRestoredRowJP.dc.html) — Restored messages — Japanese `#artboard-HistoryRestoredRowJP`
 - [HistoryRestoredRowDark](canvas/HistoryRestoredRowDark.dc.html) — Restored messages — dark `#artboard-HistoryRestoredRowDark`
 
-## Confirm by email · `confirm-email` · 29 artboards
+## Confirm by email · `confirm-email` · 30 artboards
 
 - [EmailConfirmGate](canvas/EmailConfirmGate.dc.html) `#artboard-EmailConfirmGate`
 - [EmailConfirmSent](canvas/EmailConfirmSent.dc.html) `#artboard-EmailConfirmSent`
@@ -445,6 +445,10 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [EmailConfirmStaffHelpJP](canvas/EmailConfirmStaffHelpJP.dc.html) `#artboard-EmailConfirmStaffHelpJP`
 - [EmailConfirmStaffHelpDark](canvas/EmailConfirmStaffHelpDark.dc.html) `#artboard-EmailConfirmStaffHelpDark`
 - [EmailConfirmStaff](canvas/EmailConfirmStaff.dc.html) — Component: staff help message `#artboard-EmailConfirmStaff`
+
+**Gaps (DES-02, approved 2026-11-21)**
+
+- [EmailConfirmBuiltStates](canvas/EmailConfirmBuiltStates.dc.html) — Confirm by email: gaps `#artboard-EmailConfirmBuiltStates`
 
 ## Search & ⌘K · `search` · 12 artboards
 
@@ -485,7 +489,7 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [TranslatedDark](canvas/TranslatedDark.dc.html) — Translate — translated, dark `#artboard-TranslatedDark`
 - [TranslatedJPDark](canvas/TranslatedJPDark.dc.html) — Translate — translated, Japanese dark `#artboard-TranslatedJPDark`
 
-## Docs · `docs` · 31 artboards
+## Docs · `docs` · 32 artboards
 
 **Docs (approved 2026-11-21)**
 
@@ -524,7 +528,11 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [DocsSoon](canvas/DocsSoon.dc.html) — Docs in the rail: Soon `#artboard-DocsSoon`
 - [DocsBoardsCards](canvas/DocsBoardsCards.dc.html) — doc and issue cards in chat `#artboard-DocsBoardsCards`
 
-## Boards · `boards` · 37 artboards
+**File block (DES-02, approved 2026-11-21)**
+
+- [DocsFileBlock](canvas/DocsFileBlock.dc.html) — Docs: file block `#artboard-DocsFileBlock`
+
+## Boards · `boards` · 38 artboards
 
 - [BoardsSoon](canvas/BoardsSoon.dc.html) — Boards in the rail: Soon `#artboard-BoardsSoon`
 - [BoardsPage](canvas/BoardsPage.dc.html) — Boards — project board `#artboard-BoardsPage`
@@ -563,6 +571,10 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [BoardsLive](canvas/BoardsLive.dc.html) — Boards — others moving and editing `#artboard-BoardsLive`
 - [BoardsLiveDark](canvas/BoardsLiveDark.dc.html) — Boards — others moving and editing, dark `#artboard-BoardsLiveDark`
 - [BoardsLiveIssue](canvas/BoardsLiveIssue.dc.html) — Boards — others in an issue `#artboard-BoardsLiveIssue`
+
+**Built without a board (DES-02, approved 2026-11-21)**
+
+- [BoardsBuiltStates](canvas/BoardsBuiltStates.dc.html) — Boards: built without a board `#artboard-BoardsBuiltStates`
 
 ## Discovery · `discovery` · 14 artboards
 

@@ -526,6 +526,7 @@
     "arriving": "Loading message",
     "signOutTitle": "Sign out?",
     "signOutKey": "To read older DMs and private channels again, you’ll need your recovery key.",
+    "signOutMaybeLose": "If you sign out now, you might lose older messages in DMs and private channels.",
     "newKey": "New recovery key",
     "signOutLoseTitle": "Sign out and lose older messages?",
     "signOutLose": "Older messages in DMs and private channels are only on this device.",
@@ -580,6 +581,7 @@
       "helpLine": "It can take a minute. Check your spam folder too.",
       "sendAgain": "Send it again",
       "stillNothing": "Still nothing?",
+      "noLinkTitle": "We can’t email you a link",
       "back": "Back",
       "startFresh": "Start fresh"
     },

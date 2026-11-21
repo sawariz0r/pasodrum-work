@@ -35,7 +35,7 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ, one page per feature 
 | Narrow window (~1024: sidebar folds when thread opens; ~800: thread replaces conversation, sidebar drawer) | Window1024, Window800, Window800Sidebar | approved 2026-11-20 |
 | Sign-in in dark (input border #3A3A42, primary hover #5FE0B8, error ring #3B1D1A — values picked during M1-01, light-only on canvas) | SignIn | approved 2026-11-20 |
 | SSO button only when the server offers it (`sso` tweak, off by default) | SignIn | approved 2026-11-20 |
-| Sign-in failure that is neither wrong password nor unreachable (e.g. rate limited); M1 shows the "Can’t reach" alert for now | SignIn | needs design |
+| Sign-in failure that is neither wrong password nor unreachable (rate limited → Too many attempts; anything else → Something went wrong) | SignInOtherError, SignInTooMany | approved 2026-11-21 (Batch H; confirmed in DES-02) |
 | Rail "+" = New client space (links to CreateClientSpace) | Main | approved 2026-11-20 |
 
 ## Batch B — for M2 (approved 2026-11-20)
@@ -99,7 +99,7 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ, one page per feature 
 | Join page: link used, wrong account | JoinUsed, JoinWrongAccount(+JP) | approved 2026-11-20 |
 | First sign-in (team, client) | FirstRunTeam, FirstRunClient(+JP) | approved 2026-11-20 |
 | Foundations: floating composer + no sideways scroll rules | Foundations | approved 2026-11-20 |
-| Built in M4-04 without a board (to confirm on the canvas): password prompt before signing devices out; join claim errors ("Couldn’t join", "Choose a longer password"); link that can't be looked up ("This page isn’t available" card) | — | needs design |
+| Built in M4-04: password prompt before signing devices out; join claim errors ("Couldn’t join", "Choose a longer password"); link that can't be looked up ("This page isn’t available" card); Add people "Couldn’t add {name}" | BuiltStatesM4 | approved 2026-11-21 (Batch H; confirmed in DES-02) |
 
 ## Batch E — for M5 (approved 2026-11-21)
 
@@ -232,14 +232,18 @@ Approved 2026-11-21 (CEO). Rules: DocsBoardsRules. Components: DocsPage, BoardsP
 | Issue panel, translated comment; assign; due date | BoardsIssue(+JP, Dark), BoardsAssignee, BoardsDue | approved 2026-11-21 |
 | New issue, quick add, create failed | BoardsNewIssue(+JP, Dark), BoardsQuickAdd(+JP), BoardsCreateFailed | approved 2026-11-21 |
 | New column (one title), translate a card | BoardsColumn(+JP), BoardsCardTranslate | approved 2026-11-21 |
-| Gap (built as shown, needs a board): Rename column — column header ⋯ (team, on hover) → Rename; the New column dialog titled "Rename column", field prefilled, Save | — | needs design |
+| Rename column: header ⋯ (team, on hover) → Rename; the column dialog titled "Rename column", prefilled, Save off until the name changes | BoardsBuiltStates | approved 2026-11-21 |
 | My issues | BoardsMine(+JP) | approved 2026-11-21 |
 | New project, no projects yet, empty project, loading | BoardsNewProject, BoardsNoProjects(+JP), BoardsEmpty, BoardsLoading | approved 2026-11-21 |
 | Card menu, delete issue, move failed | BoardsCardMenu(+JP, Dark), BoardsDeleteIssue, BoardsMoveFailed | approved 2026-11-21 |
 | Client space (team, custom column), client's view | BoardsNordlys, BoardsClient | approved 2026-11-21 |
 | Dragging a card; others dragging, editing, just moved; others in an issue | BoardsDrag, BoardsLive(+Dark), BoardsLiveIssue | approved 2026-11-21 |
 | Doc and issue cards in chat (vs Element X plain link) | DocsBoardsCards | approved 2026-11-21 |
-| Boards unread: project badge, card dot (reuses approved patterns: channel unread badge, Activity unread dot, chat jump flash) | — | needs design review |
+| Boards unread: card and list-row dot; the newest unread mention flashes when the issue opens | BoardsBuiltStates | approved 2026-11-21 |
+| Boards unread: project badge in the sidebar | — | with DES-01 (uniform sidebar rows) |
+| Issue mentions and assignments in Activity (issue key in place of the channel) | BoardsBuiltStates | approved 2026-11-21 |
+| Issue panel lies over the board at every width; clicking empty board closes it | BoardsBuiltStates | approved 2026-11-21 |
+| Docs file block (same card as a file in chat) | DocsFileBlock | approved 2026-11-21 |
 
 ## Confirm by email (D-38)
 
@@ -257,8 +261,8 @@ Approved 2026-11-21 (CEO). Boards on the canvas page **Confirm by email** (moved
 | Staff: a client needs your help (DM from Pasodrum) | EmailConfirmStaffHelp, EmailConfirmStaffHelpJP, EmailConfirmStaffHelpDark | approved 2026-11-21 |
 | Rules: confirm by email | EmailConfirmRules | approved 2026-11-21 |
 
-| Gap (built as shown, needs a board): send/help failed → muted "Something went wrong. Try again." line; link page can't be reached → clock tile + same line | — | needs design |
-| Gap: no key held for an old client with no confirmed device → shows "Didn't get the email?" | — | needs design |
-| Gap: sign-out "last device" body and "Reset and start fresh?" still name the recovery key for clients (buttons hidden) | — | needs design |
+| Send/help failed → muted "Something went wrong. Try again." line; link page can't reach us → clock tile + same line; link page line muted (was red) | EmailConfirmBuiltStates | approved 2026-11-21 |
+| No key held (account from before D-38) → "We can't email you a link": Ask {contact}, Back · Start fresh | EmailConfirmBuiltStates | approved 2026-11-21 |
+| Clients and Externals: sign-out from the last device without the recovery key line; Reset and start fresh? as built (never named the key) | EmailConfirmBuiltStates | approved 2026-11-21 |
 
 Components: `EmailConfirm`, `EmailConfirmLink`, `EmailConfirmStaff`. For clients these replace ConfirmGate/ConfirmGateNoDevice, RecoveryKeySave, RecoveryKeyEnter and the Recovery key row in Settings → Devices; staff and the team keep those (RulesM6).

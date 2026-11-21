@@ -4391,6 +4391,33 @@
    "title": "Client and External marks: everywhere they show (final)",
    "page": "discovery",
    "is_interactive": false
+  },
+  "BoardsBuiltStates.dc.html": {
+   "x": 0,
+   "y": 9560,
+   "w": 1440,
+   "h": 4708,
+   "title": "Boards: built without a board",
+   "is_interactive": false,
+   "page": "boards"
+  },
+  "DocsFileBlock.dc.html": {
+   "x": 0,
+   "y": 11660,
+   "w": 1440,
+   "h": 781,
+   "title": "Docs: file block",
+   "is_interactive": false,
+   "page": "docs"
+  },
+  "EmailConfirmBuiltStates.dc.html": {
+   "x": 0,
+   "y": 7604,
+   "w": 1440,
+   "h": 5420,
+   "title": "Confirm by email: gaps",
+   "is_interactive": false,
+   "page": "confirm-email"
   }
  },
  "order": [
@@ -4839,7 +4866,10 @@
   "ClientMarkLine.dc.html",
   "ExternalMark.dc.html",
   "ClientMarkFinal.dc.html",
-  "ClientMarkPlaces.dc.html"
+  "ClientMarkPlaces.dc.html",
+  "BoardsBuiltStates.dc.html",
+  "DocsFileBlock.dc.html",
+  "EmailConfirmBuiltStates.dc.html"
  ],
  "notes": {
   "overview-Foundations--workspace": {
@@ -5271,6 +5301,33 @@
    "fill": "gray",
    "size": "m",
    "text": "One page per feature\n\n• Sign in\n• Messages & composer\n• Threads, activity & drafts\n• DMs & profiles\n• Channels\n• Pins, files & link cards\n• People & access\n• Client spaces & guests\n• Invites, joining & first run\n• Devices & encryption\n• Confirm by email\n• Search & ⌘K\n• Settings\n• Translate\n• Docs\n• Boards\n• Discovery: open explorations\n\nArtboards keep their file names; only the layout moved (2026-11-21)."
+  },
+  "boards-DES-02": {
+   "x": 0,
+   "y": 9300,
+   "text": "Built without a board (DES-02, approved 2026-11-21)",
+   "kind": "title1",
+   "page": "boards",
+   "size": "l",
+   "maxW": 9040
+  },
+  "docs-DES-02": {
+   "x": 0,
+   "y": 11400,
+   "text": "File block (DES-02, approved 2026-11-21)",
+   "kind": "title1",
+   "page": "docs",
+   "size": "l",
+   "maxW": 9040
+  },
+  "confirm-email-DES-02": {
+   "x": 0,
+   "y": 7344,
+   "text": "Gaps (DES-02, approved 2026-11-21)",
+   "kind": "title1",
+   "page": "confirm-email",
+   "size": "l",
+   "maxW": 9040
   }
  },
  "designSystems": []

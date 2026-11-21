@@ -10,7 +10,7 @@ import { useSecurityUi } from './SecurityProvider';
 import gate from './Security.module.css';
 import s from './EmailConfirm.module.css';
 
-export type EmailScreen = 'gate' | 'sent' | 'done' | 'help' | 'helped';
+export type EmailScreen = 'gate' | 'sent' | 'done' | 'noLink' | 'help' | 'helped';
 
 export type EmailConfirmViewProps = {
   screen: EmailScreen;
@@ -122,24 +122,30 @@ export function EmailConfirmView(p: EmailConfirmViewProps) {
           <h2 className={s.title}>{t('security.email.doneTitle')}</h2>
         </div>
       );
-    case 'help':
+    case 'noLink':
+    case 'help': {
+      const noLink = p.screen === 'noLink';
       return (
         <div key="help" className={`${s.card} ${s.wide}`} role="group" aria-labelledby="email-confirm-help">
           <span className={`${s.tile} ${s.tileWell}`}>
             <MailIcon size={30} strokeWidth={1.8} />
           </span>
           <h2 id="email-confirm-help" className={s.title}>
-            {t('security.email.helpTitle')}
+            {t(noLink ? 'security.email.noLinkTitle' : 'security.email.helpTitle')}
           </h2>
-          <p className={s.line}>{t('security.email.helpLine')}</p>
-          <button type="button" className={s.primary} disabled={!p.canResend} onClick={p.onEmail}>
-            <SendIcon />
-            {t('security.email.sendAgain')}
-          </button>
-          {failLine}
+          {!noLink && (
+            <>
+              <p className={s.line}>{t('security.email.helpLine')}</p>
+              <button type="button" className={s.primary} disabled={!p.canResend} onClick={p.onEmail}>
+                <SendIcon />
+                {t('security.email.sendAgain')}
+              </button>
+            </>
+          )}
+          {!noLink && failLine}
           {p.contact && (
-            <div className={s.more}>
-              <div className={s.moreTitle}>{t('security.email.stillNothing')}</div>
+            <div className={noLink ? `${s.more} ${s.bare}` : s.more}>
+              {!noLink && <div className={s.moreTitle}>{t('security.email.stillNothing')}</div>}
               <button type="button" className={s.row} aria-busy={p.asking || undefined} onClick={() => !p.asking && p.onHelp('email-missing')}>
                 <ContactFace person={p.contact} size={36} />
                 <span className={s.rowLabel}>{t('security.email.askHelpBig', { name })}</span>
@@ -149,6 +155,7 @@ export function EmailConfirmView(p: EmailConfirmViewProps) {
               </button>
             </div>
           )}
+          {noLink && failLine}
           <div className={s.actions}>
             <button type="button" className={s.text} onClick={p.onBack}>
               {t('security.email.back')}
@@ -159,6 +166,7 @@ export function EmailConfirmView(p: EmailConfirmViewProps) {
           </div>
         </div>
       );
+    }
     case 'helped':
       return (
         <div key="helped" className={s.card} role="status">
@@ -208,8 +216,17 @@ export function EmailConfirm({ done }: { done: boolean }) {
     return () => clearTimeout(timer);
   }, [resendAt, now]);
 
+  const error = ec?.error ?? '';
   const auto: EmailScreen =
-    phase === 'sending' || phase === 'sent' ? 'sent' : phase === 'failed' && toHelp.has(ec?.error ?? '') ? 'help' : 'gate';
+    phase === 'sending' || phase === 'sent'
+      ? 'sent'
+      : phase !== 'failed'
+        ? 'gate'
+        : error === 'no-key' || error === 'wrong-key'
+          ? 'noLink'
+          : error === 'rate-limited'
+            ? 'help'
+            : 'gate';
   const screen: EmailScreen = done || phase === 'confirmed' ? 'done' : view === 'auto' ? auto : view;
 
   const email = () => {

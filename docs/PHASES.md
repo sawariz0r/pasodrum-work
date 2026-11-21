@@ -68,7 +68,7 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 
 **Open sessions:** "Build Docs and Boards (D-37)" (keep for follow-ups), "Build confirm by email (D-38)" (archive after the CEO's test), "Design discovery" (icon/mark exploration — CEO said leave it alone). Everything else is archived.
 
-**Backlog (all need canvas boards first):** SIDE-05 client contacts, SIDE-06 quiet board rooms in Element X, SIDE-07 Docs/Boards follow the selected space + "Client boards" fold, DES-01 uniform sidebar rows. Plus INVENTORY rows marked "needs design" (Rename column, board mention row in Activity, Boards badge/unread, issue panel overlay, Docs file block, email-confirm failure states). Next milestone: M9 desktop shell (needs Batch H desktop boards).
+**Backlog (all need canvas boards first):** SIDE-05 client contacts, SIDE-06 quiet board rooms in Element X, SIDE-07 Docs/Boards follow the selected space + "Client boards" fold, DES-01 uniform sidebar rows. Next milestone: M9 desktop shell (needs Batch H desktop boards).
 
 **How the lead worked today (keep doing it):**
 - CEO works in discovery sessions on the canvas; the lead only builds after the CEO says "approved" **in the lead's own chat** (a session relaying approval doesn't count). Approved boards move off Discovery to the matching feature page; `design/CANVAS-MAP.md` lists page → section → artboard (`pnpm canvas:map`).
@@ -82,8 +82,7 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 
 ## Open follow-ups (not blocking)
 
-- **Needs design (inventory rows):** sign-in failure that isn't wrong password/unreachable; M4-04 states built without boards (password prompt before device sign-out, join claim errors, link-not-found); Add people "Couldn't add {name}".
-- **Product gaps:** `/dms` with no DMs shows the last channel instead of an empty state; channel rename (contract); voice clips show as audio files (no waveform); Activity covers recent synced history only (no `/notifications`); thread read state shares one room position (server drops `thread_id`).
+- **Product gaps:** channel rename (contract); voice clips show as audio files (no waveform); Activity covers recent synced history only (no `/notifications`); thread read state shares one room position (server drops `thread_id`).
 - **Server:** Continuwuity loses ~3% of to-device messages that arrive concurrently (DECISIONS learnings). No upstream report for now (CEO); our own sends are serialized. Revisit if "Not available on this device" shows up in real use.
 - **Tests:** one M3 thread-unread integration test is flaky (failed 1 of ~3 runs); invite service rate limit (60/h per caller) trips repeated local runs — restart the `invite` container.
 - **Production data** is disposable until the CEO says otherwise (D-18): seed accounts + test rooms live there; wipe or deactivate before a second real person joins.

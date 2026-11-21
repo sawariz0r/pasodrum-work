@@ -860,8 +860,8 @@ function useFlowView(
         body: (
           <>
             <div className={`${s.box} ${s.line}`}>
-              <KeyIcon size={17} strokeWidth={2} className={s.mutedIcon} />
-              <span>{t('security.signOutKey')}</span>
+              {byEmail ? <EyeOffIcon className={s.mutedIcon} /> : <KeyIcon size={17} strokeWidth={2} className={s.mutedIcon} />}
+              <span>{t(byEmail ? 'security.signOutMaybeLose' : 'security.signOutKey')}</span>
             </div>
             {failed && <div className={s.lineError}>{failLine}</div>}
           </>
