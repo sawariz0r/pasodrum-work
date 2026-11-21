@@ -74,7 +74,14 @@ export interface Message {
   /** M2. This message mentions the signed-in person. */
   mentionsMe?: boolean;
   /** M2. For kind 'system': collapsed joins/leaves between messages. E2: a rename or archive row (never collapsed with joins). */
-  system?: { joined: Person[]; left: Person[]; renamed?: { from: string; to: string; by: Person }; archived?: { by: Person; archived: boolean } };
+  system?: {
+    joined: Person[];
+    left: Person[];
+    renamed?: { from: string; to: string; by: Person };
+    archived?: { by: Person; archived: boolean };
+    /** SIDE-03. `by` gave the other person in this DM back its history. */
+    historyShared?: { by: Person };
+  };
   /** M3. On a thread root: summary of its replies. */
   thread?: ThreadInfo;
   /** M6. kind 'undecryptable' only: a key may still arrive (backup, another device) — show the shimmer, not the quiet line. */
@@ -83,6 +90,8 @@ export interface Message {
   pinned?: boolean;
   /** M7. Text messages: http(s) URLs in body order, each once (code and mentions left out); the card shows the first. Never set in encrypted conversations (D-33). */
   links?: string[];
+  /** SIDE-03. Readable only because someone shared the history with me: who sent it can't be proven (grey shield). */
+  restored?: boolean;
 }
 
 export interface ThreadInfo {
@@ -235,6 +244,12 @@ export interface FilesPage {
   next?: string;
 }
 
+/** M8. A search result; `threadRootId` when the message is a thread reply (open the thread, not the channel). */
+export interface SearchHit {
+  message: Message;
+  threadRootId?: string;
+}
+
 /** M7. A link card (unencrypted conversations only, D-33). */
 export interface LinkPreview {
   url: string;
@@ -292,16 +307,19 @@ export interface SasEmoji {
 }
 
 /**
- * M6. A device confirmation in progress (RulesM6). role 'new' = this device asked; 'approver' = another device of mine asks this one.
+ * M6. A device confirmation in progress (RulesM6). role 'new' = this device asked; 'approver' = another device of mine asks this one;
+ * 'person' (SIDE-03) = comparing emoji with another person (`person`): 'waiting' when I asked, 'asked' when they did.
  * phase: 'waiting' (asked, no answer yet) · 'asked' (approver: Is this you?) · 'compare' (emoji shown) · 'matched' (I pressed They match, the other side hasn't)
  * · 'done' · 'declined' · 'timeout' (2 min) · 'mismatch'.
  */
 export interface Confirmation {
-  role: 'new' | 'approver';
+  role: 'new' | 'approver' | 'person';
   /** The other device's name ("Safari on Mac"); absent while a new device waits for any device. */
   otherDevice?: string;
   phase: 'waiting' | 'asked' | 'compare' | 'matched' | 'done' | 'declined' | 'timeout' | 'mismatch';
   emoji?: SasEmoji[];
+  /** SIDE-03, role 'person': who I'm comparing with. */
+  person?: Person;
 }
 
 /** M6. This device and the account's encryption setup (D-31). */
@@ -464,9 +482,27 @@ export interface WorkspaceStore {
   files(channelId: string, from?: string): Promise<FilesPage>;
   /** First link of an unencrypted message → card data; null = no preview (or it failed). Cached for the session; concurrent calls share one request. Never call it for encrypted conversations. */
   linkPreview(url: string): Promise<LinkPreview | null>;
+  // M8
+  /**
+   * Local substring scan (D-13), NFKC + case-folded. Loaded timelines first, then a bounded amount of older history per
+   * conversation (decrypted here). Hits arrive via onHits (newest first per batch). Resolves when this pass ends; `next` = more
+   * history exists. Abort rejects with AbortError. An unconfirmed device skips encrypted conversations.
+   */
+  search(query: string, opts: { channelId?: string; cursor?: string; signal: AbortSignal; onHits: (hits: SearchHit[]) => void }): Promise<{ next?: string }>;
+  // SIDE-03
+  /** Compare emoji with another person (in our DM); they see a confirmation with role 'person', phase 'asked'. Needs a confirmed device (no-op otherwise). */
+  requestPersonConfirmation(userId: string): void;
+  /** Their current identity is confirmed by me (a reset since then = false). */
+  personConfirmed(userId: string): Promise<boolean>;
+  /**
+   * Team only, in a 1:1 encrypted DM with an outside person: gives them the keys to its history, then posts a "history shared" row.
+   * Rejects Error('not-allowed' | 'device-unconfirmed' | 'not-confirmed' | 'not-ready' | 'failed'); 'not-ready' = they haven't set up
+   * again yet (no device signed by their current identity), and nothing is posted. Safe to repeat.
+   */
+  shareHistory(dmId: string, userId: string): Promise<void>;
 }
 
-export type SignInFailure = 'wrong-password' | 'unreachable' | 'other';
+export type SignInFailure = 'wrong-password' | 'unreachable' | 'rate-limited' | 'other';
 
 export class SignInError extends Error {
   constructor(readonly reason: SignInFailure) {

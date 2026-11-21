@@ -1,6 +1,6 @@
 // In-memory WorkspaceStore with the canvas workspace, for tests and /dev screens. No server.
 import { PasswordRequired } from '../../matrix';
-import type { ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Draft, FilesPage, JoinableChannel, LinkPreview, Media, Member, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, SasEmoji, Security, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
+import type { ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Draft, FilesPage, JoinableChannel, LinkPreview, Media, Member, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, SasEmoji, SearchHit, Security, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
 
 const people: Record<string, Person> = {
   so: { id: '@sofia:pasodrum.localhost', name: 'Sofia Olsen' },
@@ -221,7 +221,12 @@ const dmHistory: Record<string, () => Message[]> = {
     rich('!dm-jonas', 'so', at(0, 9, 5), { body: 'Drafting it in the thread so Maja sees it too.' }),
     rich('!dm-jonas', 'jb', at(0, 10, 12), { body: 'Got a minute before the Nordlys call?' }),
   ],
+  // SIDE-03: Henrik reset and Sofia shared the history back; the older messages are `restored` (only the client sees that flag).
   '!dm-henrik': () => [
+    rich('!dm-henrik', 'so', at(2, 14, 3), { body: 'Welcome to Pasodrum work, Henrik. This is where we talk one to one.', restored: true }),
+    rich('!dm-henrik', 'hd', at(2, 14, 10), { body: 'Thanks! 来週の打ち合わせの資料を送ります。', restored: true }),
+    rich('!dm-henrik', 'so', at(2, 14, 12), { body: 'Perfect, the agenda is in the doc.', restored: true }),
+    rich('!dm-henrik', 'so', at(0, 9, 30), { kind: 'system', system: { joined: [], left: [], historyShared: { by: people.so! } } }),
     rich('!dm-henrik', 'hd', at(0, 9, 40), { body: 'Morning! Where can I find the new screens?' }),
     rich('!dm-henrik', 'so', at(0, 9, 58), { body: 'I’ll send the sign-in screens tomorrow.' }),
   ],
@@ -325,6 +330,14 @@ function leadHistory(): Message[] {
   ];
 }
 
+// M8: older history only search reaches (not in any timeline, so a jump to it can't find it).
+const archive: Message[] = [
+  rich('!general', 'ty', at(40, 10, 5), { body: 'キックオフの議事録を共有しました。レビューをお願いします。' }),
+  rich('!general', 'jb', at(41, 9, 0), { body: 'Kickoff notes for Nordlys are in the shared folder.' }),
+  rich('!dm-henrik', 'hd', at(35, 16, 20), { body: 'キックオフ、ありがとうございました！', restored: true }),
+  rich('!eng', 'ek', at(50, 11, 0), { body: 'ＴＥＳＴ build for the kickoff demo is up.' }),
+];
+
 const history: Record<string, () => Message[]> = {
   '!general': () => generalHistory().map((m) => withThread(m, true)),
   '!lead': leadHistory,
@@ -380,6 +393,10 @@ export interface FakeStoreOptions {
   backupUnreadable?: boolean;
   /** M6. signOutRisk answer (default 'none'). */
   signOutRisk?: 'none' | 'last-device' | 'no-backup';
+  /** SIDE-03. People whose identity I've already confirmed (personConfirmed). An incoming request: `security.confirmation` with role 'person', phase 'asked'. */
+  confirmedPeople?: string[];
+  /** SIDE-03. People who haven't set up again yet: shareHistory rejects 'not-ready'. */
+  notReadyPeople?: string[];
 }
 
 /** M6. The fake account's recovery key; useRecoveryKey accepts it without spaces (the UI strips them), case-sensitive. */
@@ -416,7 +433,7 @@ function outsideView(perspective: 'client' | 'guest', me: Person | undefined): {
         me: self(me ?? people.hd!),
         spaces: spaces.filter((sp) => sp.id === '!nordlys'),
         channels: { '!nordlys': channels['!nordlys']!.map(plain) },
-        dms: dms(['jb', 'ih'], '!nordlys'),
+        dms: [...dms(['jb', 'ih'], '!nordlys'), { ...sampleDms().find((d) => d.id === '!dm-henrik')!, people: [people.so!], spaceIds: ['!nordlys'] }],
         myRoles: { '!nordlys': 'client' },
       },
     };
@@ -545,7 +562,16 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
   const setConfirmation = (confirmation: Security['confirmation']) => setSecurity({ confirmation });
   // One copy of each channel's history per store, so pins and files match the timeline.
   const loaded: Record<string, Message[]> = {};
-  const historyOf = (channelId: string) => (loaded[channelId] ??= history[channelId]?.() ?? []);
+  // SIDE-03: `restored` only shows on the side that received the history (the client).
+  const unrestored = (m: Message) => {
+    const copy = { ...m };
+    delete copy.restored;
+    return copy;
+  };
+  const ownHistory = (list: Message[]) => (opts.perspective === 'client' ? list : list.map(unrestored));
+  const historyOf = (channelId: string) => (loaded[channelId] ??= ownHistory(history[channelId]?.() ?? []));
+  const confirmedPeople = new Set(opts.confirmedPeople ?? []);
+  const isEncrypted = (id: string) => !!Object.values(snapshot.channels).flat().find((c) => c.id === id)?.encrypted || !!snapshot.dms.find((d) => d.id === id)?.encrypted;
   const loadedReplies: Record<string, Message[]> = {};
   const finishLoad = (channelId: string) => setTimeline(channelId, { messages: historyOf(channelId), initialLoading: false });
   // M7: pinned ids per channel, newest pin first.
@@ -946,6 +972,7 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       if (!match || c.otherDevice?.includes('mismatch')) return setConfirmation({ ...c, phase: 'mismatch' });
       setConfirmation({ ...c, phase: 'done' });
       if (c.role === 'new') setSecurity({ device: 'confirmed' });
+      if (c.role === 'person' && c.person) confirmedPeople.add(c.person.id);
     },
     dismissConfirmation() {
       setConfirmation(undefined);
@@ -1005,6 +1032,63 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     async linkPreview(url) {
       if (previewMs) await new Promise((r) => setTimeout(r, previewMs));
       return PREVIEWS[url] ?? null;
+    },
+    // M8: like the real store: loaded timelines first, then older history in batches; a second pass (cursor) reaches the archive.
+    // An unconfirmed device skips encrypted conversations.
+    async search(query, { channelId, cursor, signal, onHits }) {
+      const fold = (x: string) => x.normalize('NFKC').toLowerCase();
+      const needle = fold(query.trim());
+      const aborted = () => new DOMException('Aborted', 'AbortError');
+      const pause = () =>
+        new Promise<void>((resolve, reject) => {
+          if (signal.aborted) return reject(aborted());
+          const t = setTimeout(resolve, opts.loadMs ?? 0);
+          signal.addEventListener('abort', () => (clearTimeout(t), reject(aborted())), { once: true });
+        });
+      if (!needle) return {};
+      const readable = (id: string) => (!channelId || id === channelId) && (snapshot.security.device === 'confirmed' || !isEncrypted(id));
+      const replies = Object.entries(threadReplies).flatMap(([rootId, f]) => f().map((message) => ({ message, threadRootId: rootId })));
+      const hitsOf = (list: SearchHit[]) =>
+        list
+          .filter(({ message: m }) => readable(m.channelId) && m.status === 'sent' && !['deleted', 'system', 'undecryptable'].includes(m.kind ?? 'text') && fold(m.body).includes(needle))
+          .sort((a, b) => b.message.ts - a.message.ts);
+      const ids = [...Object.values(snapshot.channels).flat().map((c) => c.id), ...snapshot.dms.map((d) => d.id)];
+      if (cursor !== 'fake-archive') {
+        await pause();
+        const loadedHits = hitsOf(ids.flatMap((id) => historyOf(id).map((message) => ({ message }))));
+        if (loadedHits.length) onHits(loadedHits);
+        await pause();
+        const threadHits = hitsOf(replies);
+        if (threadHits.length) onHits(threadHits);
+        return { next: 'fake-archive' };
+      }
+      await pause();
+      const older = hitsOf(ownHistory(archive).map((message) => ({ message })));
+      if (older.length) onHits(older);
+      return {};
+    },
+    // SIDE-03: the other person says yes by themselves; confirmEmoji(true) confirms them.
+    requestPersonConfirmation(userId) {
+      if (snapshot.security.device !== 'confirmed') return;
+      const person = [...Object.values(people), ola].find((p) => p.id === userId) ?? { id: userId, name: userId };
+      setConfirmation({ role: 'person', person, phase: 'waiting' });
+      setTimeout(() => {
+        const c = snapshot.security.confirmation;
+        if (c?.role === 'person' && c.phase === 'waiting') setConfirmation({ ...c, phase: 'compare', emoji: SAS });
+      }, opts.loadMs ?? 0);
+    },
+    personConfirmed: async (userId) => confirmedPeople.has(userId),
+    async shareHistory(dmId, userId) {
+      const dm = snapshot.dms.find((d) => d.id === dmId);
+      const team = ['owner', 'admin', 'member'].includes(snapshot.myRoles['!pasodrum'] ?? '');
+      if (!team || !dm?.encrypted || dm.people.length !== 1 || dm.people[0]!.id !== userId || !dm.people[0]!.external) throw new Error('not-allowed');
+      if (snapshot.security.device !== 'confirmed') throw new Error('device-unconfirmed');
+      if (!confirmedPeople.has(userId)) throw new Error('not-confirmed');
+      if (opts.notReadyPeople?.includes(userId)) throw new Error('not-ready');
+      await new Promise((r) => setTimeout(r, opts.loadMs ?? 0));
+      const row = rich(dmId, 'so', Date.now(), { sender: snapshot.me, kind: 'system', system: { joined: [], left: [], historyShared: { by: snapshot.me } } });
+      loaded[dmId] = [...historyOf(dmId), row];
+      if (snapshot.timelines[dmId]) setTimeline(dmId, { messages: [...messagesOf(dmId), row] });
     },
   };
 }

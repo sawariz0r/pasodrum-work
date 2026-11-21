@@ -51,6 +51,7 @@ export async function signIn(baseUrl: string, identifier: string, password: stri
       return session;
     }
     if (res.status >= 500) throw new SignInError('unreachable');
+    if (res.status === 429) throw new SignInError('rate-limited');
     if (![400, 403, 404].includes(res.status)) failure = 'other';
   }
   throw new SignInError(failure);

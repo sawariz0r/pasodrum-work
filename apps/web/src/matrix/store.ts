@@ -42,7 +42,9 @@ import {
 } from './map';
 import { archivedLevels, channelUsers, dmLevels, LEVEL, levelFor, PINS, powerLevels } from './levels';
 import { defaultLevel, defaultOps, roomLevel, roomOps, type PushOp, type PushRules } from './push';
+import { createSearch } from './search';
 import { send, sendEdit, sendReaction, type MsgType, type TextMessage } from './send';
+import { createBundleReceiver, markerFor, shareHistory } from './shareHistory';
 import { clearSession } from './session';
 import {
   PasswordRequired,
@@ -92,6 +94,8 @@ const FILES_PAGE = 30;
 const SCAN = 100;
 const SCAN_PAGES = 5;
 const NO_PINS = new Set<string>();
+/** M8. Everything that can be a message (or an edit of one), encrypted or not. */
+const MESSAGES_FILTER = { types: [EventType.RoomMessageEncrypted, EventType.RoomMessage, EventType.Sticker] };
 const isMember = (room: Room | null | undefined, userId: string) => {
   const m = room?.getMember(userId)?.membership;
   return m === KnownMembership.Join || m === KnownMembership.Invite;
@@ -247,7 +251,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     verificationMethods: ['m.sas.v1'],
   });
   const listeners = new Set<() => void>();
-  const security = createSecurity(client, keys, session.userId, session.deviceId, () => schedule());
+  const security = createSecurity(client, keys, session.userId, session.deviceId, () => schedule(), (id) => person(id, client.getUser(id)?.displayName));
   let cryptoReady = false;
   const encrypting = new Set<string>();
   /** M7. Rooms whose pin level openPins has handled (once per room). */
@@ -275,6 +279,9 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   const localDirect = new Set<string>();
   const membersRequested = new Set<string>();
   const threadsListed = new Set<string>();
+  /** Thread roots where I'm known to have replied, from checkParticipation. */
+  const participated = new Set<string>();
+  const participationChecked = new Set<string>();
   const rootsRequested = new Set<string>();
   const joining = new Set<string>();
   const dmRequests = new Map<string, Promise<string>>();
@@ -368,6 +375,9 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       return typeof text === 'string' && text && !ev.isRelation() && !ev.isRedacted() ? { ...base, body: text, kind: 'unsupported' } : null;
     }
     if (ev.isRedacted()) return { ...base, body: '', kind: 'deleted' };
+    // SIDE-03: the "history shared" marker is a row; in-chat verification requests (their fallback text names keys) are hidden.
+    if (markerFor(content) && byMemberOfOneToOne(room, senderId)) return { ...base, body: '', kind: 'system', system: { joined: [], left: [], historyShared: { by: base.sender } } };
+    if (content.msgtype === 'm.key.verification.request') return null;
     if (typeof content.body !== 'string') return null;
 
     const msgtype = String(content.msgtype ?? '');
@@ -402,9 +412,16 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       ...(reactions.length ? { reactions } : {}),
       ...(pinsOf(room).has(base.id) ? { pinned: true } : {}),
       ...(links.length ? { links } : {}),
+      ...(ev.getKeyForwardingUser() ? { restored: true } : {}),
     };
     if (replyId && withReply) message.replyTo = replyOf(room, replyId, ev);
     return message;
+  }
+
+  /** SIDE-03: a "history shared" marker is a row only in a 1:1 DM, from one of its two people; anywhere else it's a plain message. */
+  function byMemberOfOneToOne(room: Room, senderId: string) {
+    const others = othersOf(room);
+    return others.length === 1 && (senderId === me.id || senderId === others[0]) && isDirect(room, directRooms());
   }
 
   /** Still decrypting, or failed but a key may yet come (backup, another device): at most ARRIVING after first sight. */
@@ -629,7 +646,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     let result: ThreadComputed | null = null;
     if (stats) {
       const root = eventOf(room, rootId);
-      const followed = root?.getSender() === me.id || !!bundle?.current_user_participated || replies.some((ev) => ev.getSender() === me.id);
+      // Not the bundle's current_user_participated: Continuwuity says true to everyone.
+      const followed = root?.getSender() === me.id || latest?.sender === me.id || participated.has(rootId) || replies.some((ev) => ev.getSender() === me.id);
       const readTs = readUpTo(room, rootId);
       const unread = followed && [...replies.map(replyOfEvent), ...(latest ? [latest] : [])].some((r) => r.sender !== me.id && r.ts > readTs);
       result = {
@@ -707,13 +725,29 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   };
 
   /** Followed threads beyond the loaded timelines (the server's thread list, once per room). */
+  /** A listed root I didn't write: did I reply? (the server's list ignores include=participated, so it's only candidates) */
+  const checkParticipation = (roomId: string, raw: IEvent) => {
+    if (raw.sender === me.id || participationChecked.has(raw.event_id)) return;
+    participationChecked.add(raw.event_id);
+    client
+      .fetchRelations(roomId, raw.event_id, THREAD, null, { dir: Direction.Backward, limit: 50 })
+      .then(({ chunk }) => {
+        if (!chunk.some((e) => e.sender === me.id)) return;
+        participated.add(raw.event_id);
+        schedule();
+      })
+      .catch(() => participationChecked.delete(raw.event_id));
+  };
   const listThreads = (room: Room) => {
     if (threadsListed.has(room.roomId)) return;
     threadsListed.add(room.roomId);
     client.http
       .authedRequest<{ chunk: IEvent[] }>(Method.Get, `/rooms/${enc(room.roomId)}/threads`, { include: 'participated', limit: String(PAGE) }, undefined, { prefix: ClientPrefix.V1 })
       .then(({ chunk }) => {
-        for (const raw of chunk) storeFor(room.roomId, raw.event_id).root = mapEvent(room.roomId, raw);
+        for (const raw of chunk) {
+          storeFor(room.roomId, raw.event_id).root = mapEvent(room.roomId, raw);
+          checkParticipation(room.roomId, raw);
+        }
         schedule();
       })
       .catch(() => threadsListed.delete(room.roomId));
@@ -816,7 +850,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       const ev = events[i]!;
       if (!isMessage(ev) || threadRootOf(ev)) continue;
       const m = messageOf(ev, room);
-      if (m) return m;
+      if (m && m.kind !== 'system') return m;
     }
     return undefined;
   };
@@ -1296,7 +1330,17 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     schedule();
   });
 
-  client.on(MatrixEventEvent.Decrypted, schedule);
+  // SIDE-03: a "history shared" marker for me, from the other person in a 1:1 encrypted DM, makes this device take the keys.
+  const bundles = createBundleReceiver(
+    client,
+    session.userId,
+    (room, sender) => joined(room) && room.hasEncryptionStateEvent() && isDirect(room, directRooms()) && sameMembers(othersOf(room), [sender]),
+    schedule,
+  );
+  client.on(MatrixEventEvent.Decrypted, (ev) => {
+    bundles.seen(ev, client.getRoom(ev.getRoomId()));
+    schedule();
+  });
   void security.init().then((ok) => {
     cryptoReady = ok;
     if (sessionExpired || stopped) return;
@@ -1404,6 +1448,46 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     const edit = mapper({ ...raw, room_id: roomId });
     await client.decryptEventIfNeeded(edit).catch(noop);
     if (!edit.isDecryptionFailure()) ev.makeReplaced(edit);
+  };
+
+  /** M7/M8. Older history from the server, newest first, decrypted here (the server can't see inside encrypted messages). */
+  const history = async (room: Room, from: string | undefined, limit: number, filter: object, signal?: AbortSignal) => {
+    const res = await client.http.authedRequest<{ chunk: IEvent[]; end?: string }>(
+      Method.Get,
+      `/rooms/${enc(room.roomId)}/messages`,
+      { dir: Direction.Backward, limit: String(limit), filter: JSON.stringify(filter), ...(from ? { from } : {}) },
+      undefined,
+      signal ? { abortSignal: signal } : undefined,
+    );
+    const events = res.chunk.map((raw) => room.findEventById(raw.event_id) ?? mapper({ ...raw, room_id: room.roomId }));
+    await Promise.all(events.map((ev) => client.decryptEventIfNeeded(ev).catch(noop)));
+    return { events, ...(res.end ? { end: res.end } : {}) };
+  };
+
+  // M8 (D-13)
+  const search = createSearch({
+    rooms(channelId) {
+      // The gate: an unconfirmed device can't read encrypted conversations, so it doesn't search them.
+      const confirmed = security.state().device === 'confirmed';
+      const ids = channelId ? [channelId] : [...Object.values(snapshot.channels).flat().map((c) => c.id), ...snapshot.dms.map((d) => d.id)];
+      return ids
+        .map((id) => client.getRoom(id))
+        .filter((r): r is Room => !!r && joined(r) && (confirmed || !r.hasEncryptionStateEvent()))
+        .sort((a, b) => lastTsOf(b) - lastTsOf(a));
+    },
+    loaded: (room) => room.getLiveTimeline().getEvents().slice(startOf(room)?.index ?? 0),
+    start: (room) => (hasOlder(room, startOf(room)) ? room.getLiveTimeline().getPaginationToken(Direction.Backward) : null),
+    page: (room, from, limit, signal) => history(room, from, limit, MESSAGES_FILTER, signal),
+    message: (ev, room) => messageOf(ev, room, false, true),
+    threadRoot: threadRootOf,
+  });
+
+  /** SIDE-03: the encrypted 1:1 DM with someone, most recent first. */
+  const dmWith = (userId: string) => {
+    const direct = directRooms();
+    return roomsJoined()
+      .filter((r) => r.hasEncryptionStateEvent() && isDirect(r, direct) && sameMembers(othersOf(r), [userId]))
+      .sort((a, b) => lastTsOf(b) - lastTsOf(a))[0];
   };
 
   /** M7. Pin or unpin, then wait (at most 10 s) until the change has synced. */
@@ -1593,6 +1677,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       for (const url of media.values()) url.then(URL.revokeObjectURL, noop);
       media.clear();
       stopped = true;
+      bundles.stop();
       const loggedOut = await client.logout(true).then(
         () => true,
         () => false,
@@ -2311,29 +2396,45 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       if (!room) return { items: [] };
       // The server can't see inside encrypted messages: fetch history, decrypt here, keep the media.
       const encrypted = room.hasEncryptionStateEvent();
-      const filter = encrypted
-        ? { types: [EventType.RoomMessageEncrypted, EventType.RoomMessage, EventType.Sticker] }
-        : { types: [EventType.RoomMessage, EventType.Sticker], contains_url: true };
+      const filter = encrypted ? MESSAGES_FILTER : { types: [EventType.RoomMessage, EventType.Sticker], contains_url: true };
       const page: FilesPage = { items: [] };
       let token = from;
       for (let i = 0; i < (encrypted ? SCAN_PAGES : 1); i++) {
-        const res = await client.http.authedRequest<{ chunk: IEvent[]; end?: string }>(Method.Get, `/rooms/${enc(channelId)}/messages`, {
-          dir: Direction.Backward,
-          limit: String(encrypted ? SCAN : FILES_PAGE),
-          filter: JSON.stringify(filter),
-          ...(token ? { from: token } : {}),
-        });
-        const events = res.chunk.map((raw) => room.findEventById(raw.event_id) ?? mapper({ ...raw, room_id: channelId }));
-        await Promise.all(events.map((ev) => client.decryptEventIfNeeded(ev).catch(noop)));
-        for (const ev of events) {
+        const res = await history(room, token, encrypted ? SCAN : FILES_PAGE, filter);
+        for (const ev of res.events) {
           const m = messageOf(ev, room, false, true);
           if (m?.media) page.items.push(m);
         }
-        token = res.chunk.length && res.end && res.end !== token ? res.end : undefined;
+        token = res.events.length && res.end && res.end !== token ? res.end : undefined;
         if (!token || page.items.length >= FILES_PAGE) break;
       }
       if (token) page.next = token;
       return page;
+    },
+    async search(query, opts) {
+      await ready;
+      return search(query, opts);
+    },
+    // SIDE-03
+    requestPersonConfirmation(userId) {
+      if (security.state().device !== 'confirmed') return;
+      const dm = dmWith(userId);
+      void (dm ? Promise.resolve(dm.roomId) : findOrCreateDm([userId])).then((roomId) => security.requestPersonConfirmation(userId, roomId), noop);
+    },
+    personConfirmed: (userId) => security.personConfirmed(userId),
+    async shareHistory(dmId, userId) {
+      await ready;
+      const room = client.getRoom(dmId);
+      // Team = in the workspace; the other person must be outside it (its member list decides, not the ID).
+      await Promise.all([workspaceRoom?.loadMembersIfNeeded(), room?.loadMembersIfNeeded()].map((p) => p?.catch(noop)));
+      const outside = !!workspaceRoom && joined(workspaceRoom) && workspaceRoom.getMember(userId)?.membership !== KnownMembership.Join;
+      const allowed = !!room && joined(room) && room.hasEncryptionStateEvent() && isDirect(room, directRooms()) && sameMembers(othersOf(room), [userId]) && outside;
+      await shareHistory(client, dmId, userId, personOf(room, userId).name, {
+        allowed,
+        deviceConfirmed: () => security.deviceVerified(),
+        personConfirmed: () => security.personConfirmed(userId),
+        recipientReady: () => security.hasSignedDevice(userId),
+      });
     },
     linkPreview(url) {
       let preview = previews.get(url);

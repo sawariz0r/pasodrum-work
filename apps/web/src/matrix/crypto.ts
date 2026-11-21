@@ -1,4 +1,5 @@
 // M6 (D-31): this device's encryption state, device confirmation (SAS emoji), recovery key and server key backup.
+// SIDE-03: the same emoji step with another person (user verification), before sharing history with them.
 import { ClientEvent, ClientPrefix, MatrixError, Method, type AuthDict, type MatrixClient, type MatrixEvent } from 'matrix-js-sdk';
 import {
   CryptoEvent, decodeRecoveryKey, VerificationPhase, VerificationRequestEvent, VerifierEvent,
@@ -7,7 +8,7 @@ import {
 import type { UIAuthCallback } from 'matrix-js-sdk/lib/interactive-auth';
 import { platform } from '../platform';
 import { createTabs, type Tabs } from './tabs';
-import type { Confirmation, SasEmoji, Security } from './types';
+import type { Confirmation, Person, SasEmoji, Security } from './types';
 
 export const CRYPTO_DB = 'pasodrum-crypto';
 /** RulesM6: no answer within 2 minutes = timeout. */
@@ -86,13 +87,28 @@ export interface SecurityController {
   newRecoveryKey(password?: string): Promise<string>;
   resetEncryption(password: string): Promise<string>;
   signOutRisk(hasEncrypted: boolean): Promise<'none' | 'last-device' | 'no-backup'>;
+  /** SIDE-03: emoji with another person, over our DM `roomId`; needs a confirmed device. */
+  requestPersonConfirmation(otherId: string, roomId: string): void;
+  /** SIDE-03: their current identity is verified by mine (fresh key query first, so a reset counts). */
+  personConfirmed(otherId: string): Promise<boolean>;
+  /** SIDE-03: they have at least one device signed by their current identity (where the history can go). */
+  hasSignedDevice(otherId: string): Promise<boolean>;
+  /** SIDE-03: this device is cross-signed by the account's identity (the SDK shares history only then, silently). */
+  deviceVerified(): Promise<boolean>;
   /** D-33, device 'elsewhere': ask the tab holding this device to stop; this tab starts once it has. */
   useHere(): void;
   /** Stops for good: timers, the in-memory recovery key, and the store lock. */
   stop(): void;
 }
 
-export function createSecurity(client: MatrixClient, keys: KeyHolder, userId: string, deviceId: string, onChange: () => void): SecurityController {
+export function createSecurity(
+  client: MatrixClient,
+  keys: KeyHolder,
+  userId: string,
+  deviceId: string,
+  onChange: () => void,
+  personOf: (id: string) => Person = (id) => ({ id, name: id }),
+): SecurityController {
   let state: Security = { device: 'starting', otherConfirmedDevices: 0, needsRecoveryKey: false };
   let crypto: CryptoApi | undefined;
   let req: VerificationRequest | undefined;
@@ -107,6 +123,9 @@ export function createSecurity(client: MatrixClient, keys: KeyHolder, userId: st
   let unfinished = false;
   let backupChecked = false;
   const watched = new WeakSet<Verifier>();
+  /** Person role: 'done' waits until my signature on their identity has landed (personConfirmed is true then). */
+  const vouching = new WeakSet<VerificationRequest>();
+  const vouched = new WeakSet<VerificationRequest>();
 
   const set = (next: Security) => {
     if (stopped || JSON.stringify(next) === JSON.stringify(state)) return;
@@ -225,8 +244,20 @@ export function createSecurity(client: MatrixClient, keys: KeyHolder, userId: st
     cancelledHere = true;
     void r.cancel({ code: 'm.user', reason: 'Cancelled' }).catch(noop);
   };
+  const personVerified = async (id: string) => !!(await crypto?.getUserVerificationStatus(id).catch(() => undefined))?.isVerified();
   const finish = (r: VerificationRequest, phase: Confirmation['phase']) => {
     if (req !== r || !state.confirmation || FINISHED.has(state.confirmation.phase)) return;
+    if (phase === 'done' && role === 'person' && !vouched.has(r)) {
+      if (vouching.has(r)) return;
+      vouching.add(r);
+      void (async () => {
+        for (const end = Date.now() + 10_000; Date.now() < end && !(await personVerified(r.otherUserId)); ) await sleep(300);
+      })().finally(() => {
+        vouched.add(r);
+        finish(r, 'done');
+      });
+      return;
+    }
     clearTimeout(timer);
     sas = undefined;
     patchConfirmation({ phase });
@@ -251,11 +282,13 @@ export function createSecurity(client: MatrixClient, keys: KeyHolder, userId: st
     const c = state.confirmation;
     if (cancelledHere || !c || FINISHED.has(c.phase)) return;
     if (code === 'm.mismatched_sas' || code === 'm.key_mismatch' || code === 'm.mismatched_commitment') return finish(r, 'mismatch');
-    if (role === 'new') return finish(r, code === 'm.timeout' ? 'timeout' : 'declined');
-    // Approver: the new device gave up, or another of my devices answered.
+    if (asking(r, role)) return finish(r, code === 'm.timeout' ? 'timeout' : 'declined');
+    // Approver: the new device gave up, or another of my devices answered. Person who asked me: they gave up.
     clear();
     setConfirmation(undefined);
   };
+  /** This side asked (and sees declined/timeout); the other side's card just goes away. */
+  const asking = (r: VerificationRequest, as: Confirmation['role']) => as === 'new' || (as === 'person' && r.initiatedByMe);
   const track = (r: VerificationRequest, as: Confirmation['role']) => {
     clear();
     req = r;
@@ -264,7 +297,7 @@ export function createSecurity(client: MatrixClient, keys: KeyHolder, userId: st
       if (req !== r || !state.confirmation || FINISHED.has(state.confirmation.phase)) return;
       cancelledHere = true;
       void r.cancel({ code: 'm.timeout', reason: 'Timed out' }).catch(noop);
-      if (as === 'approver') {
+      if (!asking(r, as)) {
         clear();
         return setConfirmation(undefined);
       }
@@ -292,6 +325,11 @@ export function createSecurity(client: MatrixClient, keys: KeyHolder, userId: st
           r.startVerification('m.sas.v1').then((v) => watch(r, v), noop);
         })();
       }
+      // Person: whoever asked starts the emoji step once the other side has said yes.
+      if (r.phase === VerificationPhase.Ready && as === 'person' && r.initiatedByMe && !r.verifier && !starting) {
+        starting = true;
+        r.startVerification('m.sas.v1').then((v) => watch(r, v), noop);
+      }
       if (r.verifier) watch(r, r.verifier);
       if (r.phase === VerificationPhase.Done) finish(r, 'done');
       if (r.phase === VerificationPhase.Cancelled) onCancelled(r);
@@ -301,12 +339,22 @@ export function createSecurity(client: MatrixClient, keys: KeyHolder, userId: st
   };
 
   const incoming = async (r: VerificationRequest) => {
-    if (!r.isSelfVerification || r.initiatedByMe || r.otherUserId !== userId || r.phase !== VerificationPhase.Requested) return;
+    if (r.initiatedByMe || r.phase !== VerificationPhase.Requested) return;
     const c = state.confirmation;
-    // Approving means signing the new device: only a device holding the account's keys can.
-    if (state.device !== 'confirmed' || !(await verified(deviceId)) || !(await holdsKeys()) || (c && !FINISHED.has(c.phase))) return;
+    // SIDE-03: another person asks to compare emoji (only a confirmed device can sign their identity).
+    if (!r.isSelfVerification && r.otherUserId !== userId) {
+      if (state.device !== 'confirmed' || (c && !FINISHED.has(c.phase))) return;
+      track(r, 'person');
+      return setConfirmation({ role: 'person', person: personOf(r.otherUserId), phase: 'asked' });
+    }
+    if (!r.isSelfVerification || r.otherUserId !== userId) return;
+    // Approving means signing the new device: only a device holding the account's keys can. My own devices come
+    // first: an open person confirmation gives way.
+    const busy = (x = state.confirmation) => !!x && x.role !== 'person' && !FINISHED.has(x.phase);
+    if (state.device !== 'confirmed' || !(await verified(deviceId)) || !(await holdsKeys()) || busy(c)) return;
     const otherDevice = await deviceName(r.otherDeviceId);
-    if (r.phase !== VerificationPhase.Requested) return;
+    if (r.phase !== VerificationPhase.Requested || busy()) return;
+    if (state.confirmation?.role === 'person' && !FINISHED.has(state.confirmation.phase)) cancel();
     track(r, 'approver');
     setConfirmation({ role: 'approver', ...(otherDevice ? { otherDevice } : {}), phase: 'asked' });
   };
@@ -460,7 +508,8 @@ export function createSecurity(client: MatrixClient, keys: KeyHolder, userId: st
       ask();
     },
     acceptConfirmation() {
-      if (role === 'approver' && req?.phase === VerificationPhase.Requested && !req.accepting) void req.accept().catch(noop);
+      const answering = role === 'approver' || (role === 'person' && !req?.initiatedByMe);
+      if (answering && req?.phase === VerificationPhase.Requested && !req.accepting) void req.accept().catch(noop);
     },
     declineConfirmation() {
       cancel();
@@ -561,6 +610,34 @@ export function createSecurity(client: MatrixClient, keys: KeyHolder, userId: st
       }
       return signOutRiskOf({ confirmed: state.device === 'confirmed', others: state.otherConfirmedDevices, hasEncrypted, backupWorks, ...(counts ? { counts } : {}) });
     },
+    requestPersonConfirmation(otherId, roomId) {
+      if (!crypto || state.device !== 'confirmed' || otherId === userId) return;
+      cancel();
+      clear();
+      role = 'person';
+      setConfirmation({ role: 'person', person: personOf(otherId), phase: 'waiting' });
+      const asked = state.confirmation;
+      const c = crypto;
+      void (async () => {
+        // An unfinished request of mine in this DM would make the crypto stack cancel both.
+        await c.findVerificationRequestDMInProgress(roomId, otherId)?.cancel().catch(noop);
+        const r = await c.requestVerificationDM(otherId, roomId);
+        if (state.confirmation !== asked) return void r.cancel().catch(noop);
+        track(r, 'person');
+      })().catch(() => state.confirmation === asked && patchConfirmation({ phase: 'timeout' }));
+    },
+    async personConfirmed(otherId) {
+      if (!crypto) return false;
+      await crypto.getUserDeviceInfo([otherId], true).catch(noop);
+      return personVerified(otherId);
+    },
+    async hasSignedDevice(otherId) {
+      if (!crypto) return false;
+      const devices = (await crypto.getUserDeviceInfo([otherId], true).catch(() => undefined))?.get(otherId);
+      for (const id of devices?.keys() ?? []) if ((await crypto.getDeviceVerificationStatus(otherId, id))?.signedByOwner) return true;
+      return false;
+    },
+    deviceVerified: async () => state.device === 'confirmed' && (await verified(deviceId)),
     useHere() {
       if (state.device === 'elsewhere') tabs?.useHere();
     },
