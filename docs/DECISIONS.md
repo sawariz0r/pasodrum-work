@@ -102,6 +102,14 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-31 · M6 contract: encryption · Accepted · 2026-11-21
+- **Batch F approved** by the CEO 2026-11-21 (RulesM6 is the behaviour spec).
+- **Contract (`matrix/types.ts`):** snapshot `security` {device: starting|confirmed|unconfirmed, otherConfirmedDevices, needsRecoveryKey, confirmation?}; `Confirmation` {role new|approver, otherDevice?, phase waiting|asked|compare|matched|done|declined|timeout|mismatch, emoji? (SAS table index for EN/JP names)}; `Channel.encrypted`, `Dm.encrypted`, `Device.confirmed`, message kind `undecryptable` + `arriving`. Store: `requestConfirmation`, `acceptConfirmation`, `declineConfirmation`, `confirmEmoji`, `dismissConfirmation`, `useRecoveryKey`, `newRecoveryKey(password?)`, `resetEncryption(password)`, `signOutRisk()`.
+- **Build:** matrix-js-sdk Rust crypto (WASM) with IndexedDB store; cross-signing bootstrap + server key backup with a recovery key (secret storage) before the first encrypted send; SAS emoji device confirmation (interoperates with Element X); `persistStorage()` via `platform/`.
+- **Turn on encryption:** every DM (new and existing) and every private channel (new and existing) gets `m.room.encryption` (megolm). Irreversible by design (D-24). Public workspace channels and client-space channels stay unencrypted (D-11).
+- **Gate:** an unconfirmed device sees the confirm card instead of an encrypted conversation; public/client-space channels never ask.
+- **Private channels** don't show messages from before you joined (no history sharing dependency).
+
 ### D-30 · Test only what's really necessary · Accepted · 2026-11-21
 - **CEO:** speed over coverage until the product settles; move fast, refactor and stabilise later.
 - Write tests only for: security and isolation (who can see or join what, invite service authz), data that could be lost or corrupted, and logic that is easy to break silently (power levels, ordering, IME Enter). Skip tests for layout, copy and straightforward UI wiring; a browser check covers those.

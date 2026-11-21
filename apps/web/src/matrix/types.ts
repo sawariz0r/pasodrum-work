@@ -39,6 +39,8 @@ export interface Channel {
   memberCount: number;
   /** M5. Clients and guests who are members (joined or pending). Only filled for team people (Owner/Admin/Member); always absent for clients and guests. */
   outside?: Person[];
+  /** M6. End-to-end encrypted (private channels, D-11): opening it on an unconfirmed device shows the confirm gate. */
+  encrypted?: boolean;
 }
 
 export interface Message {
@@ -67,6 +69,8 @@ export interface Message {
   system?: { joined: Person[]; left: Person[] };
   /** M3. On a thread root: summary of its replies. */
   thread?: ThreadInfo;
+  /** M6. kind 'undecryptable' only: a key may still arrive (backup, another device) — show the shimmer, not the quiet line. */
+  arriving?: boolean;
 }
 
 export interface ThreadInfo {
@@ -108,6 +112,8 @@ export interface Dm {
   last?: Message;
   /** Spaces this DM belongs to in the sidebar: spaces all its people share with me. */
   spaceIds: string[];
+  /** M6. End-to-end encrypted (every DM from M6 on, D-11). */
+  encrypted?: boolean;
 }
 
 /** M4. Owner/Admin come from power levels in the workspace (D-06); the rest from membership. */
@@ -151,6 +157,8 @@ export interface Device {
   name: string;
   lastSeenTs?: number;
   current: boolean;
+  /** M6. Confirmed (cross-signed by the account). False shows the "Not confirmed" tag. */
+  confirmed?: boolean;
 }
 
 export type NotifyLevel = 'all' | 'mentions' | 'none';
@@ -189,7 +197,7 @@ export interface Profile {
   timeZone?: string;
 }
 
-export type MessageKind = 'text' | 'emote' | 'notice' | 'image' | 'video' | 'audio' | 'file' | 'deleted' | 'unsupported' | 'system';
+export type MessageKind = 'text' | 'emote' | 'notice' | 'image' | 'video' | 'audio' | 'file' | 'deleted' | 'unsupported' | 'system' | 'undecryptable';
 
 export interface Media {
   /** Opaque server reference; turn it into a URL with store.mediaUrl(). */
@@ -242,6 +250,36 @@ export interface Timeline {
   failed?: boolean;
 }
 
+/** M6. One of the seven emoji both devices compare. `index` is the Matrix SAS emoji table index (0–63), for the EN/JP name. */
+export interface SasEmoji {
+  emoji: string;
+  index: number;
+}
+
+/**
+ * M6. A device confirmation in progress (RulesM6). role 'new' = this device asked; 'approver' = another device of mine asks this one.
+ * phase: 'waiting' (asked, no answer yet) · 'asked' (approver: Is this you?) · 'compare' (emoji shown) · 'matched' (I pressed They match, the other side hasn't)
+ * · 'done' · 'declined' · 'timeout' (2 min) · 'mismatch'.
+ */
+export interface Confirmation {
+  role: 'new' | 'approver';
+  /** The other device's name ("Safari on Mac"); absent while a new device waits for any device. */
+  otherDevice?: string;
+  phase: 'waiting' | 'asked' | 'compare' | 'matched' | 'done' | 'declined' | 'timeout' | 'mismatch';
+  emoji?: SasEmoji[];
+}
+
+/** M6. This device and the account's encryption setup (D-31). */
+export interface Security {
+  /** 'starting' until crypto is ready; 'unconfirmed' = encrypted conversations show the confirm gate. */
+  device: 'starting' | 'confirmed' | 'unconfirmed';
+  /** Other confirmed devices signed in now (0 → only the recovery key option, ConfirmGateNoDevice). */
+  otherConfirmedDevices: number;
+  /** The account has no recovery key yet: show RecoveryKeySave before the first DM/private-channel view or send. */
+  needsRecoveryKey: boolean;
+  confirmation?: Confirmation;
+}
+
 /** Immutable: a new object on every change; unchanged parts keep their identity. */
 export interface WorkspaceSnapshot {
   me: Person;
@@ -267,6 +305,8 @@ export interface WorkspaceSnapshot {
   activity: ActivityItem[];
   /** M4. My role per space id (workspace + client spaces). */
   myRoles: Record<string, Role>;
+  /** M6. */
+  security: Security;
 }
 
 export interface WorkspaceStore {
@@ -348,6 +388,25 @@ export interface WorkspaceStore {
   /** Archived = every channel read-only for everyone; nobody removed. Owners/Admins can undo. */
   setArchived(spaceId: string, archived: boolean): Promise<void>;
   anotherApp(): AnotherAppInfo;
+  // M6 (D-31)
+  /** New device: ask my other confirmed devices (phase 'waiting'). */
+  requestConfirmation(): void;
+  /** Approver: "It's me" → emoji. */
+  acceptConfirmation(): void;
+  /** Approver "Not me", or either side cancels. Clears `confirmation` (approver "Not me" also leaves the new device unconfirmed). */
+  declineConfirmation(): void;
+  /** They match / They don't match. */
+  confirmEmoji(match: boolean): void;
+  /** Close a finished confirmation (done/declined/timeout/mismatch). */
+  dismissConfirmation(): void;
+  /** Spaces and case don't matter. Rejects Error('wrong-key'). Resolves once the device is confirmed and older messages start loading from the backup. */
+  useRecoveryKey(key: string): Promise<void>;
+  /** Creates (or replaces) the account's recovery key and backup and resolves to the key to show once. Rejects Error('password-required') when the server wants the password (call again with it) or Error('wrong-password'). */
+  newRecoveryKey(password?: string): Promise<string>;
+  /** "Reset and start fresh": new identity + backup; resolves to the new recovery key. Rejects Error('wrong-password'). */
+  resetEncryption(password: string): Promise<string>;
+  /** Before sign-out: 'last-device' = last confirmed device and the account has encrypted conversations; 'no-backup' = same but no working backup. */
+  signOutRisk(): Promise<'none' | 'last-device' | 'no-backup'>;
 }
 
 export type SignInFailure = 'wrong-password' | 'unreachable' | 'other';

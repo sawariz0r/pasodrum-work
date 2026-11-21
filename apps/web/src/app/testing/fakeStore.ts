@@ -1,6 +1,6 @@
 // In-memory WorkspaceStore with the canvas workspace, for tests and /dev screens. No server.
 import { PasswordRequired } from '../../matrix';
-import type { ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Draft, JoinableChannel, Media, Member, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
+import type { ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Draft, JoinableChannel, Media, Member, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, SasEmoji, Security, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
 
 const people: Record<string, Person> = {
   so: { id: '@sofia:pasodrum.localhost', name: 'Sofia Olsen' },
@@ -326,7 +326,20 @@ export interface FakeStoreOptions {
   roles?: Record<string, Role>;
   /** M5. Signed in as the client (Henrik: Nordlys only) or a guest (Ola: #design and #launch-site), as the server would show them. */
   perspective?: 'client' | 'guest';
+  /** M6. Start state of this device (default: confirmed, recovery key saved). */
+  security?: Partial<Security>;
+  /** M6. newRecoveryKey asks for the password first (RecoveryKeyPassword). */
+  keyNeedsPassword?: boolean;
+  /** M6. signOutRisk answer (default 'none'). */
+  signOutRisk?: 'none' | 'last-device' | 'no-backup';
 }
+
+/** M6. The fake account's recovery key; useRecoveryKey accepts it with any spacing/case. */
+export const FAKE_RECOVERY_KEY = 'EsTc 3vJH 9pLm Qx2R 7nWd Kf4A Zb8Y Hu6G Ve1T Rs5C Pj0N Mq3X';
+const SAS: SasEmoji[] = [
+  { emoji: '🐶', index: 0 }, { emoji: '🔑', index: 33 }, { emoji: '🎸', index: 46 }, { emoji: '🌍', index: 23 },
+  { emoji: '🍕', index: 27 }, { emoji: '🚀', index: 52 }, { emoji: '🎩', index: 37 },
+];
 
 /** M5. What a client or guest gets from the server (RulesM5 shells): their spaces and channels, no outside marks, no client spaces. */
 function outsideView(perspective: 'client' | 'guest', me: Person | undefined): { view: Partial<WorkspaceSnapshot>; visible: string[] } {
@@ -389,6 +402,7 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     threadTimelines: {},
     activity: sampleActivity(),
     myRoles: opts.roles ?? { '!pasodrum': 'owner', '!nordlys': 'owner' },
+    security: { device: 'confirmed', otherConfirmedDevices: 2, needsRecoveryKey: false, ...opts.security },
   };
   const outsider = opts.perspective ? outsideView(opts.perspective, opts.me) : undefined;
   if (outsider) snapshot = { ...snapshot, ...outsider.view };
@@ -473,6 +487,8 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
   };
   const rosterOf = (spaceId: string) => (spaceRoster[spaceId] ??= { team: [snapshot.me.id], clients: [] });
   const failedOnce = new Set<string>();
+  const setSecurity = (patch: Partial<Security>) => set({ security: { ...snapshot.security, ...patch } });
+  const setConfirmation = (confirmation: Security['confirmation']) => setSecurity({ confirmation });
   const finishLoad = (channelId: string) => setTimeline(channelId, { messages: history[channelId]?.() ?? [], initialLoading: false });
 
   return {
@@ -812,5 +828,51 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       set({ spaces: snapshot.spaces.map((sp) => (sp.id === spaceId ? { ...sp, archived } : sp)).sort(spaceOrder) });
     },
     anotherApp: () => ({ server: 'pasodrum.work', username: snapshot.me.id.slice(1, snapshot.me.id.indexOf(':')) }),
+    // M6: the other device answers by itself; it declines when the device name contains "decline", times out with "timeout", mismatches with "mismatch".
+    requestConfirmation() {
+      setConfirmation({ role: 'new', phase: 'waiting' });
+      setTimeout(() => {
+        const c = snapshot.security.confirmation;
+        if (c?.phase !== 'waiting') return;
+        const other = opts.security?.confirmation?.otherDevice ?? 'Chrome on Mac';
+        if (other.includes('decline')) setConfirmation({ role: 'new', otherDevice: other, phase: 'declined' });
+        else if (other.includes('timeout')) setConfirmation({ role: 'new', otherDevice: other, phase: 'timeout' });
+        else setConfirmation({ role: 'new', otherDevice: other, phase: 'compare', emoji: SAS });
+      }, opts.loadMs ?? 0);
+    },
+    acceptConfirmation() {
+      const c = snapshot.security.confirmation;
+      if (c?.phase === 'asked') setConfirmation({ ...c, phase: 'compare', emoji: SAS });
+    },
+    declineConfirmation() {
+      setConfirmation(undefined);
+    },
+    confirmEmoji(match) {
+      const c = snapshot.security.confirmation;
+      if (!c) return;
+      if (!match || c.otherDevice?.includes('mismatch')) return setConfirmation({ ...c, phase: 'mismatch' });
+      setConfirmation({ ...c, phase: 'done' });
+      if (c.role === 'new') setSecurity({ device: 'confirmed' });
+    },
+    dismissConfirmation() {
+      setConfirmation(undefined);
+    },
+    async useRecoveryKey(key) {
+      const norm = (k: string) => k.replace(/\s+/g, '').toLowerCase();
+      if (norm(key) !== norm(FAKE_RECOVERY_KEY)) throw new Error('wrong-key');
+      setSecurity({ device: 'confirmed', confirmation: undefined });
+    },
+    async newRecoveryKey(password) {
+      if (opts.keyNeedsPassword && !password) throw new Error('password-required');
+      if (password === 'wrong') throw new Error('wrong-password');
+      setSecurity({ needsRecoveryKey: false });
+      return FAKE_RECOVERY_KEY;
+    },
+    async resetEncryption(password) {
+      if (password === 'wrong') throw new Error('wrong-password');
+      setSecurity({ device: 'confirmed', needsRecoveryKey: false, confirmation: undefined });
+      return FAKE_RECOVERY_KEY;
+    },
+    signOutRisk: () => Promise.resolve(opts.signOutRisk ?? 'none'),
   };
 }

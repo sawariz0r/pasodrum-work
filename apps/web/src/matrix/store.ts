@@ -876,6 +876,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       threadTimelines: Object.fromEntries([...openThreads].map(([id, flags]) => [id, threadTimelineOf(id, flags)])),
       activity: activityOf(),
       myRoles,
+      // M6 stub: no crypto yet, so nothing is gated.
+      security: { device: 'confirmed', otherConfirmedDevices: 0, needsRecoveryKey: false },
     };
   };
 
@@ -1868,5 +1870,15 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       await settle(() => !!snapshot.spaces.find((s) => s.id === spaceId)?.archived === archived);
     },
     anotherApp: () => ({ server: new URL(client.baseUrl).host, username: client.getUserId()!.slice(1, client.getUserId()!.indexOf(':')) }),
+    // M6 — stubs until M6-01 lands.
+    requestConfirmation: noop,
+    acceptConfirmation: noop,
+    declineConfirmation: noop,
+    confirmEmoji: noop,
+    dismissConfirmation: noop,
+    useRecoveryKey: () => Promise.reject(new Error('not-implemented')),
+    newRecoveryKey: () => Promise.reject(new Error('not-implemented')),
+    resetEncryption: () => Promise.reject(new Error('not-implemented')),
+    signOutRisk: () => Promise.resolve('none'),
   };
 }
