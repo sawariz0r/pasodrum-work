@@ -29,8 +29,9 @@ import {
   type MatrixEvent,
   type Room,
 } from 'matrix-js-sdk';
-import { DecryptionFailureCode } from 'matrix-js-sdk/lib/crypto-api';
+import { CryptoEvent, DecryptionFailureCode } from 'matrix-js-sdk/lib/crypto-api';
 import { decryptAttachment, encryptAttachment, sealedFileOf, type SealedFile } from './attachments';
+import { createEmailConfirm } from './confirm';
 import { CRYPTO_DB, createSecurity, cryptoCallbacks, withTimeout, type KeyHolder } from './crypto';
 import { sanitizeHtml, type SanitizedHtml } from './html';
 import { translateSegments } from './translate';
@@ -48,7 +49,7 @@ import { createBundleReceiver, markerFor, shareHistory } from './shareHistory';
 import { clearSession } from './session';
 import {
   PasswordRequired,
-  type AccessChange, type AccessRole, type ActivityItem, type AddPeopleResult, type Channel, type ExternalAccess, type Dm, type FilesPage, type JoinableChannel, type LinkPreview, type Media, type Member, type Message, type MessageKind, type Person, type Role, type Session, type Space,
+  type AccessChange, type AccessRole, type ActivityItem, type AddPeopleResult, type Channel, type ExternalAccess, type Dm, type FilesPage, type HelpCard, type HelpReason, type JoinableChannel, type LinkPreview, type Media, type Member, type Message, type MessageKind, type Person, type Role, type Session, type Space,
   type ThreadInfo, type ThreadSummary, type Timeline, type Upload, type WorkspaceSnapshot, type WorkspaceStore,
 } from './types';
 
@@ -98,6 +99,20 @@ const SCAN_PAGES = 5;
 const NO_PINS = new Set<string>();
 /** M8. Everything that can be a message (or an edit of one), encrypted or not. */
 const MESSAGES_FILTER = { types: [EventType.RoomMessageEncrypted, EventType.RoomMessage, EventType.Sticker] };
+/** D-38. The system sender's localpart (help DMs); the invite service logs in as it. */
+const SYSTEM = 'pasodrum';
+const HELP = 'work.pasodrum.help';
+const HELP_REASONS = new Set<HelpReason>(['email-missing', 'stuck', 'link-broken']);
+function helpCardOf(raw: unknown, personOf: (id: string, name: string) => Person): HelpCard | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const h = raw as Record<string, unknown>;
+  const id = str(h.user_id);
+  const email = str(h.email);
+  if (!id?.startsWith('@') || !email || !HELP_REASONS.has(h.reason as HelpReason)) return undefined;
+  const spaceName = str(h.space_name);
+  const localTime = str(h.local_time);
+  return { who: personOf(id, str(h.name) ?? localpart(id)), reason: h.reason as HelpReason, email, ...(spaceName ? { spaceName } : {}), ...(localTime ? { localTime } : {}) };
+}
 const isMember = (room: Room | null | undefined, userId: string) => {
   const m = room?.getMember(userId)?.membership;
   return m === KnownMembership.Join || m === KnownMembership.Invite;
@@ -253,7 +268,30 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     verificationMethods: ['m.sas.v1'],
   });
   const listeners = new Set<() => void>();
-  const security = createSecurity(client, keys, session.userId, session.deviceId, () => schedule(), (id) => person(id, client.getUser(id)?.displayName));
+  const security = createSecurity(
+    client,
+    keys,
+    session.userId,
+    session.deviceId,
+    () => {
+      schedule();
+      email.kick();
+    },
+    (id) => person(id, client.getUser(id)?.displayName),
+  );
+  const email = createEmailConfirm({
+    token: session.accessToken,
+    eligible: () => confirmByEmail(),
+    device: () => security.state().device,
+    needsRecoveryKey: () => security.state().needsRecoveryKey,
+    defaultKeyId: () => client.secretStorage.getDefaultKeyId(),
+    newRecoveryKey: () => security.newRecoveryKey(),
+    useRecoveryKey: (key) => security.useRecoveryKey(key),
+    person: (id, name) => person(id, name),
+    spaceId: () => clientSpaces()[0]?.roomId,
+    locale: () => inviteLocale(),
+    onChange: () => schedule(),
+  });
   let cryptoReady = false;
   const encrypting = new Set<string>();
   /** M7. Rooms whose pin level openPins has handled (once per room). */
@@ -288,6 +326,9 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   const joining = new Set<string>();
   const dmRequests = new Map<string, Promise<string>>();
   const server = session.userId.slice(session.userId.indexOf(':') + 1);
+  const SYSTEM_ID = `@${SYSTEM}:${server}`;
+  /** D-38. Made by the system sender (help DMs): only that account can create such a room. */
+  const systemRoom = (room: Room) => room.currentState.getStateEvents(EventType.RoomCreate, '')?.getSender() === SYSTEM_ID;
   let workspaceRoom: Room | undefined;
   let scanCache: Scan | null = null;
   let me: Person = { id: session.userId, name: localpart(session.userId) };
@@ -438,6 +479,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       ...(links.length ? { links } : {}),
       ...(ev.getKeyForwardingUser() ? { restored: true } : {}),
     };
+    const help = senderId === SYSTEM_ID ? helpCardOf(content[HELP], person) : undefined;
+    if (help) message.help = help;
     if (replyId && withReply) message.replyTo = replyOf(room, replyId, ev);
     return message;
   }
@@ -886,6 +929,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       .filter((room) => isDirect(room, direct))
       .map((room): Dm => {
         const others = othersOf(room, direct);
+        const system = systemRoom(room);
         return {
           id: room.roomId,
           people: others.map((id) => personOf(room, id)).sort(byName),
@@ -893,9 +937,12 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
           mentions: room.getUnreadNotificationCount(NotificationCountType.Highlight),
           lastTs: lastTsOf(room),
           last: lastMessageOf(room),
-          spaceIds: spaceRooms.filter((s) => others.length && others.every((id) => s.getMember(id)?.membership === KnownMembership.Join)).map((s) => s.roomId),
+          spaceIds: system
+            ? workspaceRoom ? [workspaceRoom.roomId] : []
+            : spaceRooms.filter((s) => others.length && others.every((id) => s.getMember(id)?.membership === KnownMembership.Join)).map((s) => s.roomId),
           ...(room.hasEncryptionStateEvent() ? { encrypted: true } : {}),
           ...(mayState(room, me.id, PINS) ? { canPin: true } : {}),
+          ...(system ? { system: true } : {}),
         };
       })
       .sort((a, b) => b.lastTs - a.lastTs);
@@ -990,6 +1037,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       return room.isSpaceRoom() ? holdsStaff(inviter) : childOfMySpace(room.roomId) || (!inWorkspace && holdsStaff(inviter));
     }
     const others = othersIn(room);
+    // D-38: help DMs from the system sender, for the team only; nobody else in them.
+    if (inviter === SYSTEM_ID) return inWorkspace && others.every((id) => id === SYSTEM_ID);
     if (!others.includes(inviter)) others.push(inviter);
     for (const id of others) if (!(await sharesRoom(id))) return false;
     // The invite shows only some members; a joined one it doesn't show could be anyone.
@@ -1002,6 +1051,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
    * so anyone in it (or who was) not sharing a room with me means it's a bridge.
    */
   const bridged = async (room: Room) => {
+    if (systemRoom(room)) return false;
     await room.loadMembersIfNeeded().catch(noop);
     for (const m of room.getMembers()) if (m.userId !== me.id && !(await sharesRoom(m.userId, room))) return true;
     return false;
@@ -1112,7 +1162,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
 
   /** D-11: every DM and every private workspace channel; client-space and public channels never. */
   const wantsEncryption = (room: Room, direct: Map<string, string[]>) => {
-    if (room.isSpaceRoom()) return false;
+    if (room.isSpaceRoom() || systemRoom(room)) return false;
     if (isDirect(room, direct)) return true;
     const space = spaceOf(room.roomId);
     return room.getJoinRule() === 'invite' && !!space && !isClientSpace(space);
@@ -1284,6 +1334,22 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     return ids;
   };
 
+  /**
+   * D-38. Clients and Externals (not joined to the workspace) confirm by email. Unknown until the first sync, and while an
+   * invite the invite service listed is still being accepted (a fresh Staff account's workspace invite).
+   */
+  function confirmByEmail(): boolean | undefined {
+    if (!synced) return undefined;
+    if (client.getRooms().some((r) => r.isSpaceRoom() && joined(r) && !isClientSpace(r))) return false;
+    const listed = invitedNow().rooms;
+    if (client.getRooms().some((r) => r.getMyMembership() === KnownMembership.Invite && listed.has(r.roomId))) return undefined;
+    return true;
+  }
+  const securityOf = () => {
+    const byEmail = confirmByEmail();
+    return { ...security.state(), ...(byEmail === undefined ? {} : { confirmByEmail: byEmail }), ...(byEmail ? email.state() : {}) };
+  };
+
   const build = (): WorkspaceSnapshot => {
     scanCache = null;
     const hidden = halfMade(client.getRooms());
@@ -1307,7 +1373,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       threadTimelines: Object.fromEntries([...openThreads].map(([id, flags]) => [id, threadTimelineOf(id, flags)])),
       activity: activityOf(),
       myRoles,
-      security: security.state(),
+      security: securityOf(),
       accessRoles: rolesNow(),
       externals: recordsNow(),
     };
@@ -1423,9 +1489,13 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       synced = true;
       markReady();
       housekeeping();
+      email.kick();
     }
     schedule();
   });
+  // D-38: another device rotated the key, or the backup key arrived after an emoji confirmation.
+  client.on(ClientEvent.AccountData, (ev) => ev.getType().startsWith('m.secret_storage') && email.kick(true));
+  client.on(CryptoEvent.KeyBackupDecryptionKeyCached, () => email.kick(true));
   client.on(RoomEvent.Timeline, (ev, room) => {
     if (ev.isRelation(RelationType.Replace)) {
       const id = ev.relationEventId ?? '';
@@ -1471,6 +1541,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     clearSession();
     // A soft logout keeps the device on the server, so its keys stay too.
     const soft = !!(e as MatrixError | undefined)?.data?.soft_logout;
+    email.stop();
     void (soft ? Promise.resolve() : withTimeout(client.clearStores({ cryptoDatabasePrefix: CRYPTO_DB }))).finally(() => security.stop());
     schedule();
   });
@@ -2050,6 +2121,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       media.clear();
       stopped = true;
       bundles.stop();
+      email.stop();
       const loggedOut = await client.logout(true).then(
         () => true,
         () => false,
@@ -2818,8 +2890,16 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     dismissConfirmation: () => security.dismissConfirmation(),
     useRecoveryKey: (key) => security.useRecoveryKey(key),
     newRecoveryKey: (password) => security.newRecoveryKey(password),
-    resetEncryption: (password) => security.resetEncryption(password),
-    signOutRisk: () => security.signOutRisk(roomsJoined().some((r) => r.hasEncryptionStateEvent())),
+    async resetEncryption(password) {
+      const key = await security.resetEncryption(password);
+      // D-38: the service gets the new key; the app shows no save step. If this fails, the reconcile loop rotates later.
+      if (confirmByEmail()) await email.handOver(key).catch(() => email.kick(true));
+      return key;
+    },
+    async signOutRisk() {
+      if (confirmByEmail() && (await email.held().catch(() => false))) return 'none';
+      return security.signOutRisk(roomsJoined().some((r) => r.hasEncryptionStateEvent()));
+    },
     // M7 (D-33)
     async pins(channelId) {
       await ready;
@@ -2997,5 +3077,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       }
       return preview;
     },
+    requestConfirmEmail: () => email.request(),
+    askForHelp: (reason) => email.help(reason),
   };
 }
