@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pasodrum work — the page the confirm link opens (phone)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.pd-light{--bg:#FFFFFF;--side:#F7F6F3;--rail:#18171D;--ink:#1D1C22;--muted:#55535C;--subtle:#6E6C76;--line:#E8E6E1;--hover:#F0EEE9;--raised:#FFFFFF;--well:#F4F3EF;--accent:#0E7C66;--onaccent:#FFFFFF;--accentsoft:#E2F2EC;--link:#0B6A86;--mentionbg:#FFF7DD;--chip:#E3EEF6;--sidetext:#2F2E35;--sidemuted:#5F5D67;--sideactive:#0E7C66;--onsideactive:#FFFFFF;--danger:#D4351C;--shadow:0 18px 48px rgba(20,18,30,.18);--warnbg:#FFF4D6;--warnink:#6B4A00;--dangertext:#B42318;--skel:#E7E4DD;--tip:#1D1C22;--ontip:#FFFFFF;--callout:#F4F3EF;--col:#F7F6F3;--card:#FFFFFF;--selA:rgba(29,78,216,.18);--selB:rgba(126,34,206,.16);--selC:rgba(14,124,102,.18)}
+.pd-dark{--bg:#1B1B20;--side:#141418;--rail:#0D0D10;--ink:#ECEBF0;--muted:#B3B1BC;--subtle:#908E9A;--line:#2C2C33;--hover:#25252B;--raised:#222228;--well:#202026;--accent:#3DD6A5;--onaccent:#04271D;--accentsoft:#15382F;--link:#7CC8F0;--mentionbg:#33290F;--chip:#1E3242;--sidetext:#DAD8E0;--sidemuted:#9A98A4;--sideactive:#1F5F4F;--onsideactive:#FFFFFF;--danger:#D4351C;--shadow:0 18px 56px rgba(0,0,0,.55);--warnbg:#3A2E10;--warnink:#F5D58A;--dangertext:#FF8A7A;--skel:#28282F;--tip:#3A3A44;--ontip:#FFFFFF;--callout:#222228;--col:#17171B;--card:#222228;--selA:rgba(96,140,255,.30);--selB:rgba(176,110,240,.30);--selC:rgba(61,214,165,.26)}
+.pd-root button{font-family:inherit}
+.pd-root :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pd-row:not(.pd-active):hover{background:var(--hover)!important}
+.pd-ico:hover{background:var(--hover)!important;color:var(--ink)!important}
+.pd-rail:hover .pd-railicon{background:rgba(255,255,255,.10)!important}
+.pd-link:hover{text-decoration:underline}
+.pd-card:hover{border-color:var(--subtle)!important}
+.pd-btn2:hover{background:var(--hover)!important}
+.pd-input::placeholder{color:var(--subtle)}
+@keyframes pd-blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.pd-dot{animation:pd-blink 1.2s infinite}
+@keyframes pd-caret{0%,55%{opacity:1}56%,100%{opacity:.35}}
+.pd-caret{animation:pd-caret 1.1s infinite}
+.pd-root{--cjk:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,"Noto Sans JP";--lh:1.5;--mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+.pd-ja{--lh:1.7}
+.pd-ja h1,.pd-ja h2{letter-spacing:0!important}
+.pd-rail{white-space:nowrap}
+.pd-ja .pd-rail{font-size:10px!important}
+.pd-msg:hover{background:var(--hover)}
+.pd-msg .pd-actions{opacity:0;transition:opacity .12s}
+.pd-msg:hover .pd-actions,.pd-msg:focus-within .pd-actions,.pd-force .pd-actions{opacity:1}
+.pd-force{background:var(--hover)}
+.pd-btnp:hover{filter:brightness(1.06)}
+.pd-btnq:hover{background:var(--hover)!important;color:var(--ink)!important}
+.pd-dm:not(.pd-active):hover{background:var(--hover)!important}
+@keyframes pd-rise{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.pd-rise{animation:pd-rise .24s cubic-bezier(.2,.8,.2,1)}
+@media (prefers-reduced-motion: reduce){.pd-rise{animation:none}.pd-dot{animation:none;opacity:.6}}
+</style>
+</helmet>
+<div class="pd-root {{themeClass}} {{langClass}}" lang="{{lang}}" style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: Inter, var(--cjk), system-ui, sans-serif; line-height: var(--lh); padding: 28px 24px 40px; word-break: auto-phrase; text-wrap: pretty"><div style="display: flex; align-items: center; gap: 8px"><span style="width: 26px; height: 26px; border-radius: 8px; background: #0E7C66; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="13" width="3.6" height="7" rx="1.8" fill="#FFFFFF"></rect><rect x="10.2" y="8.5" width="3.6" height="11.5" rx="1.8" fill="#FFFFFF"></rect><rect x="16.4" y="4" width="3.6" height="16" rx="1.8" fill="#FFFFFF"></rect></svg></span><span style="font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: var(--ink)">pasodrum <span style="font-weight: 500; color: var(--subtle)">work</span></span></div><main style="flex: 1; display: flex; flex-direction: column; justify-content: center; padding-bottom: 40px"><sc-if value="{{isAsk}}" hint-placeholder-val="{{true}}"><div class="pd-rise" style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center"><div style="width: 64px; height: 64px; border-radius: 18px; background: var(--accentsoft); color: var(--accent); display: flex; align-items: center; justify-content: center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"></rect><path d="M2 20h20M9 10.5l2 2 4-4"></path></svg></div><h1 style="margin: 20px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.25; color: var(--ink)">{{t.askTitle}}</h1><div style="width: 100%; margin-top: 22px; padding: 14px 16px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 14px; background: var(--raised); display: flex; align-items: center; gap: 12px; text-align: left"><span style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 11px; background: var(--well); color: var(--muted); display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"></rect><path d="M2 20h20"></path></svg></span><span style="display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600; color: var(--ink)">Chrome on Mac</span><span style="font-size: 13px; color: var(--muted)">{{t.when}}</span></span></div><button onClick="{{yes}}" class="pd-btnp" style="width: 100%; height: 48px; margin-top: 24px; border: 0; border-radius: 12px; background: var(--accent); color: var(--onaccent); font-size: 15.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer">{{t.yes}}</button><button onClick="{{toHelped}}" class="pd-btnq" style="margin-top: 16px; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 6px; border: 1px solid var(--line); border-radius: 20px; background: var(--raised); color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer"><span style="flex: none; display: inline-flex; width: 28px; height: 28px; border-radius: 14px; background: #1D4ED8; color: #FFFFFF; font-size: 11px; font-weight: 700; align-items: center; justify-content: center;">JB</span>{{t.askHelp}}</button></div></sc-if><sc-if value="{{isOk}}" hint-placeholder-val="{{false}}"><div class="pd-rise" style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center"><div style="width: 64px; height: 64px; border-radius: 32px; background: var(--accent); color: var(--onaccent); display: flex; align-items: center; justify-content: center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"></path></svg></div><h1 style="margin: 20px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.25; color: var(--ink)">{{t.okTitle}}</h1><p style="margin: 10px 0 0; font-size: 15px; line-height: var(--lh); color: var(--muted)">{{t.okLine}}</p></div></sc-if><sc-if value="{{isExp}}" hint-placeholder-val="{{false}}"><div class="pd-rise" style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center"><div style="width: 64px; height: 64px; border-radius: 18px; background: var(--well); color: var(--muted); display: flex; align-items: center; justify-content: center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></div><h1 style="margin: 20px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.25; color: var(--ink)">{{t.expTitle}}</h1><p style="margin: 10px 0 0; font-size: 15px; line-height: var(--lh); color: var(--muted)">{{t.expLine}}</p><button onClick="{{toHelped}}" class="pd-btnq" style="margin-top: 28px; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 6px; border: 1px solid var(--line); border-radius: 20px; background: var(--raised); color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer"><span style="flex: none; display: inline-flex; width: 28px; height: 28px; border-radius: 14px; background: #1D4ED8; color: #FFFFFF; font-size: 11px; font-weight: 700; align-items: center; justify-content: center;">JB</span>{{t.askHelp}}</button></div></sc-if><sc-if value="{{isHelped}}" hint-placeholder-val="{{false}}"><div class="pd-rise" style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center"><div style="width: 64px; height: 64px; border-radius: 18px; background: #1D4ED8; color: #FFFFFF; font-size: 24px; font-weight: 700; display: flex; align-items: center; justify-content: center">JB</div><h2 style="margin: 20px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.25; color: var(--ink)">{{t.helpedTitle}}</h2><p style="margin: 10px 0 0; font-size: 15px; line-height: var(--lh); color: var(--muted)">{{t.helpedLine}}</p></div></sc-if></main></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme": {"editor": "enum", "options": ["light", "dark"], "default": "light"}, "lang": {"editor": "enum", "options": ["en", "ja"], "default": "en"}, "step": {"editor": "enum", "options": ["ask", "ok", "expired", "helped"], "default": "ask"}, "$preview": {"width": 390, "height": 844}}'>
+class Component extends DCLogic {
+  strings(ja) {
+    return ja ? {
+      askTitle: 'このデバイスを確認しますか？', when: '今日 14:05・東京', yes: 'はい、本人です',
+      okTitle: '確認しました', okLine: 'Chrome on Mac に戻ってください。準備ができています。',
+      expTitle: 'このリンクは使えなくなりました', expLine: 'サインイン中のデバイスで、新しいリンクをリクエストしてください。',
+      askHelp: 'Jonas Berg さんに相談する', helpedTitle: 'Jonas Berg さんにお知らせしました', helpedLine: 'まもなく電話かメールでご連絡します。'
+    } : {
+      askTitle: 'Confirm this device?', when: 'Today 14:05 · Tokyo', yes: 'Yes, it’s me',
+      okTitle: 'Confirmed', okLine: 'Go back to Chrome on Mac. It’s ready.',
+      expTitle: 'This link no longer works', expLine: 'Ask for a new one on the device you’re signing in on.',
+      askHelp: 'Need help? Ask Jonas Berg', helpedTitle: 'Jonas Berg will help you', helpedLine: 'We’ve let them know. They’ll call or email you soon.'
+    };
+  }
+  renderVals() {
+    const p = this.props, s = this.state || {};
+    const ja = (p.lang ?? 'en') === 'ja';
+    const step = s.step || p.step || 'ask';
+    return {
+      t: this.strings(ja), lang: ja ? 'ja' : 'en', langClass: ja ? 'pd-ja' : '',
+      themeClass: (p.theme ?? 'light') === 'dark' ? 'pd-dark' : 'pd-light',
+      isAsk: step === 'ask', isOk: step === 'ok', isExp: step === 'expired', isHelped: step === 'helped', toHelped: () => this.setState({ step: 'helped' }),
+      yes: () => this.setState({ step: 'ok' })
+    };
+  }
+}
+</script>
+</body>
+</html>

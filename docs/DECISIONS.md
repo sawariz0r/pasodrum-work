@@ -102,6 +102,14 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-38 · Clients (and Externals) confirm new devices by email, amends D-31 · Accepted · 2026-11-21
+- **Clients** confirm a new device by email: Confirm it's you → Email me a link → the link page (any device) → **Yes, it's me** → the waiting device is confirmed and history comes back. Emoji with another signed-in device stays as a second option. Clients never see a recovery key.
+- **Key held by our server for clients only:** the client's recovery key is created silently and stored encrypted in the invite service (apart from Matrix data). After the tap, the waiting device (authenticated as itself) fetches it once and confirms with it. Accepted tradeoff (CEO): a breach of our server could read client DMs, like client-space channels (D-11). Email is the client's master key. Staff and the team keep their own recovery key; the server never holds it.
+- **Link:** single use, 15 minutes, bound to the device that asked; a new email replaces the old link. Opening the link never confirms (mail scanners); only the tap does. No "It wasn't me".
+- **Help me:** on every screen where something can go wrong. Sends the contact (who added the client to the space; else its Owners/Admins) a read-only DM from the system sender "Pasodrum" with who, space, what went wrong, email and local time (full plain body, D-05). Signed-in or valid-link only; once per 10 minutes; nothing secret in it.
+- **Fallback:** Start fresh + staff confirm on a call + share history (SIDE-03, D-35).
+- **Externals** get the same email flow (CEO). Clients who already saved an M6 recovery key move over silently on their next confirmed device. Dehydrated devices aren't used (Continuwuity GET/POST mismatch, not reported); key backup covers messages sent while offline.
+
 ### D-37 · Docs and Boards · Accepted (CEO approved the batch) · 2026-11-21
 - **Scope:** pages and projects belong to a space (the workspace or a client space), not to a channel. Channel tabs may come later. The selected space tile scopes the sidebar: a client space shows only itself, and Pasodrum shows the workspace plus every client space you're in. Clients create, edit and comment in their own client space; the team adds columns, and clients can't (CEO).
 - **Docs data:**

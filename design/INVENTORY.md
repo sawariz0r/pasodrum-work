@@ -233,3 +233,21 @@ Approved 2026-11-21 (CEO). Rules: DocsBoardsRules. Components: DocsPage, BoardsP
 | Client space (team, custom column), client's view | BoardsNordlys, BoardsClient | approved 2026-11-21 |
 | Dragging a card; others dragging, editing, just moved; others in an issue | BoardsDrag, BoardsLive(+Dark), BoardsLiveIssue | approved 2026-11-21 |
 | Doc and issue cards in chat (vs Element X plain link) | DocsBoardsCards | approved 2026-11-21 |
+
+## Confirm by email (D-38)
+
+Approved 2026-11-21 (CEO). Boards stay on the canvas Discovery page (CEO); mirrored in design/canvas. Rules: EmailConfirmRules.
+
+| Screen | Boards | Status |
+|---|---|---|
+| Client, new device: Confirm it's you (email; Use another device when one is signed in) | EmailConfirmGate, EmailConfirmGateOther, EmailConfirmGateJP, EmailConfirmGateDark | approved 2026-11-21 |
+| Check your email (waiting) | EmailConfirmSent, EmailConfirmSentJP, EmailConfirmSentDark | approved 2026-11-21 |
+| You're all set | EmailConfirmDone | approved 2026-11-21 |
+| Didn't get the email? (send again, ask contact, start fresh) | EmailConfirmHelp, EmailConfirmHelpJP | approved 2026-11-21 |
+| Help is on the way (client) | EmailConfirmHelped, EmailConfirmHelpedJP, EmailConfirmHelpedDark | approved 2026-11-21 |
+| The confirm email (EN, JP) | EmailConfirmEmail | approved 2026-11-21 |
+| Link page (any device, phone-first): confirm, confirmed, no longer works, help on the way | EmailConfirmLinkAsk, EmailConfirmLinkOk, EmailConfirmLinkExpired, EmailConfirmLinkHelped, EmailConfirmLinkAskJP, EmailConfirmLinkOkJP, EmailConfirmLinkAskDark, EmailConfirmLinkOkDark | approved 2026-11-21 |
+| Staff: a client needs your help (DM from Pasodrum) | EmailConfirmStaffHelp, EmailConfirmStaffHelpJP, EmailConfirmStaffHelpDark | approved 2026-11-21 |
+| Rules: confirm by email | EmailConfirmRules | approved 2026-11-21 |
+
+Components: `EmailConfirm`, `EmailConfirmLink`, `EmailConfirmStaff`. For clients these replace ConfirmGate/ConfirmGateNoDevice, RecoveryKeySave, RecoveryKeyEnter and the Recovery key row in Settings → Devices; staff and the team keep those (RulesM6).
