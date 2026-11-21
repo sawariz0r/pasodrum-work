@@ -224,8 +224,6 @@ body{margin:0}
         <sc-if value="{{c.hasBadge}}" hint-placeholder-val="{{false}}"><span style="min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: var(--danger); color: #FFFFFF; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center">{{c.badge}}</span></sc-if>
       </button>
     </sc-for>
-    <sc-if value="{{sbAddPeople}}" hint-placeholder-val="{{true}}"><button class="pd-row" onClick="{{openInvite}}" style="width: 100%; display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: var(--sidemuted); font-size: 14.5px; text-align: left; cursor: pointer">
-      <span style="width: 18px; height: 18px; margin-left: -1px; border-radius: 5px; background: var(--hover); display: flex; align-items: center; justify-content: center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span>{{txAddPeople}}</button></sc-if>
 
     <div style="display: flex; align-items: center; justify-content: space-between; margin: 14px 0 2px; padding: 0 4px 0 6px">
       <button style="display: flex; align-items: center; gap: 4px; border: 0; background: transparent; padding: 4px; color: var(--sidemuted); font-size: 13px; font-weight: 600; cursor: pointer"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>{{txDirectMessages}}</button>
@@ -2620,7 +2618,7 @@ class Component extends DCLogic {
       isGuest ? { railClientTile: false, railPlus: false, sideSpaces: false, headAdd: false, actCount: false, threadsBadge: false, draftsPlain: true, draftsCounted: false } : {},
       inClientSpace ? { txSearch: T.search(spaceName), txSideAria: T.sideAria(spaceName) } : {},
       fresh ? { threadsBadge: false, draftsPlain: true, draftsCounted: false } : {},
-      archived ? { headAdd: false, sbAddPeople: false, chanPlus: false, railNlOpacity: '; opacity: .5' } : {},
+      archived ? { headAdd: false, chanPlus: false, railNlOpacity: '; opacity: .5' } : {},
       { pmAnother: true });
 
     return {
@@ -3424,7 +3422,7 @@ class Component extends DCLogic {
       txShowSidebar: T.showSidebar, txLanguage: T.language, txSignOut: T.signOut, txLoading: T.loading,
 
       // Batch E
-      sbAddPeople: !isClient && !isGuest, chanPlus: !(dd && isClient) && !isGuest, wsChevron: !isGuest,
+      chanPlus: !(dd && isClient) && !isGuest, wsChevron: !isGuest,
       railNlCls: fresh ? 'pd-pop' : false, railNlOpacity: '', pmAnother: false,
       ...VE, ...VE.over,
 
