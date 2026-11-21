@@ -109,6 +109,8 @@ export function createPresence({ mx, now = Date.now }: { mx: Matrix; now?: () =>
       'X-Accel-Buffering': 'no',
     });
     res.flushHeaders();
+    // Some proxies hold the headers until the first body byte: send one at once instead of waiting for the heartbeat.
+    res.write('\n');
     const c: Conn = { id, roomId, userId, token, tokenHash, res, last: prev?.last, tokens: PER_SECOND, at: now(), timers: [] };
     room.set(id, c);
     rooms.set(roomId, room);
