@@ -1,0 +1,40 @@
+# M9-01 spike: Electron shell result
+
+## How to run
+1. `cd apps/desktop-electron && npm ci` (own lockfile; this folder is outside the pnpm workspace).
+2. Dev: `npx electron .` (loads `PASODRUM_URL`, default `http://localhost:4173`; the web app must be served there).
+3. Package: `npx electron-builder --mac --arm64` → `release/mac-arm64/Pasodrum Electron.app`, `.dmg`, `.zip`, `latest-mac.yml`.
+4. Install: `ditto "release/mac-arm64/Pasodrum Electron.app" ~/Applications/"Pasodrum Electron.app"`, then `open` it once so the `pasodrum-electron://` scheme registers.
+5. Drive it: `open -a ~/Applications/"Pasodrum Electron.app" --args --remote-debugging-port=9222` (CDP); `--check-update` runs electron-updater against `http://localhost:8788`. Shell events log to `~/Library/Application Support/Pasodrum Electron/shell.log`.
+
+Files: `main.cjs` (114 lines), `preload.cjs` (20 lines), `package.json` (build config). Plain CommonJS, no bundler.
+
+## Results (2026-11-22, macOS 27.0.1 arm64)
+
+| # | Check | Result |
+|---|---|---|
+| 0 | Versions (shell, webview engine, macOS) | PASS: Electron 45.4.1, Chromium 156.0.8078.100, electron-builder 26.18.0, electron-updater 6.8.11, macOS 27.0.1 (26A434) arm64 |
+| 1a | Notification shown (bundled app) | PARTIAL (blocked on user): first `notify()` fired Electron's `show` event and macOS put up the permission prompt "“Pasodrum Electron” Notifications". I did not click it, so I never saw a banner. The app is listed by its product name. **Re-check 00:40 (after the CEO clicked Allow):** still FAIL. Three `notify()` calls (one after a relaunch) fired `show`, but there was no banner and no prompt, and `defaults read com.apple.ncprefs apps` has no `work.pasodrum.spike.electron` entry, so macOS never stored an Allow for this ad-hoc-signed app |
+| 1b | Notification click focuses app and routes | PARTIAL: not clicked (needs the permission above). The click handler calls the same `openRoute()` → `webContents.send('open-route')` → preload path that warm deep links use, and 2a proves that path works. Electron documents a `click` event on macOS, which Tauri's plugin lacks; I did not observe it here |
+| 1c | Dock badge set / clear | PARTIAL: `app.setBadgeCount(7)` → `getBadgeCount()` 7, then 0 (in shell.log). Not checked visually: the Dock auto-hides and osascript has no Accessibility access |
+| 2a | Custom scheme, app running | PASS: `open 'pasodrum-electron://open/settings?x=1#y'` → `open-url` → harness subscriber got `/settings?x=1#y`, location changed. `lsregister` shows `claimed schemes: pasodrum-electron:` |
+| 2b | Custom scheme, cold start | PASS: quit, then `open 'pasodrum-electron://open/dms/!…'`. `open-url` fired before `ready`, the route was buffered and the window loaded `BASE + route`. Screenshot shows the DM open and decrypted |
+| 2c | https links: what is needed | N/A (notes): macOS has no universal links for non-App-Store Electron without an Apple Developer ID + an `com.apple.developer.associated-domains` entitlement (`applinks:pasodrum.work`) + a provisioning profile + `/.well-known/apple-app-site-association` in `deploy/Caddyfile`. Simpler fallback: the web page offers "Open in app" → `pasodrum-electron://open/<path>` |
+| 3a | Crypto WASM loads, encrypted DM decrypts | PASS: `matrix_sdk_crypto_wasm_bg-*.wasm` 200, no WASM console error. Signed in as `lea_freelance.dev`, created a DM with Jonas and sent 2 messages. On the server they are `m.room.encrypted` (megolm); in the app they show as plaintext. IndexedDB `pasodrum-crypto::matrix-sdk-crypto` exists |
+| 3b | Session + crypto store survive Cmd-Q and kill | PASS: after AppleScript quit and relaunch, and again after `pkill -9` and relaunch: still signed in, same deviceId `Z0RECzJGHa`, both DM messages decrypt, no "confirm device" prompt |
+| 3c | Web Locks / BroadcastChannel present; second window behaviour | PASS: `navigator.locks` and `BroadcastChannel` present. `open -n` of a second instance → `requestSingleInstanceLock` exits it (1 main process, 1 page). The shell has one window, so D-33 tab yielding never triggers. A second BrowserWindow (not built) would share the profile and get D-33 as with browser tabs |
+| 4 | External links open the system browser (anchor and bridge) | PASS: `openExternal()`, an `<a target=_blank>` (`setWindowOpenHandler`) and a same-tab off-origin `<a>` (`will-navigate`) each opened the default browser. The app stayed on its URL. Caveat: same-origin `target=_blank` would also go to the browser (handler denies every new window) |
+| 5a | storage.persist() / persisted() / quota | PASS: `persisted()` true even before asking, `persist()` true, quota ≈141 GiB, usage 0.6 MB (IndexedDB only) |
+| 5b | Data location on disk and size | PASS: `~/Library/Application Support/Pasodrum Electron/`, 25 MB after sign-in, mostly Chromium caches. Same folder holds `shell.log`. Updater cache: `~/Library/Caches/pasodrum-desktop-electron-updater/` |
+| 6a | Update: furthest stage reached unsigned | PARTIAL: check ✓ (found 0.2.0 in `latest-mac.yml`), download ✓ (full zip, no blockmap baseline), `update-downloaded` ✓. Squirrel.Mac verify ✗: `SQRLCodeSignatureErrorDomain: Code signature … did not pass validation: code failed to satisfy specified code requirement(s)`. Install and relaunch not reached; still on 0.1.0 |
+| 6b | Update: signing needed for production | Developer ID Application certificate + notarization (`notarize` in electron-builder, App Store Connect API key). Squirrel.Mac requires the new build to satisfy the old build's designated requirement, which an ad-hoc signature (cdhash only) can never do. A generic HTTPS feed (latest-mac.yml + zip) is enough; no update server needed |
+| 7a | .app size | 259 MB (`du -sh`) |
+| 7b | .dmg size | 114.4 MB dmg; 111.1 MB zip (the zip is the update payload) |
+| 7c | Idle memory, MB (method, process count) | ≈211 MB median (210.8 / 210.8 / 211.1; a later sample 197). Method: sum of RSS over the 4 processes matching `Pasodrum Electron.app` (main 65, GPU 39, network 33, renderer 58). Signed in, one channel open, window visible, idle |
+| 8 | Windows: what it needs | Notes only: NSIS target, `setAsDefaultProtocolClient` + `second-instance` argv (already in main.cjs), `app.setAppUserModelId('work.pasodrum…')` for toasts, `win.setOverlayIcon` for the badge (`setBadgeCount` is mac/Linux only). electron-updater works unsigned on NSIS, but SmartScreen warns, so an Authenticode (ideally EV/Azure Trusted Signing) certificate is needed for a clean install. Same main/preload code otherwise |
+| 9 | Remote-URL load mode issues (IPC, CORS, ws relay, /api) | PASS, none found: the preload bridge works on the remote http origin with no ACL setup. Same-origin `/api/invites` reached the invite service (400 with no params = the service answered). `ws://…/api/presence/<room>` opened. Origin is `http://localhost:4173`, `isSecureContext` true. Electron logs a CSP warning (the app sends no CSP). Optional bundled-dist mode not tried |
+| 10 | Shell code size (lines, files) and build time (cold / warm) | 3 files, 134 lines of JS + 51-line package.json. Build: cold 67 s (includes the 7zip/dmgbuild downloads, Electron zip download), warm 57 s. `npm i` ≈1 min, node_modules 97 MB |
+| 11 | Surprises / blockers / hours spent | ~0.5 h total. (1) Blocked on user: notification permission prompt. (2) Local seed data: `@sofia`'s cross-signing master key on the server is `ed25519:masterprobe` (left by `pnpm probe`), so her encrypted rooms stay on the skeleton forever with "Failed to decode a public key from Base64". Jonas has an identity, so a new device hits the confirm gate. I used `lea_freelance.dev` instead. Not shell issues, but they will bite every desktop/browser test. (3) Nothing in `apps/web` subscribes to `onOpenRoute` yet; deep links and notification clicks only navigate with the harness subscriber |
+
+## Evidence
+Screenshots and CDP scripts are in the session scratchpad (`…/scratchpad/electron/`: `restart-cmdq.png`, `restart-kill9.png`, `cold-deeplink-s.png`, `screen-notify-s.png`). Shell log: `~/Library/Application Support/Pasodrum Electron/shell.log`.

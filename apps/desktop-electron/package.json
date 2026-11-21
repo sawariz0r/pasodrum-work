@@ -1,0 +1,51 @@
+{
+  "name": "pasodrum-desktop-electron",
+  "productName": "Pasodrum Electron",
+  "version": "0.1.0",
+  "private": true,
+  "description": "M9-01 spike: Electron shell for Pasodrum work",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac --arm64"
+  },
+  "build": {
+    "appId": "work.pasodrum.spike.electron",
+    "productName": "Pasodrum Electron",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "identity": "-",
+      "category": "public.app-category.business"
+    },
+    "protocols": [
+      {
+        "name": "Pasodrum",
+        "schemes": [
+          "pasodrum-electron"
+        ]
+      }
+    ],
+    "publish": {
+      "provider": "generic",
+      "url": "http://localhost:8788"
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.4.1",
+    "electron-builder": "^26.18.0"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
+  }
+}

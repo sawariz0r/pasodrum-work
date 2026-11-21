@@ -1,0 +1,27 @@
+[package]
+name = "pasodrum-tauri"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "pasodrum_tauri_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["devtools"] }
+tauri-plugin-notification = "2"
+tauri-plugin-deep-link = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
+serde_json = "1"
+url = "2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+mac-notification-sys = "0.6"
+
+[profile.release]
+strip = true

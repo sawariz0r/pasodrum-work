@@ -1,0 +1,23 @@
+(async () => {
+  await P.waitFor(() => location.pathname !== '/signin', 20000);
+  if (sessionStorage.extDone) return P.emit('ext-after', {});
+  sessionStorage.extDone = '1';
+  await P.sleep(1500);
+  const a = document.createElement('a');
+  a.href = 'http://localhost:8799/anchor-blank';
+  a.target = '_blank';
+  a.textContent = 'x';
+  document.body.appendChild(a);
+  a.click();
+  P.emit('ext', { step: 'anchor-blank', path: location.pathname });
+  await P.sleep(1500);
+  window.pasodrumShell.openExternal('http://localhost:8799/bridge');
+  P.emit('ext', { step: 'bridge' });
+  await P.sleep(1500);
+  window.open('http://localhost:8799/window-open');
+  P.emit('ext', { step: 'window-open' });
+  await P.sleep(1500);
+  location.href = 'http://localhost:8799/location';
+  await P.sleep(1500);
+  P.emit('ext', { step: 'location-assign', stillHere: location.origin });
+})();
