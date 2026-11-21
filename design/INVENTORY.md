@@ -116,6 +116,18 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ. Source copy in [desig
 | Another app (server + username, copy) | ProfileMenuAnotherApp, AnotherApp(+JP), JoinDoneOther | approved |
 | Phone hand-off, join page on phone | PhoneHandoff(+JP), JoinPhone, JoinDonePhone | approved |
 
+## Batch E2 — channel rename and archive (designed 2026-11-21, awaiting CEO approval)
+
+Who: Owners, Admins and the channel's creator (exactly what the server allows, D-27). `#general` can't be renamed or archived. Both live in Channel details → Settings. Archive = read-only like a client space (D-28); archived channels leave the sidebar and sit under Archived in Browse.
+
+| Screen / state | Artboard | Status |
+|---|---|---|
+| Rules | RulesE2 | designed |
+| Channel settings (allowed / everyone else) | ChannelSettingsE2, ChannelSettingsMember | designed |
+| Rename: editing, taken, error, saved (+JP) | RenameChannel, RenameChannelTaken, RenameChannelError, RenameChannelSaved, RenameChannelJP | designed |
+| Archive: ask (+JP), archived view (allowed, member, dark, JP), settings when archived | ArchiveChannel, ArchiveChannelJP, ArchivedChannel, ArchivedChannelMember, ArchivedChannelDark, ArchivedChannelJP, ArchivedChannelSettings | designed |
+| Browse channels with Archived (+JP) | BrowseArchived, BrowseArchivedJP | designed |
+
 ## Batch F — for M6 (approved 2026-11-21)
 
 Words: "Confirm this device", "Not confirmed", "Not available on this device", "Recovery key". Asked only when an encrypted conversation (DM or private channel) is opened; public and client-space channels never ask.
