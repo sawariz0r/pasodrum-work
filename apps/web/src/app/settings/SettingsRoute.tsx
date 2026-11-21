@@ -3,8 +3,14 @@ import i18n from 'i18next';
 import { matchPath, Route, Routes, useLocation, useNavigate } from 'react-router';
 import { useStore, useWorkspace } from '../../matrix';
 import { channelPath, homeChannel } from '../places';
+import { lazyComponent } from '../lazy';
 import { onThemePrefChange } from '../prefs';
-import { Settings, settingsTabs, type SettingsTab } from './Settings';
+
+// The dialog's code loads when Settings first opens (M8).
+const Settings = lazyComponent(() => import('./Settings').then((m) => m.Settings));
+
+export const settingsTabs = ['profile', 'notifications', 'appearance', 'devices'] as const;
+export type SettingsTab = (typeof settingsTabs)[number];
 
 type Background = { background?: string };
 

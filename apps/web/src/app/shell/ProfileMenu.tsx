@@ -2,15 +2,17 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 import { useWorkspace } from '../../matrix';
-import { AnotherAppDialog } from '../another/AnotherApp';
 import { PhoneIcon } from '../another/icons';
 import { Avatar, avatarColor, Menu, MenuContent, MenuItem, MenuSegments, MenuSeparator, MenuTrigger } from '../../ui';
 import { currentLanguage, setLanguage, type Language } from '../i18n';
+import { lazyComponent } from '../lazy';
 import { GlobeIcon, SignOutIcon } from '../icons';
 import { GearIcon } from '../settings/icons';
 import { settingsState } from '../settings/SettingsRoute';
 import { useMediaUrl } from '../timeline/Media';
 import s from './Shell.module.css';
+
+const AnotherAppDialog = lazyComponent(() => import('../another/AnotherApp').then((m) => m.AnotherAppDialog));
 
 export function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
   const { t } = useTranslation();
@@ -21,7 +23,8 @@ export function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
   const color = avatarColor(me.id);
   const avatar = useMediaUrl(me.avatarUrl, true);
   const dot = <span className={[s.meDot, online && s.online].filter(Boolean).join(' ')} />;
-  const [another, setAnother] = useState(false);
+  // null until first opened: the dialog's code loads then (M8).
+  const [another, setAnother] = useState<boolean | null>(null);
 
   return (
     <Menu>
@@ -65,7 +68,7 @@ export function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
           {t('shell.profileMenu.signOut')}
         </MenuItem>
       </MenuContent>
-      <AnotherAppDialog open={another} onOpenChange={setAnother} />
+      {another !== null && <AnotherAppDialog open={another} onOpenChange={setAnother} />}
     </Menu>
   );
 }

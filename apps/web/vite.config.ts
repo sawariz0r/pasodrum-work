@@ -13,4 +13,18 @@ export default defineConfig({
   resolve: { alias: { '@matrix-org/matrix-sdk-crypto-wasm': join(cryptoWasm, 'index.mjs') } },
   // Pre-bundling moves the crypto module away from its .wasm file (loaded via new URL(…, import.meta.url)).
   optimizeDeps: { exclude: ['@matrix-org/matrix-sdk-crypto-wasm'] },
+  // First-load dependencies get their own chunks, so a deploy that only changes our code keeps them cached.
+  // `$initial` leaves lazily loaded code (TipTap, emoji data, the SDK's crypto) in its own chunks.
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: 'matrix', test: /[\\/]node_modules[\\/](matrix-js-sdk|matrix-widget-api|matrix-events-sdk)[\\/]/, tags: ['$initial'], priority: 1 },
+            { name: 'vendor', test: /[\\/]node_modules[\\/]/, tags: ['$initial'] },
+          ],
+        },
+      },
+    },
+  },
 });

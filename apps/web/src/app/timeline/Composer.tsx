@@ -1,1 +1,1 @@
-export { Composer } from '../composer/Composer';
+export { Composer } from '../composer/lazy';

@@ -22,9 +22,7 @@ import {
   UserIcon,
 } from './icons';
 import s from './Settings.module.css';
-
-export const settingsTabs = ['profile', 'notifications', 'appearance', 'devices'] as const;
-export type SettingsTab = (typeof settingsTabs)[number];
+import { settingsTabs, type SettingsTab } from './SettingsRoute';
 
 const tabIcons: Record<SettingsTab, ReactNode> = {
   profile: <UserIcon />,

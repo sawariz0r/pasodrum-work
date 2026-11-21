@@ -909,3 +909,9 @@ section:first-child > .emojiHeading {
     opacity: 0;
   }
 }
+
+/* Stands in for the composer while its code loads (app/composer/lazy.tsx): the empty card at the composer's own height. */
+.skeleton {
+  /* Toolbar, padding and actions, plus one 15 px line of the editor. */
+  height: calc(92px + 15px * var(--lh));
+}

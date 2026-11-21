@@ -2,7 +2,7 @@ import { memo, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore, type Message } from '../../matrix';
 import { AlertIcon } from '../../ui/icons';
-import { MessageEditor } from '../composer/MessageEditor';
+import { MessageEditor } from '../composer/lazy';
 import { useProfileCard } from '../people/ProfileCardContext';
 import { formatList, formatTime } from '../format';
 import { BoxIcon, EditIcon, TrashIcon, UserPlusIcon } from '../icons';

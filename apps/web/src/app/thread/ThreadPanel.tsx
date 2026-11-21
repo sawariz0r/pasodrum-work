@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useStore, useWorkspace, type Message, type Timeline as TimelineData, type WorkspaceSnapshot } from '../../matrix';
 import { IconButton } from '../../ui';
 import { CloseIcon } from '../../ui/icons';
-import { Composer } from '../composer/Composer';
+import { Composer } from '../composer/lazy';
 import { ArchivedBar, useArchived } from '../timeline/ArchivedBar';
 import { ComposerProvider } from '../composer/context';
 import { Timeline, TimelineSkeleton, type ThreadMode } from '../timeline/Timeline';

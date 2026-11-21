@@ -1,7 +1,7 @@
 // Opens the composer's emoji picker next to a reaction trigger (hover bar React, the reactions row's add button).
 import { cloneElement, useEffect, useRef, useState, type MouseEvent, type ReactElement } from 'react';
 import { createPortal } from 'react-dom';
-import { EmojiPicker } from '../composer/EmojiPicker';
+import { EmojiPicker } from '../composer/lazy';
 
 const W = 344;
 const H = 404;
