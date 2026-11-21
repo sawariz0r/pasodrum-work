@@ -36,6 +36,8 @@ const app = createApp({
     mailpitUrl: env('MAILPIT_URL', 'http://mailpit:8025'),
   }),
   key: keyFrom(env('INVITE_SECRET')),
+  confirmKey: keyFrom(env('CONFIRM_KEY_SECRET'), 'pasodrum-confirm-keys/v1', 'CONFIRM_KEY_SECRET'),
+  systemPassword: process.env.SYSTEM_PASSWORD || undefined,
 });
 
 const port = Number(env('PORT', '8080'));

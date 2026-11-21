@@ -38,6 +38,8 @@ services:
       PUBLIC_URL: http://localhost:5173
       REGISTRATION_TOKEN: ${REGISTRATION_TOKEN:?set REGISTRATION_TOKEN in dev/.env}
       INVITE_SECRET: ${INVITE_SECRET:?set INVITE_SECRET in dev/.env}
+      CONFIRM_KEY_SECRET: ${CONFIRM_KEY_SECRET:-dev-only-confirm-key-secret-not-for-production}
+      SYSTEM_PASSWORD: ${SYSTEM_PASSWORD:-}
       MAIL_FROM: Pasodrum work <invites@pasodrum.localhost>
       MAILPIT_URL: http://mailpit:8025
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}

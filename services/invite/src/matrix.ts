@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { StateEvent } from './rules.ts';
 
 type Json = Record<string, unknown>;
@@ -44,13 +45,20 @@ export function matrixClient(base: string) {
     password,
   });
 
+  async function session(token: string): Promise<{ userId: string; deviceId: string | null } | null> {
+    const r = await call(token, 'GET', '/_matrix/client/v3/account/whoami');
+    if (r.status === 401 || r.status === 403) return null;
+    if (r.status >= 300) throw new MatrixError('whoami', r);
+    if (typeof r.body.user_id !== 'string') return null;
+    return { userId: r.body.user_id, deviceId: typeof r.body.device_id === 'string' ? r.body.device_id : null };
+  }
+
   return {
     async whoami(token: string): Promise<string | null> {
-      const r = await call(token, 'GET', '/_matrix/client/v3/account/whoami');
-      if (r.status === 401 || r.status === 403) return null;
-      if (r.status >= 300) throw new MatrixError('whoami', r);
-      return typeof r.body.user_id === 'string' ? r.body.user_id : null;
+      return (await session(token))?.userId ?? null;
     },
+
+    session,
 
     // null when the caller can't read the room (not a member).
     async roomState(token: string, roomId: string): Promise<StateEvent[] | null> {
@@ -67,7 +75,9 @@ export function matrixClient(base: string) {
 
     async membership(token: string, roomId: string, userId: string): Promise<string | null> {
       const r = await call(token, 'GET', `/_matrix/client/v3/rooms/${enc(roomId)}/state/m.room.member/${enc(userId)}`);
-      return r.status === 200 && typeof r.body.membership === 'string' ? r.body.membership : null;
+      if (r.status === 403 || r.status === 404) return null;
+      if (r.status !== 200) throw new MatrixError('membership', r);
+      return typeof r.body.membership === 'string' ? r.body.membership : null;
     },
 
     async availability(localpart: string): Promise<'available' | 'taken' | 'invalid'> {
@@ -89,12 +99,35 @@ export function matrixClient(base: string) {
       return String(b.access_token);
     },
 
-    async login(localpart: string, password: string): Promise<string> {
+    async login(localpart: string, password: string, deviceId?: string): Promise<string> {
       const b = await ok('login', null, 'POST', '/_matrix/client/v3/login', {
         ...passwordAuth(localpart, password),
         initial_device_display_name: 'Pasodrum invite',
+        ...(deviceId ? { device_id: deviceId } : {}),
       });
       return String(b.access_token);
+    },
+
+    async deviceName(token: string, deviceId: string): Promise<string | null> {
+      const r = await call(token, 'GET', `/_matrix/client/v3/devices/${enc(deviceId)}`);
+      return r.status === 200 && typeof r.body.display_name === 'string' && r.body.display_name ? r.body.display_name : null;
+    },
+
+    async displayName(token: string, userId: string): Promise<string | null> {
+      const r = await call(token, 'GET', `/_matrix/client/v3/profile/${enc(userId)}/displayname`);
+      return r.status === 200 && typeof r.body.displayname === 'string' && r.body.displayname ? r.body.displayname : null;
+    },
+
+    async createRoom(token: string, body: Json): Promise<string> {
+      return String((await ok('createRoom', token, 'POST', '/_matrix/client/v3/createRoom', body)).room_id);
+    },
+
+    async invite(token: string, roomId: string, userId: string): Promise<void> {
+      await ok('invite', token, 'POST', `/_matrix/client/v3/rooms/${enc(roomId)}/invite`, { user_id: userId });
+    },
+
+    async send(token: string, roomId: string, content: Json): Promise<void> {
+      await ok('send', token, 'PUT', `/_matrix/client/v3/rooms/${enc(roomId)}/send/m.room.message/${randomUUID()}`, content);
     },
 
     async setDisplayName(token: string, userId: string, name: string): Promise<void> {

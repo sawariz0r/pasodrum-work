@@ -3,6 +3,9 @@
 # Set SERVER_NAME (e.g. pasodrum.work). Only the web service gets a domain: https://<SERVER_NAME>:80.
 # web serves the app and forwards /_matrix, /_continuwuity and /.well-known/matrix to continuwuity, /api/invites and /api/translate to invite.
 # Set RESEND_API_KEY (sending-only, noreply.prpl.se) for invite mail (D-26); MAIL_FROM is optional.
+# Resend's open and click tracking are per domain: keep both off for noreply.prpl.se (confirm links are single use).
+# Coolify generates CONFIRM_KEY_SECRET and SYSTEM_PASSWORD (D-38); losing CONFIRM_KEY_SECRET means every client starts fresh.
+# After the first deploy, create the system sender: SYSTEM_PASSWORD in dev/.env.production, then pnpm add:system.
 # Set OPENAI_API_KEY to turn on Translate (TRANSLATE_MODEL overrides the default gpt-6-luna); TRANSLATE_DAILY_LIMIT (calls per UTC day, all callers) is optional.
 services:
   web:
@@ -27,6 +30,8 @@ services:
       MATRIX_URL: http://continuwuity:6167
       REGISTRATION_TOKEN: ${SERVICE_PASSWORD_64_REGISTRATION}
       INVITE_SECRET: ${SERVICE_PASSWORD_64_INVITESECRET}
+      CONFIRM_KEY_SECRET: ${SERVICE_PASSWORD_64_CONFIRMKEYS}
+      SYSTEM_PASSWORD: ${SERVICE_PASSWORD_64_SYSTEM}
       RESEND_API_KEY: ${RESEND_API_KEY}
       MAIL_FROM: ${MAIL_FROM:-Pasodrum work <invites@noreply.prpl.se>}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
