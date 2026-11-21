@@ -1,7 +1,7 @@
 ---
 id: M2-03
 title: Composer: rich text, mentions, emoji, uploads, edit
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M2
 priority: P0

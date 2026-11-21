@@ -1,7 +1,7 @@
 ---
 id: M4-03
 title: UI: workspace menu, channels, channel details, roles, Add people
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M4
 priority: P0

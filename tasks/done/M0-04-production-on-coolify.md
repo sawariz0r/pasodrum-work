@@ -1,7 +1,7 @@
 ---
 id: M0-04
 title: Production on Coolify
-stage: ceo-review
+stage: done
 area: infra
 milestone: M0
 priority: P1

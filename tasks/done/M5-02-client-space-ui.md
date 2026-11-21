@@ -1,7 +1,7 @@
 ---
 id: M5-02
 title: UI: new client space, space settings/people/remove/archive, outside mark, client & guest shells
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M5
 priority: P0

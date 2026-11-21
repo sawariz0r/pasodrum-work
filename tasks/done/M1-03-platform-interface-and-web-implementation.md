@@ -1,7 +1,7 @@
 ---
 id: M1-03
 title: Platform interface and web implementation
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M1
 priority: P0

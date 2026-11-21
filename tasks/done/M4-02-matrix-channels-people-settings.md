@@ -1,7 +1,7 @@
 ---
 id: M4-02
 title: Matrix: channels, roles, members, add people, invites, profile, devices, settings
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M4
 priority: P0

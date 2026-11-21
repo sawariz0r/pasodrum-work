@@ -1,7 +1,7 @@
 ---
 id: M4-01
 title: Invite service (Node + node:sqlite, Resend/Mailpit)
-stage: ceo-review
+stage: done
 area: api
 milestone: M4
 priority: P0

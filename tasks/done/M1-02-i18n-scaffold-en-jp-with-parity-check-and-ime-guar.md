@@ -1,7 +1,7 @@
 ---
 id: M1-02
 title: i18n scaffold EN/JP with parity check and IME guard
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M1
 priority: P0

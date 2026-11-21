@@ -1,7 +1,7 @@
 ---
 id: M2-02
 title: Timeline: rich rows, media, actions, viewer
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M2
 priority: P0

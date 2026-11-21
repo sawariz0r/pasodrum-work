@@ -1,7 +1,7 @@
 ---
 id: M3-03
 title: Thread panel, thread hover action, drafts in the composer, profile hooks in rows
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M3
 priority: P0

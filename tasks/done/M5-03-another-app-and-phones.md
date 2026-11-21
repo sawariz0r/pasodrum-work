@@ -1,7 +1,7 @@
 ---
 id: M5-03
 title: UI: Another app, phone hand-off, join page on phones
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M5
 priority: P1

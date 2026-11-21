@@ -1,7 +1,7 @@
 ---
 id: M0-01
 title: Repo OS and pnpm workspace
-stage: ceo-review
+stage: done
 area: foundations
 milestone: M0
 priority: P0

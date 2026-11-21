@@ -1,7 +1,7 @@
 ---
 id: M1-01
 title: Tokens and UI primitives
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M1
 priority: P0

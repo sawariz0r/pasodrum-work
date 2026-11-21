@@ -1,7 +1,7 @@
 ---
 id: E2-01
 title: Channel rename and archive (Batch E2)
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M5
 priority: P1

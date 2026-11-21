@@ -1,7 +1,7 @@
 ---
 id: SIDE-01
 title: Side feature: Translate messages (Discovery page on the canvas)
-stage: ceo-review
+stage: done
 area: frontend
 milestone: side
 priority: P2

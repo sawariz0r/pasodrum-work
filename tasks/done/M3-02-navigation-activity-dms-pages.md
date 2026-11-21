@@ -1,7 +1,7 @@
 ---
 id: M3-02
 title: Navigation, Activity, Threads/Drafts views, DMs, new message, profile card
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M3
 priority: P0

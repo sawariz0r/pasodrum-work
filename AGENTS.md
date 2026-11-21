@@ -17,7 +17,7 @@ You start with **no memory of prior chats** — orient yourself like this:
 4. **To work a task:** move its file `todo/ → implementing/`, set `stage: implementing` + `owner`, do the work, then move to `ceo-review/` with the **Outcome** filled in. Full workflow in [tasks/README.md](tasks/README.md).
 5. **Record as you go:** new decisions/learnings → `docs/DECISIONS.md`; correct this file when a rule changes.
 
-Status (2026-11-21, end of day): M6 (encryption), Translate (SIDE-01) and E2 (channel rename/archive) are live; CEO is testing E2 on production. In ceo-review: M0–M6, SIDE-01, E2-01. Backlog: SIDE-02 (privacy indicator), SIDE-03 (share history, spike first). Next phase M7 needs Batch G designs.
+Status (2026-11-21): M0–M6, Translate (SIDE-01) and channel rename/archive (E2) are live and closed by the CEO. Now: Batch G (M7) + SIDE-02 + other-tab screen in design; SIDE-03 (share history) spike. Next phase M7.
 
 ---
 

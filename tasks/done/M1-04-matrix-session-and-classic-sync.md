@@ -1,7 +1,7 @@
 ---
 id: M1-04
 title: Matrix session and classic sync
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M1
 priority: P0

@@ -1,7 +1,7 @@
 ---
 id: M5-01
 title: Matrix + invite service: client spaces, archive, remove from space, outside people, client's-eye suite
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M5
 priority: P0

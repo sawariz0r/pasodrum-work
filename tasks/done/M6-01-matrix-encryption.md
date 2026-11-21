@@ -1,7 +1,7 @@
 ---
 id: M6-01
 title: Matrix: Rust crypto, device confirmation, recovery key + backup, encrypt DMs and private channels
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M6
 priority: P0

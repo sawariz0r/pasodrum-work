@@ -1,7 +1,7 @@
 ---
 id: M1-06
 title: Timeline and composer: plain text
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M1
 priority: P0

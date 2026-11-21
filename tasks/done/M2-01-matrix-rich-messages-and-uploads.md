@@ -1,7 +1,7 @@
 ---
 id: M2-01
 title: Matrix: rich messages, media, uploads, actions
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M2
 priority: P0

@@ -1,7 +1,7 @@
 ---
 id: M4-04
 title: UI: settings, join page, first sign-in
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M4
 priority: P0

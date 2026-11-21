@@ -1,7 +1,7 @@
 ---
 id: M0-02
 title: Docker dev stack (Continuwuity, Mailpit, Caddy)
-stage: ceo-review
+stage: done
 area: infra
 milestone: M0
 priority: P0

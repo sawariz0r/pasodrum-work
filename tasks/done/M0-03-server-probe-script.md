@@ -1,7 +1,7 @@
 ---
 id: M0-03
 title: Server probe script
-stage: ceo-review
+stage: done
 area: infra
 milestone: M0
 priority: P0

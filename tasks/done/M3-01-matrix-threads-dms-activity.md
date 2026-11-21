@@ -1,7 +1,7 @@
 ---
 id: M3-01
 title: Matrix: threads, DMs, activity, people, profiles
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M3
 priority: P0

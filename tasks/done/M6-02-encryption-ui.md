@@ -1,7 +1,7 @@
 ---
 id: M6-02
 title: UI: confirm gate, approve dialog, recovery key, reset, undecryptable rows, sign-out warning, Devices
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M6
 priority: P0

@@ -1,7 +1,7 @@
 ---
 id: M1-05
 title: Shell, sign-in and feature registry
-stage: ceo-review
+stage: done
 area: frontend
 milestone: M1
 priority: P0

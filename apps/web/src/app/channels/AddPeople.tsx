@@ -101,7 +101,9 @@ export function AddPeopleDialog({ open, targetId, onClose }: { open: boolean; ta
   };
 
   const q = query.trim().toLowerCase();
-  const people = found.filter((p) => p.id !== meId).slice(0, q ? 5 : 3);
+  // Adding to the workspace makes someone a team member: clients and guests aren't offered.
+  const toWorkspace = toSpace && space.kind === 'workspace';
+  const people = found.filter((p) => p.id !== meId && !(toWorkspace && p.external)).slice(0, q ? 5 : 3);
   const pendingRows = pending.filter((p) => !q || `${p.name ?? ''} ${p.email}`.toLowerCase().includes(q));
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {

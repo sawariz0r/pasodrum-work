@@ -8,22 +8,20 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 
 | Phase | State | Live? |
 |---|---|---|
-| M0 server + repo | done (M0-01…04 in ceo-review; 05–07 done) | yes |
-| M1 walking skeleton | done (ceo-review) | yes |
-| M2 full timeline | done (ceo-review) | yes |
-| M3 threads, Activity, drafts, DMs | done (ceo-review) | yes |
-| M4 channels, people, invites, settings | done (ceo-review) | yes — invite mail needs `RESEND_API_KEY` |
-| M5 client spaces + guests | done (ceo-review) | yes — production needs the `#workspace` alias (`pnpm dev:seed` against prod once) |
-| M6 encryption | done (ceo-review) | yes — Element X encrypted DM check on a phone still open |
-| M7 tabs & cards | Batch G not designed | — |
+| M0 server + repo | done | yes |
+| M1 walking skeleton | done | yes |
+| M2 full timeline | done | yes |
+| M3 threads, Activity, drafts, DMs | done | yes |
+| M4 channels, people, invites, settings | done | yes |
+| M5 client spaces + guests | done | yes |
+| M6 encryption | done | yes |
+| M7 tabs & cards | Batch G in design | — |
 | M8 find & finish | Batch H not designed | — |
 | M9 desktop shell | Batch H (desktop bits) not designed | — |
 
 ## Waiting on the CEO
 
-1. **Element X encrypted DM:** from a phone, DM a team account and check both sides read it.
-2. **Element X on a real phone:** open `https://mobile.element.io/element/?account_provider=pasodrum.work` once on iOS and Android and confirm the server is pre-filled.
-3. Review the `tasks/ceo-review/` pile (M0–M4) when convenient.
+- Approve Batch G (M7), SIDE-02 and the other-tab screen once they're on the canvas.
 
 ## How we work (the loop that has worked)
 
@@ -62,10 +60,10 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 
 ## Next session — pick up here (2026-11-21 end of day)
 - **Live:** M0–M6, Translate, channel rename/archive. Push = Coolify redeploys everything incl. the Matrix server (a few seconds' restart): batch docs-only commits with real changes.
-- **CEO checks pending:** E2 on production; Element X encrypted DM and the Element X link on a phone.
-- **Before a second real person joins:** remove/deactivate the seed test accounts on production (their shared password was shown in chat), wipe test rooms (D-18). Shiori may already have an account (`pnpm add:staff`).
+- **CEO checks done (2026-11-21):** E2, DMs, Element X link. All M0–M6, SIDE-01, E2-01 tasks closed.
+- **Seed test accounts stay for now (CEO, 2026-11-21).** Before a second real person joins: remove/deactivate them on production (their shared password was shown in chat), wipe test rooms (D-18). Shiori may already have an account (`pnpm add:staff`).
 - **Backlog to pick from:** SIDE-02 privacy indicator (design first), SIDE-03 share history (1 h spike first), a "open in another tab" screen for the per-account tab lock (design), Batch G (M7 tabs & cards) design.
-- **Known gaps:** workspace Add people also suggests existing clients; the join page tile ignores the space colour; raw IDs show for nameless accounts in New message (test data); crypto store isn't encrypted at rest; Continuwuity to-device race (no upstream report, CEO).
+- **Known gaps:** the join page tile ignores the space colour; raw IDs show for nameless accounts in New message (test data); crypto store isn't encrypted at rest; Continuwuity to-device race (no upstream report, CEO).
 
 ## Open follow-ups (not blocking)
 
