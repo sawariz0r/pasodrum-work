@@ -4500,6 +4500,46 @@
    "expand": "fill",
    "is_interactive": true,
    "page": "client-spaces"
+  },
+  "BoardsAll.dc.html": {
+   "x": 0,
+   "y": 14868,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — All issues",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "boards"
+  },
+  "BoardsAllPerson.dc.html": {
+   "x": 1520,
+   "y": 14868,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — All issues, one person",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "boards"
+  },
+  "BoardsAllJP.dc.html": {
+   "x": 3040,
+   "y": 14868,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — All issues, Japanese",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "boards"
+  },
+  "BoardsAllDark.dc.html": {
+   "x": 4560,
+   "y": 14868,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — All issues, dark",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "boards"
   }
  },
  "order": [
@@ -4960,7 +5000,11 @@
   "SpaceContactsJP.dc.html",
   "SpaceContactsDark.dc.html",
   "SpaceContactsJPDark.dc.html",
-  "ContactHelpPill.dc.html"
+  "ContactHelpPill.dc.html",
+  "BoardsAll.dc.html",
+  "BoardsAllPerson.dc.html",
+  "BoardsAllJP.dc.html",
+  "BoardsAllDark.dc.html"
  ],
  "notes": {
   "overview-Foundations--workspace": {
@@ -5445,6 +5489,23 @@
    "page": "client-spaces",
    "fill": "orange",
    "text": "Rules (approved 2026-11-21)\n\n• Owners and Admins mark Staff as a client space’s main contact from People → ⋯ (Make main contact / Remove as main contact). One or more; Owners and Admins count as Staff; never Externals or clients. Your own row has the item too.\n\n• A main contact gets a “Main contact” tag beside their name.\n\n• “Need help?” names the first main contact and reaches every main contact. With none marked it goes to whoever added the client, then the space’s Owners and Admins, as today (D-38)."
+  },
+  "boards-All-issues": {
+   "x": 0,
+   "y": 14628,
+   "text": "All issues and the active space (approved 2026-11-22)",
+   "kind": "title1",
+   "page": "boards",
+   "size": "l",
+   "maxW": 7520
+  },
+  "boards-side07-rules": {
+   "x": 6080,
+   "y": 14868,
+   "w": 560,
+   "page": "boards",
+   "fill": "orange",
+   "text": "Rules: space-scoped Docs and Boards, All issues (approved 2026-11-22)\n\n• Docs and Boards show only the space whose tile is lit. No space heading.\n\n• In Docs or Boards, a space tile keeps you there and opens that space. Home goes back to channels.\n\n• My issues: mine, every space.\n\n• All issues: only in Pasodrum (team). Every open issue in every space you’re in, grouped by project, space named on each group. Active space first; late first.\n\n• Press a face top right to see that person’s issues; dashed face = nobody. Press again to clear.\n\n• A custom column (Waiting on client) is named on the row. List only, no New issue.\n\n• In a client space, and for clients: My issues only, no All issues."
   }
  },
  "designSystems": []

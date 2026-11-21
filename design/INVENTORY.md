@@ -244,6 +244,10 @@ Approved 2026-11-21 (CEO). Rules: DocsBoardsRules. Components: DocsPage, BoardsP
 | Issue mentions and assignments in Activity (issue key in place of the channel) | BoardsBuiltStates | approved 2026-11-21 |
 | Issue panel lies over the board at every width; clicking empty board closes it | BoardsBuiltStates | approved 2026-11-21 |
 | Docs file block (same card as a file in chat) | DocsFileBlock | approved 2026-11-21 |
+| SIDE-07: Docs and Boards show only the active space, no space heading (layout "space" is now the default of DocsPage/BoardsPage, so every Docs/Boards board shows it) | DocsPage(+JP, Dark), DocsNordlys, BoardsPage(+JP, Dark), BoardsNordlys | approved 2026-11-22 |
+| SIDE-07: My issues across every space, space name per group | BoardsMine(+JP) | approved 2026-11-22 |
+| SIDE-07: All issues (team, Pasodrum tile only): every open issue across spaces, grouped by project, face filter top right, dashed face = nobody | BoardsAll, BoardsAllPerson, BoardsAllJP, BoardsAllDark | approved 2026-11-22 |
+| SIDE-07: in Docs/Boards a space tile stays in Docs/Boards and opens that space | rules note on the Boards page | approved 2026-11-22 |
 
 ## Confirm by email (D-38)
 

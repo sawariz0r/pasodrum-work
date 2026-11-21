@@ -547,7 +547,7 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 
 - [DocsFileBlock](canvas/DocsFileBlock.dc.html) — Docs: file block `#artboard-DocsFileBlock`
 
-## Boards · `boards` · 38 artboards
+## Boards · `boards` · 42 artboards
 
 - [BoardsSoon](canvas/BoardsSoon.dc.html) — Boards in the rail: Soon `#artboard-BoardsSoon`
 - [BoardsPage](canvas/BoardsPage.dc.html) — Boards — project board `#artboard-BoardsPage`
@@ -590,6 +590,13 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 **Built without a board (DES-02, approved 2026-11-21)**
 
 - [BoardsBuiltStates](canvas/BoardsBuiltStates.dc.html) — Boards: built without a board `#artboard-BoardsBuiltStates`
+
+**All issues and the active space (approved 2026-11-22)**
+
+- [BoardsAll](canvas/BoardsAll.dc.html) — Boards — All issues `#artboard-BoardsAll`
+- [BoardsAllPerson](canvas/BoardsAllPerson.dc.html) — Boards — All issues, one person `#artboard-BoardsAllPerson`
+- [BoardsAllJP](canvas/BoardsAllJP.dc.html) — Boards — All issues, Japanese `#artboard-BoardsAllJP`
+- [BoardsAllDark](canvas/BoardsAllDark.dc.html) — Boards — All issues, dark `#artboard-BoardsAllDark`
 
 ## Discovery · `discovery` · 14 artboards
 
