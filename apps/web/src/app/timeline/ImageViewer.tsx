@@ -3,6 +3,7 @@ import * as RD from '@radix-ui/react-dialog';
 import { useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore, type Message } from '../../matrix';
+import { useMenuReturnFocus } from '../../ui';
 import { CloseIcon } from '../../ui/icons';
 import { formatTime } from '../format';
 import { ChevronLeftIcon, ChevronNextIcon, DownloadIcon } from '../icons';
@@ -39,6 +40,7 @@ export function ImageViewer({ images, startId, onClose }: { images: Message[]; s
   const store = useStore();
   const [index, setIndex] = useState(() => Math.max(0, images.findIndex((m) => m.id === startId)));
   const [actual, setActual] = useState(false);
+  const returnFocus = useMenuReturnFocus(true);
   const current = images[Math.min(index, images.length - 1)];
   if (!current) return null;
   const date = new Date(current.ts);
@@ -56,7 +58,7 @@ export function ImageViewer({ images, startId, onClose }: { images: Message[]; s
     <RD.Root open onOpenChange={(open) => !open && onClose()}>
       <RD.Portal>
         <RD.Overlay className={s.scrim} />
-        <RD.Content className={s.viewer} aria-describedby={undefined} onKeyDown={onKeyDown}>
+        <RD.Content className={s.viewer} aria-describedby={undefined} onKeyDown={onKeyDown} onCloseAutoFocus={returnFocus}>
           <RD.Title className={s.srOnly}>{t('timeline.viewer', { name: current.sender.name })}</RD.Title>
           <div className={s.top}>
             <PersonAvatar size={32} person={current.sender} />

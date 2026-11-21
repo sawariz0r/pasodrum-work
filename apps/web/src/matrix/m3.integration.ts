@@ -23,6 +23,23 @@ const threadReply = (rootId: string, latestId: string, body: string) => ({
   body,
   'm.relates_to': { rel_type: 'm.thread', event_id: rootId, is_falling_back: true, 'm.in_reply_to': { event_id: latestId } },
 });
+/** The event the server holds my read receipt on, as a fresh session would get it. */
+async function serverReadOf(token: string, userId: string, roomId: string) {
+  const filter = JSON.stringify({ room: { rooms: [roomId], timeline: { limit: 0 }, state: { types: [] } } });
+  const sync = (await mx(token, 'GET', `/_matrix/client/v3/sync?timeout=0&filter=${E(filter)}`)).body as { rooms?: { join?: Record<string, { ephemeral?: { events: { type: string; content: Record<string, { 'm.read'?: Record<string, unknown> }> }[] } }> } };
+  for (const ev of sync.rooms?.join?.[roomId]?.ephemeral?.events ?? []) {
+    if (ev.type !== 'm.receipt') continue;
+    for (const [eventId, types] of Object.entries(ev.content)) if (types['m.read']?.[userId]) return eventId;
+  }
+}
+/** Receipts are sent without waiting; this waits until the server has one that passes `ok`. */
+async function serverRead(token: string, userId: string, roomId: string, ok: (eventId: string | undefined) => boolean) {
+  for (const end = Date.now() + 10_000; Date.now() < end; await new Promise((r) => setTimeout(r, 100))) {
+    const id = await serverReadOf(token, userId, roomId);
+    if (ok(id)) return id;
+  }
+  throw new Error('the read receipt never reached the server');
+}
 const joinedRooms = async (token: string) => (await mx(token, 'GET', '/_matrix/client/v3/joined_rooms')).body.joined_rooms as string[];
 
 /** Leaves every DM and pending invite from earlier runs, so each run starts from "no DMs". */
@@ -97,20 +114,23 @@ describe('threads', () => {
     const otherRoot = await sendRaw(i, general, { msgtype: 'm.text', body: unique('not followed by jonas') });
     await sendRaw(t, general, threadReply(otherRoot, otherRoot, 'tanaka only'));
     await until(jonas.store, (s) => s.timelines[general]?.messages.find((m) => m.id === otherRoot && m.thread));
+    const readBefore = await serverReadOf(jonas.session.accessToken, JONAS, general);
     jonas.store.markRead(general);
     await until(jonas.store, (s) => channel(s, 'Pasodrum', 'general')?.unread === 0);
+    // Wait for the channel receipt to land, so it reaches Jonas's sync before the next reply does.
+    await serverRead(jonas.session.accessToken, JONAS, general, (id) => id !== readBefore);
     const last = await sendRaw(i, general, threadReply(rootId, b, 'ingrid again'));
 
     const followed = await until(jonas.store, (s) => s.threads.find((x) => x.rootId === rootId && x.lastReply?.id === last));
     expect(followed).toMatchObject({ channelId: general, count: 3, unread: true, root: { sender: { id: TANAKA }, thread: { count: 3, unread: true } }, lastReply: { body: 'ingrid again' } });
     const s = jonas.store.getSnapshot();
-    expect(s.threads.some((x) => x.rootId === otherRoot)).toBe(false);
     expect(s.timelines[general]!.messages.find((m) => m.id === otherRoot)!.thread).toMatchObject({ count: 1, unread: false });
     expect(s.threads.map((x) => x.lastTs)).toEqual([...s.threads.map((x) => x.lastTs)].sort((x, y) => y - x));
     await until(tanaka.store, (s) => s.threads.find((x) => x.rootId === rootId && x.count === 3));
 
     jonas.store.markThreadRead(general, rootId);
     await until(jonas.store, (s) => s.threads.find((x) => x.rootId === rootId)?.unread === false);
+    await serverRead(jonas.session.accessToken, JONAS, general, (id) => id === last);
     const fresh = await open('jonas');
     await until(fresh.store, (s) => s.threads.find((x) => x.rootId === rootId && x.count === 3));
     expect(fresh.store.getSnapshot().threads.find((x) => x.rootId === rootId)!.unread).toBe(false);
@@ -123,6 +143,18 @@ describe('threads', () => {
     await until(jonas.store, (s) => s.threads.find((x) => x.rootId === rootId)?.unread === false);
     const again = await open('jonas');
     await until(again.store, (s) => (channel(s, 'Pasodrum', 'general')?.unread ?? 0) > 0);
+  });
+
+  // Continuwuity ignores include=participated and reports current_user_participated to everyone, so the store must not
+  // take a thread as followed on the server's word.
+  it('lists only threads I am in, also after a reload', async () => {
+    const otherRoot = await sendRaw(ingrid.session.accessToken, general, { msgtype: 'm.text', body: unique('not followed by jonas') });
+    await sendRaw(tanaka.session.accessToken, general, threadReply(otherRoot, otherRoot, 'tanaka only'));
+    const mine = await sendRaw(jonas.session.accessToken, general, { msgtype: 'm.text', body: unique('followed by jonas') });
+    const reply = await sendRaw(ingrid.session.accessToken, general, threadReply(mine, mine, 'to jonas'));
+    const fresh = await open('jonas');
+    await until(fresh.store, (s) => s.threads.find((x) => x.rootId === mine && x.lastReply?.id === reply));
+    expect(fresh.store.getSnapshot().threads.some((x) => x.rootId === otherRoot)).toBe(false);
   });
 
   it('pages older replies', async () => {

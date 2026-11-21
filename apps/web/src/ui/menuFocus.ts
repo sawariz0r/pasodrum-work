@@ -1,5 +1,6 @@
 // A dialog opened from a menu item outlives that item. When the dialog closes, focus goes back to the menu's trigger
-// (otherwise Radix returns it to the removed item and it lands on <body>).
+// (otherwise Radix returns it to the removed item and it lands on <body>). A dialog opened any other way has no Radix
+// Trigger, so Radix would drop focus on <body> too: it goes back to what had focus when the dialog opened.
 import { useLayoutEffect, useRef } from 'react';
 
 let last: { el: HTMLElement; at: number } | null = null;
@@ -17,11 +18,14 @@ function takeMenuTrigger(): HTMLElement | null {
   return hit;
 }
 
-/** For a dialog's onCloseAutoFocus: focuses the menu trigger it was opened from, if there was one. */
+/** For a dialog's onCloseAutoFocus: focuses the menu trigger it was opened from, else what had focus before it opened. */
 export function useMenuReturnFocus(open: boolean): (e: Event) => void {
   const target = useRef<HTMLElement | null>(null);
+  // A layout effect runs before Radix moves focus into the dialog, so the active element is still the opener.
   useLayoutEffect(() => {
-    if (open) target.current = takeMenuTrigger() ?? target.current;
+    if (!open) return;
+    const active = document.activeElement;
+    target.current = takeMenuTrigger() ?? (active instanceof HTMLElement && active !== document.body ? active : null) ?? target.current;
   }, [open]);
   return (e) => {
     const el = target.current;

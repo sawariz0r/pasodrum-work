@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeBackend } from '../../dev/fakeBackend';
@@ -30,6 +30,8 @@ const flush = () => act(async () => {});
 const sidebar = () => screen.getByRole('complementary', { name: 'Pasodrum navigation' });
 const header = () => screen.getByRole('main').querySelector('header')!;
 const openMenu = (el: HTMLElement) => fireEvent.keyDown(el, { key: 'Enter' });
+// The composer focuses itself a tick after it mounts, which would close a menu opened before then.
+const composerFocused = () => waitFor(() => expect(document.activeElement?.getAttribute('contenteditable')).toBe('true'));
 const dialog = () => screen.getByRole('dialog');
 
 let writeText: ReturnType<typeof vi.fn>;
@@ -45,6 +47,7 @@ afterEach(cleanup);
 describe('new channel', () => {
   it('creates a private channel from the + beside Channels and opens it', async () => {
     const { where } = renderApp('/w/!pasodrum/c/!design');
+    await composerFocused();
     openMenu(within(sidebar()).getByRole('button', { name: 'Add a channel' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'New channel' }));
     const name = within(dialog()).getByRole('textbox', { name: 'Name' });
@@ -61,6 +64,7 @@ describe('new channel', () => {
 
   it('says when the name exists, including names only the server knows', async () => {
     const { store } = renderApp('/w/!pasodrum/c/!design');
+    await composerFocused();
     openMenu(within(sidebar()).getByRole('button', { name: 'Pasodrum' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'New channel' }));
     await flush();
@@ -255,6 +259,7 @@ describe('add people', () => {
   it('adds to the space from the space menu', async () => {
     const { store } = renderApp('/w/!pasodrum/c/!design');
     const addPeople = vi.spyOn(store(), 'addPeople');
+    await composerFocused();
     openMenu(within(sidebar()).getByRole('button', { name: 'Pasodrum' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Add people' }));
     await flush();

@@ -25,6 +25,7 @@ export function CreateChannelDialog({ open, spaceId: initial, onClose }: { open:
   const [busy, setBusy] = useState(false);
   const [known, setKnown] = useState<string[]>([]);
   const [rejected, setRejected] = useState<string[]>([]);
+  const [failed, setFailed] = useState<string | null>(null);
   const joined = useWorkspace((x) => x.channels[spaceId]);
   const space = spaces.find((sp) => sp.id === spaceId);
 
@@ -47,12 +48,14 @@ export function CreateChannelDialog({ open, spaceId: initial, onClose }: { open:
   const create = async () => {
     if (!ready) return;
     setBusy(true);
+    setFailed(null);
     try {
       const id = await store.createChannel({ spaceId, name: clean, private: isPrivate });
       onClose();
       navigate(channelPath(spaceId, id));
     } catch (e) {
       if (e instanceof Error && e.message === 'taken') setRejected((r) => [...r, clean]);
+      else setFailed(clean);
     } finally {
       setBusy(false);
     }
@@ -143,6 +146,12 @@ export function CreateChannelDialog({ open, spaceId: initial, onClose }: { open:
             <p role="alert" className={s.error}>
               <AlertIcon />
               {t('channels.taken', { name: clean })}
+            </p>
+          )}
+          {!taken && failed === clean && (
+            <p role="alert" className={s.error}>
+              <AlertIcon />
+              {t('channels.createFailed', { name: clean })}
             </p>
           )}
         </div>

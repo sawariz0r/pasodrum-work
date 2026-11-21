@@ -65,6 +65,7 @@ function HashIcon() {
   );
 }
 
+const smooth = (): ScrollBehavior => (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth');
 const pending = (m: Message) => m.status !== 'sent';
 const quiet = (m: Message) => m.kind === 'deleted' || m.kind === 'system';
 
@@ -312,7 +313,7 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
         // A target in the last screenful scrolls little or not at all: look again once the window ends.
         clearTimeout(jumpTimer.current);
         jumpTimer.current = setTimeout(check, jumpMs + 50);
-        row.scrollIntoView?.({ block: 'center', behavior: instant ? 'instant' : 'smooth' });
+        row.scrollIntoView?.({ block: 'center', behavior: instant ? 'instant' : smooth() });
         setFlash(row.dataset.messageId ?? id);
       },
       isExpanded: (id) => expanded.current.has(id),
@@ -329,7 +330,7 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
   const jumpToLatest = () => {
     const el = scroller.current;
     if (!el) return;
-    if (el.scrollTo) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    if (el.scrollTo) el.scrollTo({ top: el.scrollHeight, behavior: smooth() });
     else el.scrollTop = el.scrollHeight;
   };
 

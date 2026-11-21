@@ -90,11 +90,20 @@ function About({ channel, onLeave }: { channel: Channel; onLeave: () => void }) 
   const store = useStore();
   const manage = canManage(useRole(channel.spaceId));
   const [editing, setEditing] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
   const [copied, copy] = useCopy();
 
+  const edit = (topic: string | null) => {
+    setEditing(topic);
+    setFailed(false);
+  };
   const save = async () => {
     if (editing === null) return;
-    await store.setTopic(channel.id, editing.trim()).then(() => setEditing(null), () => {});
+    setFailed(false);
+    await store.setTopic(channel.id, editing.trim()).then(
+      () => setEditing(null),
+      () => setFailed(true),
+    );
   };
 
   return (
@@ -117,7 +126,7 @@ function About({ channel, onLeave }: { channel: Channel; onLeave: () => void }) 
                     rows={2}
                     maxLength={250}
                     value={editing}
-                    onChange={(e) => setEditing(e.target.value)}
+                    onChange={(e) => edit(e.target.value)}
                     onKeyDown={(e) => {
                       if (isImeEnter(e) && !e.shiftKey) {
                         e.preventDefault();
@@ -125,8 +134,14 @@ function About({ channel, onLeave }: { channel: Channel; onLeave: () => void }) 
                       }
                     }}
                   />
+                  {failed && (
+                    <p role="alert" className={s.error}>
+                      <AlertIcon />
+                      {t('channels.topicFailed')}
+                    </p>
+                  )}
                   <div className={s.topicActions}>
-                    <Button variant="secondary" onClick={() => setEditing(null)}>
+                    <Button variant="secondary" onClick={() => edit(null)}>
                       {t('people.cancel')}
                     </Button>
                     <Button onClick={() => void save()}>{t('channels.save')}</Button>
@@ -135,7 +150,7 @@ function About({ channel, onLeave }: { channel: Channel; onLeave: () => void }) 
               )}
             </div>
             {manage && editing === null && (
-              <button type="button" className={s.linkButton} onClick={() => setEditing(channel.topic ?? '')}>
+              <button type="button" className={s.linkButton} onClick={() => edit(channel.topic ?? '')}>
                 {t('channels.edit')}
               </button>
             )}
