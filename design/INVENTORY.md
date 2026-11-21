@@ -116,9 +116,20 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ. Source copy in [desig
 | Another app (server + username, copy) | ProfileMenuAnotherApp, AnotherApp(+JP), JoinDoneOther | approved |
 | Phone hand-off, join page on phone | PhoneHandoff(+JP), JoinPhone, JoinDonePhone | approved |
 
-## Batch F — for M6
+## Batch F — for M6 (designed 2026-11-21, awaiting CEO approval)
 
-Confirm this device (both sides) · save/enter recovery key · can't-confirm reset · undecryptable row · sign-out warning — all `needs design`.
+Words: "Confirm this device", "Not confirmed", "Not available on this device", "Recovery key". Asked only when an encrypted conversation (DM or private channel) is opened; public and client-space channels never ask.
+
+| Screen / state | Artboard | Status |
+|---|---|---|
+| Rules for M6 | RulesM6 | designed |
+| Confirm this device (new device): gate, no other device, waiting, compare emoji, done, declined, timeout, mismatch | ConfirmGate(+JP, Dark), ConfirmGateNoDevice, ConfirmWaiting, ConfirmCompare(+JP), ConfirmDone, ConfirmDeclined, ConfirmTimeoutJP, ConfirmMismatch | designed |
+| Approve on the device already signed in: ask, compare, done | ApproveAsk(+JP), ApproveCompare, ApproveDone, ApproveDark | designed |
+| Recovery key: save once, password when asked, enter, wrong | RecoveryKeySave(+JP, Dark), RecoveryKeyPassword, RecoveryKeyEnter(+JP), RecoveryKeyWrong | designed |
+| Can't confirm → reset, wrong password | ResetConfirm(+JP), ResetWrongPassword | designed |
+| Messages this device can't open (DM, thread, list preview) | UndecryptableDM, UndecryptableThread, UndecryptableJP, UndecryptableDark | designed |
+| Sign-out warning (last confirmed device), no backup | SignOutWarn(+JP), SignOutNoBackup | designed |
+| Settings → Devices: Not confirmed tag, Recovery key row, Confirm this device | SettingsDevicesM6(+JP, Dark), SettingsDevicesUnconfirmed | designed |
 
 ## Batch G — for M7
 

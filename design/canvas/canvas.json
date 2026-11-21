@@ -1634,6 +1634,347 @@
       "title": "Joined on a phone: Element X next",
       "expand": "fill",
       "is_interactive": true
+    },
+    "RulesM6.dc.html": {
+      "x": 0,
+      "y": 70344,
+      "w": 1440,
+      "h": 2180,
+      "title": "Rules: encryption without the words (M6)",
+      "is_interactive": false
+    },
+    "ConfirmGate.dc.html": {
+      "x": 1520,
+      "y": 70344,
+      "w": 1440,
+      "h": 900,
+      "title": "New device: a DM asks to confirm this device first",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ConfirmGateJP.dc.html": {
+      "x": 3040,
+      "y": 70344,
+      "w": 1440,
+      "h": 900,
+      "title": "Confirm this device — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ConfirmGateNoDevice.dc.html": {
+      "x": 1520,
+      "y": 71364,
+      "w": 1440,
+      "h": 900,
+      "title": "No other device signed in: recovery key only (private channel)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ConfirmGateDark.dc.html": {
+      "x": 3040,
+      "y": 71364,
+      "w": 1440,
+      "h": 900,
+      "title": "Confirm this device — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ConfirmWaiting.dc.html": {
+      "x": 0,
+      "y": 72624,
+      "w": 1440,
+      "h": 900,
+      "title": "Use another device: approve there",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ConfirmCompare.dc.html": {
+      "x": 1520,
+      "y": 72624,
+      "w": 1440,
+      "h": 900,
+      "title": "Compare the emoji (new device)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ConfirmCompareJP.dc.html": {
+      "x": 3040,
+      "y": 72624,
+      "w": 1440,
+      "h": 900,
+      "title": "Compare the emoji — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ConfirmDone.dc.html": {
+      "x": 0,
+      "y": 73644,
+      "w": 1440,
+      "h": 900,
+      "title": "Device confirmed: the conversation opens",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ConfirmDeclined.dc.html": {
+      "x": 1520,
+      "y": 73644,
+      "w": 1440,
+      "h": 900,
+      "title": "Declined on the other device",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ConfirmTimeoutJP.dc.html": {
+      "x": 3040,
+      "y": 73644,
+      "w": 1440,
+      "h": 900,
+      "title": "No answer — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ConfirmMismatch.dc.html": {
+      "x": 0,
+      "y": 74664,
+      "w": 1440,
+      "h": 900,
+      "title": "The emoji didn’t match",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ApproveAsk.dc.html": {
+      "x": 1520,
+      "y": 74664,
+      "w": 1440,
+      "h": 900,
+      "title": "Signed-in device: “Is this you?”",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ApproveAskJP.dc.html": {
+      "x": 3040,
+      "y": 74664,
+      "w": 1440,
+      "h": 900,
+      "title": "Is this you — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ApproveCompare.dc.html": {
+      "x": 0,
+      "y": 75684,
+      "w": 1440,
+      "h": 900,
+      "title": "Compare the emoji (signed-in device)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ApproveDone.dc.html": {
+      "x": 1520,
+      "y": 75684,
+      "w": 1440,
+      "h": 900,
+      "title": "Signed-in device: confirmed",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ApproveDark.dc.html": {
+      "x": 3040,
+      "y": 75684,
+      "w": 1440,
+      "h": 900,
+      "title": "Is this you — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "RecoveryKeySave.dc.html": {
+      "x": 0,
+      "y": 76704,
+      "w": 1440,
+      "h": 900,
+      "title": "Save the recovery key (first time), copied",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "RecoveryKeySaveJP.dc.html": {
+      "x": 1520,
+      "y": 76704,
+      "w": 1440,
+      "h": 900,
+      "title": "Save the recovery key — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "RecoveryKeySaveDark.dc.html": {
+      "x": 3040,
+      "y": 76704,
+      "w": 1440,
+      "h": 900,
+      "title": "Save the recovery key — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "RecoveryKeyPassword.dc.html": {
+      "x": 0,
+      "y": 77724,
+      "w": 1440,
+      "h": 900,
+      "title": "Password first, only when the server asks",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "RecoveryKeyEnter.dc.html": {
+      "x": 1520,
+      "y": 77724,
+      "w": 1440,
+      "h": 900,
+      "title": "Enter the recovery key (new device)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "RecoveryKeyWrong.dc.html": {
+      "x": 3040,
+      "y": 77724,
+      "w": 1440,
+      "h": 900,
+      "title": "Wrong recovery key",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "RecoveryKeyEnterJP.dc.html": {
+      "x": 0,
+      "y": 78744,
+      "w": 1440,
+      "h": 900,
+      "title": "Enter the recovery key — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ResetConfirm.dc.html": {
+      "x": 1520,
+      "y": 78744,
+      "w": 1440,
+      "h": 900,
+      "title": "Can’t confirm: reset, honest about older messages",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ResetConfirmJP.dc.html": {
+      "x": 3040,
+      "y": 78744,
+      "w": 1440,
+      "h": 900,
+      "title": "Reset — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "ResetWrongPassword.dc.html": {
+      "x": 0,
+      "y": 79764,
+      "w": 1440,
+      "h": 900,
+      "title": "Reset: wrong password",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "UndecryptableDM.dc.html": {
+      "x": 1520,
+      "y": 79764,
+      "w": 1440,
+      "h": 900,
+      "title": "Not available on this device: DM + list preview",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "UndecryptableThread.dc.html": {
+      "x": 3040,
+      "y": 79764,
+      "w": 1440,
+      "h": 900,
+      "title": "Not available on this device: private channel + thread",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "UndecryptableJP.dc.html": {
+      "x": 0,
+      "y": 80784,
+      "w": 1440,
+      "h": 900,
+      "title": "Not available on this device — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "UndecryptableDark.dc.html": {
+      "x": 1520,
+      "y": 80784,
+      "w": 1440,
+      "h": 900,
+      "title": "Not available on this device — dark",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SignOutWarn.dc.html": {
+      "x": 3040,
+      "y": 80784,
+      "w": 1440,
+      "h": 900,
+      "title": "Sign out from the last confirmed device",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SignOutWarnJP.dc.html": {
+      "x": 0,
+      "y": 81804,
+      "w": 1440,
+      "h": 900,
+      "title": "Sign-out warning — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SignOutNoBackup.dc.html": {
+      "x": 1520,
+      "y": 81804,
+      "w": 1440,
+      "h": 900,
+      "title": "Sign out with no backup: honest loss",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SettingsDevicesM6.dc.html": {
+      "x": 3040,
+      "y": 81804,
+      "w": 1440,
+      "h": 900,
+      "title": "Settings → Devices: Not confirmed, Recovery key",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SettingsDevicesUnconfirmed.dc.html": {
+      "x": 0,
+      "y": 82824,
+      "w": 1440,
+      "h": 900,
+      "title": "Settings → Devices on an unconfirmed device: Confirm",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SettingsDevicesM6JP.dc.html": {
+      "x": 1520,
+      "y": 82824,
+      "w": 1440,
+      "h": 900,
+      "title": "Settings → Devices (M6) — Japanese",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "SettingsDevicesM6Dark.dc.html": {
+      "x": 3040,
+      "y": 82824,
+      "w": 1440,
+      "h": 900,
+      "title": "Settings → Devices (M6) — dark",
+      "expand": "fill",
+      "is_interactive": true
     }
   },
   "order": [
@@ -1817,7 +2158,45 @@
     "PhoneHandoff.dc.html",
     "PhoneHandoffJP.dc.html",
     "JoinPhone.dc.html",
-    "JoinDonePhone.dc.html"
+    "JoinDonePhone.dc.html",
+    "RulesM6.dc.html",
+    "ConfirmGate.dc.html",
+    "ConfirmGateJP.dc.html",
+    "ConfirmGateNoDevice.dc.html",
+    "ConfirmGateDark.dc.html",
+    "ConfirmWaiting.dc.html",
+    "ConfirmCompare.dc.html",
+    "ConfirmCompareJP.dc.html",
+    "ConfirmDone.dc.html",
+    "ConfirmDeclined.dc.html",
+    "ConfirmTimeoutJP.dc.html",
+    "ConfirmMismatch.dc.html",
+    "ApproveAsk.dc.html",
+    "ApproveAskJP.dc.html",
+    "ApproveCompare.dc.html",
+    "ApproveDone.dc.html",
+    "ApproveDark.dc.html",
+    "RecoveryKeySave.dc.html",
+    "RecoveryKeySaveJP.dc.html",
+    "RecoveryKeySaveDark.dc.html",
+    "RecoveryKeyPassword.dc.html",
+    "RecoveryKeyEnter.dc.html",
+    "RecoveryKeyWrong.dc.html",
+    "RecoveryKeyEnterJP.dc.html",
+    "ResetConfirm.dc.html",
+    "ResetConfirmJP.dc.html",
+    "ResetWrongPassword.dc.html",
+    "UndecryptableDM.dc.html",
+    "UndecryptableThread.dc.html",
+    "UndecryptableJP.dc.html",
+    "UndecryptableDark.dc.html",
+    "SignOutWarn.dc.html",
+    "SignOutWarnJP.dc.html",
+    "SignOutNoBackup.dc.html",
+    "SettingsDevicesM6.dc.html",
+    "SettingsDevicesUnconfirmed.dc.html",
+    "SettingsDevicesM6JP.dc.html",
+    "SettingsDevicesM6Dark.dc.html"
   ],
   "notes": {
     "title": {
@@ -1873,6 +2252,13 @@
       "x": 0,
       "y": 57760,
       "text": "Batch E — client spaces & guests",
+      "kind": "title1",
+      "maxW": 4480
+    },
+    "batchF": {
+      "x": 0,
+      "y": 70244,
+      "text": "Batch F — M6 encryption",
       "kind": "title1",
       "maxW": 4480
     }

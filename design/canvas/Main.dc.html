@@ -450,6 +450,19 @@ body{margin:0}
     <sc-if value="{{notDM}}" hint-placeholder-val="{{true}}">    <button class="pd-ico" aria-label="{{txAddTab}}" style="align-self: center; width: 26px; height: 26px; margin-left: 4px; border: 0; border-radius: 6px; background: transparent; color: var(--subtle); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button></sc-if>
   </div>
 
+  <!-- M6 gate: an encrypted conversation on a device that isn't confirmed yet. Replaces timeline and composer. -->
+  <sc-if value="{{gateOn}}" hint-placeholder-val="{false}">
+  <div class="pd-fadein" style="flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 24px 96px">
+    <div class="pd-rise" role="group" aria-labelledby="pd-gate-title" style="word-break: auto-phrase; text-wrap: pretty; width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; text-align: center">
+      <div style="width: 64px; height: 64px; border-radius: 18px; background: var(--accentsoft); color: var(--accent); display: flex; align-items: center; justify-content: center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.8"><rect x="4" y="5" width="16" height="11" rx="2"></rect><path d="M2 20h20M9 10.5l2 2 4-4"></path></svg></div>
+      <h2 id="pd-gate-title" style="margin: 20px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.25">{{F.gateTitle}}</h2>
+      <div style="width: 100%; margin-top: 24px; padding: 6px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 14px; background: var(--raised); text-align: left">
+        <sc-for list="{{gateOpts}}" as="g" hint-placeholder-count="2"><button class="pd-menuitem" onClick="{{g.run}}" style="width: 100%; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 10px; box-sizing: border-box; border: 0; border-radius: 10px; background: transparent; color: var(--ink); font-size: 15px; font-weight: 600; text-align: left; cursor: pointer"><span style="width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; background: var(--well); color: var(--muted); display: flex; align-items: center; justify-content: center"><sc-if value="{{g.icDevice}}" hint-placeholder-val="{true}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><rect x="2" y="4" width="14" height="10" rx="2"></rect><path d="M1 18h11"></path><rect x="17" y="8" width="6" height="12" rx="1.5"></rect></svg></sc-if><sc-if value="{{g.icKey}}" hint-placeholder-val="{false}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><circle cx="7.5" cy="15.5" r="4.5"></circle><path d="m10.7 12.3 9.8-9.8M17 6l3 3M14.5 8.5l2.5 2.5"></path></svg></sc-if></span><span style="flex: 1; min-width: 0">{{g.label}}</span><span style="display: flex; color: var(--subtle)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><path d="m9 6 6 6-6 6"></path></svg></span></button></sc-for>
+      </div>
+      <button class="pd-link" onClick="{{openReset}}" style="margin-top: 14px; height: 32px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer">{{F.cantConfirm}}</button>
+    </div>
+  </div>
+  </sc-if>
   <div aria-busy="{{tlBusy}}" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: {{tlDir}}{{tlX}}">
     <div style="padding: 12px 8px {{tlPadB}}">
       <sc-for list="{{tlSkel}}" as="k" hint-placeholder-count="0">
@@ -549,6 +562,10 @@ body{margin:0}
                   </div>
                 </div>
               </sc-if>
+              <sc-if value="{{m.isUtd}}" hint-placeholder-val="{{false}}">
+                <div style="display: flex; align-items: center; gap: 7px; font-size: 14px; line-height: 22px; color: var(--subtle)"><span style="flex-shrink: 0; display: flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" stroke-dasharray="2.6 2.6"></path></svg></span><span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{m.utdText}}</span></div>
+              </sc-if>
+              <sc-if value="{{m.isUtdWait}}" hint-placeholder-val="{{false}}"><div aria-hidden="true" style="padding: 6px 0 5px"><div class="pd-skel" style="width: 44%; height: 10px"></div></div></sc-if>
               <sc-if value="{{m.isUnsupported}}" hint-placeholder-val="{{false}}">
                 <div style="display: flex; align-items: center; gap: 7px; font-size: 14px; line-height: 22px; color: var(--subtle)"><span style="flex-shrink: 0; display: flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M21 8 12 3 3 8v8l9 5 9-5Z"></path><path d="m3 8 9 5 9-5M12 13v8"></path></svg></span><span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{m.unsupText}}</span></div>
               </sc-if>
@@ -803,7 +820,9 @@ body{margin:0}
         <div style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 8px; background: {{t.color}}; color: #FFFFFF; font-size: {{t.avFs}}; font-weight: 600; display: flex; align-items: center; justify-content: center">{{t.initials}}</div>
         <div style="min-width: 0">
           <div style="display: flex; align-items: baseline; gap: 8px; line-height: 20px"><span style="font-size: 14.5px; font-weight: 700">{{t.name}}</span><span style="font-size: 12px; color: var(--subtle)">{{t.time}}</span></div>
-          <div style="font-size: 14.5px; line-height: var(--lh)">{{t.text}}</div>
+          <sc-if value="{{t.plain}}" hint-placeholder-val="{{true}}"><div style="font-size: 14.5px; line-height: var(--lh)">{{t.text}}</div></sc-if>
+          <sc-if value="{{t.utd}}" hint-placeholder-val="{{false}}"><div style="display: flex; align-items: center; gap: 7px; font-size: 14px; line-height: 22px; color: var(--subtle)"><span style="flex-shrink: 0; display: flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" stroke-dasharray="2.6 2.6"></path></svg></span><span style="min-width: 0">{{t.utdText}}</span></div></sc-if>
+          <sc-if value="{{t.utdWait}}" hint-placeholder-val="{{false}}"><div aria-hidden="true" style="width: 180px; padding: 6px 0 5px"><div class="pd-skel" style="width: 100%; height: 10px"></div></div></sc-if>
         </div>
       </div>
     </sc-for>
@@ -1142,9 +1161,10 @@ body{margin:0}
       </div></sc-if>
       <sc-if value="{{sDevices}}" hint-placeholder-val="{false}"><div class="pd-fadein" style="display: flex; flex-direction: column; gap: 16px">
         <div role="list" style="border: 1px solid var(--line); border-radius: 12px; background: var(--bg)">
-          <sc-for list="{{devs}}" as="d" hint-placeholder-count="4"><div role="listitem" class="pd-rise" style="display: flex; align-items: center; gap: 14px; padding: 12px 12px 12px 16px; border-top: 1px solid var(--line); margin-top: -1px"><span style="width: 38px; height: 38px; flex-shrink: 0; border-radius: 10px; background: var(--well); color: var(--muted); display: flex; align-items: center; justify-content: center"><sc-if value="{{d.laptop}}" hint-placeholder-val="{true}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><rect x="4" y="5" width="16" height="11" rx="2"></rect><path d="M2 20h20"></path></svg></sc-if><sc-if value="{{d.phone}}" hint-placeholder-val="{false}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><rect x="7" y="2.5" width="10" height="19" rx="2.5"></rect><path d="M11 18.5h2"></path></svg></sc-if></span><span style="flex: 1; min-width: 0"><span style="display: flex; align-items: center; gap: 8px"><span style="min-width: 0; font-size: 14.5px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{d.name}}</span><sc-if value="{{d.current}}" hint-placeholder-val="{false}"><span style="flex-shrink: 0; font-size: 11.5px; font-weight: 700; color: var(--accent); background: var(--accentsoft); border-radius: 5px; padding: 1px 6px">{{D.thisDevice}}</span></sc-if></span><span style="display: block; margin-top: 2px; font-size: 13px; color: var(--subtle)">{{d.meta}}</span></span><sc-if value="{{d.other}}" hint-placeholder-val="{true}"><button class="pd-btn2" onClick="{{d.gone}}" style="flex-shrink: 0; height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--ink); font-size: 13.5px; font-weight: 600; cursor: pointer">{{D.signOut}}</button></sc-if></div></sc-for>
+          <sc-for list="{{devs}}" as="d" hint-placeholder-count="4"><div role="listitem" class="pd-rise" style="display: flex; align-items: center; gap: 14px; padding: 12px 12px 12px 16px; border-top: 1px solid var(--line); margin-top: -1px"><span style="width: 38px; height: 38px; flex-shrink: 0; border-radius: 10px; background: var(--well); color: var(--muted); display: flex; align-items: center; justify-content: center"><sc-if value="{{d.laptop}}" hint-placeholder-val="{true}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><rect x="4" y="5" width="16" height="11" rx="2"></rect><path d="M2 20h20"></path></svg></sc-if><sc-if value="{{d.phone}}" hint-placeholder-val="{false}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><rect x="7" y="2.5" width="10" height="19" rx="2.5"></rect><path d="M11 18.5h2"></path></svg></sc-if></span><span style="flex: 1; min-width: 0"><span style="display: flex; align-items: center; gap: 8px"><span style="min-width: 0; font-size: 14.5px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{d.name}}</span><sc-if value="{{d.current}}" hint-placeholder-val="{false}"><span style="flex-shrink: 0; font-size: 11.5px; font-weight: 700; color: var(--accent); background: var(--accentsoft); border-radius: 5px; padding: 1px 6px">{{D.thisDevice}}</span></sc-if><sc-if value="{{d.unconf}}" hint-placeholder-val="{false}"><span style="flex-shrink: 0; font-size: 11.5px; font-weight: 700; color: var(--muted); background: var(--well); border-radius: 5px; padding: 1px 6px">{{F.notConfirmed}}</span></sc-if></span><span style="display: block; margin-top: 2px; font-size: 13px; color: var(--subtle)">{{d.meta}}</span></span><sc-if value="{{d.confirm}}" hint-placeholder-val="{false}"><button onClick="{{d.runConfirm}}" style="flex-shrink: 0; height: 32px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--accent); color: var(--onaccent); font-size: 13.5px; font-weight: 600; cursor: pointer">{{F.confirm}}</button></sc-if><sc-if value="{{d.other}}" hint-placeholder-val="{true}"><button class="pd-btn2" onClick="{{d.gone}}" style="flex-shrink: 0; height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--ink); font-size: 13.5px; font-weight: 600; cursor: pointer">{{D.signOut}}</button></sc-if></div></sc-for>
         </div>
         <sc-if value="{{othersLeft}}" hint-placeholder-val="{true}"><button class="pd-btn2" onClick="{{signOutOthers}}" style="align-self: flex-start; display: flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: var(--dangertext); font-size: 14px; font-weight: 600; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5M21 12H9"></path></svg>{{D.signOutOthers}}</button></sc-if>
+        <sc-if value="{{rkRow}}" hint-placeholder-val="{false}"><div class="pd-rise" style="display: flex; align-items: center; gap: 14px; margin-top: 8px; padding: 12px 12px 12px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg)"><span style="width: 38px; height: 38px; flex-shrink: 0; border-radius: 10px; background: var(--well); color: var(--muted); display: flex; align-items: center; justify-content: center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><circle cx="7.5" cy="15.5" r="4.5"></circle><path d="m10.7 12.3 9.8-9.8M17 6l3 3M14.5 8.5l2.5 2.5"></path></svg></span><span style="flex: 1; min-width: 0; font-size: 14.5px; font-weight: 600; color: var(--ink)">{{F.recoveryKey}}</span><button class="pd-btn2" onClick="{{newKeyRun}}" style="flex-shrink: 0; height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--ink); font-size: 13.5px; font-weight: 600; cursor: pointer">{{F.newKeyShort}}</button></div></sc-if>
       </div></sc-if>
       </div>
     </div>
@@ -1253,6 +1273,153 @@ body{margin:0}
 </div>
 </sc-if>
 
+<!-- M6 dialogs: confirm this device (new device: waiting, compare, done/failed, recovery key, reset; device already signed in: approve, compare, done),
+     save the recovery key (first time and New recovery key, after the password when the server asks), sign-out warning. No crypto words. -->
+<sc-if value="{{cxWait}}" hint-placeholder-val="{false}">
+<div class="pd-fadein" style="position: absolute; inset: 0; z-index: 30; background: rgba(12,11,18,.5); display: flex; justify-content: center; align-items: flex-start; box-sizing: border-box; padding: 168px 16px 16px">
+  <div class="pd-pop" role="dialog" aria-modal="true" aria-labelledby="pd-cw-title" style="transform-origin: 50% 0; width: 100%; background: var(--raised); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; max-width: 440px; word-break: auto-phrase; text-wrap: pretty">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 20px 16px 0 24px"><h2 id="pd-cw-title" style="flex: 1; min-width: 0; margin: 0; font-size: 22px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-weight: 700; letter-spacing: -0.01em; letter-spacing: -0.015em">{{F.waitTitle}}</h2><button class="pd-ico" onClick="{{cxClose}}" aria-label="{{D.close}}" style="width: 34px; height: 34px; flex-shrink: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+    <div role="list" style="margin: 16px 24px 0; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); overflow: hidden"><sc-for list="{{waitDevs}}" as="wd" hint-placeholder-count="2"><div role="listitem"><div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-top: 1px solid var(--line); margin-top: -1px"><span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; background: var(--well); color: var(--muted); display: flex; align-items: center; justify-content: center"><sc-if value="{{wd.laptop}}" hint-placeholder-val="{true}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><rect x="4" y="5" width="16" height="11" rx="2"></rect><path d="M2 20h20"></path></svg></sc-if><sc-if value="{{wd.phone}}" hint-placeholder-val="{false}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><rect x="7" y="2.5" width="10" height="19" rx="2.5"></rect><path d="M11 18.5h2"></path></svg></sc-if></span><span style="flex: 1; min-width: 0"><span style="display: block; font-size: 14.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{wd.name}}</span><span style="display: block; margin-top: 1px; font-size: 13px; color: var(--subtle); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{wd.meta}}</span></span></div></div></sc-for></div>
+    <div role="status" style="display: flex; justify-content: center; gap: 5px; padding: 18px 0 0"><span class="pd-dot" style="width: 6px; height: 6px; border-radius: 3px; background: var(--subtle)"></span><span class="pd-dot" style="width: 6px; height: 6px; border-radius: 3px; background: var(--subtle); animation-delay: .15s"></span><span class="pd-dot" style="width: 6px; height: 6px; border-radius: 3px; background: var(--subtle); animation-delay: .3s"></span><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">{{F.waiting}}</span></div>
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--line); background: var(--well); margin-top: 22px">
+      <button class="pd-btn2" onClick="{{cxClose}}" style="height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">{{txCancel}}</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{cxCompare}}" hint-placeholder-val="{false}">
+<div class="pd-fadein" style="position: absolute; inset: 0; z-index: 30; background: rgba(12,11,18,.5); display: flex; justify-content: center; align-items: flex-start; box-sizing: border-box; padding: 168px 16px 16px">
+  <div class="pd-pop" role="dialog" aria-modal="true" aria-labelledby="pd-cc2-title" style="transform-origin: 50% 0; width: 100%; background: var(--raised); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; max-width: 500px; word-break: auto-phrase; text-wrap: pretty">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 20px 16px 0 24px"><h2 id="pd-cc2-title" style="flex: 1; min-width: 0; margin: 0; font-size: 22px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-weight: 700; letter-spacing: -0.01em; letter-spacing: -0.015em">{{cmpTitle}}</h2><button class="pd-ico" onClick="{{cxClose}}" aria-label="{{D.close}}" style="width: 34px; height: 34px; flex-shrink: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+    <div role="list" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin: 18px 20px 0; padding: 14px 6px 12px; border-radius: 14px; background: var(--well)"><sc-for list="{{sas}}" as="e" hint-placeholder-count="7"><div role="listitem" class="pd-rise" style="display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0"><span aria-hidden="true" style="font-size: 32px; line-height: 40px">{{e.e}}</span><span style="max-width: 100%; font-size: 11.5px; font-weight: 600; color: var(--muted); text-align: center; line-height: 1.3; overflow-wrap: anywhere">{{e.label}}</span></div></sc-for></div>
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--line); background: var(--well); margin-top: 22px">
+      <button class="pd-btn2" onClick="{{cmpNoMatch}}" style="height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">{{F.noMatch}}</button>
+      <button onClick="{{cmpMatch}}" style="height: 36px; padding: 0 16px; border: 0; border-radius: 9px; background: var(--accent); color: var(--onaccent); font-size: 14px; font-weight: 600; cursor: pointer">{{F.match}}</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{cxEnd}}" hint-placeholder-val="{false}">
+<div class="pd-fadein" style="position: absolute; inset: 0; z-index: 30; background: rgba(12,11,18,.5); display: flex; justify-content: center; align-items: flex-start; box-sizing: border-box; padding: 168px 16px 16px">
+  <div class="pd-pop" role="{{endRole}}" aria-modal="true" aria-labelledby="pd-ce-title" style="transform-origin: 50% 0; width: 100%; background: var(--raised); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; max-width: 440px; word-break: auto-phrase; text-wrap: pretty">
+    <sc-if value="{{endOk}}" hint-placeholder-val="{true}">    <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 34px 24px 6px; text-align: center"><span class="pd-pop" style="width: 56px; height: 56px; border-radius: 28px; background: var(--accent); color: var(--onaccent); display: flex; align-items: center; justify-content: center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.6"><path d="M20 6 9 17l-5-5"></path></svg></span><h2 id="pd-ce-title" style="margin: 0; font-size: 21px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-weight: 700; letter-spacing: -0.01em; letter-spacing: -0.015em; line-height: 1.3">{{endTitle}}</h2></div>
+    <div style="height: 30px"></div></sc-if>
+    <sc-if value="{{endFail}}" hint-placeholder-val="{false}">    <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 34px 24px 6px; text-align: center"><span class="pd-pop" style="width: 56px; height: 56px; border-radius: 28px; background: var(--well); color: var(--muted); display: flex; align-items: center; justify-content: center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4.5M12 16h.01"></path></svg></span><h2 id="pd-ce-title" style="margin: 0; font-size: 21px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-weight: 700; letter-spacing: -0.01em; letter-spacing: -0.015em; line-height: 1.3">{{endTitle}}</h2></div>
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--line); background: var(--well); margin-top: 22px">
+      <button class="pd-btn2" onClick="{{toKey}}" style="height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">{{F.useKey}}</button>
+      <button onClick="{{toWait}}" style="height: 36px; padding: 0 16px; border: 0; border-radius: 9px; background: var(--accent); color: var(--onaccent); font-size: 14px; font-weight: 600; cursor: pointer">{{F.tryAgain}}</button>
+    </div>
+    </sc-if>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{cxApprove}}" hint-placeholder-val="{false}">
+<div class="pd-fadein" style="position: absolute; inset: 0; z-index: 30; background: rgba(12,11,18,.5); display: flex; justify-content: center; align-items: flex-start; box-sizing: border-box; padding: 168px 16px 16px">
+  <div class="pd-pop" role="alertdialog" aria-modal="true" aria-labelledby="pd-ca-title" style="transform-origin: 50% 0; width: 100%; background: var(--raised); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; max-width: 440px; word-break: auto-phrase; text-wrap: pretty">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 20px 16px 0 24px"><h2 id="pd-ca-title" style="flex: 1; min-width: 0; margin: 0; font-size: 22px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-weight: 700; letter-spacing: -0.01em; letter-spacing: -0.015em">{{F.approveTitle}}</h2><button class="pd-ico" onClick="{{approveNo}}" aria-label="{{D.close}}" style="width: 34px; height: 34px; flex-shrink: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+    <div style="margin: 16px 24px 0; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); overflow: hidden"><div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-top: 1px solid var(--line); margin-top: -1px"><span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; background: var(--well); color: var(--muted); display: flex; align-items: center; justify-content: center"><sc-if value="{{approveDev.laptop}}" hint-placeholder-val="{true}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><rect x="4" y="5" width="16" height="11" rx="2"></rect><path d="M2 20h20"></path></svg></sc-if><sc-if value="{{approveDev.phone}}" hint-placeholder-val="{false}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="1.9"><rect x="7" y="2.5" width="10" height="19" rx="2.5"></rect><path d="M11 18.5h2"></path></svg></sc-if></span><span style="flex: 1; min-width: 0"><span style="display: block; font-size: 14.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{approveDev.name}}</span><span style="display: block; margin-top: 1px; font-size: 13px; color: var(--subtle); overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{approveDev.meta}}</span></span></div></div>
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--line); background: var(--well); margin-top: 22px">
+      <button class="pd-btn2" onClick="{{approveNo}}" style="height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">{{F.notMe}}</button>
+      <button onClick="{{approveYes}}" style="height: 36px; padding: 0 16px; border: 0; border-radius: 9px; background: var(--accent); color: var(--onaccent); font-size: 14px; font-weight: 600; cursor: pointer">{{F.itsMe}}</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{cxKey}}" hint-placeholder-val="{false}">
+<div class="pd-fadein" style="position: absolute; inset: 0; z-index: 30; background: rgba(12,11,18,.5); display: flex; justify-content: center; align-items: flex-start; box-sizing: border-box; padding: 168px 16px 16px">
+  <div class="pd-pop" role="dialog" aria-modal="true" aria-labelledby="pd-ck-title" style="transform-origin: 50% 0; width: 100%; background: var(--raised); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; max-width: 440px; word-break: auto-phrase; text-wrap: pretty">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 20px 16px 0 24px"><h2 id="pd-ck-title" style="flex: 1; min-width: 0; margin: 0; font-size: 22px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-weight: 700; letter-spacing: -0.01em; letter-spacing: -0.015em">{{F.keyTitle}}</h2><button class="pd-ico" onClick="{{cxClose}}" aria-label="{{D.close}}" style="width: 34px; height: 34px; flex-shrink: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+    <div style="margin: 16px 24px 0">
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 12px; box-sizing: border-box; border: 1.5px solid {{keyBorder}}; border-radius: 11px; background: var(--bg); box-shadow: {{keyRing}}; transition: border-color var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out)"><div role="textbox" id="pd-ck-key" aria-label="{{F.keyLabel}}" aria-invalid="{{keyInvalid}}" aria-multiline="true" style="flex: 1; min-width: 0; padding: 11px 0; font-family: var(--mono); font-size: 15px; letter-spacing: .03em; line-height: 1.6; color: var(--ink); word-break: normal">{{keyText}}<span class="pd-caret" aria-hidden="true"></span></div></div>
+      <sc-if value="{{keyWrong}}" hint-placeholder-val="{false}"><div role="alert" class="pd-fadein" style="display: flex; align-items: center; gap: 7px; margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--dangertext)"><span style="display: flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4.5M12 16h.01"></path></svg></span>{{F.keyWrong}}</div></sc-if>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--line); background: var(--well); margin-top: 22px">
+      <button class="pd-btn2" onClick="{{cxClose}}" style="height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">{{txCancel}}</button>
+      <button onClick="{{doKey}}" style="height: 36px; padding: 0 16px; border: 0; border-radius: 9px; background: var(--accent); color: var(--onaccent); font-size: 14px; font-weight: 600; cursor: pointer">{{F.confirm}}</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{cxReset}}" hint-placeholder-val="{false}">
+<div class="pd-fadein" style="position: absolute; inset: 0; z-index: 30; background: rgba(12,11,18,.5); display: flex; justify-content: center; align-items: flex-start; box-sizing: border-box; padding: 168px 16px 16px">
+  <div class="pd-pop" role="alertdialog" aria-modal="true" aria-labelledby="pd-cr-title" style="transform-origin: 50% 0; width: 100%; background: var(--raised); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; max-width: 480px; word-break: auto-phrase; text-wrap: pretty">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 20px 16px 0 24px"><h2 id="pd-cr-title" style="flex: 1; min-width: 0; margin: 0; font-size: 22px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-weight: 700; letter-spacing: -0.01em; letter-spacing: -0.015em">{{F.resetTitle}}</h2><button class="pd-ico" onClick="{{cxClose}}" aria-label="{{D.close}}" style="width: 34px; height: 34px; flex-shrink: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+    <div role="list" style="margin: 16px 24px 0; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); overflow: hidden; padding: 4px 0"><div role="listitem" style="display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px"><span style="display: flex; flex-shrink: 0; margin-top: 2px; color: var(--dangertext)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M9.9 4.2A9.8 9.8 0 0 1 12 4c6.5 0 10 8 10 8a17.7 17.7 0 0 1-2.2 3.2M6.6 6.6A17.6 17.6 0 0 0 2 12s3.5 8 10 8a9.7 9.7 0 0 0 5.4-1.6"></path><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2M2 2l20 20"></path></svg></span><span style="font-size: 14px; line-height: 1.5">{{F.resetLoss}}</span></div><div role="listitem" style="display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line)"><span style="display: flex; flex-shrink: 0; margin-top: 2px; color: var(--muted)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"></path><path d="M21 3v5h-5"></path></svg></span><span style="font-size: 14px; line-height: 1.5">{{F.resetOthers}}</span></div></div>
+    <div style="margin: 16px 24px 0">
+      <label for="pd-cr-pw" style="display: block; margin: 0 0 7px; font-size: 13.5px; font-weight: 600; color: var(--ink)">{{F.password}}</label>
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 12px; box-sizing: border-box; border: 1.5px solid {{pwBorder}}; border-radius: 11px; background: var(--bg); box-shadow: {{pwRing}}; transition: border-color var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out)"><input id="pd-cr-pw" class="pd-input" type="password" aria-label="{{F.password}}" aria-invalid="{{pwInvalid}}" value="harbour-lights" style="flex: 1; min-width: 0; height: 40px; border: 0; padding: 0; background: transparent; color: var(--ink); font-family: inherit; font-size: 15px"></div>
+      <sc-if value="{{pwWrong}}" hint-placeholder-val="{false}"><div role="alert" class="pd-fadein" style="display: flex; align-items: center; gap: 7px; margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--dangertext)"><span style="display: flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4.5M12 16h.01"></path></svg></span>{{F.wrongPassword}}</div></sc-if>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--line); background: var(--well); margin-top: 22px">
+      <button class="pd-btn2" onClick="{{cxClose}}" style="height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">{{txCancel}}</button>
+      <button onClick="{{doReset}}" style="height: 36px; padding: 0 16px; border: 0; border-radius: 9px; background: var(--danger); color: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer">{{F.reset}}</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{cxPassword}}" hint-placeholder-val="{false}">
+<div class="pd-fadein" style="position: absolute; inset: 0; z-index: 30; background: rgba(12,11,18,.5); display: flex; justify-content: center; align-items: flex-start; box-sizing: border-box; padding: 168px 16px 16px">
+  <div class="pd-pop" role="dialog" aria-modal="true" aria-labelledby="pd-cp-title" style="transform-origin: 50% 0; width: 100%; background: var(--raised); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; max-width: 440px; word-break: auto-phrase; text-wrap: pretty">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 20px 16px 0 24px"><h2 id="pd-cp-title" style="flex: 1; min-width: 0; margin: 0; font-size: 22px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-weight: 700; letter-spacing: -0.01em; letter-spacing: -0.015em">{{F.pwTitle}}</h2><button class="pd-ico" onClick="{{cxClose}}" aria-label="{{D.close}}" style="width: 34px; height: 34px; flex-shrink: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+    <div style="margin: 16px 24px 0">
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 12px; box-sizing: border-box; border: 1.5px solid {{pwBorder}}; border-radius: 11px; background: var(--bg); box-shadow: {{pwRing}}; transition: border-color var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out)"><input id="pd-cp-pw" class="pd-input" type="password" aria-label="{{F.password}}" aria-invalid="{{pwInvalid}}" value="harbour-lights" style="flex: 1; min-width: 0; height: 40px; border: 0; padding: 0; background: transparent; color: var(--ink); font-family: inherit; font-size: 15px"></div>
+      <sc-if value="{{pwWrong}}" hint-placeholder-val="{false}"><div role="alert" class="pd-fadein" style="display: flex; align-items: center; gap: 7px; margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--dangertext)"><span style="display: flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.2"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4.5M12 16h.01"></path></svg></span>{{F.wrongPassword}}</div></sc-if>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--line); background: var(--well); margin-top: 22px">
+      <button class="pd-btn2" onClick="{{cxClose}}" style="height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">{{txCancel}}</button>
+      <button onClick="{{doPassword}}" style="height: 36px; padding: 0 16px; border: 0; border-radius: 9px; background: var(--accent); color: var(--onaccent); font-size: 14px; font-weight: 600; cursor: pointer">{{F.cont}}</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{cxSave}}" hint-placeholder-val="{false}">
+<div class="pd-fadein" style="position: absolute; inset: 0; z-index: 30; background: rgba(12,11,18,.5); display: flex; justify-content: center; align-items: flex-start; box-sizing: border-box; padding: 168px 16px 16px">
+  <div class="pd-pop" role="dialog" aria-modal="true" aria-labelledby="pd-cs-title" style="transform-origin: 50% 0; width: 100%; background: var(--raised); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; max-width: 440px; word-break: auto-phrase; text-wrap: pretty">
+    <div style="padding: 22px 24px 0"><h2 id="pd-cs-title" style="flex: 1; min-width: 0; margin: 0; font-size: 22px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-weight: 700; letter-spacing: -0.01em; letter-spacing: -0.015em">{{F.saveTitle}}</h2></div>
+    <div style="margin: 18px 24px 0; padding: 18px 16px; border-radius: 14px; background: var(--well); display: flex; flex-direction: column; align-items: center; gap: 2px"><sc-for list="{{keyGroups}}" as="kg" hint-placeholder-count="3"><span style="font-family: var(--mono); font-size: 17px; font-weight: 600; letter-spacing: .06em; line-height: 1.75; color: var(--ink); white-space: nowrap">{{kg}}</span></sc-for></div>
+    <span aria-live="polite" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">{{keyLive}}</span>
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--line); background: var(--well); margin-top: 22px">
+      <button class="pd-btn2" onClick="{{copyKey}}" style="height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer; margin-right: auto; display: flex; align-items: center; gap: 7px"><sc-if value="{{keyIdle}}" hint-placeholder-val="{true}"><span style="display: flex; color: var(--muted)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg></span>{{F.copy}}</sc-if><sc-if value="{{keyCopied}}" hint-placeholder-val="{false}"><span class="pd-pop" style="display: flex; color: var(--accent)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2.6"><path d="M20 6 9 17l-5-5"></path></svg></span>{{F.copied}}</sc-if></button>
+      <button onClick="{{doSaved}}" style="height: 36px; padding: 0 16px; border: 0; border-radius: 9px; background: var(--accent); color: var(--onaccent); font-size: 14px; font-weight: 600; cursor: pointer">{{F.saved}}</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{cxSignOut}}" hint-placeholder-val="{false}">
+<div class="pd-fadein" style="position: absolute; inset: 0; z-index: 30; background: rgba(12,11,18,.5); display: flex; justify-content: center; align-items: flex-start; box-sizing: border-box; padding: 168px 16px 16px">
+  <div class="pd-pop" role="alertdialog" aria-modal="true" aria-labelledby="pd-so-title" style="transform-origin: 50% 0; width: 100%; background: var(--raised); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; max-width: 480px; word-break: auto-phrase; text-wrap: pretty">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 20px 16px 0 24px"><h2 id="pd-so-title" style="flex: 1; min-width: 0; margin: 0; font-size: 22px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-weight: 700; letter-spacing: -0.01em; letter-spacing: -0.015em">{{F.signOutQ}}</h2><button class="pd-ico" onClick="{{cxClose}}" aria-label="{{D.close}}" style="width: 34px; height: 34px; flex-shrink: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+    <div style="margin: 16px 24px 0; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); overflow: hidden; display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px"><span style="display: flex; flex-shrink: 0; margin-top: 2px; color: var(--muted)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><circle cx="7.5" cy="15.5" r="4.5"></circle><path d="m10.7 12.3 9.8-9.8M17 6l3 3M14.5 8.5l2.5 2.5"></path></svg></span><span style="font-size: 14px; line-height: 1.55">{{F.signOutKey}}</span></div>
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--line); background: var(--well); margin-top: 22px">
+      <button class="pd-link" onClick="{{toSave}}" style="height: 36px; padding: 0 6px; border: 0; border-radius: 8px; background: transparent; color: var(--link); font-size: 14px; font-weight: 600; cursor: pointer; margin-right: auto">{{F.newKey}}</button>
+      <button class="pd-btn2" onClick="{{cxClose}}" style="height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">{{txCancel}}</button>
+      <button onClick="{{cxClose}}" style="height: 36px; padding: 0 16px; border: 0; border-radius: 9px; background: var(--danger); color: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer">{{txSignOut}}</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{cxSignOutNB}}" hint-placeholder-val="{false}">
+<div class="pd-fadein" style="position: absolute; inset: 0; z-index: 30; background: rgba(12,11,18,.5); display: flex; justify-content: center; align-items: flex-start; box-sizing: border-box; padding: 168px 16px 16px">
+  <div class="pd-pop" role="alertdialog" aria-modal="true" aria-labelledby="pd-sn-title" style="transform-origin: 50% 0; width: 100%; background: var(--raised); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; max-width: 480px; word-break: auto-phrase; text-wrap: pretty">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 20px 16px 0 24px"><h2 id="pd-sn-title" style="flex: 1; min-width: 0; margin: 0; font-size: 22px; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-weight: 700; letter-spacing: -0.01em; letter-spacing: -0.015em">{{F.signOutLoseQ}}</h2><button class="pd-ico" onClick="{{cxClose}}" aria-label="{{D.close}}" style="width: 34px; height: 34px; flex-shrink: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+    <div style="margin: 16px 24px 0; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); overflow: hidden; display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px"><span style="display: flex; flex-shrink: 0; margin-top: 2px; color: var(--dangertext)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" stroke-width="2"><path d="M9.9 4.2A9.8 9.8 0 0 1 12 4c6.5 0 10 8 10 8a17.7 17.7 0 0 1-2.2 3.2M6.6 6.6A17.6 17.6 0 0 0 2 12s3.5 8 10 8a9.7 9.7 0 0 0 5.4-1.6"></path><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2M2 2l20 20"></path></svg></span><span style="font-size: 14px; line-height: 1.55">{{F.signOutLose}}</span></div>
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--line); background: var(--well); margin-top: 22px">
+      <button class="pd-btn2" onClick="{{cxClose}}" style="height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer; color: var(--dangertext)">{{F.signOutAnyway}}</button>
+      <button onClick="{{toSave}}" style="height: 36px; padding: 0 16px; border: 0; border-radius: 9px; background: var(--accent); color: var(--onaccent); font-size: 14px; font-weight: 600; cursor: pointer">{{F.saveKeyBtn}}</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
 <!-- Profile menu: language switch -->
 <sc-if value="{{menuOpen}}" hint-placeholder-val="{{false}}">
 <div role="menu" aria-label="{{meName}}" style="position: absolute; left: 76px; bottom: 12px; z-index: 35; width: 264px; padding: 6px; box-sizing: border-box; background: var(--raised); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow)">
@@ -1277,7 +1444,7 @@ body{margin:0}
 </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"perspective":{"editor":"enum","options":["team","client","guest"],"default":"team"},"showThread":{"editor":"boolean","default":true},"openModal":{"editor":"enum","options":["none","invite"],"default":"none"},"locale":{"editor":"enum","options":["en","ja"],"default":"en"},"shell":{"editor":"enum","options":["ready","syncing"],"default":"ready"},"connection":{"editor":"enum","options":["online","offline","reconnecting","restored"],"default":"online"},"timeline":{"editor":"enum","options":["ready","loading","older"],"default":"ready"},"outgoing":{"editor":"enum","options":["none","sending","failed"],"default":"none"},"layout":{"editor":"enum","options":["wide","1024","800"],"default":"wide"},"drawer":{"editor":"boolean","default":false},"openMenu":{"editor":"enum","options":["none","profile","workspace","channelAdd"],"default":"none"},"page":{"editor":"enum","options":["channel","unavailable"],"default":"channel"},"content":{"editor":"enum","options":["none","images","media","files","text","long","replies","rows","reactions"],"default":"none"},"hover":{"editor":"enum","options":["none","message"],"default":"none"},"msgMenu":{"editor":"enum","options":["none","own","others"],"default":"none"},"editing":{"editor":"boolean","default":false},"confirm":{"editor":"enum","options":["none","delete"],"default":"none"},"composerState":{"editor":"enum","options":["empty","format","reply","upload","failed","paste","mention","emoji","link"],"default":"empty"},"drop":{"editor":"boolean","default":false},"viewer":{"editor":"boolean","default":false},"newLine":{"editor":"enum","options":["none","new","jump"],"default":"none"},"notify":{"editor":"enum","options":["none","ask"],"default":"none"},"toast":{"editor":"enum","options":["none","linkCopied"],"default":"none"},"milestone":{"editor":"enum","options":["m2","m3","m4","m5"],"default":"m2"},"view":{"editor":"enum","options":["channel","threads","activity","drafts","dms","dm","browse"],"default":"channel"},"activityFilter":{"editor":"enum","options":["all","mentions","replies"],"default":"all"},"listState":{"editor":"enum","options":["ready","empty"],"default":"ready"},"dmState":{"editor":"enum","options":["history","empty"],"default":"history"},"threadState":{"editor":"enum","options":["ready","empty","loading","error"],"default":"ready"},"threadDraft":{"editor":"boolean","default":false},"picker":{"editor":"enum","options":["none","search","group"],"default":"none"},"profile":{"editor":"boolean","default":false},"pane":{"editor":"enum","options":["list","detail"],"default":"list"},"composer":{"editor":"enum","options":["inline","float"],"default":"inline"},"space":{"editor":"enum","options":["pasodrum","nordlys"],"default":"pasodrum"},"myRole":{"editor":"enum","options":["admin","owner","member"],"default":"admin"},"sheet":{"editor":"enum","options":["none","create","details","leave","makeOwner","settings","spaceSettings","removePerson","archiveSpace","anotherApp"],"default":"none"},"createState":{"editor":"enum","options":["ready","space","taken"],"default":"ready"},"detailsTab":{"editor":"enum","options":["about","members","settings"],"default":"about"},"memberMenu":{"editor":"enum","options":["none","pending"],"default":"none"},"profileRole":{"editor":"boolean","default":false},"addState":{"editor":"enum","options":["ready","errors"],"default":"ready"},"settingsTab":{"editor":"enum","options":["profile","notifications","appearance","devices"],"default":"profile"},"firstRun":{"editor":"boolean","default":false},"channel":{"editor":"enum","options":["start","lead"],"default":"start"},"roleTarget":{"editor":"enum","options":["admin","owner"],"default":"admin"},"dmWith":{"editor":"enum","options":["jb","hd"],"default":"jb"},"spaceTab":{"editor":"enum","options":["general","people"],"default":"general"},"spaceMenu":{"editor":"enum","options":["none","person"],"default":"none"},"archived":{"editor":"boolean","default":false},"fresh":{"editor":"boolean","default":false},"copied":{"editor":"enum","options":["none","server","username"],"default":"none"},"$preview":{"width":1440,"height":900}}'>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"perspective":{"editor":"enum","options":["team","client","guest"],"default":"team"},"showThread":{"editor":"boolean","default":true},"openModal":{"editor":"enum","options":["none","invite"],"default":"none"},"locale":{"editor":"enum","options":["en","ja"],"default":"en"},"shell":{"editor":"enum","options":["ready","syncing"],"default":"ready"},"connection":{"editor":"enum","options":["online","offline","reconnecting","restored"],"default":"online"},"timeline":{"editor":"enum","options":["ready","loading","older"],"default":"ready"},"outgoing":{"editor":"enum","options":["none","sending","failed"],"default":"none"},"layout":{"editor":"enum","options":["wide","1024","800"],"default":"wide"},"drawer":{"editor":"boolean","default":false},"openMenu":{"editor":"enum","options":["none","profile","workspace","channelAdd"],"default":"none"},"page":{"editor":"enum","options":["channel","unavailable"],"default":"channel"},"content":{"editor":"enum","options":["none","images","media","files","text","long","replies","rows","reactions"],"default":"none"},"hover":{"editor":"enum","options":["none","message"],"default":"none"},"msgMenu":{"editor":"enum","options":["none","own","others"],"default":"none"},"editing":{"editor":"boolean","default":false},"confirm":{"editor":"enum","options":["none","delete"],"default":"none"},"composerState":{"editor":"enum","options":["empty","format","reply","upload","failed","paste","mention","emoji","link"],"default":"empty"},"drop":{"editor":"boolean","default":false},"viewer":{"editor":"boolean","default":false},"newLine":{"editor":"enum","options":["none","new","jump"],"default":"none"},"notify":{"editor":"enum","options":["none","ask"],"default":"none"},"toast":{"editor":"enum","options":["none","linkCopied"],"default":"none"},"milestone":{"editor":"enum","options":["m2","m3","m4","m5","m6"],"default":"m2"},"view":{"editor":"enum","options":["channel","threads","activity","drafts","dms","dm","browse"],"default":"channel"},"activityFilter":{"editor":"enum","options":["all","mentions","replies"],"default":"all"},"listState":{"editor":"enum","options":["ready","empty"],"default":"ready"},"dmState":{"editor":"enum","options":["history","empty"],"default":"history"},"threadState":{"editor":"enum","options":["ready","empty","loading","error"],"default":"ready"},"threadDraft":{"editor":"boolean","default":false},"picker":{"editor":"enum","options":["none","search","group"],"default":"none"},"profile":{"editor":"boolean","default":false},"pane":{"editor":"enum","options":["list","detail"],"default":"list"},"composer":{"editor":"enum","options":["inline","float"],"default":"inline"},"space":{"editor":"enum","options":["pasodrum","nordlys"],"default":"pasodrum"},"myRole":{"editor":"enum","options":["admin","owner","member"],"default":"admin"},"sheet":{"editor":"enum","options":["none","create","details","leave","makeOwner","settings","spaceSettings","removePerson","archiveSpace","anotherApp"],"default":"none"},"createState":{"editor":"enum","options":["ready","space","taken"],"default":"ready"},"detailsTab":{"editor":"enum","options":["about","members","settings"],"default":"about"},"memberMenu":{"editor":"enum","options":["none","pending"],"default":"none"},"profileRole":{"editor":"boolean","default":false},"addState":{"editor":"enum","options":["ready","errors"],"default":"ready"},"settingsTab":{"editor":"enum","options":["profile","notifications","appearance","devices"],"default":"profile"},"firstRun":{"editor":"boolean","default":false},"channel":{"editor":"enum","options":["start","lead"],"default":"start"},"roleTarget":{"editor":"enum","options":["admin","owner"],"default":"admin"},"dmWith":{"editor":"enum","options":["jb","hd"],"default":"jb"},"spaceTab":{"editor":"enum","options":["general","people"],"default":"general"},"spaceMenu":{"editor":"enum","options":["none","person"],"default":"none"},"archived":{"editor":"boolean","default":false},"fresh":{"editor":"boolean","default":false},"copied":{"editor":"enum","options":["none","server","username"],"default":"none"},"gate":{"editor":"enum","options":["none","device","nodevice"],"default":"none"},"cx":{"editor":"enum","options":["none","waiting","compare","done","failed","keyEnter","keyWrong","reset","resetWrong","approve","approveCompare","approveDone","password","passwordWrong","saveKey","signOut","signOutNoBackup"],"default":"none"},"cxReason":{"editor":"enum","options":["declined","timeout","mismatch"],"default":"declined"},"keyCopied":{"editor":"boolean","default":false},"utd":{"editor":"boolean","default":false},"devState":{"editor":"enum","options":["confirmed","unconfirmed"],"default":"confirmed"},"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -1798,7 +1965,7 @@ class Component extends DCLogic {
       : [mk('copy', TB.copyText, 'copy'), mk('link', TB.copyMsgLink, 'link')];
     const tipNames = x.tip ? x.tip.names.map((k) => P[k].n).concat(x.tip.you ? [TB.you] : []) : [];
     return {
-      hasParts: !x.blocks && x.unsup === undefined && !editing,
+      hasParts: !x.blocks && x.unsup === undefined && !x.utd && !x.utdWait && !editing,
       hasBlocks: !!x.blocks && !editing,
       blocks: x.blocks ? this.blk(x.blocks, x.edited ? TB.edited : '') : [],
       collapsed,
@@ -1811,6 +1978,7 @@ class Component extends DCLogic {
       isEditing: editing, editText: editing ? this.plainText(x) : '',
       cancelEdit: () => this.setState({ editAt: -1 }),
       isUnsupported: x.unsup !== undefined, unsupText: x.unsup ? x.unsup : TB.cantShow,
+      isUtd: !!x.utd, isUtdWait: !!x.utdWait, utdText: x.utd > 1 ? this.stringsF(ja).utdN(x.utd) : this.stringsF(ja).utd,
       hasImg1: !!im, img1W: im ? im.w + 'px' : '0', img1H: im ? im.h + 'px' : '0',
       img1Art: im ? this.art(im.art) : '', img1Label: im ? TB.openImage(im.name) : '',
       hasGrid: g.length > 1, gridRow: g.length === 2 ? '200px' : '132px',
@@ -2220,7 +2388,7 @@ class Component extends DCLogic {
     });
     const lang = seg(!ja), langJ = seg(ja);
     const devGone = s.devGone || {};
-    const devs = D.devicesList.map((d, i) => ({ laptop: d[0] === 'laptop', phone: d[0] === 'phone', name: d[1], meta: d[2], current: i === 0, other: i > 0 && !devGone[i], gone: () => this.setState({ devGone: Object.assign({}, devGone, { [i]: true }) }) })).filter((d) => d.current || d.other);
+    const devs = D.devicesList.map((d, i) => ({ laptop: d[0] === 'laptop', phone: d[0] === 'phone', name: d[1], meta: d[2], current: i === 0, unconf: false, confirm: false, other: i > 0 && !devGone[i], gone: () => this.setState({ devGone: Object.assign({}, devGone, { [i]: true }) }) })).filter((d) => d.current || d.other);
 
     // Profile card role (D-25: Owners make and remove Owners; Owners and Admins switch Member <-> Admin; everyone sees Owner/Admin tags)
     const roleOf = { ih: 'owner', jb: 'admin', so: myRole };
@@ -2405,9 +2573,151 @@ class Component extends DCLogic {
     };
   }
 
+  // ---- Batch F (M6: confirm this device, recovery key, undecryptable rows, sign-out warning) ----
+  // No crypto words in the UI: a device is "confirmed", the one secret people keep is the "recovery key",
+  // a message we can't open here is "not available on this device". A lock still only means private (D-11).
+  stringsF(ja) {
+    if (ja) return {
+      gateTitle: 'このデバイスを確認', useDevice: 'ほかのデバイスで確認', useKey: 'リカバリーキーで確認', cantConfirm: '確認できない場合',
+      waitTitle: 'ほかのデバイスで承認してください', waiting: '承認を待っています',
+      compareTitle: 'ほかのデバイスと同じですか？', compareOn: (d) => d + ' と同じですか？', match: '同じです', noMatch: '違います',
+      done: 'デバイスを確認しました', doneOn: (d) => d + ' を確認しました',
+      declined: (d) => d + ' で拒否されました', timeout: 'ほかのデバイスから応答がありません', mismatch: '絵文字が一致しませんでした', tryAgain: 'もう一度',
+      keyTitle: 'リカバリーキーを入力', keyLabel: 'リカバリーキー', keyWrong: 'リカバリーキーが違います', confirm: '確認',
+      resetTitle: 'リセットしてやり直しますか？', resetLoss: 'DM と非公開チャンネルの過去のメッセージは見られなくなります', resetOthers: 'ほかのデバイスはもう一度確認が必要になります',
+      password: 'パスワード', wrongPassword: 'パスワードが違います', reset: 'リセット',
+      approveTitle: 'このサインインはあなたですか？', notMe: 'いいえ', itsMe: 'はい、私です',
+      pwTitle: 'パスワードを入力', cont: '続ける',
+      saveTitle: 'リカバリーキーを保存', copy: 'コピー', copied: 'コピーしました', saved: '保存しました',
+      utd: 'このデバイスでは表示できません', utdN: (n) => n + ' 件のメッセージはこのデバイスでは表示できません',
+      signOutQ: 'サインアウトしますか？', signOutKey: '過去の DM と非公開チャンネルをもう一度読むには、リカバリーキーが必要です。', newKey: '新しいリカバリーキー',
+      signOutLoseQ: 'サインアウトして過去のメッセージを失いますか？', signOutLose: 'DM と非公開チャンネルの過去のメッセージは、このデバイスにしかありません。',
+      signOutAnyway: 'それでもサインアウト', saveKeyBtn: 'リカバリーキーを保存',
+      notConfirmed: '未確認', recoveryKey: 'リカバリーキー', newKeyShort: '新しいキー',
+      sas: [['🐶', '犬'], ['🦄', 'ユニコーン'], ['🌵', 'サボテン'], ['🍕', 'ピザ'], ['🚀', 'ロケット'], ['🎸', 'ギター'], ['🐧', 'ペンギン']],
+      devA: ['Mac の Safari', '東京 · 使用中'], devB: ['Mac の Chrome', '東京 · 5 分前'], devX: ['iPhone の Element X', '大阪 · 昨日'], devW: ['Windows の Firefox', '東京 · 11月12日'],
+      devAnew: ['Mac の Safari', '東京 · たった今'], devBcur: ['Mac の Chrome', '東京 · 使用中'],
+      leadRoot: 'Q1 の計画ドキュメントを上げました。金曜までに各チームの優先事項を追記してください。', leadReply: 'うちのチームは追記しました。一番大きいのは採用です。',
+      yesterday: '昨日', today: '今日'
+    };
+    return {
+      gateTitle: 'Confirm this device', useDevice: 'Use another device', useKey: 'Use recovery key', cantConfirm: 'Can’t confirm?',
+      waitTitle: 'Approve on your other device', waiting: 'Waiting for approval',
+      compareTitle: 'Do these match your other device?', compareOn: (d) => 'Do these match ' + d + '?', match: 'They match', noMatch: 'They don’t match',
+      done: 'Device confirmed', doneOn: (d) => d + ' confirmed',
+      declined: (d) => 'Declined on ' + d, timeout: 'No answer from your other device', mismatch: 'The emoji didn’t match', tryAgain: 'Try again',
+      keyTitle: 'Enter your recovery key', keyLabel: 'Recovery key', keyWrong: 'That recovery key isn’t right', confirm: 'Confirm',
+      resetTitle: 'Reset and start fresh?', resetLoss: 'Older messages in DMs and private channels won’t be available', resetOthers: 'Your other devices will need confirming again',
+      password: 'Password', wrongPassword: 'Wrong password', reset: 'Reset',
+      approveTitle: 'Is this you?', notMe: 'Not me', itsMe: 'It’s me',
+      pwTitle: 'Enter your password', cont: 'Continue',
+      saveTitle: 'Save your recovery key', copy: 'Copy', copied: 'Copied', saved: 'I’ve saved it',
+      utd: 'Not available on this device', utdN: (n) => n + ' messages not available on this device',
+      signOutQ: 'Sign out?', signOutKey: 'To read older DMs and private channels again, you’ll need your recovery key.', newKey: 'New recovery key',
+      signOutLoseQ: 'Sign out and lose older messages?', signOutLose: 'Older messages in DMs and private channels are only on this device.',
+      signOutAnyway: 'Sign out anyway', saveKeyBtn: 'Save recovery key',
+      notConfirmed: 'Not confirmed', recoveryKey: 'Recovery key', newKeyShort: 'New key',
+      sas: [['🐶', 'Dog'], ['🦄', 'Unicorn'], ['🌵', 'Cactus'], ['🍕', 'Pizza'], ['🚀', 'Rocket'], ['🎸', 'Guitar'], ['🐧', 'Penguin']],
+      devA: ['Safari on Mac', 'Oslo · Active now'], devB: ['Chrome on Mac', 'Oslo · 5 min ago'], devX: ['Element X on iPhone', 'Bergen · Yesterday'], devW: ['Firefox on Windows', 'Oslo · 12 Nov'],
+      devAnew: ['Safari on Mac', 'Oslo · Just now'], devBcur: ['Chrome on Mac', 'Oslo · Active now'],
+      leadRoot: 'Q1 planning doc is up. Please add your team’s priorities by Friday.', leadReply: 'Added ours. Hiring is the big one.',
+      yesterday: 'Yesterday', today: 'Today'
+    };
+  }
+
+  // Undecryptable rows (utd): a run from one sender collapses into one quiet line with a count;
+  // utdWait = the key may still arrive (shimmer, then the message fades in where it is).
+  feedF(c) {
+    const { feed, m6, rp, ja, isDM, dmKey, ch } = c;
+    if (!m6 || !rp.utd) return feed;
+    const F = this.stringsF(ja);
+    if (isDM && dmKey === 'jb') {
+      const today = feed.filter((x) => !x.d);
+      return [{ d: F.yesterday }, { w: 'jb', t: '16:40', utd: 3 }, { w: 'so', t: '16:52', utd: 1 }, { d: F.today }].concat(today);
+    }
+    if (ch === 'lead') {
+      return [{ d: F.today }, { w: 'ek', t: '07:41', utd: 1 }].concat(feed.filter((x) => !x.d).map((x) => (x.w === 'ih' ? Object.assign({}, x, { th: true }) : x)));
+    }
+    return feed;
+  }
+
+  viewF(c) {
+    const { s, rp, m6, ja, P, T, TD, me, go, isDM, dmKey, ch, cur, replies, dmRows, VD, VE, tlX } = c;
+    const F = this.stringsF(ja);
+    const cx = m6 ? (s.cx !== undefined && s.cx !== null ? s.cx : (rp.cx || 'none')) : 'none';
+    const gate = m6 ? (s.gate !== undefined && s.gate !== null ? s.gate : (rp.gate || 'none')) : 'none';
+    const reason = rp.cxReason || 'declined';
+    const icons = (k) => ({ icDevice: k === 'device', icKey: k === 'key' });
+    const gateOpts = (gate === 'nodevice' ? [] : [Object.assign({ label: F.useDevice, run: go({ cx: 'waiting' }) }, icons('device'))])
+      .concat([Object.assign({ label: F.useKey, run: go({ cx: 'keyEnter' }) }, icons('key'))]);
+    const dev = (d, kind, extra) => Object.assign({ name: d[0], meta: d[1], laptop: kind === 'laptop', phone: kind === 'phone' }, extra || {});
+    const onB = cx === 'approve' || cx === 'approveCompare' || cx === 'approveDone';
+    const sas = F.sas.map(([e, label]) => ({ e, label }));
+    const failTitle = reason === 'timeout' ? F.timeout : reason === 'mismatch' ? F.mismatch : F.declined(F.devB[0]);
+    const keyFull = 'EsTc 4Rk9 Wq2N 7hXb LmP3 Vd8K Zy6A Ft1G Ju5S Nc2E Qw7R Hb4M';
+    const keyWrong = cx === 'keyWrong';
+    const pwWrong = cx === 'resetWrong' || cx === 'passwordWrong';
+    const copied = !!s.keyCopied || !!rp.keyCopied;
+    const ring = (bad) => ({ border: bad ? 'var(--danger)' : 'var(--line)', ring: bad ? '0 0 0 4px color-mix(in srgb, var(--danger) 16%, transparent)' : 'none' });
+
+    const out = {
+      F,
+      gateOn: gate !== 'none', gateOpts, openReset: go({ cx: 'reset' }),
+      cxWait: cx === 'waiting', waitDevs: [dev(F.devB, 'laptop'), dev(F.devX, 'phone')],
+      cxCompare: cx === 'compare' || cx === 'approveCompare', cmpTitle: cx === 'approveCompare' ? F.compareOn(F.devAnew[0]) : F.compareTitle, sas,
+      cmpMatch: go({ cx: cx === 'approveCompare' ? 'approveDone' : 'done', gate: 'none' }), cmpNoMatch: go({ cx: cx === 'approveCompare' ? 'none' : 'failed' }),
+      cxEnd: cx === 'done' || cx === 'approveDone' || cx === 'failed',
+      endOk: cx === 'done' || cx === 'approveDone', endFail: cx === 'failed',
+      endTitle: cx === 'approveDone' ? F.doneOn(F.devAnew[0]) : cx === 'done' ? F.done : failTitle,
+      endRole: cx === 'failed' ? 'alertdialog' : 'dialog',
+      cxApprove: cx === 'approve', approveDev: dev(F.devAnew, 'laptop'),
+      approveYes: go({ cx: 'approveCompare' }), approveNo: go({ cx: 'none', sheet: 'settings', stab: 'devices' }),
+      cxKey: cx === 'keyEnter' || keyWrong, keyWrong, keyText: keyWrong ? 'EsTc 4Rk9 Wq2N 7hXb LmP3 Vd8K Zy6A Ft1G Ju5S Nc2E Qw7R Hb4N' : 'EsTc 4Rk9 Wq2N 7hXb LmP3 Vd8K Zy6A Ft1',
+      keyBorder: ring(keyWrong).border, keyRing: ring(keyWrong).ring, keyInvalid: keyWrong ? 'true' : 'false',
+      cxReset: cx === 'reset' || cx === 'resetWrong', cxPassword: cx === 'password' || cx === 'passwordWrong', pwWrong,
+      pwBorder: ring(pwWrong).border, pwRing: ring(pwWrong).ring, pwInvalid: pwWrong ? 'true' : 'false',
+      cxSave: cx === 'saveKey', keyGroups: [keyFull.split(' ').slice(0, 4).join(' '), keyFull.split(' ').slice(4, 8).join(' '), keyFull.split(' ').slice(8).join(' ')],
+      keyCopied: copied, keyIdle: !copied, copyKey: () => this.setState({ keyCopied: true }), keyLive: copied ? F.copied : '',
+      cxSignOut: cx === 'signOut', cxSignOutNB: cx === 'signOutNoBackup',
+      cxClose: go({ cx: 'none' }), toSave: go({ cx: 'saveKey' }), toGate: go({ cx: 'none' }), toWait: go({ cx: 'waiting' }), toKey: go({ cx: 'keyEnter' }),
+      doReset: go({ cx: 'saveKey', gate: 'none' }), doKey: go({ cx: 'done', gate: 'none' }), doSaved: go({ cx: 'none' }), doPassword: go({ cx: 'saveKey' }),
+      rkRow: false
+    };
+    if (!m6) return out;
+
+    const over = {};
+    if (gate !== 'none') { over.tlX = tlX + '; display: none'; over.composerOn = false; }
+    // Settings -> Devices: "Not confirmed" only on the exception; this device unconfirmed gets Confirm.
+    const devList = gate !== 'none' || rp.devState === 'unconfirmed'
+      ? [dev(F.devA, 'laptop', { current: true, unconf: true, confirm: true }), dev(F.devB, 'laptop'), dev(F.devX, 'phone'), dev(F.devW, 'laptop')]
+      : [dev(F.devBcur, 'laptop', { current: true }), dev(F.devAnew, 'laptop', { unconf: true }), dev(F.devX, 'phone'), dev(F.devW, 'laptop')];
+    const devGone = s.devGone || {};
+    over.devs = devList.map((d, i) => Object.assign({ current: false, unconf: false, confirm: false }, d, {
+      other: i > 0 && !devGone[i], gone: () => this.setState({ devGone: Object.assign({}, devGone, { [i]: true }) }), runConfirm: go({ sheet: 'none', cx: 'none', gate: 'device' })
+    })).filter((d) => d.current || d.other);
+    over.othersLeft = over.devs.length > 1;
+    over.rkRow = !(gate !== 'none' || rp.devState === 'unconfirmed');
+    over.newKeyRun = go({ sheet: 'none', cx: 'password' });
+
+    if (rp.utd) {
+      over.dmRows = dmRows.map((r) => (r.name === P.ih.n ? Object.assign({}, r, { preview: F.utd, prevColor: 'var(--subtle)' }) : r));
+      if (ch === 'lead' && !isDM) {
+        const mk = (w, t, x, flag) => ({ name: P[w].n, initials: P[w].i, color: P[w].c, time: t, text: x || '', avFs: this.avFs(P[w].i, '12px', '14px'), utd: flag === 'utd', utdWait: flag === 'wait', plain: !flag, utdText: F.utd });
+        over.replies = [mk('jb', '08:10', F.leadReply), mk('la', '08:22', '', 'utd'), mk('ek', '08:31', '', 'wait')];
+        Object.assign(over, {
+          threadChan: '#leadership', thRootName: P.ih.n, thRootTime: '07:55', thRootInitials: P.ih.i, thRootColor: P.ih.c, thRootAvFs: this.avFs(P.ih.i, '13px', '15px'),
+          threadRootText: F.leadRoot, txThReplies: T.replies(3), txReplies: T.replies(3),
+          sumC1: P.jb.c, sumI1: P.jb.i, sumF1: this.avFs(P.jb.i, '9px', '9px'), sumC2: P.la.c, sumI2: P.la.i, sumC3: P.ek.c, sumI3: P.ek.i, sumF3: this.avFs(P.ek.i, '9px', '9px')
+        });
+      }
+    }
+    return Object.assign(out, { over });
+  }
+
   renderVals() {
     const s = this.state;
-    const pr = this.props;
+    const m6 = this.props.milestone === 'm6';
+    const pr = m6 ? Object.assign({}, this.props, { milestone: 'm5' }) : this.props;
     const locale = s.locale || pr.locale || 'en';
     const ja = locale === 'ja';
     const T = this.strings(ja);
@@ -2532,6 +2842,7 @@ class Component extends DCLogic {
     if (cc && isClient && ch === 'proj') feed = feed.map((x) => (x.w === 'jb' && x.t === '09:12' ? Object.assign({}, x, { th: true }) : x));
     if (isDM) feed = this.dmFeed(ja, isClient, dmKey).concat(s.sent['dm-' + dmKey] || []);
     if (fresh) feed = [];
+    feed = this.feedF({ feed, m6, rp: this.props, ja, isDM, dmKey, ch });
     if (isGuest) feed = feed.map((x) => (x.mention ? Object.assign({}, x, { mention: false }) : x));
     if (firstRun) feed = feed.map((x) => (x.mention ? Object.assign({}, x, { mention: false }) : x)).concat(!isClient && ch === 'design' ? [{ sys: TD.addedYou(cur.name) }] : []);
     const retry = () => {
@@ -2608,7 +2919,7 @@ class Component extends DCLogic {
     const sumCount = (cc && isClient ? this.clientThread(ja).replies : this.threadBase(ja)).length + (thEmpty ? 0 : s.replies.length);
     const replies = thList.concat(s.replies).map((r) => ({
       name: P[r.w].n, initials: P[r.w].i, color: P[r.w].c, time: r.t, text: r.x,
-      avFs: this.avFs(P[r.w].i, '12px', '14px')
+      avFs: this.avFs(P[r.w].i, '12px', '14px'), plain: true, utd: false, utdWait: false, utdText: ''
     }));
 
     const send = () => {
@@ -2825,6 +3136,7 @@ class Component extends DCLogic {
     const hd = (k, latin, cjk) => this.avFs(P[k].i, latin, cjk);
     const VD = this.viewD({ s, pr, ja, P, T, TC, me, cur, go, inClientSpace, isClient });
     const VE = this.viewE({ s, pr, ja, P, T, TC, TD, fresh, me, cur, go, inClientSpace, isClient, isGuest, myRole, isDM, dmKey, extKeys });
+    const VF = this.viewF({ s, rp: this.props, m6, ja, P, T, TD, me, go, isDM, dmKey, ch, cur, replies, dmRows, VD, VE, tlX: floatC ? '; overflow-x: hidden' : '' });
     // Floating composer: card height (typing row 22 + card ~112 + 14) + 8 px air above it.
     const FLOAT_PAD = '156px';
 
@@ -3036,7 +3348,10 @@ class Component extends DCLogic {
       // Batch E
       sbAddPeople: !isClient && !isGuest, chanPlus: !(dd && isClient) && !isGuest, wsChevron: !isGuest,
       railNlCls: fresh ? 'pd-pop' : false, railNlOpacity: '', pmAnother: false,
-      ...VE, ...VE.over
+      ...VE, ...VE.over,
+
+      // Batch F
+      ...VF, ...(VF.over || {})
     };
   }
 }
