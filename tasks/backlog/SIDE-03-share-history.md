@@ -21,3 +21,14 @@ When a client loses their recovery key and resets, a staff member can give back 
 ## First: spike (≈1 h)
 - Does our matrix-js-sdk / Rust crypto version support sharing room history keys with another user (MSC4268 key bundle, or forwarding megolm sessions)? Element X behaviour? Continuwuity only relays encrypted to-device + media, so it should work.
 - Then design boards (Batch side) → CEO approval → build.
+
+## Spike result (2026-11-21, code reading only)
+**Feasible.** matrix-js-sdk 45.1.0 already implements MSC4268 key bundles:
+- Sender `RustCrypto.shareRoomHistoryWithUser(roomId, userId)` (`rust-crypto/rust-crypto.js:1327`) builds the bundle, uploads it encrypted to media, sends `m.room_key_bundle` only to devices cross-signed by the recipient's *current* identity (`identityBasedStrategy`). Requires staff's own device to be verified.
+- Receiver `markRoomAsPendingKeyBundle(roomId, inviter)` + `maybeAcceptKeyBundle(roomId, inviter)` (`rust-crypto.js:219,271`).
+- Not on the public `CryptoApi` (only `CryptoBackend`); the SDK calls them on invite/join. For an existing DM we cast inside `apps/web/src/matrix/` and keep the SDK pinned.
+- Trust: staff verifies the client (emoji, `requestVerificationDM` → `getUserVerificationStatus`, then share). The receiver needs a trigger — e.g. a "history shared" marker event in the DM that makes the client app run the accept.
+- Risks to probe live: Continuwuity authenticated media upload/download for the bundle blob; identity-pin behaviour after reset; Element X MSC4268 support (unverified).
+- Fallback (worse): per-room `exportRoomKeys` filter + `encryptToDeviceMessages` + `importRoomKeys` — keys show as unauthenticated.
+
+**Next:** 1–2 h live test on dev (staff + a client after `resetEncryption`), then design boards (staff "Share history" with the confirm step; client "History restored" row), then build (S–M).
