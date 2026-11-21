@@ -103,7 +103,7 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
 ### D-32 · Translate (side feature), amends D-11/D-31 · Accepted · 2026-11-21
-- **CEO (via the design-discovery session):** Translate is approved and built now as `features/translate` (SIDE-01, branch `side/translate`, merged by the lead after M6-02).
+- **CEO (via the design-discovery session; confirmed directly to the lead 2026-11-21):** Translate is approved and built now as `features/translate` (SIDE-01, branch `side/translate`, merged by the lead after M6-02).
 - **Amends D-11/D-31:** Translate also works in encrypted team conversations (team DMs, private channels). It's an internal staff tool: the person who asks sends that one message's text to the model and sees the translation only in their own client. Never in conversations with clients or guests (`Channel.outside` / `Person.external`).
 - **Provider:** OpenAI standard API terms with `store: false`. `OPENAI_API_KEY` and `TRANSLATE_MODEL` in Coolify (CEO adds them).
 - **Endpoint:** `/api/translate` beside the invite service; caller checked with `whoami` and must be joined to the workspace space (team only); mentions/code/links replaced by placeholders, never HTML to the model; cache keyed on a content hash; per-user limits plus a global daily budget.
