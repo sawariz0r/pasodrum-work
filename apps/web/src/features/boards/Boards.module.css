@@ -86,6 +86,15 @@
   display: flex;
 }
 
+.navStrong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.navBadge {
+  margin-left: auto;
+}
+
 .mineCount {
   margin-left: auto;
   font-size: 12px;
@@ -692,6 +701,12 @@
   color: var(--subtle);
   font-size: 12.5px;
   font-weight: 600;
+}
+
+.rowKeyDot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .rowTitle {

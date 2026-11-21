@@ -30,7 +30,8 @@ export function ActivityColumn({ selectedId }: { selectedId?: string }) {
     if (item.unread) store.markActivityRead(item.id);
     const q = new URLSearchParams({ item: item.id });
     if (item.threadRootId) q.set('thread', item.threadRootId);
-    navigate(item.issue ? `/boards/${encodeURIComponent(item.channelId)}/${encodeURIComponent(item.issue.id)}` : `/activity?${q}`);
+    const issueQuery = item.kind === 'mention' ? `?${new URLSearchParams({ msg: item.id })}` : '';
+    navigate(item.issue ? `/boards/${encodeURIComponent(item.channelId)}/${encodeURIComponent(item.issue.id)}${issueQuery}` : `/activity?${q}`);
   };
 
   return (

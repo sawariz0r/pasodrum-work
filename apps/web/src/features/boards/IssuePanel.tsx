@@ -5,6 +5,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEve
 import { DeleteConfirm } from '../../app/composer/DeleteConfirm';
 import { ComposerProvider, useComposer } from '../../app/composer/context';
 import { Composer } from '../../app/composer/lazy';
+import { useSearchParams } from 'react-router';
 import { lazyComponent } from '../../app/lazy';
 import { TimelineContext, type TimelineActions } from '../../app/timeline/context';
 import { MessageRow } from '../../app/timeline/MessageRow';
@@ -19,6 +20,7 @@ import { useDueText, useTranslated, useWhen, Who, type Translator } from './part
 import { AssigneePicker, DuePicker } from './Pickers';
 import s from './Boards.module.css';
 import { useT } from './strings';
+import { useNewestUnread } from './unread';
 
 function StaticDescription({ value }: { value?: { body: string; html?: string } }) {
   if (!value?.body) return null;
@@ -60,6 +62,21 @@ function Panel({ project, issue, translator, onClose, onDelete }: Props) {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
+  // `?msg=` (from Activity), else the newest unread mention: flashed once, like a jump in chat. Opening reads the issue.
+  const [params, setParams] = useSearchParams();
+  const unread = useNewestUnread(issue.id);
+  const mention = useNewestUnread(issue.id, true);
+  const [flashId] = useState(() => params.get('msg') ?? mention);
+  useEffect(() => {
+    if (unread) store.markActivityRead(unread);
+  }, [store, unread]);
+  useEffect(() => {
+    if (!params.has('msg')) return;
+    const next = new URLSearchParams(params);
+    next.delete('msg');
+    setParams(next, { replace: true });
+  }, [params, setParams]);
+
   useEffect(() => {
     store.openThread(project.id, issue.id);
     store.markThreadRead(project.id, issue.id);
@@ -97,7 +114,7 @@ function Panel({ project, issue, translator, onClose, onDelete }: Props) {
         <Props project={project} issue={issue} />
         <Description project={project} issue={issue} translator={translator} />
         <h3 className={s.activityTitle}>{t('activity')}</h3>
-        <Activity project={project} issue={issue} />
+        <Activity project={project} issue={issue} flashId={flashId} />
       </div>
       <TypingLine projectId={project.id} issueId={issue.id} />
       <CommentBox project={project} issue={issue} />
@@ -287,7 +304,9 @@ type Item = { kind: 'created'; ts: number; by: Person } | { kind: 'change'; ts: 
 
 const noMessages: Message[] = [];
 
-function Activity({ project, issue }: { project: Project; issue: Issue }) {
+const flashMs = 1240;
+
+function Activity({ project, issue, flashId }: { project: Project; issue: Issue; flashId?: string }) {
   const t = useT();
   const store = useStore();
   const composer = useComposer();
@@ -300,6 +319,14 @@ function Activity({ project, issue }: { project: Project; issue: Issue }) {
   const [changes, setChanges] = useState<{ of: string; list: IssueChange[] }>();
   const [deleting, setDeleting] = useState<Message[] | null>(null);
   const expanded = useRef(new Set<string>());
+  const [flash, setFlash] = useState(flashId);
+  const flashShown = !!flash && messages.some((m) => m.id === flash);
+  useEffect(() => {
+    if (!flashShown) return;
+    document.querySelector(`[data-message-id="${CSS.escape(flash!)}"]`)?.scrollIntoView({ block: 'nearest' });
+    const id = setTimeout(() => setFlash(undefined), flashMs);
+    return () => clearTimeout(id);
+  }, [flash, flashShown]);
 
   useEffect(() => {
     let live = true;
@@ -364,6 +391,7 @@ function Activity({ project, issue }: { project: Project; issue: Issue }) {
               head={head}
               compact
               meId={meId}
+              flash={it.message.id === flash}
               editing={composer.editingId === it.message.id}
               onEditDone={composer.stopEdit}
               onRetry={(id) => store.retry(project.id, id)}

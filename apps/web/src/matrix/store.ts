@@ -854,6 +854,13 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     }
   };
 
+  /** My real (not synthesized) unthreaded receipt: the one read position the server keeps for a project room. A synthesized
+   * one for something I sent (moving a card) is 'main' and would hide it from readUpTo's thread check. */
+  const unthreadedRead = (room: Room) => {
+    const r = room.getReadReceiptForUserId(me.id, true);
+    return r && r.data.thread_id !== MAIN ? (eventOf(room, r.eventId)?.getTs() ?? r.data.ts ?? 0) : 0;
+  };
+
   const activityOf = (): ActivityItem[] => {
     const items: ActivityItem[] = [];
     const seen = new Set<string>();
@@ -887,7 +894,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         me: me.id,
         message: (ev, room) => messageOf(ev, room, false, true),
         person: (room, userId) => personOf(room, userId),
-        unread: (room, ev, root) => !readItems.has(ev.getId()!) && ev.getTs() > readUpTo(room, root),
+        unread: (room, ev, root) => !readItems.has(ev.getId()!) && ev.getTs() > Math.max(readUpTo(room, root), unthreadedRead(room)),
       }),
     );
     return items.sort((a, b) => b.message.ts - a.message.ts);
@@ -2348,7 +2355,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         unread.forEach((a) => a.issue?.id === issueId && readItems.add(a.id));
         const last = room && eventOf(room, newest.id);
         const older = unread.some((a) => a.issue?.id !== issueId && a.message.ts <= newest.message.ts);
-        if (!room || !last || older || last.getTs() <= readUpTo(room)) return;
+        if (!room || !last || older || last.getTs() <= unthreadedRead(room)) return;
         // Known here before the echo, so the issue panel's thread receipt doesn't move the position back.
         for (const key of [MAIN, issueId]) receipts.set(`${room.roomId}|${key}`, Math.max(receipts.get(`${room.roomId}|${key}`) ?? 0, last.getTs()));
         client.http.authedRequest(Method.Post, `/rooms/${enc(room.roomId)}/receipt/${ReceiptType.Read}/${enc(newest.id)}`, undefined, {}).catch(noop);

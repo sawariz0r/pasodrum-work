@@ -18,6 +18,7 @@ import { issueKey, useColumnName } from './model';
 import { Comments, DueLabel, useCommentCount, useTranslated, Who, type Translator } from './parts';
 import s from './Boards.module.css';
 import { useT } from './strings';
+import { UnreadDot, useIssueMentions } from './unread';
 
 type Drag = { id: string; column?: string; index?: number };
 
@@ -281,7 +282,7 @@ function Card({ project, issue, done, selected, lifted, lineAfter, canDrag, tran
   const t = useT();
   const ref = useRef<HTMLDivElement>(null);
   const [menu, setMenu] = useState(false);
-  const comments = useCommentCount(project.id, issue.id);
+  const comments = Math.max(useCommentCount(project.id, issue.id), useIssueMentions(issue.id));
   const tr = useTranslated(translator, `${issue.id}:title`, issue.title);
   const key = issueKey(project, issue);
   const live = useLiveCard(issue.id);
@@ -345,6 +346,7 @@ function Card({ project, issue, done, selected, lifted, lineAfter, canDrag, tran
         {live.flag}
         <div className={s.cardTop}>
           <span className={s.key}>{key}</span>
+          <UnreadDot issueId={issue.id} />
           <span className={s.spacer} />
           <CardMenu
             project={project}

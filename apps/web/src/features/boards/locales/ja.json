@@ -29,6 +29,7 @@
   "assignee": "担当",
   "due": "期限",
   "project": "プロジェクト",
+  "unread": "未読",
   "activity": "アクティビティ",
   "dueLong": "{{date}}（{{weekday}}）",
   "created": "{{name}}が作成",

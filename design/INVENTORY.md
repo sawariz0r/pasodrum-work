@@ -234,6 +234,7 @@ Approved 2026-11-21 (CEO). Rules: DocsBoardsRules. Components: DocsPage, BoardsP
 | Client space (team, custom column), client's view | BoardsNordlys, BoardsClient | approved 2026-11-21 |
 | Dragging a card; others dragging, editing, just moved; others in an issue | BoardsDrag, BoardsLive(+Dark), BoardsLiveIssue | approved 2026-11-21 |
 | Doc and issue cards in chat (vs Element X plain link) | DocsBoardsCards | approved 2026-11-21 |
+| Boards unread: project badge, card dot (reuses approved patterns: channel unread badge, Activity unread dot, chat jump flash) | — | needs design review |
 
 ## Confirm by email (D-38)
 

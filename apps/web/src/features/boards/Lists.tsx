@@ -6,6 +6,7 @@ import { ColumnIcon } from './icons';
 import { issueKey, useColumnName } from './model';
 import { Comments, DueLabel, useCommentCount, Who } from './parts';
 import s from './Boards.module.css';
+import { UnreadDot, useIssueMentions } from './unread';
 
 export function ListView({ project, issues, selectedId, onOpen }: { project: Project; issues: Issue[]; selectedId?: string; onOpen: (i: Issue) => void }) {
   const name = useColumnName();
@@ -50,7 +51,7 @@ export function MineView({ groups, selectedId, onOpen }: { groups: { project: Pr
 }
 
 function Row({ project, issue, mine, selected, onOpen }: { project: Project; issue: Issue; mine?: boolean; selected: boolean; onOpen: () => void }) {
-  const comments = useCommentCount(project.id, issue.id);
+  const comments = Math.max(useCommentCount(project.id, issue.id), useIssueMentions(issue.id));
   const onKeyDown = (e: KeyboardEvent) => {
     if (isImeEnter(e) || e.key === ' ') {
       e.preventDefault();
@@ -66,7 +67,10 @@ function Row({ project, issue, mine, selected, onOpen }: { project: Project; iss
       onKeyDown={onKeyDown}
     >
       {mine && <ColumnIcon id={issue.column} />}
-      <span className={s.rowKey}>{issueKey(project, issue)}</span>
+      <span className={`${s.rowKey} ${s.rowKeyDot}`}>
+        {issueKey(project, issue)}
+        <UnreadDot issueId={issue.id} />
+      </span>
       <span className={[s.rowTitle, issue.column === 'done' && s.doneInk].filter(Boolean).join(' ')}>{issue.title}</span>
       <span>
         <DueLabel issue={issue} list />

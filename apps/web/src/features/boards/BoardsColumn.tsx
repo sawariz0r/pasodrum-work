@@ -4,11 +4,12 @@ import { Link } from 'react-router';
 import shell from '../../app/shell/Shell.module.css';
 import { useShowExternal } from '../../app/people/names';
 import { myIssues, useDocsBoards, useWorkspace, type Project, type Space } from '../../matrix';
-import { IconButton } from '../../ui';
+import { Badge, IconButton } from '../../ui';
 import { BuildingIcon, ChevronDownIcon, PencilIcon, PersonIcon, PlusIcon } from './icons';
 import { boardsPath, minePath, openNewProject, useBoardsRoute, useIsTeam, useScope } from './model';
 import s from './Boards.module.css';
 import { useT } from './strings';
+import { useProjectUnread } from './unread';
 
 const none: Project[] = [];
 
@@ -69,12 +70,19 @@ function SpaceGroup({ space, team, activeId }: { space: Space; team: boolean; ac
         )}
       </div>
       {open &&
-        projects.map((p) => (
-          <Link key={p.id} to={boardsPath(p.id)} className={s.navRow} aria-current={p.id === activeId ? 'page' : undefined}>
-            <span className={s.swatch} style={{ background: p.colour }} />
-            <span className={s.navName}>{p.name}</span>
-          </Link>
-        ))}
+        projects.map((p) => <ProjectRow key={p.id} project={p} current={p.id === activeId} />)}
     </>
+  );
+}
+
+/** Unread like a channel row: bold, with the mention badge (issue mentions and assignments for me). */
+function ProjectRow({ project, current }: { project: Project; current: boolean }) {
+  const unread = useProjectUnread(project.id);
+  return (
+    <Link to={boardsPath(project.id)} className={[s.navRow, !current && unread > 0 && s.navStrong].filter(Boolean).join(' ')} aria-current={current ? 'page' : undefined}>
+      <span className={s.swatch} style={{ background: project.colour }} />
+      <span className={s.navName}>{project.name}</span>
+      {!current && <Badge count={unread} className={s.navBadge} />}
+    </Link>
   );
 }

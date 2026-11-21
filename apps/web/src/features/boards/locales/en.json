@@ -29,6 +29,7 @@
   "assignee": "Assignee",
   "due": "Due",
   "project": "Project",
+  "unread": "Unread",
   "activity": "Activity",
   "dueLong": "{{weekday}}, {{date}}",
   "created": "{{name}} created this",
