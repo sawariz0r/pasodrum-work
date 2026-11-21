@@ -61,6 +61,7 @@ export const LeaveIcon = icon(
   </>,
   { size: 16, strokeWidth: 1.9 },
 );
+export const StarIcon = icon(<path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8Z" />, { size: 16, strokeWidth: 1.9 });
 export const XIcon = icon(<path d="M18 6 6 18M6 6l12 12" />, { size: 16, strokeWidth: 2.2 });
 export const CheckIcon = icon(<path d="M20 6 9 17l-5-5" />, { size: 14, strokeWidth: 2.6 });
 export const ChevronIcon = icon(<path d="m6 9 6 6 6-6" />, { size: 15, strokeWidth: 2.2 });

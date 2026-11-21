@@ -381,7 +381,8 @@
       "staff": "Staff",
       "external": "External",
       "client": "Client",
-      "pending": "Pending"
+      "pending": "Pending",
+      "mainContact": "Main contact"
     },
     "more": "More for {{name}}",
     "copyJoinLink": "Copy join link",
@@ -477,6 +478,8 @@
     "archived": "{{name}} is archived",
     "unarchive": "Unarchive",
     "removeFrom": "Remove from {{name}}",
+    "makeMainContact": "Make main contact",
+    "removeMainContact": "Remove as main contact",
     "removeTitle": "Remove {{person}} from {{name}}?",
     "removeButton": "Remove",
     "renameFailed": "Couldn’t rename to {{name}}",
@@ -635,6 +638,7 @@
     "remove": "Couldn’t remove {{name}}",
     "resend": "Couldn’t send {{name}} the link again",
     "message": "Couldn’t message {{name}}",
+    "mainContact": "Couldn’t change the main contact",
     "role": "Couldn’t change {{name}}’s role",
     "colour": "Couldn’t change the colour of {{name}}",
     "unarchiveSpace": "Couldn’t unarchive {{name}}"

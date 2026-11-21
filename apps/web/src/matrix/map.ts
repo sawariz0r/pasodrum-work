@@ -12,6 +12,7 @@ export interface RoomFacts {
   /** M5. From `work.pasodrum.space`. */
   colour?: string;
   archived?: boolean;
+  contacts?: string[];
   joinRule?: string;
   topic?: string;
   children: string[];
@@ -62,6 +63,7 @@ export function workspaceOf(rooms: RoomFacts[], known: KnownSpaces = {}): { spac
     kind: r.clientSpace ? 'client' : 'workspace',
     ...(r.colour ? { colour: r.colour } : {}),
     ...(r.archived ? { archived: true } : {}),
+    ...(r.contacts?.length ? { contacts: r.contacts } : {}),
   }));
   const channels: Record<string, Channel[]> = {};
   for (const space of joinedSpaces) channels[space.id] = space.children.map((id) => byId.get(id)).filter(isChannel).map((r) => channelOf(r, space.id));

@@ -4450,6 +4450,56 @@
    "h": 1380,
    "title": "Sidebar rows — Boards, before / after",
    "page": "overview"
+  },
+  "SpaceContacts.dc.html": {
+   "x": 0,
+   "y": 14500,
+   "w": 1440,
+   "h": 900,
+   "title": "Client space People: make someone a main contact",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "client-spaces"
+  },
+  "SpaceContactsJP.dc.html": {
+   "x": 1520,
+   "y": 14500,
+   "w": 1440,
+   "h": 900,
+   "title": "Client space People: main contact (JP)",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "client-spaces"
+  },
+  "SpaceContactsDark.dc.html": {
+   "x": 3040,
+   "y": 14500,
+   "w": 1440,
+   "h": 900,
+   "title": "Client space People: remove a main contact (dark)",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "client-spaces"
+  },
+  "SpaceContactsJPDark.dc.html": {
+   "x": 4560,
+   "y": 14500,
+   "w": 1440,
+   "h": 900,
+   "title": "Client space People: main contact (JP, dark)",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "client-spaces"
+  },
+  "ContactHelpPill.dc.html": {
+   "x": 0,
+   "y": 15520,
+   "w": 1440,
+   "h": 900,
+   "title": "Help pill names the main contact (EN/JP × light/dark)",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "client-spaces"
   }
  },
  "order": [
@@ -4905,7 +4955,12 @@
   "SidebarRowRules.dc.html",
   "SidebarRowsHome.dc.html",
   "SidebarRowsDocs.dc.html",
-  "SidebarRowsBoards.dc.html"
+  "SidebarRowsBoards.dc.html",
+  "SpaceContacts.dc.html",
+  "SpaceContactsJP.dc.html",
+  "SpaceContactsDark.dc.html",
+  "SpaceContactsJPDark.dc.html",
+  "ContactHelpPill.dc.html"
  ],
  "notes": {
   "overview-Foundations--workspace": {
@@ -5373,6 +5428,23 @@
    "page": "overview",
    "size": "l",
    "maxW": 5920
+  },
+  "client-spaces-Main-contacts": {
+   "x": 0,
+   "y": 14260,
+   "text": "Main contacts (SIDE-05, approved 2026-11-21)",
+   "kind": "title1",
+   "page": "client-spaces",
+   "size": "l",
+   "maxW": 6000
+  },
+  "client-spaces-Main-contacts-rules": {
+   "x": 1520,
+   "y": 15520,
+   "w": 560,
+   "page": "client-spaces",
+   "fill": "orange",
+   "text": "Rules (approved 2026-11-21)\n\n• Owners and Admins mark Staff as a client space’s main contact from People → ⋯ (Make main contact / Remove as main contact). One or more; Owners and Admins count as Staff; never Externals or clients. Your own row has the item too.\n\n• A main contact gets a “Main contact” tag beside their name.\n\n• “Need help?” names the first main contact and reaches every main contact. With none marked it goes to whoever added the client, then the space’s Owners and Admins, as today (D-38)."
   }
  },
  "designSystems": []

@@ -192,6 +192,19 @@ describe('client spaces', () => {
     await ingrid.store.updateSpace(spaceId, { name });
   });
 
+  it('setMainContact: Owners/Admins mark and unmark; a Member is refused by the server', async () => {
+    const t = jonas.session.accessToken;
+    const put = await mx(t, 'PUT', `/_matrix/client/v3/rooms/${E(spaceId)}/state/work.pasodrum.space/`, { kind: 'client', colour: '#0E7C66', contacts: [JONAS] });
+    expect(put.status).toBe(403);
+    expect((await rejection(jonas.store.setMainContact(spaceId, JONAS, true)))?.message).toBe('not-allowed');
+    await ingrid.store.setMainContact(spaceId, JONAS, true);
+    expect(await state(t, spaceId, 'work.pasodrum.space')).toEqual({ kind: 'client', colour: '#0E7C66', contacts: [JONAS] });
+    await until(jonas.store, (s) => s.spaces.find((x) => x.id === spaceId)?.contacts?.[0] === JONAS);
+    await ingrid.store.setMainContact(spaceId, JONAS, false);
+    expect(await state(t, spaceId, 'work.pasodrum.space')).toEqual({ kind: 'client', colour: '#0E7C66' });
+    expect(ingrid.store.getSnapshot().spaces.find((s) => s.id === spaceId)).not.toHaveProperty('contacts');
+  });
+
   it('colour and archive saved at the same moment both stick (writes go one at a time)', async () => {
     await Promise.all([ingrid.store.updateSpace(spaceId, { colour: '#123456' }), ingrid.store.setArchived(spaceId, true)]);
     expect(await state(ingrid.session.accessToken, spaceId, 'work.pasodrum.space')).toEqual({ kind: 'client', colour: '#123456', archived: true });

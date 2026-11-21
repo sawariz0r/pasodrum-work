@@ -35,6 +35,8 @@ export interface Space {
   colour?: string;
   /** M5. Read-only for everyone: tile dims and sorts last, composers become one quiet bar. */
   archived?: boolean;
+  /** SIDE-05. Client spaces: main contacts (work.pasodrum.space `contacts`), user IDs in marking order; the first is named on clients' help pill. Absent = none. */
+  contacts?: string[];
 }
 
 export interface Channel {
@@ -544,6 +546,8 @@ export interface WorkspaceStore {
   createClientSpace(opts: NewClientSpace): Promise<{ spaceId: string; channelId: string }>;
   /** Owners/Admins of that space. Colour saves as it changes. */
   updateSpace(spaceId: string, patch: { name?: string; colour?: string }): Promise<void>;
+  /** SIDE-05. Owners/Admins: mark or unmark a Staff member as a main contact of a client space. Rejects Error('not-allowed'). */
+  setMainContact(spaceId: string, userId: string, on: boolean): Promise<void>;
   /** Team first, then clients; pending people (not joined yet) carry `pending`. */
   spaceMembers(spaceId: string): Promise<Member[]>;
   /** Leaves the space and every channel in it; a pending person's join link stops working. Messages and DMs stay; the account is never deleted. */

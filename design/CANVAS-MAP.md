@@ -294,7 +294,7 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [AddPeopleErrorsJP](canvas/AddPeopleErrorsJP.dc.html) — Add people errors — Japanese `#artboard-AddPeopleErrorsJP`
 - [RoleChangeAdmin](canvas/RoleChangeAdmin.dc.html) — D-25: an Admin switches Member ↔ Admin `#artboard-RoleChangeAdmin`
 
-## Client spaces & guests · `client-spaces` · 28 artboards
+## Client spaces & guests · `client-spaces` · 33 artboards
 
 **Create a client space**
 
@@ -332,6 +332,14 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [SpaceSettingsJP](canvas/SpaceSettingsJP.dc.html) — Client space settings — Japanese `#artboard-SpaceSettingsJP`
 - [RemoveFromSpaceJP](canvas/RemoveFromSpaceJP.dc.html) — Remove from the client space — Japanese `#artboard-RemoveFromSpaceJP`
 - [SpacePeopleDark](canvas/SpacePeopleDark.dc.html) — Client space people — dark `#artboard-SpacePeopleDark`
+
+**Main contacts (SIDE-05, approved 2026-11-21)**
+
+- [SpaceContacts](canvas/SpaceContacts.dc.html) — Client space People: make someone a main contact `#artboard-SpaceContacts`
+- [SpaceContactsJP](canvas/SpaceContactsJP.dc.html) — Client space People: main contact (JP) `#artboard-SpaceContactsJP`
+- [SpaceContactsDark](canvas/SpaceContactsDark.dc.html) — Client space People: remove a main contact (dark) `#artboard-SpaceContactsDark`
+- [SpaceContactsJPDark](canvas/SpaceContactsJPDark.dc.html) — Client space People: main contact (JP, dark) `#artboard-SpaceContactsJPDark`
+- [ContactHelpPill](canvas/ContactHelpPill.dc.html) — Help pill names the main contact (EN/JP × light/dark) `#artboard-ContactHelpPill`
 
 ## Invites, joining & first run · `joining` · 16 artboards
 

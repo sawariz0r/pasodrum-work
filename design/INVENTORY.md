@@ -277,3 +277,12 @@ Approved 2026-11-21 (CEO). One row component for the Home, Docs and Boards colum
 | Home sidebar (reference; only the selected row turns quiet grey) — EN/JP × light/dark | SidebarRowsHome | approved 2026-11-21 |
 | Docs sidebar on Home's row: icons and names line up, sub-page chevron at the end, column 248 — EN/JP × light/dark | SidebarRowsDocs | approved 2026-11-21 |
 | Boards sidebar on Home's row: My issues a normal row with a quiet count, swatch in the icon column, column 248 — EN/JP × light/dark | SidebarRowsBoards | approved 2026-11-21 |
+
+## Main contacts (SIDE-05)
+
+Approved 2026-11-21 (CEO). Boards on the canvas page **Client spaces & guests**, section "Main contacts (SIDE-05, approved 2026-11-21)"; rules in the orange note beside ContactHelpPill.
+
+| Screen / state | Artboard | Status |
+|---|---|---|
+| Client space settings → People: "Main contact" tag; ⋯ Make main contact / Remove as main contact (Owner, Admin; Staff rows incl. your own) | SpaceContacts, SpaceContactsJP, SpaceContactsDark, SpaceContactsJPDark | approved 2026-11-21 |
+| Client's help pill names the main contact (EmailConfirm unchanged otherwise) | ContactHelpPill | approved 2026-11-21 |
