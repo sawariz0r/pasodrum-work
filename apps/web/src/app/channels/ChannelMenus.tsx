@@ -12,7 +12,6 @@ import { ChevronDownIcon, PlusIcon as SmallPlusIcon } from '../shell/icons';
 import s from './Channels.module.css';
 import { useChannels } from './ChannelsProvider';
 import { ChevronIcon, GearIcon, InfoIcon, PlusIcon, SpacesIcon, UserPlusIcon } from './icons';
-import { OutsideHeaderMark, useOutside } from './OutsideMark';
 import { canAddPeople, canBrowse, canCreateIn, canManage } from './roles';
 import { findChannel, SpaceMark, useRole, useSpace } from './shared';
 
@@ -146,7 +145,6 @@ export function ChannelHeaderBar({ channel }: { channel: Channel }) {
   const role = useRole(channel.spaceId);
   const faces = useMemo(() => store.members(channel.id).slice(0, 3), [store, channel.id, channel.memberCount]); // eslint-disable-line react-hooks/exhaustive-deps
   const mayAdd = canAddPeople(space, role) && !space?.archived && !channel.archived;
-  const outside = useOutside(channel.id);
   useEffect(() => rememberRecent(channel.id), [channel.id]);
   return (
     <>
@@ -157,7 +155,6 @@ export function ChannelHeaderBar({ channel }: { channel: Channel }) {
           <ChevronDownIcon size={15} strokeWidth={2.2} />
         </button>
       </h1>
-      <OutsideHeaderMark people={outside} onClick={() => channels.details(channel.id, 'members')} />
       <span className={s.headSpacer} />
       <button
         type="button"

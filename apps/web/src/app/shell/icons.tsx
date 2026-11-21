@@ -95,5 +95,13 @@ export const SearchIcon = icon(
   { size: 16, strokeWidth: 2 },
 );
 export const SmallCloseIcon = icon(<path d="M18 6 6 18M6 6l12 12" />, { size: 12, strokeWidth: 2.4 });
-export const ExternalCornerIcon = icon(<path d="M7 17 17 7M8 7h9v9" />, { size: 8, strokeWidth: 3.4 });
+/** The External mark: ↗ in a circle on a 14-unit grid. Fill and stroke colours come from the caller's CSS. */
+export function ExternalCornerIcon({ size = 14, className }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" className={className} aria-hidden="true">
+      <circle cx="7" cy="7" r="7" />
+      <path d="M4.6 9.4 9.4 4.6M5.8 4.6h3.6v3.6" fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 export const BackIcon = icon(<path d="M19 12H5M11 6l-6 6 6 6" />, { size: 18, strokeWidth: 2 });

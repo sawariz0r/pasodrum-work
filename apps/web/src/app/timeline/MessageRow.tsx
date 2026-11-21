@@ -19,7 +19,7 @@ import { PersonAvatar } from './PersonAvatar';
 import { HelpRow } from './HelpCard';
 import { Undecryptable } from '../security/Undecryptable';
 import { HistoryIcon } from '../security/icons';
-import { others } from '../people/Face';
+import { others, PersonCorner } from '../people/Face';
 import { firstName } from '../toast';
 import type { BodyOverride } from '../registry';
 import { useRegistry } from '../RegistryProvider';
@@ -331,6 +331,7 @@ export const MessageRow = memo(function MessageRow({
         {head ? (
           <button type="button" className={s.avatarButton} tabIndex={-1} aria-hidden="true" onClick={(e) => profile.open(m.sender.id, e.currentTarget)}>
             <PersonAvatar size={compact ? 32 : 36} person={m.sender} />
+            <PersonCorner person={m.sender} />
           </button>
         ) : (
           !sending && <span className={s.hoverTime}>{time}</span>

@@ -7,7 +7,7 @@ import { isImeEnter, Menu, MenuContent, MenuItem, MenuTrigger } from '../../ui';
 import { HashIcon, LockIcon, TrashIcon } from '../icons';
 import { AlertIcon, CheckIcon, PendingIcon, PlusIcon, XIcon } from '../channels/icons';
 import { spaceColour } from '../channels/shared';
-import { ExternalCorner, Face } from '../people/Face';
+import { Face } from '../people/Face';
 import { HistoryIcon } from '../security/icons';
 import s from './Workspace.module.css';
 
@@ -341,7 +341,7 @@ function Editor({ role, workspaceId, people, access, error, onChange, onDelete, 
                   <>
                     {a.notApplied && (
                       <>
-                        <span className={`${s.tag} ${s.tagExternal}`}>{t('workspaceSettings.notApplied')}</span>
+                        <span className={`${s.tag} ${s.tagWarn}`}>{t('workspaceSettings.notApplied')}</span>
                         <button type="button" className={s.apply} onClick={() => onApply(a.person.id)}>
                           {t('workspaceSettings.apply')}
                         </button>
@@ -382,10 +382,7 @@ function Editor({ role, workspaceId, people, access, error, onChange, onDelete, 
                           <PendingIcon size={13} strokeWidth={2} />
                         </span>
                       ) : (
-                        <span className={s.faceBox}>
-                          <Face person={m.person} size={26} />
-                          <ExternalCorner className={s.corner} />
-                        </span>
+                        <Face person={m.person} size={26} />
                       )
                     }
                     onSelect={() => onHold(m.person.id, true)}

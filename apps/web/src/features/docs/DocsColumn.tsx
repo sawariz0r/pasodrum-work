@@ -6,12 +6,13 @@ import { pointerOutsideOfPreview } from '@atlaskit/pragmatic-drag-and-drop/eleme
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
+import { CompanyTile } from '../../app/people/Face';
 import { useShowExternal } from '../../app/people/names';
 import shell from '../../app/shell/Shell.module.css';
 import { useToast } from '../../app/toast';
 import { useDocsBoards, useStore, type PageNode, type Space } from '../../matrix';
 import { DropLine, IconButton, Skeleton } from '../../ui';
-import { Building, ChevronDown, ChevronRight, PageIcon, Pencil, Plus, Search } from './icons';
+import { ChevronDown, ChevronRight, PageIcon, Pencil, Plus, Search } from './icons';
 import { flatten, locate, useScope } from './model';
 import { pagePath, useCreatePage } from './actions';
 import { useT } from './strings';
@@ -139,12 +140,8 @@ function Group(props: { space: Space; activeId?: string; query: string; closed: 
           <span className={s.groupChevron}>
             <ChevronDown />
           </span>
+          {space.kind === 'client' && showExternal && <CompanyTile space={space} size={14} />}
           <span className={s.groupName}>{space.name}</span>
-          {space.kind === 'client' && showExternal && (
-            <span className={s.outside} aria-hidden="true">
-              <Building />
-            </span>
-          )}
         </button>
         {pages?.canCreate && (
           <button type="button" className={s.groupAdd} aria-label={t('newPage')} onClick={() => create({ spaceId: space.id })}>

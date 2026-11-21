@@ -39,7 +39,6 @@ export const Search = icon(
   15,
   1.9,
 );
-export const Building = icon(<path d="M3 21h18M6 21V4h12v17M10 21v-4h4v4M10 8h.01M14 8h.01M10 12h.01M14 12h.01" />, 9, 2.6);
 export const LinkIcon = icon(
   <>
     <path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" />

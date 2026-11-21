@@ -102,7 +102,6 @@ describe('client space settings', () => {
   it('removes a person from the space after asking once, showing the channels they leave', async () => {
     renderApp('/w/!nordlys/c/!project-updates');
     await flush();
-    expect(within(header()).getByRole('button', { name: 'Includes people outside Pasodrum: Henrik Dahl, Ola Fjell' })).toBeTruthy();
     openMenu(screen.getByRole('button', { name: 'Nordlys' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Client space settings' }));
     fireEvent.click(within(dialog()).getByRole('tab', { name: /People/ }));
@@ -116,7 +115,6 @@ describe('client space settings', () => {
     fireEvent.click(within(ask).getByRole('button', { name: 'Remove' }));
     await flush();
     expect(within(dialog()).queryByText('Henrik Dahl')).toBeNull();
-    expect(within(header()).getByRole('button', { name: 'Includes people outside Pasodrum: Ola Fjell', hidden: true })).toBeTruthy();
   });
 
   it('archives the space: the composer becomes one quiet bar with Unarchive', async () => {
@@ -137,28 +135,12 @@ describe('client space settings', () => {
   });
 });
 
-describe('outside mark', () => {
-  it('marks a workspace channel with an External in the sidebar, header and beside Send; the header opens Members', async () => {
-    renderApp('/w/!pasodrum/c/!design');
-    await flush();
-    const label = 'Includes people outside Pasodrum: Lea Aune, Ola Fjell';
-    const row = screen.getByRole('link', { name: /^design/ });
-    expect(within(row).getByRole('img', { name: label })).toBeTruthy();
-    expect(screen.getAllByRole('button', { name: label })).toHaveLength(2);
-    fireEvent.click(within(header()).getByRole('button', { name: label }));
-    expect(within(dialog()).getByRole('tab', { name: /Members/ }).getAttribute('aria-selected')).toBe('true');
-  });
-
-  it('keeps client space rows plain', () => {
-    renderApp('/w/!nordlys/c/!project-updates');
-    expect(within(screen.getByRole('link', { name: /^questions/ })).queryByRole('img')).toBeNull();
-  });
-
-  it('is never shown to clients', async () => {
+describe('outside marks', () => {
+  it('are never shown to clients: no composer line, no corners', async () => {
     renderApp('/w/!nordlys/c/!project-updates', { perspective: 'client' });
-    await flush();
-    expect(screen.queryByRole('button', { name: /outside/ })).toBeNull();
-    expect(screen.queryByRole('img', { name: /outside/ })).toBeNull();
+    await screen.findByRole('textbox', { name: /Message/ });
+    expect(document.querySelector('[class*="outsideLine"]')).toBeNull();
+    expect(document.querySelector('[class*="orner"]')).toBeNull();
   });
 });
 
@@ -177,15 +159,15 @@ describe('review fixes', () => {
     expect(within(dialog()).queryByRole('button', { name: /^Remove Sofia/ })).toBeNull();
   });
 
-  it('shows the team the amber corner on the client in Members', async () => {
+  it('shows the team the company corner on the client in Members', async () => {
     renderApp('/w/!nordlys/c/!questions');
     await flush();
     fireEvent.click(screen.getByRole('button', { name: /members$/ }));
     await flush();
-    expect(dialog().querySelector('[class*="orner"]')).not.toBeNull();
+    expect(dialog().querySelector('[class*="cornerTile"]')?.textContent).toBe('N');
   });
 
-  it('never shows clients the amber corner, even on themselves in Members', async () => {
+  it('never shows clients a corner, even on themselves in Members', async () => {
     renderApp('/w/!nordlys/c/!questions', { perspective: 'client' });
     await flush();
     fireEvent.click(screen.getByRole('button', { name: /members$/ }));
@@ -194,7 +176,7 @@ describe('review fixes', () => {
     expect(dialog().querySelector('[class*="orner"]')).toBeNull();
   });
 
-  it('never shows clients the outside mark in a group DM with another client', async () => {
+  it('never shows clients the composer line in a group DM with another client', async () => {
     const { store } = renderApp('/dms/!dm-group', { perspective: 'client' });
     await flush();
     const snap = store().getSnapshot();
@@ -202,7 +184,8 @@ describe('review fixes', () => {
     const jonas = snap.dms[0]!.people[0]!;
     act(() => store().set({ dms: [{ id: '!dm-group', people: [snap.me, jonas, kari], unread: 0, mentions: 0, lastTs: Date.now(), spaceIds: ['!nordlys'] }, ...snap.dms] }));
     expect(screen.getByRole('main').textContent).toContain('Kari Nordmann');
-    expect(screen.queryByRole('img', { name: /outside/ })).toBeNull();
+    await screen.findByRole('textbox', { name: /Message/ });
+    expect(document.querySelector('[class*="outsideLine"]')).toBeNull();
   });
 
   it('Escape in the inline channel field and team search closes only that field', async () => {

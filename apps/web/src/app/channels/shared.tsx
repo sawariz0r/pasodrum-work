@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useWorkspace, type Channel, type Member, type PendingInvite, type Role, type Space, type WorkspaceSnapshot } from '../../matrix';
 import { avatarColor } from '../../ui';
-import { ExternalIcon, LogoMark } from '../icons';
+import { LogoMark } from '../icons';
 import { channelPath } from '../places';
 import { useMediaUrl } from '../timeline/Media';
 import s from './Channels.module.css';
@@ -98,19 +98,14 @@ export function useWorkspaceName(): string {
   return useWorkspace((x) => x.spaces.find((sp) => sp.kind === 'workspace')?.name ?? '');
 }
 
-/** A space's tile: the logo for the workspace, a letter (and the amber corner) for a client space. */
-export function SpaceMark({ space, large, corner }: { space: Space; large?: boolean; corner?: boolean }) {
+/** A space's tile: the logo for the workspace, a letter for a client space. */
+export function SpaceMark({ space, large }: { space: Space; large?: boolean }) {
   const avatar = useMediaUrl(space.avatarUrl, true);
   const isWorkspace = space.kind === 'workspace';
   const style = { '--tile-bg': spaceColour(space) } as CSSProperties;
   return (
     <span className={[s.mark, large && s.markLg].filter(Boolean).join(' ')} style={style} aria-hidden="true">
       {avatar ? <img src={avatar} alt="" /> : isWorkspace ? <LogoMark /> : (Array.from(space.name.trim())[0] ?? '').toUpperCase()}
-      {!isWorkspace && corner && (
-        <span className={s.markCorner}>
-          <ExternalIcon />
-        </span>
-      )}
     </span>
   );
 }

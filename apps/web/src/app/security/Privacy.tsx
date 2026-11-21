@@ -26,9 +26,9 @@ export function PrivacyLine({ text }: { text: string }) {
 }
 
 /** After the name in a DM header; the same sentence on hover and focus (PrivateDMTooltip). */
-export function PrivacyLock({ text, gap }: { text: string; gap?: boolean }) {
+export function PrivacyLock({ text }: { text: string }) {
   return (
-    <button type="button" className={[s.privacyLock, gap && s.privacyLockGap].filter(Boolean).join(' ')} aria-label={text}>
+    <button type="button" className={s.privacyLock} aria-label={text}>
       <LockIcon size={15} strokeWidth={2.1} />
       <span className={s.privacyTip} aria-hidden="true">
         {text}

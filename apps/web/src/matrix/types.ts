@@ -19,6 +19,11 @@ export interface Person {
    * Client viewers: only clients are (Externals are part of the team to them; level ≥ 1 where we meet = team).
    */
   external?: boolean;
+  /**
+   * Outside people only: the client space they're a client in, taken from client spaces I'm joined to. Never set when I'm a
+   * client, so a client never learns another client's space. Absent = an External (or a client of a space I'm not in).
+   */
+  client?: string;
 }
 
 export interface Space {

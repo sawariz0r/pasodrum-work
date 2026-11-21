@@ -375,12 +375,31 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     if (viewer === 'client') return (level ?? 0) < LEVEL.external;
     return level === undefined ? looksExternal(userId) : level < LEVEL.staff;
   };
-  const person = (userId: string, name?: string | null, avatarUrl?: string): Person => ({
-    id: userId,
-    name: name || localpart(userId),
-    ...(avatarUrl ? { avatarUrl } : {}),
-    ...(userId !== me.id && isExternal(userId) ? { external: true } : {}),
-  });
+  /** Per build: the client space each client is in, from client spaces I'm joined to, so I never learn a name I can't see. Clients get none (D-36). */
+  let clientCache: Map<string, string> | null = null;
+  const clientSpaceOf = (userId: string) => {
+    if (viewer === 'client') return undefined;
+    if (!clientCache) {
+      const map = new Map<string, string>();
+      for (const room of spacesJoined()) {
+        if (!isClientSpace(room)) continue;
+        for (const m of room.getMembers()) if (!map.has(m.userId) && isMember(room, m.userId) && levelIn(room, m.userId) < LEVEL.external) map.set(m.userId, room.roomId);
+      }
+      clientCache = map;
+    }
+    return clientCache.get(userId);
+  };
+  const person = (userId: string, name?: string | null, avatarUrl?: string): Person => {
+    const outside = userId !== me.id && isExternal(userId);
+    const client = outside ? clientSpaceOf(userId) : undefined;
+    return {
+      id: userId,
+      name: name || localpart(userId),
+      ...(avatarUrl ? { avatarUrl } : {}),
+      ...(outside ? { external: true } : {}),
+      ...(client ? { client } : {}),
+    };
+  };
   /** Someone as they are now (current member state), not as an event saw them; `fallback` when the room doesn't know them. */
   const personOf = (room: Room | null, userId: string, fallback?: string | null): Person => {
     const m = room?.getMember(userId);
@@ -1376,6 +1395,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     const hidden = halfMade(client.getRooms());
     const rooms = client.getRooms().filter((r) => !hidden.has(r.roomId));
     metCache = null;
+    clientCache = null;
     workspaceRoom = rooms.find((r) => r.isSpaceRoom() && joined(r) && !isClientSpace(r));
     const workspace = workspaceOf(rooms.map(factsOf), knownSpacesOf(client.getAccountData(SPACES as never)?.getContent()));
     const myRoles = myRolesOf(workspace.spaces);

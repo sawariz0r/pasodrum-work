@@ -6,7 +6,7 @@ import { AttentionDot, Badge } from '../../ui';
 import { useChannels } from '../channels/ChannelsProvider';
 import { canManage } from '../channels/roles';
 import { forgetFreshSpace, isFreshSpace, spaceColour } from '../channels/shared';
-import { ExternalIcon, LogoMark, MoonIcon, SunIcon } from '../icons';
+import { LogoMark, MoonIcon, SunIcon } from '../icons';
 import { channelPath, spaceHome } from '../places';
 import { setTheme, useTheme } from '../prefs';
 import type { RailItem } from '../registry';
@@ -26,14 +26,13 @@ export function Rail({ section, activeSpaceId, onSignOut }: { section: Section; 
   const unreadActivity = useWorkspace((x) => x.activity.filter((a) => a.unread).length);
   const { rail } = useRegistry();
   const theme = useTheme();
-  const isTeam = spaces.some((x) => x.kind === 'workspace');
   const mayCreate = useWorkspace((x) => canManage(x.myRoles[x.spaces.find((sp) => sp.kind === 'workspace')?.id ?? '']));
   const channels = useChannels();
 
   return (
     <nav aria-label={t('shell.rail.label')} className={s.rail}>
       {spaces.map((space) => (
-        <SpaceTile key={space.id} space={space} active={space.id === activeSpaceId} external={isTeam && space.kind === 'client'} />
+        <SpaceTile key={space.id} space={space} active={space.id === activeSpaceId} />
       ))}
       {mayCreate && (
         <button type="button" className={s.tileNew} aria-label={t('spaces.newClientSpace')} onClick={() => channels.newClientSpace()}>
@@ -61,7 +60,7 @@ export function Rail({ section, activeSpaceId, onSignOut }: { section: Section; 
   );
 }
 
-function SpaceTile({ space, active, external }: { space: Space; active: boolean; external: boolean }) {
+function SpaceTile({ space, active }: { space: Space; active: boolean }) {
   const { t } = useTranslation();
   const home = useWorkspace((x) => spaceHome(x, space.id)?.id);
   const attention = useWorkspace((x) => !active && (x.channels[space.id] ?? []).some((c) => !c.archived && (c.unread > 0 || c.mentions > 0)));
@@ -89,11 +88,6 @@ function SpaceTile({ space, active, external }: { space: Space; active: boolean;
       aria-current={active ? 'page' : undefined}
     >
       {content}
-      {external && (
-        <span className={s.tileExternal}>
-          <ExternalIcon />
-        </span>
-      )}
       {attention && <AttentionDot className={s.tileDot} />}
     </Link>
   );

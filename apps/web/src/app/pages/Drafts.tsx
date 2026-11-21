@@ -8,7 +8,7 @@ import { IconButton, isImeEnter } from '../../ui';
 import { clearDraft, useDrafts, type StoredDraft } from '../drafts';
 import { HashIcon, LockIcon } from '../icons';
 import { DmFace, Face, others } from '../people/Face';
-import { useDmName, useShowExternal } from '../people/names';
+import { useDmName } from '../people/names';
 import { channelPath, spaceDmPath, threadPath } from '../places';
 import { DrawerToggle } from '../shell/Drawer';
 import { SendIcon, ThreadIcon, TrashIcon } from '../shell/icons';
@@ -69,7 +69,6 @@ function Row({ draft, spaceId, leaving, onDelete }: { draft: StoredDraft; spaceI
   const navigate = useNavigate();
   const time = useListTime();
   const dmName = useDmName();
-  const showExternal = useShowExternal();
   const meId = useWorkspace((x) => x.me.id);
   const place = useWorkspace((x) => placeOf(x, draft.channelId));
   if (!place) return null;
@@ -95,7 +94,7 @@ function Row({ draft, spaceId, leaving, onDelete }: { draft: StoredDraft; spaceI
       {dm && others(dm, meId).length === 1 ? (
         <Face person={others(dm, meId)[0]!} size={34} />
       ) : dm ? (
-        <DmFace dm={dm} meId={meId} showExternal={showExternal} />
+        <DmFace dm={dm} meId={meId} />
       ) : (
         <span className={s.tile}>
           {draft.threadRootId ? <ThreadIcon strokeWidth={2} /> : channel?.private ? <LockIcon /> : <HashIcon />}

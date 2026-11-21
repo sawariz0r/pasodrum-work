@@ -450,7 +450,15 @@
       "pine": "パイン",
       "brick": "レンガ"
     },
-    "outside": "社外の人がいます：{{names}}",
+    "outside": {
+      "client": "{{name}} さんは <b>{{company}}</b> のメンバーです",
+      "clients_other": "{{name}} さんほか{{count}}人は <b>{{company}}</b> のメンバーです",
+      "external": "{{name}} さんは<b>外部メンバー</b>です",
+      "externals_other": "{{name}} さんほか{{count}}人は<b>外部メンバー</b>です",
+      "companies": "<companies/>の人がいます",
+      "withExternal": "<companies/>の人と<b>外部メンバー</b>がいます",
+      "withExternals": "<companies/>の人と<b>外部メンバー</b>{{count}}人がいます"
+    },
     "settings": "クライアントスペースの設定",
     "general": "一般",
     "people": "メンバー",
@@ -600,7 +608,8 @@
     "searching": "検索しています…",
     "none": "「{{query}}」に一致するメッセージはありません",
     "unconfirmed": "このデバイスを確認するまで、DM と非公開チャンネルは検索されません。",
-    "confirm": "確認"
+    "confirm": "確認",
+    "external": "外部"
   },
   "failed": {
     "leaveDialog": "#{{name}} から退出できませんでした。もう一度お試しください。",

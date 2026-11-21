@@ -37,7 +37,7 @@ import { UploadTray } from './UploadTray';
 import s from './Composer.module.css';
 import { PersonAvatar } from '../timeline/PersonAvatar';
 import { useChannels } from '../channels/ChannelsProvider';
-import { OutsideComposerMark, useOutside } from '../channels/OutsideMark';
+import { OutsideLine } from '../channels/OutsideMark';
 
 const NONE: Upload[] = [];
 const idle = { bold: false, italic: false, strike: false, link: false, orderedList: false, bulletList: false, blockquote: false, code: false, codeBlock: false, hasText: false };
@@ -127,8 +127,6 @@ export function Composer({
   const reply = useWorkspace((snap) => (replyToId ? messagesAt(snap, place)?.find((m) => m.id === replyToId) : undefined));
   const meId = useWorkspace((snap) => snap.me.id);
   useDraftsFor(meId);
-  // RulesM5: the outside people are in view at the moment of sending (channel composer only).
-  const outside = useOutside(channelId);
   const channelsApi = useChannels();
   const [restored] = useState(() => {
     const saved = getDraft(channelId, threadRootId);
@@ -407,6 +405,7 @@ export function Composer({
           <EmojiList store={emoji} state={emojiState} label={t('composer.emoji')} place={placeList(emojiState.rect)} />
         )}
       </div>
+      <OutsideLine channelId={channelId} onMembers={() => channelsApi.details(channelId, 'members')} />
       <div className={s.box} ref={boxRef}>
         {reply && (
           <div className={s.replyBar}>
@@ -474,7 +473,6 @@ export function Composer({
             <MentionIcon />
           </button>
           <span className={s.spacer} />
-          {!threadRootId && <OutsideComposerMark people={outside} onClick={isDm ? undefined : () => channelsApi.details(channelId, 'members')} />}
           <button
             type="button"
             className={s.send}

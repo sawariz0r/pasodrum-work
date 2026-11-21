@@ -74,7 +74,6 @@ export const LinkIcon = ({ size = 17, strokeWidth = 1.9 }: P) =>
   );
 export const CloseIcon = ({ size = 17, strokeWidth = 1.9 }: P) => line(<path d="M6 6l12 12M18 6 6 18" />, size, strokeWidth);
 export const CheckIcon = ({ size = 16, strokeWidth = 2.4 }: P) => line(<path d="m5 12.5 4.5 4.5L19 7.5" />, size, strokeWidth);
-export const BuildingIcon = ({ size = 9, strokeWidth = 2.6 }: P) => line(<path d="M3 21h18M6 21V4h12v17M10 21v-4h4v4M10 8h.01M14 8h.01M10 12h.01M14 12h.01" />, size, strokeWidth);
 export const BoardsGlyph = ({ size = 30, strokeWidth = 1.8 }: P) =>
   line(
     <>

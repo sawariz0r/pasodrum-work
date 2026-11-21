@@ -20,7 +20,7 @@ const team = [
   { id: '@ingrid:pasodrum.localhost', name: 'Ingrid Holm' },
 ];
 
-const henrik = { id: '@henrik_nordlys.no:pasodrum.work', name: 'Henrik Dahl', external: true };
+const henrik = { id: '@henrik_nordlys.no:pasodrum.work', name: 'Henrik Dahl', external: true, client: '!nordlys' };
 
 export function createFakeBackend(opts: FakeBackendOptions = {}): Backend & { stores: ReturnType<typeof createFakeStore>[]; claims: { code: string; name: string }[] } {
   let current: Session | null = opts.signedIn === false ? null : session;

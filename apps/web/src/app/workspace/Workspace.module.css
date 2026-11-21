@@ -303,10 +303,6 @@
 
 .corner {
   --ring: var(--raised);
-  top: -4px;
-  right: -4px;
-  width: 14px;
-  height: 14px;
 }
 
 .row:hover .corner,
@@ -394,6 +390,16 @@
 }
 
 .tagExternal {
+  background: #efede8;
+  color: #55535c;
+}
+
+:global([data-theme='dark']) .tagExternal {
+  background: #2a2a31;
+  color: #b3b1bc;
+}
+
+.tagWarn {
   background: #fcebc0;
   color: #7a5300;
 }

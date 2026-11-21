@@ -122,18 +122,6 @@
   white-space: nowrap;
 }
 
-.outside {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 15px;
-  height: 15px;
-  border-radius: 4px;
-  background: var(--attention);
-  color: #3a2a00;
-}
-
 .groupAdd {
   display: flex;
   flex-shrink: 0;

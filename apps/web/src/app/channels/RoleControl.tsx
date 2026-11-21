@@ -1,6 +1,6 @@
 // Role on the profile card (RoleChange, RoleChangeAdmin, MakeOwner; D-25).
 // Owners pick Owner / Admin / Staff; Admins pick Admin / Staff. Nobody switches their own role or demotes an Owner.
-// D-36: the team sees an External's amber External tag; clients never do (Externals are team to them).
+// D-36: the team sees an External's grey External tag; clients never do (Externals are team to them).
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore, useWorkspace, type Person, type Role } from '../../matrix';

@@ -123,6 +123,7 @@
 }
 
 .row {
+  --ring: var(--bg);
   position: relative;
   display: flex;
   gap: 12px;
@@ -146,16 +147,19 @@
 
 .row:hover,
 .force {
+  --ring: var(--hover);
   background: var(--hover);
 }
 
 .mention,
 .mention:hover {
+  --ring: var(--mentionbg);
   background: var(--mentionbg);
 }
 
 .editing,
 .editing:hover {
+  --ring: var(--editbg);
   background: var(--editbg);
 }
 
@@ -186,6 +190,7 @@
 }
 
 .avatarButton {
+  position: relative;
   display: flex;
   align-self: flex-start;
   margin-top: 2px;

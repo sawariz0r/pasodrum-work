@@ -71,22 +71,6 @@
     0 0 0 4px #ffffff;
 }
 
-.tileExternal {
-  position: absolute;
-  right: -3px;
-  bottom: -3px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--rail);
-  border-radius: 5px;
-  background: var(--attention);
-  color: #3a2a00;
-}
-
 .tileDot {
   position: absolute;
   top: -3px;

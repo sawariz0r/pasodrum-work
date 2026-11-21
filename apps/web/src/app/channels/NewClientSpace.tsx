@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useStore, useWorkspace, type Person } from '../../matrix';
 import { Button, Dialog, isImeEnter } from '../../ui';
-import { ExternalIcon, HashIcon, LogoMark } from '../icons';
+import { HashIcon, LogoMark } from '../icons';
 import { Face } from '../people/Face';
 import { channelPath } from '../places';
 import { SmallCloseIcon } from '../shell/icons';
@@ -122,9 +122,6 @@ export function NewClientSpaceDialog({ open, onClose }: { open: boolean; onClose
           ))}
           <span className={s.csPreview} style={preview}>
             {initial}
-            <span className={s.csPreviewCorner}>
-              <ExternalIcon size={10} />
-            </span>
           </span>
         </div>
       }

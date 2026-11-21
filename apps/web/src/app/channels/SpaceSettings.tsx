@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useStore, useWorkspace, type Member, type PendingInvite, type Person, type Space } from '../../matrix';
 import { Button, Dialog, IconButton, isImeEnter, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '../../ui';
-import { ExternalIcon, HashIcon, LogoMark, MoreIcon } from '../icons';
-import { ExternalCorner, Face } from '../people/Face';
+import { HashIcon, LogoMark, MoreIcon } from '../icons';
+import { Face, PersonCorner } from '../people/Face';
 import { dmPath } from '../places';
 import { BubbleIcon, MailIcon } from '../shell/icons';
 import { firstName, useToast } from '../toast';
@@ -121,17 +121,12 @@ export function SpaceSettingsDialog({ open, spaceId, tab: initialTab = 'general'
   );
 }
 
-/** A client space's tile with the amber corner, at the sizes the settings boards use. */
+/** A client space's tile at the sizes the settings boards use. */
 function SpaceTile({ space, size, name }: { space: Space; size: 'title' | 'field' | 'label' | 'card'; name?: string }) {
   const initial = (Array.from((name ?? space.name).trim())[0] ?? '?').toUpperCase();
   return (
     <span className={`${s.spTile} ${s[`spTile_${size}`]}`} style={{ '--tile-bg': spaceColour(space) } as CSSProperties} aria-hidden="true">
       {initial}
-      {(size === 'title' || size === 'card') && (
-        <span className={s.spTileCorner}>
-          <ExternalIcon size={7} strokeWidth={3.4} />
-        </span>
-      )}
     </span>
   );
 }
@@ -264,19 +259,19 @@ function People({ space, members, tick, onAdded, onRemove, onLeave }: PeopleProp
         {m.pending ? (
           <span className={s.pendingFace}>
             <PendingIcon />
-            {person.external && <ExternalCorner className={s.spCorner} />}
+            <PersonCorner person={person} className={s.spCorner} />
           </span>
         ) : (
           <span className={s.spFace}>
             <Face person={person} size={32} />
-            {person.external && <ExternalCorner className={s.spCorner} />}
+            <PersonCorner person={person} className={s.spCorner} />
           </span>
         )}
         <span className={s.memberName}>
           <span>{person.name}</span>
           {me && <span className={s.you}>{t('channels.you')}</span>}
         </span>
-        {tag && <span className={[s.tag, tag === 'pending' && s.tagPending, tag === 'external' && s.tagGuest].filter(Boolean).join(' ')}>{t(`channels.tags.${tag}`)}</span>}
+        {tag && <span className={[s.tag, tag === 'pending' && s.tagPending, tag === 'external' && s.tagOutside].filter(Boolean).join(' ')}>{t(`channels.tags.${tag}`)}</span>}
         <span className={s.moreCell}>
           {manage && !me && (mayRemove || !m.pending || invite) && (
             <Menu>
@@ -516,12 +511,12 @@ function RemoveDialog({ open, space, member, alert, onCancel, onRemove }: Remove
           {member.pending ? (
             <span className={`${s.pendingFace} ${s.spCardFace}`}>
               <PendingIcon />
-              {person.external && <ExternalCorner className={s.spCorner} />}
+              <PersonCorner person={person} className={s.spCorner} />
             </span>
           ) : (
             <span className={s.spFace}>
               <Face person={person} size={36} />
-              {person.external && <ExternalCorner className={s.spCorner} />}
+              <PersonCorner person={person} className={s.spCorner} />
             </span>
           )}
           <span className={s.spCardText}>

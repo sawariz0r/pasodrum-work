@@ -103,7 +103,7 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ, one page per feature 
 
 ## Batch E — for M5 (approved 2026-11-21)
 
-**Outside mark:** the amber ↗ square (already on client tiles/avatars) after a channel or DM name and beside Send with the outside people's faces when a conversation includes clients or guests; team people only; no text or banner.
+**Outside mark (superseded by D-40):** the amber ↗ square (already on client tiles/avatars) after a channel or DM name and beside Send with the outside people's faces when a conversation includes clients or guests; team people only; no text or banner.
 
 | Screen / state | Artboard | Status |
 |---|---|---|
@@ -111,7 +111,9 @@ Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ, one page per feature 
 | New client space: creating, name taken, error (Retry), created (tile pops into the rail) | CreateClientSpace(+JP), ClientSpaceCreating, ClientSpaceNameTaken, ClientSpaceCreateError, ClientSpaceCreated | approved |
 | Client's view of the shell | ClientShell, ClientShellMenu, ClientShellJP, ClientShellDark | approved |
 | Guest's view | GuestShell, GuestShellJP | approved |
-| Outside mark on channels, client spaces, DMs | ExternalChannel, ExternalClientSpace, ExternalDM, ExternalJP, ExternalDark | approved |
+| Outside mark on channels, client spaces, DMs | ExternalChannel, ExternalClientSpace, ExternalDM, ExternalJP, ExternalDark | superseded by D-40 (ClientMarkFinal, ClientMarkPlaces) |
+| Client and External marks: company tile / grey ↗ on avatars ≥30 px, composer line only when there's a risk | ClientMarkFinal | approved 2026-11-21 (D-40) |
+| Client and External marks everywhere they show (rail, chats, members, settings, Docs/Boards, timeline) | ClientMarkPlaces | approved 2026-11-21 (D-40) |
 | Client space settings, people, remove a person, archive / archived | ClientSpaceMenuAdmin, SpaceSettings(+JP), SpacePeople(+Dark), RemoveFromSpace(+JP), ArchiveSpace, ArchivedSpace | approved |
 | Another app (server + username, copy) | ProfileMenuAnotherApp, AnotherApp(+JP), JoinDoneOther | approved |
 | Phone hand-off, join page on phone | PhoneHandoff(+JP), JoinPhone, JoinDonePhone | approved |
@@ -181,6 +183,9 @@ Approved 2026-11-21 (CEO). Rules: RulesM8. Shortcuts sheet and desktop bits drop
 | Screen / state | Boards | Status |
 |---|---|---|
 | ⌘K switcher (recent, results, empty) | Switcher(+JP, Dark), SwitcherResults, SwitcherEmpty | approved 2026-11-21 |
+| ⌘K across spaces: └ + space name under each channel (only when you're in more than one space) | SwitcherSpaces(+JP) | approved 2026-11-21 |
+| ⌘K people/DM tags: External pill (grey per D-40), client tag in their space's colour, team untagged | SwitcherTags(+Dark) | approved 2026-11-21 |
+| ⌘K: what a client (unchanged) and an External (own spaces only) see | SwitcherWhoSees | approved 2026-11-21 |
 | Message search (results, searching, empty, unconfirmed device) | SearchResults(+JP, Dark), SearchSearching, SearchEmpty, SearchUnconfirmedDevice | approved 2026-11-21 |
 | Share earlier messages (staff) | ShareHistoryEntry(+JP, Dark), ShareHistoryVerify, ShareHistoryConfirm, ShareHistoryProgress, ShareHistoryBlocked | approved 2026-11-21 |
 | Confirm it's you + restored messages (client) | ConfirmPersonAsk(+JP), HistoryRestoredRow(+JP, Dark) | approved 2026-11-21 |

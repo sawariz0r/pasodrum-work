@@ -13,7 +13,9 @@ const people: Record<string, Person> = {
   // D-36: an External (Translators + a one-off #launch-site; still in #design, so not applied).
   la: { id: '@lea:pasodrum.localhost', name: 'Lea Aune', external: true },
   tr: { id: '@tove:pasodrum.localhost', name: 'Tove Rask' },
-  hd: { id: '@henrik_nordlys.no:pasodrum.localhost', name: 'Henrik Dahl', external: true },
+  hd: { id: '@henrik_nordlys.no:pasodrum.localhost', name: 'Henrik Dahl', external: true, client: '!nordlys' },
+  // A Kumo client: the team sees her company; Henrik and Ola never meet her (SwitcherTags, SwitcherWhoSees).
+  ci: { id: '@carol_kumo.jp:pasodrum.localhost', name: 'Carol Ito', external: true, client: '!kumo' },
 };
 
 // D-38: the system sender of help cards (read-only DM, logo tile).
@@ -479,6 +481,7 @@ function outsideView(perspective: 'client' | 'external', me: Person | undefined)
   const self = (p: Person): Person => {
     const copy = { ...p };
     delete copy.external;
+    delete copy.client;
     return copy;
   };
   if (perspective === 'client') {

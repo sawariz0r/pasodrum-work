@@ -9,8 +9,7 @@ import { formatList } from '../format';
 import { dmPath } from '../places';
 import { firstName } from '../toast';
 import { BubbleIcon, SearchIcon, SmallCloseIcon } from '../shell/icons';
-import { ExternalCorner, Face } from './Face';
-import { useShowExternal } from './names';
+import { Face, PersonCorner } from './Face';
 import s from './People.module.css';
 
 const NewMessageContext = createContext<() => void>(() => {});
@@ -35,7 +34,6 @@ function NewMessageDialog({ open, onClose }: { open: boolean; onClose: () => voi
   const { t } = useTranslation();
   const store = useStore();
   const navigate = useNavigate();
-  const showExternal = useShowExternal();
   const [query, setQuery] = useState('');
   const [chosen, setChosen] = useState<Person[]>([]);
   const [found, setFound] = useState<Person[]>([]);
@@ -172,7 +170,7 @@ function NewMessageDialog({ open, onClose }: { open: boolean; onClose: () => voi
               >
                 <span className={s.single}>
                   <Face person={p} size={30} />
-                  {showExternal && p.external && <ExternalCorner />}
+                  <PersonCorner person={p} />
                 </span>
                 <span className={s.resultName}>
                   {at === 0 ? (

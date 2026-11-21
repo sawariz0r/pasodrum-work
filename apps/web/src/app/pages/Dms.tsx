@@ -6,14 +6,13 @@ import { useWorkspace, type Dm } from '../../matrix';
 import { Badge, Button, IconButton } from '../../ui';
 import { ChatIcon } from '../icons';
 import { DmFace, Face, others, SystemFace } from '../people/Face';
-import { useDmName, useShowExternal } from '../people/names';
+import { useDmName } from '../people/names';
 import { useNewMessage } from '../people/NewMessage';
 import { useProfileCard } from '../people/ProfileCardContext';
 import { dmPath } from '../places';
 import { noStoredTabs } from '../registry';
 import { ChannelTabs } from '../shell/ChannelTabs';
 import { ChevronDownIcon, ComposeIcon } from '../shell/icons';
-import { OutsideHeaderMark } from '../channels/OutsideMark';
 import { FindButton } from '../find/Switcher';
 import { rememberRecent } from '../prefs';
 import { PrivacyLock, usePrivacyText } from '../security/Privacy';
@@ -47,7 +46,6 @@ function DmRow({ dm, current }: { dm: Dm; current: boolean }) {
   const { t } = useTranslation();
   const time = useListTime();
   const name = useDmName();
-  const showExternal = useShowExternal();
   const meId = useWorkspace((x) => x.me.id);
   const last = useWorkspace((x) => x.timelines[dm.id]?.messages.findLast((m) => m.kind !== 'system')) ?? dm.last;
   const unread = dm.unread > 0 && !current;
@@ -66,7 +64,7 @@ function DmRow({ dm, current }: { dm: Dm; current: boolean }) {
   }
   return (
     <Link to={dmPath(dm.id)} className={[s.lrow, s.dmRow, unread && s.unread].filter(Boolean).join(' ')} aria-current={current ? 'page' : undefined}>
-      <DmFace dm={dm} meId={meId} showExternal={showExternal} />
+      <DmFace dm={dm} meId={meId} />
       <span className={s.rowMain}>
         <span className={s.rowTop}>
           <span className={s.rowName}>{name(dm)}</span>
@@ -105,7 +103,6 @@ export function DmConversation({ dmId }: { dmId: string }) {
   const dm = useWorkspace((x) => x.dms.find((d) => d.id === dmId));
   const meId = useWorkspace((x) => x.me.id);
   const name = useDmName();
-  const showExternal = useShowExternal();
   const card = useProfileCard();
   const title = useRef<HTMLButtonElement>(null);
   const privacy = usePrivacyText(dm);
@@ -113,7 +110,6 @@ export function DmConversation({ dmId }: { dmId: string }) {
   if (!dm) return null;
   const list = others(dm, meId);
   const single = list.length === 1 ? list[0] : undefined;
-  const outside = showExternal && !dm.system ? list.filter((p) => p.external) : [];
 
   return (
     <>
@@ -140,12 +136,11 @@ export function DmConversation({ dmId }: { dmId: string }) {
           </h1>
         ) : (
           <h1 className={s.dmTitle}>
-            <DmFace dm={dm} meId={meId} size={20} showExternal={showExternal} />
+            <DmFace dm={dm} meId={meId} size={20} />
             <span>{name(dm)}</span>
           </h1>
         )}
-        {privacy && <PrivacyLock text={privacy} gap={outside.length > 0} />}
-        <OutsideHeaderMark people={outside} />
+        {privacy && <PrivacyLock text={privacy} />}
         <FindButton />
       </header>
       <ChannelTabs key={dm.id} channelId={dm.id} stored={noStoredTabs} />

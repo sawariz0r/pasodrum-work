@@ -455,7 +455,17 @@
       "pine": "Pine",
       "brick": "Brick"
     },
-    "outside": "Includes people outside Pasodrum: {{names}}",
+    "outside": {
+      "client": "{{name}} is from <b>{{company}}</b>",
+      "clients_one": "{{name}} and {{count}} other are from <b>{{company}}</b>",
+      "clients_other": "{{name}} and {{count}} others are from <b>{{company}}</b>",
+      "external": "{{name}} is an <b>External</b>",
+      "externals_one": "{{name}} and {{count}} other are <b>Externals</b>",
+      "externals_other": "{{name}} and {{count}} others are <b>Externals</b>",
+      "companies": "People from <companies/> are here",
+      "withExternal": "People from <companies/>, and an <b>External</b>, are here",
+      "withExternals": "People from <companies/>, and {{count}} <b>Externals</b>, are here"
+    },
     "settings": "Client space settings",
     "general": "General",
     "people": "People",
@@ -606,7 +616,8 @@
     "searching": "Searching…",
     "none": "No results for “{{query}}”",
     "unconfirmed": "DMs and private channels aren’t searched until this device is confirmed.",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "external": "External"
   },
   "failed": {
     "leaveDialog": "Couldn’t leave #{{name}}. Try again.",

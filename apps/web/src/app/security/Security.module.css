@@ -666,10 +666,6 @@
   display: block;
 }
 
-.privacyLockGap {
-  margin-right: 6px;
-}
-
 /* SIDE-03: Share stays an accent button while it works (ShareHistoryProgress) */
 .busyButton {
   gap: 9px;

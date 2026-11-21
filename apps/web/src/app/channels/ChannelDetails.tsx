@@ -6,8 +6,7 @@ import { useNavigate } from 'react-router';
 import { useStore, useWorkspace, type Channel, type Member, type NotifyLevel, type PendingInvite } from '../../matrix';
 import { Button, Dialog, IconButton, isImeEnter, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '../../ui';
 import { HashIcon, LockIcon, MoreIcon } from '../icons';
-import { ExternalCorner, Face } from '../people/Face';
-import { useShowExternal } from '../people/names';
+import { Face, PersonCorner } from '../people/Face';
 import { roleEvents, useProfileCard } from '../people/ProfileCardContext';
 import { channelPath, dmPath, spaceHome } from '../places';
 import { BubbleIcon, MailIcon, SearchIcon } from '../shell/icons';
@@ -212,7 +211,6 @@ function Members({ channel, onAddPeople, onLeave }: { channel: Channel; onAddPeo
   const space = useSpace(channel.spaceId);
   const manage = canManage(role);
   const mayAdd = canAddPeople(space, role);
-  const showExternal = useShowExternal();
   const [members, setMembers] = useState<Member[]>([]);
   const [pending, setPending] = useState<PendingInvite[]>([]);
   const [query, setQuery] = useState('');
@@ -338,21 +336,17 @@ function Members({ channel, onAddPeople, onLeave }: { channel: Channel; onAddPeo
           const tag = tagOf(theirs);
           return (
             <li key={person.id} className={s.memberRow}>
-              {showExternal && person.external ? (
-                <span className={s.spFace}>
-                  <Face person={person} size={32} />
-                  <ExternalCorner className={s.spCorner} />
-                </span>
-              ) : (
+              <span className={s.spFace}>
                 <Face person={person} size={32} />
-              )}
+                <PersonCorner person={person} className={s.spCorner} />
+              </span>
               <span className={s.memberName}>
                 <button type="button" className={s.personButton} onClick={(e) => card.open(person.id, e.currentTarget)}>
                   {person.name}
                 </button>
                 {me && <span className={s.you}>{t('channels.you')}</span>}
               </span>
-              {tag && <span className={[s.tag, (tag === 'external' || tag === 'client') && s.tagGuest].filter(Boolean).join(' ')}>{t(`channels.tags.${tag}`)}</span>}
+              {tag && <span className={[s.tag, (tag === 'external' || tag === 'client') && s.tagOutside].filter(Boolean).join(' ')}>{t(`channels.tags.${tag}`)}</span>}
               <span className={s.moreCell}>
                 {manage && !me && theirs !== 'owner' && (
                   <RowMenu label={t('channels.more', { name: person.name })}>

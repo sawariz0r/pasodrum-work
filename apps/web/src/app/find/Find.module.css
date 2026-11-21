@@ -168,6 +168,84 @@
   white-space: nowrap;
 }
 
+/* SwitcherSpaces: when ⌘K spans more than one space, every channel row names its space. */
+.optionTall {
+  height: 52px;
+}
+
+.optionStack {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.optionStack .optionName {
+  font-size: 15.5px;
+  line-height: 20px;
+}
+
+.optionSpace {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--subtle);
+  font-size: 12px;
+  line-height: 15px;
+  white-space: nowrap;
+}
+
+.optionSpace span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.elbow {
+  flex-shrink: 0;
+  margin: -4px 0 0 2px;
+}
+
+/* SwitcherTags: External (grey) or the client's space, in its colour (--tag-c). */
+.optionTagged {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.optionTagged .optionName {
+  flex: 0 1 auto;
+}
+
+.tag {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #efede8;
+  color: #55535c;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tagClient {
+  background: oklch(from var(--tag-c) 0.916 calc(c * 0.23) h);
+  color: var(--tag-c);
+}
+
+:global([data-theme='dark']) .tag {
+  background: #2a2a31;
+  color: #b3b1bc;
+}
+
+:global([data-theme='dark']) .tagClient {
+  background: oklch(from var(--tag-c) 0.315 calc(c * 0.55) h);
+  color: oklch(from var(--tag-c) 0.826 calc(c * 0.62) h);
+}
+
 /* Search page */
 .page {
   display: flex;

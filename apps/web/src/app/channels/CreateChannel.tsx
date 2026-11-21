@@ -99,7 +99,7 @@ export function CreateChannelDialog({ open, spaceId: initial, onClose }: { open:
                   key={sp.id}
                   className={s.option}
                   data-selected={sp.id === spaceId ? '' : undefined}
-                  icon={<SpaceMark space={sp} corner />}
+                  icon={<SpaceMark space={sp} />}
                   onSelect={() => setSpaceId(sp.id)}
                 >
                   <span className={s.optionName}>{sp.name}</span>

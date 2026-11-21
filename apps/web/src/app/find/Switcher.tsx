@@ -1,17 +1,17 @@
 // ⌘K (Switcher, SwitcherResults, SwitcherEmpty; RulesM8): opened by ⌘K / Ctrl K or the header search button.
 // Empty: recent conversations. Typed: Channels, Direct messages, People, then always "Search messages for …".
 import * as RD from '@radix-ui/react-dialog';
-import { createContext, useContext, useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { fold, useStore, useWorkspace, type Channel, type Dm, type Person } from '../../matrix';
 import { IconButton, isImeEnter, useMenuReturnFocus } from '../../ui';
 import { HashIcon, LockIcon } from '../icons';
 import { Face, others } from '../people/Face';
-import { useDmName } from '../people/names';
+import { useDmName, useShowExternal } from '../people/names';
 import { channelPath, dmPath } from '../places';
 import { recentConversations } from '../prefs';
-import { useWorkspaceName } from '../channels/shared';
+import { spaceColour, useWorkspaceName } from '../channels/shared';
 import { SearchIcon } from '../shell/icons';
 import { firstName, useToast } from '../toast';
 import { highlight } from './highlight';
@@ -75,6 +75,14 @@ type Option =
 const recentCount = 6;
 const perGroup = 5;
 
+function Elbow() {
+  return (
+    <svg className={s.elbow} width="9" height="10" viewBox="0 0 9 10" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M1.2 1v4.6A2.6 2.6 0 0 0 3.8 8.2H8" />
+    </svg>
+  );
+}
+
 function Switcher({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
   const store = useStore();
@@ -85,6 +93,8 @@ function Switcher({ open, onClose }: { open: boolean; onClose: () => void }) {
   const meId = useWorkspace((x) => x.me.id);
   const channels = useWorkspace((x) => x.channels);
   const dms = useWorkspace((x) => x.dms);
+  const spaces = useWorkspace((x) => x.spaces);
+  const showTags = useShowExternal();
   const returnFocus = useMenuReturnFocus(open);
   const [query, setQuery] = useState('');
   const [people, setPeople] = useState<Person[]>([]);
@@ -93,6 +103,8 @@ function Switcher({ open, onClose }: { open: boolean; onClose: () => void }) {
   const q = query.trim();
   const needle = fold(q);
   const all = useMemo(() => Object.values(channels).flat().filter((c) => !c.archived), [channels]);
+  const spaceById = useMemo(() => new Map(spaces.map((sp) => [sp.id, sp])), [spaces]);
+  const acrossSpaces = spaces.length > 1;
 
   useEffect(() => {
     if (!open || !q) return;
@@ -164,26 +176,58 @@ function Switcher({ open, onClose }: { open: boolean; onClose: () => void }) {
     return list[0] ? <Face person={list[0]} size={26} className={s.face} /> : null;
   };
 
+  // Names only from spaces I'm in: a client space I'm not in gives no tag at all, never "External".
+  const tagOf = (o: Option): { text: string; style?: CSSProperties } | null => {
+    if (!showTags || o.kind === 'channel' || o.kind === 'search') return null;
+    const list = o.kind === 'dm' ? others(o.dm, meId) : [o.person];
+    const person = list.length === 1 ? list[0]! : undefined;
+    if (!person) return null;
+    if (person.client) {
+      const sp = spaceById.get(person.client);
+      return sp?.kind === 'client' ? { text: sp.name, style: { '--tag-c': spaceColour(sp) } as CSSProperties } : null;
+    }
+    return person.external ? { text: t('find.external') } : null;
+  };
+
   let index = -1;
   const row = (o: Option) => {
     const i = ++index;
+    const label =
+      o.kind === 'search'
+        ? nameOf(o)
+        : highlight(nameOf(o), q).map((p, k) => (p.hit ? <mark key={k}>{p.text}</mark> : <span key={k}>{p.text}</span>));
+    const space = o.kind === 'channel' && acrossSpaces ? spaceById.get(o.channel.spaceId) : undefined;
+    const tag = tagOf(o);
     return (
       <div
         key={o.key}
         id={optionId(i)}
         role="option"
         aria-selected={i === current}
-        className={s.option}
+        className={space ? `${s.option} ${s.optionTall}` : s.option}
         onMouseDown={(e) => e.preventDefault()}
         onMouseMove={() => i !== current && setActive(i)}
         onClick={() => go(o)}
       >
         <span className={s.optionIcon}>{icon(o)}</span>
-        <span className={s.optionName}>
-          {o.kind === 'search'
-            ? nameOf(o)
-            : highlight(nameOf(o), q).map((p, k) => (p.hit ? <mark key={k}>{p.text}</mark> : <span key={k}>{p.text}</span>))}
-        </span>
+        {space ? (
+          <span className={s.optionStack}>
+            <span className={s.optionName}>{label}</span>{' '}
+            <span className={s.optionSpace}>
+              <Elbow />
+              <span>{space.name}</span>
+            </span>
+          </span>
+        ) : tag ? (
+          <span className={s.optionTagged}>
+            <span className={s.optionName}>{label}</span>{' '}
+            <span className={tag.style ? `${s.tag} ${s.tagClient}` : s.tag} style={tag.style}>
+              {tag.text}
+            </span>
+          </span>
+        ) : (
+          <span className={s.optionName}>{label}</span>
+        )}
       </div>
     );
   };

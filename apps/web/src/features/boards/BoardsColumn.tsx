@@ -2,10 +2,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import shell from '../../app/shell/Shell.module.css';
+import { CompanyTile } from '../../app/people/Face';
 import { useShowExternal } from '../../app/people/names';
 import { myIssues, useDocsBoards, useWorkspace, type Project, type Space } from '../../matrix';
 import { Badge, IconButton } from '../../ui';
-import { BuildingIcon, ChevronDownIcon, PencilIcon, PersonIcon, PlusIcon } from './icons';
+import { ChevronDownIcon, PencilIcon, PersonIcon, PlusIcon } from './icons';
 import { boardsPath, minePath, openNewProject, useBoardsRoute, useIsTeam, useScope } from './model';
 import s from './Boards.module.css';
 import { useT } from './strings';
@@ -56,13 +57,9 @@ function SpaceGroup({ space, team, activeId }: { space: Space; team: boolean; ac
           <span>
             <ChevronDownIcon />
           </span>
+          {space.kind === 'client' && showExternal && <CompanyTile space={space} size={14} label={t('outside')} />}
           <span className={s.groupName}>{space.name}</span>
         </button>
-        {space.kind === 'client' && showExternal && (
-          <span role="img" className={s.outsideMark} aria-label={t('outside')} title={t('outside')}>
-            <BuildingIcon />
-          </span>
-        )}
         {team && (
           <button type="button" className={s.groupAdd} aria-label={t('newProject')} onClick={() => openNewProject(space.id)}>
             <PlusIcon size={14} />

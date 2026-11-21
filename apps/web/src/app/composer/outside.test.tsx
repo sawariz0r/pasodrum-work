@@ -1,8 +1,10 @@
 // @vitest-environment happy-dom
-import { act, cleanup, render, screen, within } from '@testing-library/react';
+// The composer line (ClientMarkFinal): it shows when someone here doesn't belong to the space I'm in, and never to clients.
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createFakeBackend } from '../../dev/fakeBackend';
+import type { Person } from '../../matrix';
+import { createFakeBackend, type FakeBackendOptions } from '../../dev/fakeBackend';
 import { AppRoutes } from '../App';
 import { initI18n, setLanguage } from '../i18n';
 
@@ -14,28 +16,81 @@ beforeEach(async () => {
 });
 afterEach(cleanup);
 
-describe('outside mark beside Send (ExternalDM)', () => {
-  it('shows the client in a DM header and beside Send, with their name in the accessible name', async () => {
-    render(
-      <MemoryRouter initialEntries={['/dms/!dm-henrik']}>
-        <AppRoutes backend={createFakeBackend()} />
-      </MemoryRouter>,
-    );
-    await act(() => new Promise((r) => setTimeout(r, 0)));
-    const label = 'Includes people outside Pasodrum: Henrik Dahl';
-    const marks = screen.getAllByRole('img', { name: label });
-    expect(marks).toHaveLength(2);
-    const header = screen.getByRole('main').querySelector('header')!;
-    expect(within(header).getByRole('img', { name: label })).toBeTruthy();
+const henrik: Person = { id: '@henrik_nordlys.no:pasodrum.localhost', name: 'Henrik Dahl', external: true, client: '!nordlys' };
+const carol: Person = { id: '@carol_kumo.jp:pasodrum.localhost', name: 'Carol Ito', external: true, client: '!kumo' };
+const lea: Person = { id: '@lea:pasodrum.localhost', name: 'Lea Aune', external: true };
+
+async function open(path: string, opts: FakeBackendOptions = {}) {
+  const backend = createFakeBackend(opts);
+  render(
+    <MemoryRouter initialEntries={[path]}>
+      <AppRoutes backend={backend} />
+    </MemoryRouter>,
+  );
+  await screen.findByRole('textbox', { name: /Message/ });
+  return backend.stores.at(-1)!;
+}
+
+const line = () => document.querySelector<HTMLElement>('[class*="outsideLine"]');
+const text = () => line()?.lastElementChild?.textContent;
+const settle = () => act(() => new Promise((r) => setTimeout(r, 0)));
+
+describe('composer line', () => {
+  it('shows Externals in a workspace channel, and opens Members', async () => {
+    await open('/w/!pasodrum/c/!design');
+    await waitFor(() => expect(text()).toBe('Lea Aune and 1 other are Externals'));
+    fireEvent.click(line()!);
+    expect(within(screen.getByRole('dialog')).getByRole('tab', { name: /Members/ }).getAttribute('aria-selected')).toBe('true');
   });
 
-  it('stays away from DMs with team people only', async () => {
-    render(
-      <MemoryRouter initialEntries={['/dms/!dm-jonas']}>
-        <AppRoutes backend={createFakeBackend()} />
-      </MemoryRouter>,
-    );
-    await act(() => new Promise((r) => setTimeout(r, 0)));
-    expect(screen.queryByRole('img', { name: /outside/ })).toBeNull();
+  it('names the company of a client in a DM, with no click', async () => {
+    await open('/dms/!dm-henrik');
+    await waitFor(() => expect(text()).toBe('Henrik Dahl is from Nordlys'));
+    expect(line()!.tagName).not.toBe('BUTTON');
+  });
+
+  it("leaves out a client space's own clients inside that space", async () => {
+    const store = await open('/w/!nordlys/c/!questions');
+    await waitFor(() => expect(text()).toBe('Ola Fjell is an External'));
+    const snap = store.getSnapshot();
+    act(() => store.set({ channels: { ...snap.channels, '!nordlys': snap.channels['!nordlys']!.map((c) => (c.id === '!questions' ? { ...c, outside: [henrik] } : c)) } }));
+    await settle();
+    expect(line()).toBeNull();
+  });
+
+  it('shows a client of another client space in a channel', async () => {
+    const store = await open('/w/!kumo/c/!kumo-updates');
+    const snap = store.getSnapshot();
+    act(() => store.set({ channels: { ...snap.channels, '!kumo': snap.channels['!kumo']!.map((c) => ({ ...c, outside: [henrik] })) } }));
+    await waitFor(() => expect(text()).toBe('Henrik Dahl is from Nordlys'));
+  });
+
+  it("doesn't read markup in a name as a bold company", async () => {
+    const store = await open('/w/!kumo/c/!kumo-updates');
+    const snap = store.getSnapshot();
+    const eve: Person = { ...henrik, name: 'Eve <b>Pasodrum</b>' };
+    act(() => store.set({ channels: { ...snap.channels, '!kumo': snap.channels['!kumo']!.map((c) => ({ ...c, outside: [eve] })) } }));
+    await waitFor(() => expect(text()).toBe('Eve <b>Pasodrum</b> is from Nordlys'));
+    expect([...line()!.querySelectorAll('strong')].map((b) => b.textContent)).toEqual(['Nordlys']);
+  });
+
+  it('counts someone from a client space I am not in as an External', async () => {
+    const store = await open('/dms/!dm-jonas');
+    expect(line()).toBeNull();
+    const snap = store.getSnapshot();
+    const stranger: Person = { id: '@kari:pasodrum.localhost', name: 'Kari Nordmann', external: true, client: '!elsewhere' };
+    act(() => store.set({ dms: snap.dms.map((d) => (d.id === '!dm-jonas' ? { ...d, people: [snap.me, henrik, carol, lea, stranger] } : d)) }));
+    await waitFor(() => expect(text()).toBe('People from Nordlys and Kumo, and 2 Externals, are here'));
+  });
+
+  it('is never shown to clients, in channels or group DMs', async () => {
+    const store = await open('/w/!nordlys/c/!project-updates', { perspective: 'client' });
+    await settle();
+    expect(line()).toBeNull();
+    const snap = store.getSnapshot();
+    const kari = { id: '@kari_nordlys.no:pasodrum.localhost', name: 'Kari Nordmann', external: true };
+    act(() => store.set({ channels: { '!nordlys': snap.channels['!nordlys']!.map((c) => ({ ...c, outside: [kari, lea] })) } }));
+    await settle();
+    expect(line()).toBeNull();
   });
 });

@@ -10,7 +10,16 @@ export function formatTime(date: Date, lng: Language = currentLanguage()) {
 
 /** "Maja Lind, Lea Aune and Erik Kvam" / "森 真由さん、青木 玲奈さん" (names already decorated). */
 export function formatList(items: string[], lng: Language = currentLanguage()) {
-  return new Intl.ListFormat(lng === 'en' ? 'en-GB' : lng, { type: 'conjunction' }).format(items);
+  return listFormat(lng).format(items);
+}
+
+/** The same list in parts, so each item can be styled on its own ("**Nordlys** and **Fjell**"). */
+export function listParts(items: string[], lng: Language = currentLanguage()) {
+  return listFormat(lng).formatToParts(items);
+}
+
+function listFormat(lng: Language) {
+  return new Intl.ListFormat(lng === 'en' ? 'en-GB' : lng, { type: 'conjunction' });
 }
 
 /** File sizes as the canvas shows them: 86 KB, 2.4 MB. Units are not translated. */

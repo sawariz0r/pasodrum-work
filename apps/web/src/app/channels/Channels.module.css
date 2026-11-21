@@ -41,27 +41,6 @@
   height: 20px;
 }
 
-.markCorner {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  width: 13px;
-  height: 13px;
-  border: 2px solid var(--raised);
-  border-radius: 5px;
-  background: #f2b544;
-  color: #3a2a00;
-}
-
-.markCorner svg {
-  width: 8px;
-  height: 8px;
-}
-
 /* Sidebar: workspace name button, Add people row */
 .spaceButton {
   display: flex;
@@ -1083,14 +1062,14 @@ button.personButton:hover {
   font-weight: 700;
 }
 
-.tagGuest {
-  background: #fcebc0;
-  color: #7a5300;
+.tagOutside {
+  background: #efede8;
+  color: #55535c;
 }
 
-:global([data-theme='dark']) .tagGuest {
-  background: var(--warnbg);
-  color: var(--warnink);
+:global([data-theme='dark']) .tagOutside {
+  background: #2a2a31;
+  color: #b3b1bc;
 }
 
 .tagPending {
@@ -1618,13 +1597,13 @@ button.personButton:hover {
 }
 
 .roleTagExternal {
-  background: #fcebc0;
-  color: #7a5300;
+  background: #efede8;
+  color: #55535c;
 }
 
 :global([data-theme='dark']) .roleTagExternal {
-  background: var(--warnbg);
-  color: var(--warnink);
+  background: #2a2a31;
+  color: #b3b1bc;
 }
 
 .roleButton {
@@ -1726,95 +1705,54 @@ button.personButton:hover {
   }
 }
 
-/* Outside mark (RulesM5): someone outside the workspace reads this */
-.outsideMark {
+/* Composer line (ClientMarkFinal): someone here doesn't belong to the space you're in. Joined to the composer's top edge. */
+.outsideLine {
   display: flex;
-  flex-shrink: 0;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
   box-sizing: border-box;
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  background: var(--attention);
+  width: 100%;
+  margin: 0 0 -10px;
+  padding: 8px 12px 16px;
+  border: 1px solid #efddb4;
+  border-bottom: 0;
+  border-radius: 14px 14px 0 0;
+  background: #fbf0da;
   color: #3a2a00;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: left;
+  overflow-wrap: anywhere;
 }
 
-.outsideSmall {
-  width: 16px;
-  height: 16px;
-}
-
-.outsideHead {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  margin-left: -8px;
-  padding: 0;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-}
-
-.outsideButton {
+.outsideLine:is(button) {
   cursor: pointer;
-  transition:
-    background-color var(--dur-1) var(--ease-out),
-    transform var(--dur-1) var(--ease-out);
+  transition: background-color var(--dur-1) var(--ease-out);
 }
 
-.outsideButton:hover {
-  background: var(--hover);
+.outsideLine:is(button):hover {
+  background: #f8e9cb;
 }
 
-.outsideButton:active,
-.outsideComposer:is(button):active {
-  transform: scale(var(--press));
+:global([data-theme='dark']) .outsideLine {
+  border-color: #5a3f17;
+  background: #3d2a10;
+  color: #f3e6cf;
 }
 
-.outsideComposer {
-  display: flex;
+:global([data-theme='dark']) .outsideLine:is(button):hover {
+  background: #45301a;
+}
+
+.outsideLine strong {
+  font-weight: 700;
+}
+
+.outsideMarks {
+  display: inline-flex;
   flex-shrink: 0;
-  align-items: center;
-  gap: 6px;
-  box-sizing: border-box;
-  height: 30px;
-  margin-right: 6px;
-  padding: 0 7px 0 5px;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: transparent;
-}
-
-.outsideComposer:is(button) {
-  cursor: pointer;
-  transition:
-    background-color var(--dur-1) var(--ease-out),
-    transform var(--dur-1) var(--ease-out);
-}
-
-.outsideComposer:is(button):hover {
-  background: var(--hover);
-}
-
-.outsideFaces {
-  display: flex;
-}
-
-.outsideFace {
-  box-shadow: 0 0 0 2px var(--raised);
-}
-
-.outsideFace + .outsideFace {
-  margin-left: -5px;
-}
-
-.outsideRow {
-  display: flex;
-  flex-shrink: 0;
+  gap: 3px;
 }
 
 /* New client space (CreateClientSpace) */
@@ -1859,22 +1797,6 @@ button.personButton:hover {
     0 0 0 3px #18171d,
     0 0 0 5px #ffffff;
   font-size: 24px;
-}
-
-.csPreviewCorner {
-  position: absolute;
-  right: -4px;
-  bottom: -4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  width: 20px;
-  height: 20px;
-  border: 2px solid #18171d;
-  border-radius: 6px;
-  background: var(--attention);
-  color: #3a2a00;
 }
 
 .csBody {
@@ -2335,22 +2257,6 @@ button.personButton:hover {
   font-size: 16px;
 }
 
-.spTileCorner {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  width: 13px;
-  height: 13px;
-  border: 2px solid var(--raised);
-  border-radius: 5px;
-  background: var(--attention);
-  color: #3a2a00;
-}
-
 .spGeneral {
   display: flex;
   flex-direction: column;
@@ -2441,10 +2347,6 @@ button.personButton:hover {
 
 .spCorner {
   --ring: var(--raised);
-  top: -4px;
-  right: -4px;
-  width: 14px;
-  height: 14px;
 }
 
 .memberRow:hover .spCorner {
@@ -2470,10 +2372,6 @@ button.personButton:hover {
 
 .spCard .spCorner {
   --ring: var(--raised);
-}
-
-.spCard .spTileCorner {
-  border-color: var(--raised);
 }
 
 .spCardFace {

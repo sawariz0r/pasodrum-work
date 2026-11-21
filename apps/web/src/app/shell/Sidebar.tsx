@@ -6,14 +6,13 @@ import { Badge, IconButton } from '../../ui';
 import { useDrafts } from '../drafts';
 import { HashIcon, LockIcon } from '../icons';
 import { DmFace } from '../people/Face';
-import { useDmName, useShowExternal } from '../people/names';
+import { useDmName } from '../people/names';
 import { useNewMessage } from '../people/NewMessage';
 import { channelPath, draftsPath, spaceDmPath, threadsPath } from '../places';
 import { ChevronDownIcon, ComposeIcon, PlusIcon, SendIcon, ThreadIcon } from './icons';
 import s from './Shell.module.css';
 import { useSpaceDrafts } from './spaceRooms';
 import { ChannelsPlusMenu, WorkspaceMenu } from '../channels/ChannelMenus';
-import { OutsideRowMark } from '../channels/OutsideMark';
 
 const noChannels: Channel[] = [];
 
@@ -30,7 +29,6 @@ export function Sidebar({ space, active }: { space: Space; active?: SidebarActiv
   const threads = useWorkspace((x) => x.threads);
   const drafts = useSpaceDrafts(space.id, useDrafts());
   const dms = allDms.filter((d) => d.spaceIds.includes(space.id));
-  const showExternal = useShowExternal();
   const unreadThreads = threads.filter((th) => th.unread && channels.some((c) => c.id === th.channelId)).length;
   const is = (key: string, value: string) => !!active && key in active && (active as Record<string, string>)[key] === value;
 
@@ -68,12 +66,7 @@ export function Sidebar({ space, active }: { space: Space; active?: SidebarActiv
                 strong={c.unread > 0 || c.mentions > 0}
                 icon={c.private ? <LockIcon /> : <HashIcon />}
                 name={c.name}
-                end={
-                  <>
-                    {space.kind === 'workspace' && showExternal && !!c.outside?.length && <OutsideRowMark people={c.outside} />}
-                    {!current && <Badge count={c.mentions} />}
-                  </>
-                }
+                end={!current && <Badge count={c.mentions} />}
               />
             );
           })}
@@ -109,14 +102,13 @@ function NavRow({ to, current, strong, icon, name, end, dm }: { to: string; curr
 function DmRow({ dm, spaceId, current }: { dm: Dm; spaceId: string; current: boolean }) {
   const meId = useWorkspace((x) => x.me.id);
   const name = useDmName();
-  const showExternal = useShowExternal();
   return (
     <NavRow
       dm
       to={spaceDmPath(spaceId, dm.id)}
       current={current}
       strong={dm.unread > 0}
-      icon={<DmFace dm={dm} meId={meId} size={20} showExternal={showExternal} />}
+      icon={<DmFace dm={dm} meId={meId} size={20} />}
       name={name(dm)}
       end={!current && <Badge count={dm.unread} />}
     />
