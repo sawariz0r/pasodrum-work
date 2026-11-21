@@ -102,6 +102,34 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-37 · Docs and Boards · Accepted (CEO approved the batch) · 2026-11-21
+- **Scope:** pages and projects belong to a space (the workspace or a client space), not to a channel. Channel tabs may come later. The selected space tile scopes the sidebar: a client space shows only itself, and Pasodrum shows the workspace plus every client space you're in. Clients create, edit and comment in their own client space; the team adds columns, and clients can't (CEO).
+- **Docs data:**
+  - One room per page: custom type `work.pasodrum.docs.page`, restricted to its space, a space child. Its place in the tree is state `work.pasodrum.docs.page {parent, order}`, with order as a fractional index.
+  - The body is Yjs (TipTap Collaboration). Updates go out as `work.pasodrum.docs.update` events, flushed every 1–2 s with one in flight. A snapshot is uploaded as media about every 200 updates or when you leave, pointed to by state `work.pasodrum.docs.snapshot {url, upto}`. Opening a page = load the snapshot, then `/messages` forward from it.
+  - **Join a page only on open** (sync fan-out). The tree comes from `/hierarchy`. A large paste goes out as media plus a pointer event, because of the 64 KiB event cap.
+- **Boards data:**
+  - One room per project (custom type).
+  - Issue = a root `m.room.message` with a full body, plus state `work.pasodrum.boards.issue` (state key = root event id) holding {title, column, assignee, due, order}. Last write wins.
+  - Comments are thread replies to the root.
+  - Columns live in `work.pasodrum.boards.columns` [{id, title?}]. Default columns get their names from the locale files; a custom column has one title, as typed.
+- **Power levels:** new page and project rooms set their custom state types to level 0, as pins did (D-33).
+- **Presence:**
+  - "Typing…" uses `m.typing`.
+  - Carets, selections and the board hints (someone lifting a card, editing one, viewing an issue) go through a tiny in-memory awareness relay in services/invite. It uses a streamed fetch rather than EventSource, so the token stays out of the URL. It checks callers with `whoami` and `matrix.membership()` and re-checks periodically, sends a heartbeat every 20 s, and stores nothing.
+  - Cursors ship after the rest.
+- **Encryption:** v1 pages and projects live only in the workspace and client spaces, which aren't end-to-end encrypted (D-11). Private docs come later, using a fresh snapshot on join or MSC4268.
+- **Translate (D-32):** team only, and never in client spaces.
+  - Docs translate **one section at a time** (a heading and what's under it), each with its own Show original, cached per block.
+  - Boards: comments, issue title and description, and cards whose title is in the other language.
+- **Drag and drop:**
+  - pragmatic-drag-and-drop (cards and the tree, plus its autoscroll).
+  - TipTap's drag handle and Dropcursor for blocks. A block move is one ProseMirror transaction, so one Yjs update.
+  - A move writes one state event.
+  - Keyboard and touch use "Move to…" in the menus.
+  - The List view and My issues aren't draggable.
+- **Interop and removal:** page and project rooms are hidden in Element X. Links in chat are plain links with a card on top (D-05). Deleting a feature folder leaves the rooms hidden and intact (D-04).
+
 ### D-36 · People types and access roles, amends D-06/D-25/D-27/D-28 · Accepted (model + boards approved by the CEO) · 2026-11-21
 - **Owner 100, Admin 50, Staff 10** (today's Member; 10 in workspace rooms too), **External 1** (a mark that grants nothing), **Client 0**. Admins have Owner-like rights but can't change or remove Owners/Admins.
 - **Guests become Externals.** Externals never join the workspace space. Owners and Admins give them access through **access roles** (named sets of workspace channels and whole client spaces; `work.pasodrum.access_role` + `work.pasodrum.external` state in the workspace, level 50) and one-off channels; the editor's app makes membership follow (invite/kick). Membership is the access — the server enforces it.

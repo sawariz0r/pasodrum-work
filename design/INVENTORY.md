@@ -208,3 +208,28 @@ Approved 2026-11-21 (CEO). Rules: PeopleRules.
 | Rules: people and access | PeopleRules | approved 2026-11-21 |
 
 These supersede the Guest boards (GuestShell, GuestShellJP), the Member/Guest segments in AddPeople and AddPeopleMember, and the Add people row in SpacePeople.
+
+## Docs and Boards (D-37)
+
+Approved 2026-11-21 (CEO). Rules: DocsBoardsRules. Components: DocsPage, BoardsPage (self-contained).
+
+| Screen / state | Artboard | Status |
+|---|---|---|
+| Rules | DocsBoardsRules | approved 2026-11-21 |
+| Doc page: tree, blocks, two people present (caret, selection, typing) | DocsPage(+JP, Dark) | approved 2026-11-21 |
+| New page, add a block, link to a page | DocsEmpty(+JP), DocsBlocks(+JP, Dark), DocsLink(+JP) | approved 2026-11-21 |
+| Offline, loading, no pages yet | DocsOffline, DocsLoading, DocsNone(+JP) | approved 2026-11-21 |
+| Page menu, move, delete | DocsPageMenu(+JP, Dark), DocsMoveTo, DocsDeletePage | approved 2026-11-21 |
+| Translate a section; translating, couldn't translate | DocsTranslated(+JP, Dark), DocsTranslateStates | approved 2026-11-21 |
+| Client space (team), client's view | DocsNordlys, DocsClient | approved 2026-11-21 |
+| Dragging a block, a page | DocsDragBlock, DocsDragPage | approved 2026-11-21 |
+| Project board, list view | BoardsPage(+JP, Dark), BoardsList | approved 2026-11-21 |
+| Issue panel, translated comment; assign; due date | BoardsIssue(+JP, Dark), BoardsAssignee, BoardsDue | approved 2026-11-21 |
+| New issue, quick add, create failed | BoardsNewIssue(+JP, Dark), BoardsQuickAdd(+JP), BoardsCreateFailed | approved 2026-11-21 |
+| New column (one title), translate a card | BoardsColumn(+JP), BoardsCardTranslate | approved 2026-11-21 |
+| My issues | BoardsMine(+JP) | approved 2026-11-21 |
+| New project, no projects yet, empty project, loading | BoardsNewProject, BoardsNoProjects(+JP), BoardsEmpty, BoardsLoading | approved 2026-11-21 |
+| Card menu, delete issue, move failed | BoardsCardMenu(+JP, Dark), BoardsDeleteIssue, BoardsMoveFailed | approved 2026-11-21 |
+| Client space (team, custom column), client's view | BoardsNordlys, BoardsClient | approved 2026-11-21 |
+| Dragging a card; others dragging, editing, just moved; others in an issue | BoardsDrag, BoardsLive(+Dark), BoardsLiveIssue | approved 2026-11-21 |
+| Doc and issue cards in chat (vs Element X plain link) | DocsBoardsCards | approved 2026-11-21 |
