@@ -9,12 +9,14 @@ function read(key: string): string | null {
   }
 }
 
-function write(key: string, value: string | null) {
+function write(key: string, value: string | null): boolean {
   try {
     if (value === null) localStorage.removeItem(key);
     else localStorage.setItem(key, value);
+    return true;
   } catch {
     // Blocked storage: the value still applies to this session.
+    return false;
   }
 }
 
@@ -94,25 +96,28 @@ function readPlace(): Place {
   }
 }
 
+// Blocked storage: the last place lives in memory for this session.
+let blockedPlace: Place | undefined;
+
 export function lastPlace(): Place {
-  return readPlace();
+  return blockedPlace ?? readPlace();
 }
 
 const placeListeners = new Set<() => void>();
 
 function setPlace(p: Place, changed: boolean) {
-  write(placeKey, JSON.stringify(p));
+  blockedPlace = write(placeKey, JSON.stringify(p)) ? undefined : p;
   if (changed) placeListeners.forEach((l) => l());
 }
 
 export function rememberPlace(spaceId: string, channelId: string) {
-  const p = readPlace();
+  const p = lastPlace();
   setPlace({ space: spaceId, channels: { ...p.channels, [spaceId]: channelId } }, p.space !== spaceId);
 }
 
 /** The lit space tile changes without opening a channel (a tile in Docs or Boards, or opening another space's page). */
 export function rememberSpace(spaceId: string) {
-  const p = readPlace();
+  const p = lastPlace();
   if (p.space !== spaceId) setPlace({ space: spaceId, channels: p.channels }, true);
 }
 
@@ -125,7 +130,7 @@ function subscribePlace(cb: () => void) {
 
 /** The last space opened; re-renders when it changes. */
 export function useLastSpace(): string | undefined {
-  return useSyncExternalStore(subscribePlace, () => readPlace().space);
+  return useSyncExternalStore(subscribePlace, () => lastPlace().space);
 }
 
 const recentKey = 'pasodrum.recent';
