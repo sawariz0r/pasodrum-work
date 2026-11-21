@@ -12,7 +12,7 @@ import { channelPath, draftsPath, spaceDmPath, threadsPath } from '../places';
 import { ChevronDownIcon, ComposeIcon, PlusIcon, SendIcon, ThreadIcon } from './icons';
 import s from './Shell.module.css';
 import { useSpaceDrafts } from './spaceRooms';
-import { ChannelsPlusMenu, SidebarAddPeople, WorkspaceMenu } from '../channels/ChannelMenus';
+import { ChannelsPlusMenu, WorkspaceMenu } from '../channels/ChannelMenus';
 import { OutsideRowMark } from '../channels/OutsideMark';
 
 const noChannels: Channel[] = [];
@@ -77,7 +77,6 @@ export function Sidebar({ space, active }: { space: Space; active?: SidebarActiv
               />
             );
           })}
-          <SidebarAddPeople space={space} channelId={active && 'channelId' in active ? active.channelId : undefined} />
         </Section>
 
         <Section

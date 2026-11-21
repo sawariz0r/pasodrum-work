@@ -129,27 +129,6 @@ export function ChannelsPlusMenu({ space, className }: { space: Space; className
   );
 }
 
-/**
- * "Add people" under the channel list, for anyone who may add people here (D-36): Owners/Admins get the typed dialog for the space,
- * Staff add clients to a client space, or colleagues to the channel they're in.
- */
-export function SidebarAddPeople({ space, channelId }: { space: Space; channelId?: string }) {
-  const { t } = useTranslation();
-  const channels = useChannels();
-  const role = useRole(space.id);
-  const channelTarget = useAddTarget(space, channelId);
-  const target = canManage(role) || space.kind === 'client' ? space.id : channelTarget;
-  if (!target || !canAddPeople(space, role) || space.archived) return null;
-  return (
-    <button type="button" className={s.addRow} onClick={() => channels.addPeople(target)}>
-      <span className={s.addRowIcon}>
-        <SmallPlusIcon size={12} strokeWidth={2.6} />
-      </span>
-      {t('common.addPeople')}
-    </button>
-  );
-}
-
 /** The empty channel's Add people (Main m4 empty state); the same dialog as the header button. */
 export function EmptyChannelAddPeople({ channelId }: { channelId: string }) {
   const { t } = useTranslation();
