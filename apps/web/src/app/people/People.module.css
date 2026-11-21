@@ -112,6 +112,7 @@
 
 .pair {
   position: relative;
+  display: inline-block;
   flex-shrink: 0;
   width: 38px;
   height: 38px;
@@ -376,6 +377,7 @@
 
 /* DM intro (DMEmpty) */
 .intro {
+  --ring: var(--bg);
   padding: 40px 20px 24px;
   max-width: 560px;
   animation: intro-in var(--dur-2) var(--ease-out);
