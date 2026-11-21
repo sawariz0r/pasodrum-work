@@ -64,6 +64,7 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 
 - **Needs design (inventory rows):** sign-in failure that isn't wrong password/unreachable; M4-04 states built without boards (password prompt before device sign-out, join claim errors, link-not-found); Add people "Couldn't add {name}".
 - **Product gaps:** `/dms` with no DMs shows the last channel instead of an empty state; channel rename (contract); voice clips show as audio files (no waveform); Activity covers recent synced history only (no `/notifications`); thread read state shares one room position (server drops `thread_id`).
+- **Server:** Continuwuity loses ~3% of to-device messages that arrive concurrently (DECISIONS learnings). No upstream report for now (CEO); our own sends are serialized. Revisit if "Not available on this device" shows up in real use.
 - **Tests:** one M3 thread-unread integration test is flaky (failed 1 of ~3 runs); invite service rate limit (60/h per caller) trips repeated local runs — restart the `invite` container.
 - **Production data** is disposable until the CEO says otherwise (D-18): seed accounts + test rooms live there; wipe or deactivate before a second real person joins.
 
