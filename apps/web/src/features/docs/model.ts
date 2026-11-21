@@ -1,5 +1,5 @@
-import { fallbackSpace } from '../../app/places';
-import { scopeOf, useDocsBoards, useWorkspace, type PageNode, type Space, type SpacePages } from '../../matrix';
+import { useFallbackSpace } from '../../app/places';
+import { useDocsBoards, useWorkspace, type PageNode, type Space, type SpacePages } from '../../matrix';
 
 export interface Located {
   node: PageNode;
@@ -38,8 +38,8 @@ export function contains(node: PageNode, id: string): boolean {
 /** The selected space (its rail tile is lit) and what the tree lists for it. */
 export function useScope(): { selected?: Space; scope: Space[] } {
   const spaces = useWorkspace((x) => x.spaces);
-  const selected = fallbackSpace(spaces);
-  return { selected, scope: selected ? scopeOf(spaces, selected) : [] };
+  const selected = useFallbackSpace(spaces);
+  return { selected, scope: selected ? [selected] : [] };
 }
 
 /** The page tree is in the snapshot once the first sync has been read. */

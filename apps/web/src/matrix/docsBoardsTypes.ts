@@ -1,7 +1,7 @@
 // Docs and Boards contract (D-37, DB-01). Yjs is only ever imported as a type here; it loads with the first open page.
 import type { Awareness } from 'y-protocols/awareness';
 import type * as Y from 'yjs';
-import type { Message, Person, Space } from './types';
+import type { Message, Person } from './types';
 
 export interface PageNode {
   id: string;
@@ -167,9 +167,4 @@ export const byOrder = (a: { order: string; id: string }, b: { order: string; id
 /** Issues assigned to me in these spaces that aren't done. */
 export function myIssues(s: DocsBoardsSnapshot, meId: string, spaceIds: string[]): Issue[] {
   return spaceIds.flatMap((id) => s.projects[id] ?? []).flatMap((p) => p.issues.filter((i) => i.assignee?.id === meId && i.column !== DONE_COLUMN));
-}
-
-/** What the sidebar shows for the selected space: a client space only itself; the workspace itself plus every client space. */
-export function scopeOf(spaces: Space[], selected: Space): Space[] {
-  return selected.kind === 'client' ? [selected] : [selected, ...spaces.filter((s) => s.kind === 'client' && s.id !== selected.id)];
 }

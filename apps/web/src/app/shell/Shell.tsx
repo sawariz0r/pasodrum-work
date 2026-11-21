@@ -13,7 +13,7 @@ import { SearchPage } from '../find/SearchPage';
 import { ThreadsView } from '../pages/Threads';
 import { NewMessageProvider } from '../people/NewMessage';
 import { ProfileCardProvider } from '../people/ProfileCard';
-import { channelPath, dmPath, fallbackSpace, homeChannel, spaceHome } from '../places';
+import { channelPath, dmPath, useFallbackSpace as useSpaceFallback, homeChannel, spaceHome } from '../places';
 import { rememberPlace } from '../prefs';
 import { ThreadPanel } from '../thread/ThreadPanel';
 import { useOpenThread, useThreadNav } from '../thread/useThread';
@@ -80,7 +80,7 @@ function SpaceRedirect() {
 
 function useFallbackSpace(spaceId?: string): Space | undefined {
   const spaces = useWorkspace((x) => x.spaces);
-  return fallbackSpace(spaces, spaceId);
+  return useSpaceFallback(spaces, spaceId);
 }
 
 /** Also the index route: it draws the home channel while redirecting to it. The channel's route is this same element, so

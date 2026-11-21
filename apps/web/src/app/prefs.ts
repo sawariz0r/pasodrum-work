@@ -98,9 +98,34 @@ export function lastPlace(): Place {
   return readPlace();
 }
 
+const placeListeners = new Set<() => void>();
+
+function setPlace(p: Place, changed: boolean) {
+  write(placeKey, JSON.stringify(p));
+  if (changed) placeListeners.forEach((l) => l());
+}
+
 export function rememberPlace(spaceId: string, channelId: string) {
   const p = readPlace();
-  write(placeKey, JSON.stringify({ space: spaceId, channels: { ...p.channels, [spaceId]: channelId } }));
+  setPlace({ space: spaceId, channels: { ...p.channels, [spaceId]: channelId } }, p.space !== spaceId);
+}
+
+/** The lit space tile changes without opening a channel (a tile in Docs or Boards, or opening another space's page). */
+export function rememberSpace(spaceId: string) {
+  const p = readPlace();
+  if (p.space !== spaceId) setPlace({ space: spaceId, channels: p.channels }, true);
+}
+
+function subscribePlace(cb: () => void) {
+  placeListeners.add(cb);
+  return () => {
+    placeListeners.delete(cb);
+  };
+}
+
+/** The last space opened; re-renders when it changes. */
+export function useLastSpace(): string | undefined {
+  return useSyncExternalStore(subscribePlace, () => readPlace().space);
 }
 
 const recentKey = 'pasodrum.recent';

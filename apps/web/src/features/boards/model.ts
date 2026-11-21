@@ -1,33 +1,55 @@
 // Shared by the Boards column and screen: routes, scope, names, dates, small per-browser memory.
 import { useEffect, useSyncExternalStore } from 'react';
 import { useParams } from 'react-router';
-import { fallbackSpace } from '../../app/places';
-import { DEFAULT_COLUMNS, scopeOf, useStore, useWorkspace, type Column, type Issue, type Project, type Space } from '../../matrix';
+import { useFallbackSpace } from '../../app/places';
+import { DEFAULT_COLUMNS, DONE_COLUMN, useStore, useWorkspace, type Column, type Issue, type Project, type Space } from '../../matrix';
 import { useT } from './strings';
 
 const enc = encodeURIComponent;
 
 export const boardsPath = (projectId?: string, issueId?: string) =>
   '/boards' + (projectId ? `/${enc(projectId)}` : '') + (projectId && issueId ? `/${enc(issueId)}` : '');
-export const minePath = (projectId?: string, issueId?: string) => '/boards/mine' + (projectId && issueId ? `/${enc(projectId)}/${enc(issueId)}` : '');
+const listPath = (base: string) => (projectId?: string, issueId?: string) => base + (projectId && issueId ? `/${enc(projectId)}/${enc(issueId)}` : '');
+export const minePath = listPath('/boards/mine');
+export const allPath = listPath('/boards/all');
 
-export type BoardsRoute = { mine: boolean; projectId?: string; issueId?: string };
+export type BoardsRoute = { mine: boolean; all: boolean; projectId?: string; issueId?: string };
 
-/** `boards/*`: /boards, /boards/mine[/:projectId/:issueId], /boards/:projectId[/:issueId]. */
+/** `boards/*`: /boards, /boards/mine[/:projectId/:issueId], /boards/all[/:projectId/:issueId], /boards/:projectId[/:issueId]. */
 export function useBoardsRoute(): BoardsRoute {
   const rest = useParams()['*'] ?? '';
   const parts = rest.split('/').filter(Boolean).map(decodeURIComponent);
-  if (parts[0] === 'mine') return { mine: true, projectId: parts[1], issueId: parts[2] };
-  return { mine: false, projectId: parts[0], issueId: parts[1] };
+  if (parts[0] === 'mine' || parts[0] === 'all') return { mine: parts[0] === 'mine', all: parts[0] === 'all', projectId: parts[1], issueId: parts[2] };
+  return { mine: false, all: false, projectId: parts[0], issueId: parts[1] };
 }
 
 const noSpaces: Space[] = [];
 
-/** The selected space tile (the last space opened) and what Boards lists for it. */
+/** The lit space tile (D-42): Boards lists its projects only. */
 export function useScope(): { selected?: Space; scope: Space[] } {
   const spaces = useWorkspace((x) => x.spaces);
-  const selected = fallbackSpace(spaces);
-  return { selected, scope: selected ? scopeOf(spaces, selected) : noSpaces };
+  const selected = useFallbackSpace(spaces);
+  return { selected, scope: selected ? [selected] : noSpaces };
+}
+
+export type IssueGroup = { project: Project; issues: Issue[] };
+
+/**
+ * My issues and All issues: open issues per project, the active space's projects first; in a project late ones first,
+ * then by column. `who`: undefined for everyone, null for no one, else an assignee's id. Empty projects drop out.
+ */
+export function allGroups(projects: Project[], activeSpaceId: string | undefined, who?: string | null): IssueGroup[] {
+  const first = (p: Project) => (p.spaceId === activeSpaceId ? 0 : 1);
+  return [...projects]
+    .sort((a, b) => first(a) - first(b))
+    .map((project) => {
+      const at = (i: Issue) => project.columns.findIndex((c) => c.id === i.column);
+      const issues = project.issues
+        .filter((i) => i.column !== DONE_COLUMN && (who === undefined || (i.assignee?.id ?? null) === who))
+        .sort((a, b) => Number(isLate(b)) - Number(isLate(a)) || at(a) - at(b));
+      return { project, issues };
+    })
+    .filter((g) => g.issues.length);
 }
 
 const TEAM = new Set(['owner', 'admin', 'staff']);

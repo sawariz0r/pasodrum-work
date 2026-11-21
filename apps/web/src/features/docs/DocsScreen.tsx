@@ -1,6 +1,7 @@
 // /docs and /docs/:pageId (DocsPage, DocsNone, DocsLoading). /docs opens the selected space's first page.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useParams } from 'react-router';
+import { rememberSpace } from '../../app/prefs';
 import { DrawerToggle } from '../../app/shell/Drawer';
 import { NotAvailable } from '../../app/shell/NotAvailable';
 import { useDocsBoards, useWorkspace } from '../../matrix';
@@ -22,6 +23,12 @@ export function DocsScreen() {
   // A page that goes away while open (deleted, here or elsewhere) hands over to the space's first page.
   const [seen, setSeen] = useState<string>();
   if (located && pageId !== seen) setSeen(pageId);
+  // A page opened from another space (Activity, a chat link) lights that space's tile. Keyed on the page's space
+  // alone, so a tile click away from the open page isn't undone before the route changes.
+  const pageSpace = located?.node.spaceId;
+  useEffect(() => {
+    if (pageSpace) rememberSpace(pageSpace);
+  }, [pageSpace]);
 
   if (!pageId) {
     const mine = selected && pages[selected.id];

@@ -123,3 +123,13 @@ export function ColumnIcon({ id }: { id: string }) {
     </span>
   );
 }
+
+export const AllIssuesIcon = ({ size = 16, strokeWidth = 1.9 }: P) =>
+  line(
+    <>
+      <rect x="3" y="4" width="18" height="5" rx="1.5" />
+      <rect x="3" y="15" width="18" height="5" rx="1.5" />
+    </>,
+    size,
+    strokeWidth,
+  );
