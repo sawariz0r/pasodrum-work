@@ -262,7 +262,7 @@ Approved 2026-11-21 (CEO). Boards on the canvas page **Confirm by email** (moved
 | Help is on the way (client) | EmailConfirmHelped, EmailConfirmHelpedJP, EmailConfirmHelpedDark | approved 2026-11-21 |
 | The confirm email (EN, JP) | EmailConfirmEmail | approved 2026-11-21 |
 | Link page (any device, phone-first): confirm, confirmed, no longer works, help on the way | EmailConfirmLinkAsk, EmailConfirmLinkOk, EmailConfirmLinkExpired, EmailConfirmLinkHelped, EmailConfirmLinkAskJP, EmailConfirmLinkOkJP, EmailConfirmLinkAskDark, EmailConfirmLinkOkDark | approved 2026-11-21 |
-| Staff: a client needs your help (DM from Pasodrum) | EmailConfirmStaffHelp, EmailConfirmStaffHelpJP, EmailConfirmStaffHelpDark | approved 2026-11-21 |
+| Staff: a client needs your help (DM from Pasodrum), with the next step per reason (DES-04) | EmailConfirmStaffHelp, EmailConfirmStaffHelpJP, EmailConfirmStaffHelpDark, EmailConfirmStaffHelpStuckJP, EmailConfirmStaffHelpLinkDark | approved 2026-11-22 |
 | Rules: confirm by email | EmailConfirmRules | approved 2026-11-21 |
 
 | Send/help failed → muted "Something went wrong. Try again." line; link page can't reach us → clock tile + same line; link page line muted (was red) | EmailConfirmBuiltStates | approved 2026-11-21 |

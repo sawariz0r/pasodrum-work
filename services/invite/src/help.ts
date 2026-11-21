@@ -14,6 +14,12 @@ const REASON: Record<HelpReason, string> = {
   'link-broken': 'The confirm link didn’t work for them.',
 };
 
+const NEXT: Record<HelpReason, string> = {
+  'email-missing': 'Check the address below is theirs, then ask them to look in spam and tap Send it again.',
+  stuck: 'Ask them to tap Email me a link, then open the email on any device.',
+  'link-broken': 'Ask them to get a new link on the device they’re signing in on and open the newest email within 15 minutes.',
+};
+
 export type Help = {
   userId: string;
   name: string;
@@ -33,6 +39,7 @@ export function helpMessage(h: Help): Record<string, unknown> {
   const lines = [
     `${h.name} needs your help`,
     REASON[h.reason],
+    NEXT[h.reason],
     [h.spaceName, h.email, h.localTime && `their time ${h.localTime}`].filter(Boolean).join(' · '),
   ];
   return {

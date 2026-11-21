@@ -607,6 +607,11 @@
         "email-missing": "The email to confirm their new device didn’t arrive.",
         "stuck": "They’re stuck confirming a new device.",
         "link-broken": "The confirm link didn’t work for them."
+      },
+      "next": {
+        "email-missing": "Check the address below is theirs, then ask them to look in spam and tap Send it again.",
+        "stuck": "Ask them to tap Email me a link, then open the email on any device.",
+        "link-broken": "Ask them to get a new link on the device they’re signing in on and open the newest email within 15 minutes."
       }
     }
   },

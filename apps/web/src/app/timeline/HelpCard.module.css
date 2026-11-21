@@ -46,6 +46,14 @@
   line-height: var(--lh);
 }
 
+.next {
+  margin-top: 4px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: var(--lh);
+}
+
 .facts {
   margin-top: 10px;
   color: var(--muted);

@@ -249,7 +249,7 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [LinkCardDark](canvas/LinkCardDark.dc.html) — Link card — dark `#artboard-LinkCardDark`
 - [LinkCardMulti](canvas/LinkCardMulti.dc.html) — Two links: only the first gets a card `#artboard-LinkCardMulti`
 
-## People & access · `people` · 37 artboards
+## People & access · `people` · 39 artboards
 
 **People and access (approved 2026-11-21)**
 
@@ -293,6 +293,11 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [AddPeopleErrors](canvas/AddPeopleErrors.dc.html) — Add people: bad email, in channel, pending `#artboard-AddPeopleErrors`
 - [AddPeopleErrorsJP](canvas/AddPeopleErrorsJP.dc.html) — Add people errors — Japanese `#artboard-AddPeopleErrorsJP`
 - [RoleChangeAdmin](canvas/RoleChangeAdmin.dc.html) — D-25: an Admin switches Member ↔ Admin `#artboard-RoleChangeAdmin`
+
+**Client and External marks (approved 2026-11-21)**
+
+- [ClientMarkFinal](canvas/ClientMarkFinal.dc.html) — Client and External marks (final) `#artboard-ClientMarkFinal`
+- [ClientMarkPlaces](canvas/ClientMarkPlaces.dc.html) — Client and External marks: everywhere they show (final) `#artboard-ClientMarkPlaces`
 
 ## Client spaces & guests · `client-spaces` · 33 artboards
 
@@ -429,7 +434,7 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [HistoryRestoredRowJP](canvas/HistoryRestoredRowJP.dc.html) — Restored messages — Japanese `#artboard-HistoryRestoredRowJP`
 - [HistoryRestoredRowDark](canvas/HistoryRestoredRowDark.dc.html) — Restored messages — dark `#artboard-HistoryRestoredRowDark`
 
-## Confirm by email · `confirm-email` · 30 artboards
+## Confirm by email · `confirm-email` · 32 artboards
 
 - [EmailConfirmGate](canvas/EmailConfirmGate.dc.html) `#artboard-EmailConfirmGate`
 - [EmailConfirmSent](canvas/EmailConfirmSent.dc.html) `#artboard-EmailConfirmSent`
@@ -460,12 +465,14 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [EmailConfirmStaffHelpJP](canvas/EmailConfirmStaffHelpJP.dc.html) `#artboard-EmailConfirmStaffHelpJP`
 - [EmailConfirmStaffHelpDark](canvas/EmailConfirmStaffHelpDark.dc.html) `#artboard-EmailConfirmStaffHelpDark`
 - [EmailConfirmStaff](canvas/EmailConfirmStaff.dc.html) — Component: staff help message `#artboard-EmailConfirmStaff`
+- [EmailConfirmStaffHelpStuckJP](canvas/EmailConfirmStaffHelpStuckJP.dc.html) `#artboard-EmailConfirmStaffHelpStuckJP`
+- [EmailConfirmStaffHelpLinkDark](canvas/EmailConfirmStaffHelpLinkDark.dc.html) `#artboard-EmailConfirmStaffHelpLinkDark`
 
 **Gaps (DES-02, approved 2026-11-21)**
 
 - [EmailConfirmBuiltStates](canvas/EmailConfirmBuiltStates.dc.html) — Confirm by email: gaps `#artboard-EmailConfirmBuiltStates`
 
-## Search & ⌘K · `search` · 12 artboards
+## Search & ⌘K · `search` · 17 artboards
 
 - [RulesM8](canvas/RulesM8.dc.html) — Rules: find, share earlier messages (M8, SIDE-03) `#artboard-RulesM8`
 - [Switcher](canvas/Switcher.dc.html) — ⌘K from the header search button: recent conversations `#artboard-Switcher`
@@ -479,6 +486,14 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [SearchSearching](canvas/SearchSearching.dc.html) — Searching older messages: rows arrive at the end `#artboard-SearchSearching`
 - [SearchEmpty](canvas/SearchEmpty.dc.html) — Search: no results, Search older messages `#artboard-SearchEmpty`
 - [SearchUnconfirmedDevice](canvas/SearchUnconfirmedDevice.dc.html) — Search on an unconfirmed device: one line and Confirm `#artboard-SearchUnconfirmedDevice`
+
+**⌘K: which space, who’s who — approved 2026-11-21**
+
+- [SwitcherSpaces](canvas/SwitcherSpaces.dc.html) — ⌘K across spaces: the space under each channel `#artboard-SwitcherSpaces`
+- [SwitcherTags](canvas/SwitcherTags.dc.html) — ⌘K people tags: External, client space, team untagged `#artboard-SwitcherTags`
+- [SwitcherSpacesJP](canvas/SwitcherSpacesJP.dc.html) — ⌘K across spaces — Japanese (recent) `#artboard-SwitcherSpacesJP`
+- [SwitcherTagsDark](canvas/SwitcherTagsDark.dc.html) — ⌘K people tags — dark `#artboard-SwitcherTagsDark`
+- [SwitcherWhoSees](canvas/SwitcherWhoSees.dc.html) — ⌘K: what a client and an External see `#artboard-SwitcherWhoSees`
 
 ## Settings · `settings` · 8 artboards
 
@@ -609,13 +624,7 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [DesktopBadge](canvas/DesktopBadge.dc.html) — Desktop app — Dock, taskbar, tray `#artboard-DesktopBadge`
 - [DesktopOffline](canvas/DesktopOffline.dc.html) — Desktop app — can’t reach `#artboard-DesktopOffline`
 
-## Discovery · `discovery` · 14 artboards
-
-- [SwitcherSpaces](canvas/SwitcherSpaces.dc.html) — ⌘K across spaces: the space under each channel `#artboard-SwitcherSpaces`
-- [SwitcherTags](canvas/SwitcherTags.dc.html) — ⌘K people tags: External, client space, team untagged `#artboard-SwitcherTags`
-- [SwitcherSpacesJP](canvas/SwitcherSpacesJP.dc.html) — ⌘K across spaces — Japanese (recent) `#artboard-SwitcherSpacesJP`
-- [SwitcherTagsDark](canvas/SwitcherTagsDark.dc.html) — ⌘K people tags — dark `#artboard-SwitcherTagsDark`
-- [SwitcherWhoSees](canvas/SwitcherWhoSees.dc.html) — ⌘K: what a client and an External see `#artboard-SwitcherWhoSees`
+## Discovery · `discovery` · 7 artboards
 
 **Discovery — Marking client projects**
 
@@ -626,5 +635,3 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [ClientMarkMany](canvas/ClientMarkMany.dc.html) — Marking client projects: many clients, many outsiders `#artboard-ClientMarkMany`
 - [ClientMarkLine](canvas/ClientMarkLine.dc.html) — Marking client projects: their company, said once `#artboard-ClientMarkLine`
 - [ExternalMark](canvas/ExternalMark.dc.html) — The External mark: not a company `#artboard-ExternalMark`
-- [ClientMarkFinal](canvas/ClientMarkFinal.dc.html) — Client and External marks (final) `#artboard-ClientMarkFinal`
-- [ClientMarkPlaces](canvas/ClientMarkPlaces.dc.html) — Client and External marks: everywhere they show (final) `#artboard-ClientMarkPlaces`

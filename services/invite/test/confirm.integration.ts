@@ -130,7 +130,7 @@ describe('confirm by email (D-38)', () => {
     assert.equal(mine.length, 1);
     const [msg] = mine;
     assert.equal(msg.sender, SYSTEM);
-    assert.match(msg.content.body, /^Kari Nord needs your help\nThe email to confirm their new device didn’t arrive\.\nNordlys · .+ · their time \d\d:\d\d$/);
+    assert.match(msg.content.body, /^Kari Nord needs your help\nThe email to confirm their new device didn’t arrive\.\nCheck the address below is theirs, then ask them to look in spam and tap Send it again\.\nNordlys · .+ · their time \d\d:\d\d$/);
     assert.ok(msg.content.body.includes(email));
     assert.deepEqual({ ...msg.content['work.pasodrum.help'], local_time: undefined }, {
       user_id: client, name: 'Kari Nord', space_id: rooms.nordlys, space_name: 'Nordlys', reason: 'email-missing', email, local_time: undefined, tz: 'Europe/Oslo',
