@@ -15,13 +15,13 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 | M4 channels, people, invites, settings | done | yes |
 | M5 client spaces + guests | done | yes |
 | M6 encryption | done | yes |
-| M7 tabs & cards | Batch G in design | — |
+| M7 tabs & cards | done (ceo-review) | yes |
 | M8 find & finish | Batch H not designed | — |
 | M9 desktop shell | Batch H (desktop bits) not designed | — |
 
 ## Waiting on the CEO
 
-- Approve Batch G (M7), SIDE-02 and the other-tab screen once they're on the canvas.
+- Try M7 + SIDE-02 + second tab by hand (lists in `tasks/ceo-review/M7-01-*.md` and `SIDE-02-*.md`).
 
 ## How we work (the loop that has worked)
 
