@@ -1,4 +1,4 @@
-// D-38: the system sender "Pasodrum" (created by `pnpm add:system`) tells a client's contact that they need help.
+// D-38: the system sender "Pasodrum" (the service makes sure it exists at startup) tells a client's contact that they need help.
 import { MatrixError, type Matrix } from './matrix.ts';
 import type { Store } from './store.ts';
 
@@ -53,13 +53,45 @@ export function helpMessage(h: Help): Record<string, unknown> {
   };
 }
 
-export function systemAccount(mx: Matrix, store: Store, serverName: string, password: string | undefined) {
+export function systemAccount(mx: Matrix, store: Store, serverName: string, password: string | undefined, registrationToken: string) {
   const id = `@${SYSTEM_LOCALPART}:${serverName}`;
   let token: string | null = null;
 
+  // Log in, or register with the token we already hold if the account doesn't exist yet; safe to repeat.
+  // On a fresh server registration waits for the first (admin) account, so this one never becomes the admin.
+  async function ensure(pw: string): Promise<string> {
+    let t: string;
+    try {
+      t = await mx.login(SYSTEM_LOCALPART, pw, DEVICE_ID);
+    } catch (e) {
+      if (!(e instanceof MatrixError) || (await mx.availability(SYSTEM_LOCALPART)) !== 'available') throw e;
+      await mx.register(SYSTEM_LOCALPART, pw, registrationToken);
+      t = await mx.login(SYSTEM_LOCALPART, pw, DEVICE_ID);
+    }
+    if ((await mx.displayName(t, id)) !== 'Pasodrum') await mx.setDisplayName(t, id, 'Pasodrum');
+    return t;
+  }
+
+  if (password) {
+    let wait = 2_000;
+    const attempt = () =>
+      ensure(password).then(
+        (t) => {
+          token = t;
+          console.log(`system sender ${id} ready`);
+        },
+        (e: unknown) => {
+          console.error(`system sender not ready (retry in ${wait / 1000}s): ${(e as Error).message}`);
+          setTimeout(attempt, wait).unref();
+          wait = Math.min(wait * 2, 300_000);
+        },
+      );
+    void attempt();
+  }
+
   async function signedIn<T>(fn: (token: string) => Promise<T>): Promise<T> {
     if (!password) throw new Error('SYSTEM_PASSWORD is not set');
-    token ??= await mx.login(SYSTEM_LOCALPART, password, DEVICE_ID);
+    token ??= await ensure(password);
     try {
       return await fn(token);
     } catch (e) {

@@ -5,7 +5,7 @@
 # Set RESEND_API_KEY (sending-only, noreply.prpl.se) for invite mail (D-26); MAIL_FROM is optional.
 # Resend's open and click tracking are per domain: keep both off for noreply.prpl.se (confirm links are single use).
 # Coolify generates CONFIRM_KEY_SECRET and SYSTEM_PASSWORD (D-38); losing CONFIRM_KEY_SECRET means every client starts fresh.
-# After the first deploy, create the system sender: SYSTEM_PASSWORD in dev/.env.production, then pnpm add:system.
+# The invite service creates (or signs in as) the system sender @pasodrum itself at startup; nothing to copy out of Coolify.
 # Set OPENAI_API_KEY to turn on Translate (TRANSLATE_MODEL overrides the default gpt-6-luna); TRANSLATE_DAILY_LIMIT (calls per UTC day, all callers) is optional.
 services:
   web:

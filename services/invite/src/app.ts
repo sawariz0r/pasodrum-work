@@ -36,7 +36,7 @@ const MAX_BODY = 16 * 1024;
 const TRANSLATE_PER_USER_DAY = 150;
 
 export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPassword, now = Date.now }: Deps) {
-  const confirm = confirmRoutes({ cfg, store, mx, sendMail, key: confirmKey, system: systemAccount(mx, store, cfg.serverName, systemPassword), now });
+  const confirm = confirmRoutes({ cfg, store, mx, sendMail, key: confirmKey, system: systemAccount(mx, store, cfg.serverName, systemPassword, cfg.registrationToken), now });
   const allow = rateLimiter();
   const claiming = new Set<string>();
   const host = new URL(cfg.publicUrl).host;

@@ -1,6 +1,5 @@
-// Creates the system sender "Pasodrum" (D-38) that the invite service signs in as to send help messages. Safe to re-run.
+// Dev helper: creates the system sender "Pasodrum" (D-38). The invite service does this itself at startup. Safe to re-run.
 // Local: set -a; . dev/.env; set +a; pnpm add:system
-// Production: set -a; . dev/.env.production; set +a; pnpm add:system
 import { SERVER, enc, envToken, mx, ok, userId } from './lib.ts';
 
 const LOCALPART = 'pasodrum';
