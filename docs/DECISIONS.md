@@ -102,6 +102,9 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-34 · Privacy line in encrypted conversations (SIDE-02), amends D-11 · Accepted · 2026-11-21
+Encrypted DMs, group DMs and private channels say who can read them, in plain words: "Only you and {name} can read this conversation." / "Only the people here can read this conversation." (JP 「この会話を読めるのは、…だけです。」) at the conversation start, plus a small header lock with the same sentence on hover/focus — DMs only; private channels keep their existing name lock. Never "encrypted"/"E2EE"/"keys"; unencrypted conversations show nothing. Amends D-11's "no encryption claims in copy" for encrypted conversations only. Boards: Private* (Batch G).
+
 ### D-33 · M7 scope: pins, files, link cards · Accepted · 2026-11-21
 - **No add/remove tab in M7.** Pins and Files are built-in tabs (SPEC: not stored); the only addable types would be Docs/Boards "Soon", and D-19 says ship only controls that work. `work.pasodrum.tab` + the "+" arrive with the first real addable tab. Docs/Boards stay as "Soon" rail pages (SPEC M7).
 - **Anyone in a conversation can pin** (Slack-like): `m.room.pinned_events` at level 0 for new rooms; a one-off migration lifts existing rooms.

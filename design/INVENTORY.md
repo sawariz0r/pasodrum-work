@@ -160,19 +160,19 @@ Team only; never where clients or guests are. Hover-bar icon only, shown when th
 
 ## Batch G — for M7 (+ SIDE-02, other tab)
 
-Drawn 2026-11-21, awaiting CEO approval. Rules: RulesM7.
+Approved 2026-11-21 (CEO). Rules: RulesM7. PrivateChannel: no extra header lock — the name's existing lock is enough (CEO).
 
 | Screen / state | Boards | Status |
 |---|---|---|
-| Tab strip Messages · Pins · Files | ChannelTabsM7 | drawn |
-| Pin / Unpin in the message menu | MsgMenuPin, MsgMenuUnpin | drawn |
-| Pinned message glyph | PinnedMessage | drawn |
-| Pins tab (list, hover Unpin, empty, loading) | PinsTab(+JP, Dark), PinsTabEmpty, PinsTabLoading | drawn |
-| Files tab (list, empty, loading, loading older) | FilesTab(+JP, Dark), FilesTabEmpty, FilesTabLoading, FilesTabMore | drawn |
-| Link card (image, no image, loading, none, two links) | LinkCard(+JP, Dark), LinkCardNoImage, LinkCardLoading, LinkCardNone, LinkCardMulti | drawn |
-| Docs / Boards "Soon" rail pages | DocsSoon, BoardsSoon, RailSoonJP | drawn |
-| SIDE-02 privacy line + header lock | PrivateDM, PrivateDMTooltip, PrivateGroupDM, PrivateChannel, PrivateJP, PrivateDark | drawn |
-| Open in another tab · Use here | OpenElsewhere, OpenElsewhereJP | drawn |
+| Tab strip Messages · Pins · Files | ChannelTabsM7 | approved 2026-11-21 |
+| Pin / Unpin in the message menu | MsgMenuPin, MsgMenuUnpin | approved 2026-11-21 |
+| Pinned message glyph | PinnedMessage | approved 2026-11-21 |
+| Pins tab (list, hover Unpin, empty, loading) | PinsTab(+JP, Dark), PinsTabEmpty, PinsTabLoading | approved 2026-11-21 |
+| Files tab (list, empty, loading, loading older) | FilesTab(+JP, Dark), FilesTabEmpty, FilesTabLoading, FilesTabMore | approved 2026-11-21 |
+| Link card (image, no image, loading, none, two links) | LinkCard(+JP, Dark), LinkCardNoImage, LinkCardLoading, LinkCardNone, LinkCardMulti | approved 2026-11-21 |
+| Docs / Boards "Soon" rail pages | DocsSoon, BoardsSoon, RailSoonJP | approved 2026-11-21 |
+| SIDE-02 privacy line + header lock | PrivateDM, PrivateDMTooltip, PrivateGroupDM, PrivateChannel, PrivateJP, PrivateDark | approved 2026-11-21 |
+| Open in another tab · Use here | OpenElsewhere, OpenElsewhereJP | approved 2026-11-21 |
 
 ## Batch H — for M8–M9
 
