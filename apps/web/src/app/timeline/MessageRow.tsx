@@ -9,6 +9,7 @@ import { BoxIcon, TrashIcon, UserPlusIcon } from '../icons';
 import { useTimeline } from './context';
 import { AudioPlayer, FileCard, ImageGrid, ImageSingle, VideoPlayer } from './Media';
 import { MessageActions } from './MessageActions';
+import { useArchivedSpace } from './ArchivedBar';
 import { Reactions } from './Reactions';
 import { PlainText, RichText } from './RichText';
 import r from './Rich.module.css';
@@ -215,6 +216,7 @@ export const MessageRow = memo(function MessageRow({
   const tl = useTimeline();
   const profile = useProfileCard();
   const [force, setForce] = useState(false);
+  const archived = useArchivedSpace(tl.channelId);
   if (m.kind === 'deleted') return <DeletedRow m={m} />;
   if (m.kind === 'system') return <SystemRow m={m} />;
 
@@ -294,7 +296,7 @@ export const MessageRow = memo(function MessageRow({
             </button>
           </div>
         )}
-        {m.reactions && m.reactions.length > 0 && <Reactions reactions={m.reactions} meId={meId} onToggle={toggle} onPick={pick} />}
+        {m.reactions && m.reactions.length > 0 && <Reactions reactions={m.reactions} meId={meId} {...(!archived && { onToggle: toggle, onPick: pick })} />}
         {m.thread && m.thread.count > 0 && tl.openThread && <ThreadSummary thread={m.thread} onOpen={() => tl.openThread?.(m.id)} />}
       </div>
       {m.status === 'sent' && !editing && <MessageActions message={m} group={group} own={own} onOpenChange={setForce} />}

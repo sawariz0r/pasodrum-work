@@ -6,6 +6,7 @@ import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '../../u
 import { useComposer } from '../composer/context';
 import { CopyIcon, EditIcon, LinkIcon, MoreIcon, ReplyIcon, SmileIcon, TrashIcon } from '../icons';
 import { ThreadIcon } from '../thread/icons';
+import { useArchivedSpace } from './ArchivedBar';
 import { useTimeline } from './context';
 import { ReactionPicker } from './ReactionPicker';
 import s from './Timeline.module.css';
@@ -31,6 +32,8 @@ export function MessageActions({
   const store = useStore();
   const composer = useComposer();
   const tl = useTimeline();
+  // Archived client space: read-only, so only the actions that don't write stay (thread, copy).
+  const writable = !useArchivedSpace(tl.channelId);
   // The bar goes away while editing; a menu closed by unmounting never reports it.
   useEffect(() => () => onOpenChange(false), [onOpenChange]);
   const react = (key: string) => {
@@ -44,14 +47,18 @@ export function MessageActions({
           <ThreadIcon />
         </button>
       )}
-      <ReactionPicker onPick={react} onOpenChange={onOpenChange}>
-        <button type="button" className={s.tool} aria-label={t('timeline.addReaction')}>
-          <SmileIcon />
-        </button>
-      </ReactionPicker>
-      <button type="button" className={s.tool} aria-label={t('timeline.reply')} onClick={() => composer.startReply(m.id)}>
-        <ReplyIcon />
-      </button>
+      {writable && (
+        <>
+          <ReactionPicker onPick={react} onOpenChange={onOpenChange}>
+            <button type="button" className={s.tool} aria-label={t('timeline.addReaction')}>
+              <SmileIcon />
+            </button>
+          </ReactionPicker>
+          <button type="button" className={s.tool} aria-label={t('timeline.reply')} onClick={() => composer.startReply(m.id)}>
+            <ReplyIcon />
+          </button>
+        </>
+      )}
       <Menu modal={false} onOpenChange={onOpenChange}>
         <MenuTrigger asChild>
           <button type="button" className={s.tool} aria-label={t('timeline.more')}>
@@ -59,7 +66,7 @@ export function MessageActions({
           </button>
         </MenuTrigger>
         <MenuContent side="top" align="end" sideOffset={8} alignOffset={-4} width={224} className={s.menu}>
-          {own && editable(m) && (
+          {writable && own && editable(m) && (
             <MenuItem icon={<EditIcon />} onSelect={() => composer.startEdit(m.id)}>
               {t('timeline.edit')}
             </MenuItem>
@@ -75,7 +82,7 @@ export function MessageActions({
           >
             {t('timeline.copyLink')}
           </MenuItem>
-          {own && (
+          {writable && own && (
             <>
               <MenuSeparator className={s.menuSep} />
               <MenuItem icon={<TrashIcon />} className={s.danger} onSelect={() => tl.askDelete(group ?? [m])}>

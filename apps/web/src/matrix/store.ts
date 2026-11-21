@@ -19,6 +19,7 @@ import {
   RoomEvent,
   RoomMemberEvent,
   RoomStateEvent,
+  RoomType,
   SyncState,
   THREAD_RELATION_TYPE,
   Visibility,
@@ -29,19 +30,19 @@ import {
   type Room,
 } from 'matrix-js-sdk';
 import { sanitizeHtml, type SanitizedHtml } from './html';
-import { createInvite, InviteError, listInvites, resendInvite, revokeInvite } from './invites';
+import { createInvite, InviteError, listInvites, normalizeEmail, resendInvite, revokeInvitesFor, revokeInvite } from './invites';
 import {
   connectionOf, emailFromId, hydra, looksExternal, mayChangeRole, mediaOf, membershipSummary, powerLevel, reactionsOf, replyFallback, roleOf, sameMembers, share,
   knownSpacesOf, stripReplyFallback, threadStats, workspaceOf,
   type PowerFacts, type RoomFacts, type ThreadReply,
 } from './map';
-import { channelUsers, LEVEL, levelFor, powerLevels } from './levels';
+import { archivedLevels, channelUsers, LEVEL, levelFor, powerLevels } from './levels';
 import { defaultLevel, defaultOps, roomLevel, roomOps, type PushOp, type PushRules } from './push';
 import { send, sendEdit, sendReaction, type MsgType, type TextMessage } from './send';
 import { clearSession } from './session';
 import {
   PasswordRequired,
-  type ActivityItem, type AddPeopleResult, type Dm, type JoinableChannel, type Member, type Message, type MessageKind, type Person, type Role, type Session, type Space,
+  type ActivityItem, type AddPeopleResult, type Channel, type Dm, type JoinableChannel, type Member, type Message, type MessageKind, type Person, type Role, type Session, type Space,
   type ThreadInfo, type ThreadSummary, type Timeline, type Upload, type WorkspaceSnapshot, type WorkspaceStore,
 } from './types';
 
@@ -61,7 +62,9 @@ const str = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 const MAIN = 'main';
 const THREAD = THREAD_RELATION_TYPE.name;
 const enc = encodeURIComponent;
-const isClientSpace = (room: Room) => room.currentState.getStateEvents('work.pasodrum.space', '')?.getContent().kind === 'client';
+const SPACE_STATE = 'work.pasodrum.space';
+const spaceStateOf = (room: Room): Record<string, unknown> => room.currentState.getStateEvents(SPACE_STATE, '')?.getContent() ?? {};
+const isClientSpace = (room: Room) => spaceStateOf(room).kind === 'client';
 const joined = (room: Room) => room.getMyMembership() === KnownMembership.Join;
 const SETTINGS = 'work.pasodrum.settings';
 const SPACES = 'work.pasodrum.spaces';
@@ -126,13 +129,16 @@ interface ThreadComputed {
 function factsOf(room: Room): RoomFacts {
   const state = room.currentState;
   const topic: unknown = state.getStateEvents(EventType.RoomTopic, '')?.getContent().topic;
+  const space = spaceStateOf(room);
   return {
     id: room.roomId,
     name: room.name,
     joined: room.getMyMembership() === KnownMembership.Join,
     isSpace: room.isSpaceRoom(),
     otherType: !!room.getType() && !room.isSpaceRoom(),
-    clientSpace: state.getStateEvents('work.pasodrum.space', '')?.getContent().kind === 'client',
+    clientSpace: space.kind === 'client',
+    ...(typeof space.colour === 'string' && space.colour ? { colour: space.colour } : {}),
+    ...(space.archived === true ? { archived: true } : {}),
     joinRule: room.getJoinRule(),
     ...(typeof topic === 'string' && topic ? { topic } : {}),
     children: state
@@ -231,7 +237,11 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     ...(avatarUrl ? { avatarUrl } : {}),
     ...(userId !== me.id && isExternal(userId) ? { external: true } : {}),
   });
-  const personOf = (room: Room | null, userId: string): Person => person(userId, room?.getMember(userId)?.name);
+  /** Someone as they are now (current member state), not as an event saw them; `fallback` when the room doesn't know them. */
+  const personOf = (room: Room | null, userId: string, fallback?: string | null): Person => {
+    const m = room?.getMember(userId);
+    return person(userId, m?.name ?? fallback, m?.getMxcAvatarUrl());
+  };
 
   const htmlOf = (content: Record<string, unknown>): SanitizedHtml | null => {
     if (content.format !== HTML || typeof content.formatted_body !== 'string') return null;
@@ -264,7 +274,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     if (ev.isState() || ev.isRelation(RelationType.Replace) || (!inThread && ev.isRelation(THREAD))) return null;
     const type = ev.getType();
     const senderId = ev.getSender() ?? '';
-    const base = { id: ev.getId()!, channelId: room.roomId, sender: person(senderId, ev.sender?.name ?? room.getMember(senderId)?.name), ts: ev.getTs(), status: statusOf(ev) };
+    const base = { id: ev.getId()!, channelId: room.roomId, sender: personOf(room, senderId, ev.sender?.name), ts: ev.getTs(), status: statusOf(ev) };
     const content = ev.getContent() as Record<string, unknown>;
 
     if (type !== EventType.RoomMessage && type !== EventType.Sticker) {
@@ -365,7 +375,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   const typingOf = (channelId: string): Person[] =>
     (client.getRoom(channelId)?.currentState.getMembers() ?? [])
       .filter((m) => m.typing && m.userId !== me.id)
-      .map((m) => person(m.userId, m.name))
+      .map((m) => person(m.userId, m.name, m.getMxcAvatarUrl()))
       .sort(byName);
 
   // Threads
@@ -717,6 +727,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       joinQueue = joinQueue.then(async () => {
         try {
           if (!(await trusts(room, inviter, !!dmInviter, fresh, guest))) throw new Error('waits');
+          visiting.delete(room.roomId);
           await client.joinRoom(room.roomId, { viaServers: [server] });
           await whenJoined(room.roomId);
           if (dmInviter) await addDirect(room.roomId, [dmInviter]);
@@ -739,12 +750,13 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     );
   };
 
-  /** After each sync: member lists for spaces and DMs (spaceIds, external, auto-join), the server's thread list per room. */
+  /** After each sync: member lists for spaces and DMs (spaceIds, external, auto-join) and, for the team, channels (outside mark); the server's thread list per room. */
   const housekeeping = () => {
     const direct = directRooms();
+    const team = client.getRooms().some((r) => r.isSpaceRoom() && joined(r) && !isClientSpace(r));
     for (const room of client.getRooms()) {
-      if (!joined(room)) continue;
-      if (room.isSpaceRoom() || isDirect(room, direct)) ensureMembers(room);
+      if (!joined(room) || discarded.has(room.roomId) || visiting.has(room.roomId)) continue;
+      if (team || room.isSpaceRoom() || isDirect(room, direct)) ensureMembers(room);
       if (!room.isSpaceRoom()) listThreads(room);
     }
     acceptInvites();
@@ -799,15 +811,62 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       }),
     );
 
+  /** D-28: clients and guests in a channel (joined or invited), only for the team. */
+  const withOutside = (channels: Record<string, Channel[]>, roles: Record<string, Role>) =>
+    Object.fromEntries(
+      Object.entries(channels).map(([spaceId, list]) => {
+        const role = roles[spaceId];
+        if (role !== 'owner' && role !== 'admin' && role !== 'member') return [spaceId, list];
+        return [
+          spaceId,
+          list.map((c) => {
+            const outside = (client.getRoom(c.id)?.getMembers() ?? [])
+              .filter((m) => m.userId !== me.id && (m.membership === KnownMembership.Join || m.membership === KnownMembership.Invite) && isExternal(m.userId))
+              .map((m) => person(m.userId, m.name, m.getMxcAvatarUrl()))
+              .sort(byName);
+            return outside.length ? { ...c, outside } : c;
+          }),
+        ];
+      }),
+    );
+
+  /**
+   * createClientSpace: a space I made stays out of the snapshot (with its channels) until it is whole, i.e. every channel
+   * joined and listed. While one is being made, so does any new space of mine: it first syncs with only its create event.
+   * Rolled-back rooms stay out for good: a sync still in flight can bring them back as joined after they were forgotten.
+   * Channels removeFromSpace passed through stay out until I join them on purpose: our local leave lands before a
+   * lagging sync that still says joined.
+   */
+  const halfMade = (rooms: Room[]) => {
+    const ids = new Set(discarded);
+    for (const id of visiting) ids.add(id);
+    for (const r of rooms) {
+      if (!r.isSpaceRoom() || snapshot.spaces.some((s) => s.id === r.roomId)) continue;
+      const expected = expecting.get(r.roomId);
+      if (expected) {
+        const whole = expected.every((id) => {
+          const channel = client.getRoom(id);
+          return !!channel && joined(channel) && !!r.currentState.getStateEvents(EventType.SpaceChild, id);
+        });
+        if (!whole) ids.add(r.roomId);
+      } else if (creating && r.currentState.getStateEvents(EventType.RoomCreate, '')?.getSender() === me.id) ids.add(r.roomId);
+    }
+    for (const r of rooms) if (r.currentState.getStateEvents(EventType.SpaceParent).some((e) => ids.has(e.getStateKey()!))) ids.add(r.roomId);
+    return ids;
+  };
+
   const build = (): WorkspaceSnapshot => {
     scanCache = null;
-    const rooms = client.getRooms();
+    const hidden = halfMade(client.getRooms());
+    const rooms = client.getRooms().filter((r) => !hidden.has(r.roomId));
     workspaceRoom = rooms.find((r) => r.isSpaceRoom() && joined(r) && !isClientSpace(r));
     const workspace = workspaceOf(rooms.map(factsOf), knownSpacesOf(client.getAccountData(SPACES as never)?.getContent()));
+    const myRoles = myRolesOf(workspace.spaces);
     return {
       me,
       connection: connectionOf(syncState, synced),
-      ...workspace,
+      spaces: workspace.spaces,
+      channels: withOutside(workspace.channels, myRoles),
       timelines: Object.fromEntries([...open].map(([id, flags]) => [id, timelineOf(id, flags)])),
       sessionExpired,
       typing: Object.fromEntries([...open.keys()].map((id) => [id, typingOf(id)] as const).filter(([, people]) => people.length)),
@@ -816,10 +875,15 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       threads: threadsOf(),
       threadTimelines: Object.fromEntries([...openThreads].map(([id, flags]) => [id, threadTimelineOf(id, flags)])),
       activity: activityOf(),
-      myRoles: myRolesOf(workspace.spaces),
+      myRoles,
     };
   };
 
+  let creating = 0;
+  /** Spaces made by createClientSpace → their channels. */
+  const expecting = new Map<string, string[]>();
+  const discarded = new Set<string>();
+  const visiting = new Set<string>();
   let snapshot = build();
   let scheduled = false;
   function schedule() {
@@ -1023,33 +1087,60 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     return roleOf(level, !inSpace ? 'none' : level >= LEVEL.staff ? 'workspace' : 'client');
   };
 
-  const setLevel = async (room: Room, userId: string, level: number) => {
-    const content = { ...(room.currentState.getStateEvents(EventType.RoomPowerLevels, '')?.getContent() ?? {}) };
-    const users = { ...((content.users as Record<string, number> | undefined) ?? {}) };
-    if (level === (typeof content.users_default === 'number' ? content.users_default : 0)) delete users[userId];
-    else users[userId] = level;
-    await client.sendStateEvent(room.roomId, EventType.RoomPowerLevels, { ...content, users }, '');
+  const chains = new Map<string, Promise<unknown>>();
+  /**
+   * Read-modify-write of a state event, one at a time per room and built from the server's copy: the synced one lags
+   * our own last write, so two quick edits (colour, then archive) would otherwise undo each other.
+   */
+  const writeState = (roomId: string, type: string, change: (content: Record<string, unknown>) => Record<string, unknown>) => {
+    const next = (chains.get(roomId) ?? Promise.resolve())
+      .catch(noop)
+      .then(async () => {
+        const current = (await client.getStateEvent(roomId, type, '').catch((e: unknown) => {
+          if (e instanceof MatrixError && e.httpStatus === 404) return {};
+          throw e;
+        })) as Record<string, unknown>;
+        const changed = change(current);
+        if (JSON.stringify(changed) === JSON.stringify(current)) return false;
+        await client.sendStateEvent(roomId, type as never, changed as never, '');
+        return true;
+      });
+    chains.set(roomId, next);
+    return next;
   };
+
+  const setLevel = (room: Room, userId: string, level: number) =>
+    writeState(room.roomId, EventType.RoomPowerLevels, (content) => {
+      const users = { ...((content.users as Record<string, number> | undefined) ?? {}) };
+      if (level === (typeof content.users_default === 'number' ? content.users_default : 0)) delete users[userId];
+      else users[userId] = level;
+      return { ...content, users };
+    });
   const mayEditLevel = (room: Room, userId: string, level: number) => {
     const mine = levelIn(room, me.id);
     return room.currentState.maySendStateEvent(EventType.RoomPowerLevels, me.id) && level <= mine && (userId === me.id || levelIn(room, userId) < mine);
   };
 
-  /** D-27: a colleague added to a client space joins its team: staff level (or their Owner/Admin level) where I may set it. */
+  /** D-27: a colleague (joined in the workspace) added to a client space joins its team: staff level (or their Owner/Admin level) where I may set it. */
+  const inWorkspace = (userId: string) => workspaceRoom?.getMember(userId)?.membership === KnownMembership.Join;
+  const teamLevel = (userId: string) => Math.max(LEVEL.staff, Math.min(levelIn(workspaceRoom, userId), LEVEL.owner));
   const joinTeam = async (space: Room, channel: Room, userId: string) => {
-    const level = Math.max(LEVEL.staff, Math.min(levelIn(workspaceRoom, userId), LEVEL.owner));
+    await workspaceRoom?.loadMembersIfNeeded().catch(noop);
+    if (!inWorkspace(userId)) return;
+    const level = teamLevel(userId);
     for (const r of [space, channel]) if (levelIn(r, userId) < level && mayEditLevel(r, userId, level)) await setLevel(r, userId, level).catch(noop);
   };
 
   type Failure = AddPeopleResult['failed'][number]['reason'];
   /** Invites to the channel, and to its space unless they join as a guest (D-06). */
-  const inviteTo = async (channel: Room, space: Room | undefined, userId: string, role: 'member' | 'guest' | 'client', again = false): Promise<Failure | null> => {
-    const pending = channel.getMember(userId)?.membership === KnownMembership.Invite;
-    if (channel.getMember(userId)?.membership === KnownMembership.Join || (pending && !again)) return 'already-member';
+  /** `target` is what they're added to (the channel, or the space with `channel` as its home channel). */
+  const inviteTo = async (target: Room, channel: Room | undefined, space: Room | undefined, userId: string, role: 'member' | 'guest' | 'client', again = false): Promise<Failure | null> => {
+    const membership = target.getMember(userId)?.membership;
+    if (membership === KnownMembership.Join || (membership === KnownMembership.Invite && !again)) return 'already-member';
     try {
       if (space && role !== 'guest' && !isMember(space, userId)) await client.invite(space.roomId, userId);
-      if (!pending) await client.invite(channel.roomId, userId);
-      if (space && isClientSpace(space) && role === 'member') await joinTeam(space, channel, userId);
+      if (channel && !isMember(channel, userId)) await client.invite(channel.roomId, userId);
+      if (space && channel && isClientSpace(space) && role === 'member') await joinTeam(space, channel, userId);
       return null;
     } catch (e) {
       return e instanceof MatrixError && e.errcode === 'M_FORBIDDEN' ? 'not-allowed' : 'other';
@@ -1094,6 +1185,40 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     await client.getPushRules();
     schedule();
   };
+
+  // M5
+  const forbidden = (e: unknown) => (e instanceof MatrixError && e.errcode === 'M_FORBIDDEN' ? new Error('not-allowed', { cause: e }) : e);
+  /** Joined channels a space lists. Channels I'm not in can't be changed by me. */
+  const childRooms = (space: Room) =>
+    space.currentState
+      .getStateEvents(EventType.SpaceChild)
+      .filter((e) => (e.getContent().via?.length ?? 0) > 0)
+      .map((e) => client.getRoom(e.getStateKey()))
+      .filter((r): r is Room => !!r && joined(r) && !r.isSpaceRoom());
+  /** Where someone added to a whole space lands: the workspace's #general (else its first public channel), a client space's first channel. */
+  const homeOf = (space: Room) => {
+    const made = (r: Room) => r.currentState.getStateEvents(EventType.RoomCreate, '')?.getTs() ?? 0;
+    const rooms = childRooms(space).sort((a, b) => made(a) - made(b));
+    if (isClientSpace(space)) return rooms[0];
+    return rooms.find((r) => r.name.toLowerCase() === 'general') ?? rooms.find((r) => r.getJoinRule() === 'restricted' || r.getJoinRule() === 'public');
+  };
+  /** Over the client spaces my account knows (in, invited, or noted by the invite service): nothing on the server lists the others. */
+  const nameTaken = (name: string, except?: string) => {
+    const wanted = name.trim().toLowerCase();
+    const known = knownSpacesOf(client.getAccountData(SPACES as never)?.getContent());
+    return [
+      ...client.getRooms().filter((r) => r.roomId !== except && r.isSpaceRoom() && isClientSpace(r) && isMember(r, me.id)).map((r) => r.name),
+      ...Object.entries(known).filter(([id, k]) => id !== except && k.kind === 'client').map(([, k]) => k.name),
+    ].some((n) => n.trim().toLowerCase() === wanted);
+  };
+  /** In a client space: workspace people by their workspace role, everyone else is a client (pending ones too). A client judges by the space's levels. */
+  const spaceRole = (userId: string, space: Room): Role => {
+    if (!isClientSpace(space)) return roleOf(levelIn(space, userId), 'workspace');
+    if (workspaceRoom) return workspaceRoom.getMember(userId)?.membership === KnownMembership.Join ? roleOf(levelIn(workspaceRoom, userId), 'workspace') : 'client';
+    const level = levelIn(space, userId);
+    return roleOf(level, level >= LEVEL.staff ? 'workspace' : 'client');
+  };
+  const isTeam = (role: Role) => role === 'owner' || role === 'admin' || role === 'member';
 
   return {
     getSnapshot: () => snapshot,
@@ -1261,7 +1386,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       loadMembers(channelId);
       return room
         .getJoinedMembers()
-        .map((m) => person(m.userId, m.name))
+        .map((m) => person(m.userId, m.name, m.getMxcAvatarUrl()))
         .sort(byName);
     },
     mediaUrl(ref, opts) {
@@ -1321,7 +1446,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       const spaces = spacesJoined();
       await Promise.all(spaces.map((s) => s.loadMembersIfNeeded().catch(noop)));
       const people = new Map<string, Person>();
-      for (const s of spaces) for (const m of s.getJoinedMembers()) people.set(m.userId, person(m.userId, m.name));
+      for (const s of spaces) for (const m of s.getJoinedMembers()) people.set(m.userId, person(m.userId, m.name, m.getMxcAvatarUrl()));
       for (const dm of snapshot.dms) for (const p of dm.people) people.set(p.id, p);
       const matches = [...people.values()].filter((p) => !term || p.name.toLowerCase().includes(term) || localpart(p.id).includes(term));
       if (term) {
@@ -1375,7 +1500,9 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         ],
       });
       await client.sendStateEvent(spaceId, EventType.SpaceChild, { via: [server] }, room_id);
-      await settle(() => inSnapshot(room_id));
+      // A new room syncs a piece at a time; wait until it shows as made, not just present.
+      const made = () => snapshot.channels[spaceId]?.find((c) => c.id === room_id);
+      await settle(() => made()?.private === isPrivate && (made()?.topic ?? '') === (topic?.trim() ?? ''));
       return room_id;
     },
     async browseChannels(spaceId) {
@@ -1402,6 +1529,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         .sort((a, b) => a.name.localeCompare(b.name));
     },
     async joinChannel(channelId) {
+      visiting.delete(channelId);
       await client.joinRoom(channelId, { viaServers: [server] });
       await settle(() => inSnapshot(channelId));
     },
@@ -1455,15 +1583,16 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     async removeFromChannel(channelId, userId) {
       await client.kick(channelId, userId);
     },
-    async addPeople(channelId, req) {
+    async addPeople(targetId, req) {
       await ready;
       const result: AddPeopleResult = { added: [], invited: [], failed: [] };
-      const channel = client.getRoom(channelId);
-      if (!channel) throw new Error('not-allowed');
-      const space = spaceOf(channelId);
-      await Promise.all([channel, ...(space ? [space] : [])].map((r) => r.loadMembersIfNeeded().catch(noop)));
+      const target = client.getRoom(targetId);
+      if (!target) throw new Error('not-allowed');
+      const space = target.isSpaceRoom() ? target : spaceOf(targetId);
+      const channel = target.isSpaceRoom() ? homeOf(target) : target;
+      await Promise.all([target, ...(channel ? [channel] : []), ...(space ? [space] : [])].map((r) => r.loadMembersIfNeeded().catch(noop)));
       for (const userId of new Set(req.userIds)) {
-        const failure = await inviteTo(channel, space, userId, req.role);
+        const failure = await inviteTo(target, channel, space, userId, req.role);
         if (failure) result.failed.push({ who: userId, reason: failure });
         else result.added.push(userId);
       }
@@ -1475,7 +1604,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         let userId: string;
         let existing = false;
         try {
-          ({ userId } = await createInvite(session.accessToken, { email, role: req.role, spaceId: space.roomId, channelIds: [channelId], locale: inviteLocale() }));
+          ({ userId } = await createInvite(session.accessToken, { email, role: req.role, spaceId: space.roomId, channelIds: channel ? [channel.roomId] : [], locale: inviteLocale() }));
         } catch (e) {
           const code = e instanceof InviteError ? e.code : 'other';
           if (code === 'exists' && e instanceof InviteError && e.userId) {
@@ -1487,7 +1616,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
           }
         }
         // A fresh code for someone still pending (201 again) re-sends the mail; their Matrix invites stand.
-        const failure = await inviteTo(channel, space, userId, req.role, !existing);
+        const failure = await inviteTo(target, channel, space, userId, req.role, !existing);
         if (failure) result.failed.push({ who: email, reason: failure });
         else if (existing) result.added.push(userId);
         else result.invited.push(email);
@@ -1538,12 +1667,206 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       const prev = client.getAccountData(SETTINGS as never)?.getContent<Record<string, unknown>>() ?? {};
       await client.setAccountData(SETTINGS as never, { ...prev, [key]: value } as never);
     },
-    // M5 — stubs until M5-01 lands.
-    createClientSpace: () => Promise.reject(new Error('not-implemented')),
-    updateSpace: () => Promise.reject(new Error('not-implemented')),
-    spaceMembers: () => Promise.reject(new Error('not-implemented')),
-    removeFromSpace: () => Promise.reject(new Error('not-implemented')),
-    setArchived: () => Promise.reject(new Error('not-implemented')),
+    async createClientSpace({ name, colour, channels: channelNames, team, clientEmails }) {
+      await ready;
+      if (!workspaceRoom || levelIn(workspaceRoom, me.id) < LEVEL.admin) throw new Error('not-allowed');
+      const wanted = name.trim();
+      const names = channelNames.map((n) => n.trim()).filter((n, i, all) => n && all.findIndex((m) => m.toLowerCase() === n.toLowerCase()) === i);
+      if (!wanted || !names.length) throw new Error('other');
+      const emails = [...new Set(clientEmails.map((e) => e.trim()).filter(Boolean))];
+      if (emails.some((e) => !normalizeEmail(e))) throw new Error('invalid-email');
+      if (nameTaken(wanted)) throw new Error('name-taken');
+      await workspaceRoom.loadMembersIfNeeded().catch(noop);
+      const teamIds = [...new Set(team)].filter((id) => id !== me.id && inWorkspace(id));
+      const users = Object.fromEntries(teamIds.map((id) => [id, teamLevel(id)]));
+      const made: string[] = [];
+      const invited: [string, string][] = [];
+
+      // The team's invites go out once everything exists, so nobody sees the space half-made.
+      const make = async () => {
+        const { room_id: spaceId } = await client.createRoom({
+          name: wanted,
+          preset: Preset.PrivateChat,
+          visibility: Visibility.Private,
+          creation_content: { type: RoomType.Space },
+          power_level_content_override: powerLevels('client', 'space', users),
+          initial_state: [{ type: SPACE_STATE, state_key: '', content: { kind: 'client', colour } }],
+        });
+        made.push(spaceId);
+        const levels = powerLevels('client', 'channel', channelUsers(users, [], me.id));
+        // One at a time: room version 12 derives the ID from the create event, so two made in the same millisecond collide.
+        for (const n of names) {
+          const { room_id } = await client.createRoom({
+            name: n,
+            preset: Preset.PrivateChat,
+            visibility: Visibility.Private,
+            power_level_content_override: levels,
+            initial_state: [
+              { type: EventType.SpaceParent, state_key: spaceId, content: { via: [server], canonical: true } },
+              { type: EventType.RoomHistoryVisibility, state_key: '', content: { history_visibility: 'shared' } },
+              { type: EventType.RoomJoinRules, state_key: '', content: { join_rule: 'restricted', allow: [{ type: 'm.room_membership', room_id: spaceId }] } },
+            ],
+          });
+          made.push(room_id);
+        }
+        const channelIds = made.slice(1);
+        await Promise.all(channelIds.map((id) => client.sendStateEvent(spaceId, EventType.SpaceChild, { via: [server] }, id)));
+        // Settled, so a rollback only starts once no invite is still on its way.
+        const sent = await Promise.allSettled(
+          teamIds.map(async (userId) => {
+            for (const roomId of made) {
+              await client.invite(roomId, userId);
+              invited.push([roomId, userId]);
+            }
+          }),
+        );
+        const refused = sent.find((r) => r.status === 'rejected');
+        if (refused) throw refused.reason;
+        return { spaceId, channelIds };
+      };
+
+      const before = new Set((await client.getJoinedRooms()).joined_rooms);
+      const started = Date.now() - 60_000;
+      creating++;
+      let result: { spaceId: string; channelIds: string[] };
+      try {
+        result = await make();
+        expecting.set(result.spaceId, result.channelIds);
+      } catch (e) {
+        // A createRoom that fails part way still leaves a room behind, without telling us its ID.
+        for (const id of (await client.getJoinedRooms().catch(() => ({ joined_rooms: [] as string[] }))).joined_rooms) {
+          if (before.has(id) || made.includes(id)) continue;
+          const create = (await client.roomState(id).catch(() => [])).find((ev) => ev.type === EventType.RoomCreate);
+          if (create?.sender === me.id && create.origin_server_ts >= started) made.push(id);
+        }
+        await Promise.allSettled(invited.map(([roomId, userId]) => client.kick(roomId, userId)));
+        for (const id of [...made].reverse()) {
+          discarded.add(id);
+          await client.leave(id).catch(noop);
+          await client.forget(id, true).catch(noop);
+        }
+        throw new Error(e instanceof MatrixError && e.errcode === 'M_FORBIDDEN' ? 'not-allowed' : 'other', { cause: e });
+      } finally {
+        creating--;
+        schedule();
+      }
+      // The space stands from here on; mail may already be out, so a failing email never undoes it. Whoever didn't get
+      // a code or an invite simply isn't pending (the UI can add them again); an unsent mail still has its join link.
+      const { spaceId, channelIds } = result;
+      for (const email of emails) {
+        let userId: string;
+        try {
+          ({ userId } = await createInvite(session.accessToken, { email, role: 'client', spaceId, channelIds, locale: inviteLocale() }));
+        } catch (e) {
+          if (!(e instanceof InviteError && e.code === 'exists' && e.userId)) continue;
+          userId = e.userId;
+        }
+        if (userId === me.id) continue;
+        for (const roomId of [spaceId, ...channelIds]) await client.invite(roomId, userId).catch(noop);
+      }
+      await settle(() => snapshot.spaces.some((s) => s.id === spaceId));
+      return { spaceId, channelId: channelIds[0]! };
+    },
+    async updateSpace(spaceId, patch) {
+      await ready;
+      const space = client.getRoom(spaceId);
+      if (!space || !joined(space)) throw new Error('not-allowed');
+      const name = patch.name?.trim();
+      if (name && isClientSpace(space) && nameTaken(name, spaceId)) throw new Error('name-taken');
+      try {
+        if (name && name !== space.name) await client.setRoomName(spaceId, name);
+        if (patch.colour !== undefined) {
+          await writeState(spaceId, SPACE_STATE, (content) => {
+            const next = { ...content };
+            if (patch.colour) next.colour = patch.colour;
+            else delete next.colour;
+            return next;
+          });
+        }
+      } catch (e) {
+        throw forbidden(e);
+      }
+      await settle(() => {
+        const s = snapshot.spaces.find((x) => x.id === spaceId);
+        return !!s && (!name || s.name === name) && (patch.colour === undefined || (s.colour ?? '') === patch.colour);
+      });
+    },
+    async spaceMembers(spaceId) {
+      await ready;
+      const space = client.getRoom(spaceId);
+      if (!space || !joined(space)) return [];
+      await Promise.all([space, ...(workspaceRoom ? [workspaceRoom] : [])].map((r) => r.loadMembersIfNeeded().catch(noop)));
+      return space
+        .getMembers()
+        .filter((m) => m.membership === KnownMembership.Join || m.membership === KnownMembership.Invite)
+        .map((m): Member => ({
+          person: person(m.userId, m.name, m.getMxcAvatarUrl()),
+          role: spaceRole(m.userId, space),
+          ...(m.membership === KnownMembership.Invite ? { pending: true } : {}),
+        }))
+        .sort((a, b) => Number(!isTeam(a.role)) - Number(!isTeam(b.role)) || Number(!!a.pending) - Number(!!b.pending) || byName(a.person, b.person));
+    },
+    async removeFromSpace(spaceId, userId) {
+      await ready;
+      const space = client.getRoom(spaceId);
+      if (!space || !joined(space)) throw new Error('not-allowed');
+      await space.loadMembersIfNeeded().catch(noop);
+      const mine = levelIn(space, me.id);
+      const kick: unknown = space.currentState.getStateEvents(EventType.RoomPowerLevels, '')?.getContent().kick;
+      if (userId === me.id || mine < (typeof kick === 'number' ? kick : LEVEL.admin) || levelIn(space, userId) >= mine) throw new Error('not-allowed');
+      // A pending person's join link dies before anything else changes; for anyone else there's nothing open to revoke.
+      const pending = space.getMember(userId)?.membership === KnownMembership.Invite;
+      await revokeInvitesFor(session.accessToken, spaceId, userId).catch((e: unknown) => {
+        if (pending) throw new Error('other', { cause: e });
+      });
+      // Every channel the space lists, mine or not: a channel I'm not in I pass through (join, kick, leave) when its join
+      // rule lets me; their pending invites are kicked too.
+      const unreached: string[] = [];
+      for (const e of space.currentState.getStateEvents(EventType.SpaceChild)) {
+        const id = e.getStateKey()!;
+        if (!e.getContent().via?.length || client.getRoom(id)?.isSpaceRoom()) continue;
+        const room = client.getRoom(id);
+        const passing = !room || !joined(room);
+        let entered = !passing;
+        try {
+          if (passing) {
+            visiting.add(id);
+            await client.joinRoom(id, { viaServers: [server] });
+            entered = true;
+          }
+          const { membership } = (await client.getStateEvent(id, EventType.RoomMember, userId).catch(() => ({}))) as { membership?: string };
+          if (membership === KnownMembership.Join || membership === KnownMembership.Invite) await client.kick(id, userId);
+        } catch {
+          unreached.push(id);
+        } finally {
+          if (passing && entered) await client.leave(id).catch(noop);
+          else if (passing) visiting.delete(id);
+        }
+      }
+      if (isMember(space, userId)) await client.kick(spaceId, userId).catch((e: unknown) => Promise.reject(forbidden(e)));
+      if (unreached.length) throw new Error('partial');
+    },
+    async setArchived(spaceId, archived) {
+      await ready;
+      const space = client.getRoom(spaceId);
+      if (!space || !joined(space) || !isClientSpace(space) || !space.currentState.maySendStateEvent(EventType.RoomPowerLevels, me.id)) throw new Error('not-allowed');
+      // Every channel first, the flag last; if any channel refuses, the ones already changed go back.
+      const rooms = childRooms(space);
+      const results = await Promise.allSettled(rooms.map((r) => writeState(r.roomId, EventType.RoomPowerLevels, (c) => archivedLevels(c, 'client', archived))));
+      const failed = results.find((r) => r.status === 'rejected');
+      if (failed) {
+        const changed = rooms.filter((_, i) => results[i]!.status === 'fulfilled' && (results[i] as PromiseFulfilledResult<boolean>).value);
+        await Promise.allSettled(changed.map((r) => writeState(r.roomId, EventType.RoomPowerLevels, (c) => archivedLevels(c, 'client', !archived))));
+        throw forbidden(failed.reason);
+      }
+      await writeState(spaceId, SPACE_STATE, (content) => {
+        const next = { ...content };
+        if (archived) next.archived = true;
+        else delete next.archived;
+        return next;
+      }).catch((e: unknown) => Promise.reject(forbidden(e)));
+      await settle(() => !!snapshot.spaces.find((s) => s.id === spaceId)?.archived === archived);
+    },
     anotherApp: () => ({ server: new URL(client.baseUrl).host, username: client.getUserId()!.slice(1, client.getUserId()!.indexOf(':')) }),
   };
 }

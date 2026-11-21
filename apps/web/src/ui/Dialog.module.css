@@ -39,6 +39,18 @@
   animation: dialog-out var(--dur-1) var(--ease-in-out) forwards;
 }
 
+.split {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.column {
+  display: flex;
+  flex: 999 1 420px;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .content:focus {
   outline: none;
 }

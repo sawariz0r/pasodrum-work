@@ -48,6 +48,21 @@ describe('workspaceOf', () => {
     ]);
   });
 
+  it('carries colour and archived; archived client spaces sort last (D-28)', () => {
+    const { spaces: sorted } = workspaceOf([
+      room('!pasodrum', { name: 'Pasodrum', isSpace: true }),
+      room('!acme', { name: 'Acme', isSpace: true, clientSpace: true, archived: true, colour: '#123456' }),
+      room('!nordlys', { name: 'Nordlys', isSpace: true, clientSpace: true, colour: '#2F4A6D' }),
+      room('!zeta', { name: 'Zeta', isSpace: true, clientSpace: true }),
+    ]);
+    expect(sorted).toEqual([
+      { id: '!pasodrum', name: 'Pasodrum', kind: 'workspace' },
+      { id: '!nordlys', name: 'Nordlys', kind: 'client', colour: '#2F4A6D' },
+      { id: '!zeta', name: 'Zeta', kind: 'client' },
+      { id: '!acme', name: 'Acme', kind: 'client', colour: '#123456', archived: true },
+    ]);
+  });
+
   it('lists joined plain children by name; private unless restricted or public', () => {
     expect(channels['!pasodrum']!.map((c) => [c.name, c.private])).toEqual([['design', false], ['general', false], ['lead', true]]);
     expect(channels['!nordlys']!.map((c) => [c.name, c.private])).toEqual([['project-updates', false], ['questions', false]]);

@@ -12,6 +12,7 @@ import { dmPath } from '../places';
 import { noStoredTabs } from '../registry';
 import { ChannelTabs } from '../shell/ChannelTabs';
 import { ChevronDownIcon, ComposeIcon } from '../shell/icons';
+import { OutsideHeaderMark } from '../channels/OutsideMark';
 import { DrawerToggle } from '../shell/Drawer';
 import shell from '../shell/Shell.module.css';
 import { useListTime } from './lists';
@@ -108,6 +109,7 @@ export function DmConversation({ dmId }: { dmId: string }) {
             <span>{name(dm)}</span>
           </h1>
         )}
+        <OutsideHeaderMark people={showExternal ? list.filter((p) => p.external) : []} />
       </header>
       <ChannelTabs key={dm.id} channelId={dm.id} stored={noStoredTabs} />
     </>

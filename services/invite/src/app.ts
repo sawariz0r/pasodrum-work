@@ -3,11 +3,11 @@ import { renderInvite, type Locale } from './email.ts';
 import { isCode, localpartFor, localpartOf, newCode, newPassword, normalizeEmail } from './ids.ts';
 import type { SendMail } from './mail.ts';
 import { MatrixError, type Matrix } from './matrix.ts';
-import { ROLES, TTL_MS, canInvite, canManage, rateLimiter, spaceInfo, stateOf, teamOf, type Role } from './rules.ts';
+import { ADMIN_LEVEL, ROLES, TTL_MS, canInvite, canManage, isGenuine, rateLimiter, spaceInfo, stateOf, teamOf, type Role, type SpaceInfo } from './rules.ts';
 import { seal, unseal } from './secret.ts';
 import type { Invite, Store } from './store.ts';
 
-export type Config = { serverName: string; publicUrl: string; registrationToken: string };
+export type Config = { serverName: string; publicUrl: string; registrationToken: string; workspaceAlias: string };
 export type Deps = { cfg: Config; store: Store; mx: Matrix; sendMail: SendMail; key: Buffer; now?: () => number };
 
 class Reply {
@@ -56,10 +56,21 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
     await sendMail({ to: i.email, ...mail });
   }
 
-  async function mayManage(i: Invite, c: { token: string; userId: string }) {
-    if (c.userId === i.inviterId) return;
+  async function manages(i: Invite, c: { token: string; userId: string }) {
+    if (c.userId === i.inviterId) return true;
     const state = await mx.roomState(c.token, i.spaceId);
-    if (!canManage(i.inviterId, c.userId, state && spaceInfo(state))) throw fail(403, 'not-allowed');
+    return canManage(i.inviterId, c.userId, state && spaceInfo(state));
+  }
+
+  async function mayManage(i: Invite, c: { token: string; userId: string }) {
+    if (!(await manages(i, c))) throw fail(403, 'not-allowed');
+  }
+
+  async function genuine(token: string, spaceId: string, space: SpaceInfo) {
+    const workspaceId = await mx.resolveAlias(token, cfg.workspaceAlias);
+    if (space.kind === 'workspace' || !workspaceId) return isGenuine(spaceId, space, workspaceId, null);
+    const state = await mx.roomState(token, workspaceId);
+    return isGenuine(spaceId, space, workspaceId, state && spaceInfo(state));
   }
 
   function invite(code: string): Invite {
@@ -84,22 +95,23 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
 
     const state = await mx.roomState(c.token, spaceId);
     const space = state && spaceInfo(state);
-    if (!space || !canInvite(role as Role, space, c.userId)) throw fail(403, 'not-allowed');
+    if (!space || !canInvite(role as Role, space, c.userId) || !(await genuine(c.token, spaceId, space))) throw fail(403, 'not-allowed');
 
     const localpart = localpartFor(email, cfg.serverName);
     const userId = `@${localpart}:${cfg.serverName}`;
     let rooms = [spaceId, ...(channelIds as string[])];
     const displayName = typeof name === 'string' && name.trim() ? name.trim() : null;
-    // An account this service created and nobody claimed gets a fresh code; anything else already exists.
-    const existing = () => {
+    // An account this service created and nobody claimed gets a fresh code, but only from someone who may manage its
+    // latest invite: the code claims the account. For anyone else it already exists (the app just adds them).
+    const existing = async () => {
       const dormant = store.dormantForUser(userId);
-      if (!dormant?.secret) return null;
-      if (!dormant.revokedTs && stateOf(dormant, now()) === 'open') rooms = [...dormant.rooms, ...rooms];
+      if (!dormant?.secret || !(await manages(dormant, c))) return null;
+      if (dormant.spaceId === spaceId && !dormant.revokedTs && stateOf(dormant, now()) === 'open') rooms = [...dormant.rooms, ...rooms];
       return dormant.secret;
     };
     const availability = await mx.availability(localpart);
     if (availability === 'invalid') throw fail(400, 'invalid-email');
-    let secret = availability === 'taken' ? existing() : undefined;
+    let secret = availability === 'taken' ? await existing() : undefined;
     if (secret === null) return new Reply(409, { error: 'exists', userId });
 
     if (secret === undefined) {
@@ -116,7 +128,7 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
         await mx.logout(token);
         secret = seal(key, password);
       } else {
-        secret = existing();
+        secret = await existing();
         if (!secret) return new Reply(409, { error: 'exists', userId });
       }
     }
@@ -142,7 +154,7 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
       claimedTs: null,
       revokedTs: null,
     };
-    store.supersede(userId, ts);
+    store.supersede(userId, spaceId, ts);
     store.insert(i);
     const emailed = await deliver(i).then(() => true, (e: unknown) => {
       console.error(`invite mail failed: ${(e as Error).message}`);
@@ -185,7 +197,7 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
         .catch((e: unknown) => console.error(`spaces account data failed: ${(e as Error).message}`));
       await mx.changePassword(token, localpart, temp, password);
       await mx.logout(token);
-      store.claim(code, now());
+      store.claim(code, i.userId, now());
       return new Reply(200, { userId: i.userId, identifier: localpart });
     } finally {
       claiming.delete(code);
@@ -221,12 +233,29 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
     return new Reply(204);
   }
 
+  // Remove from space (D-28): the person's open codes for that space stop working. Admins of the space only.
+  async function revokePerson(req: IncomingMessage, spaceId: string | null, userId: string | null) {
+    const c = await caller(req);
+    if (!spaceId?.startsWith('!') || !userId?.startsWith('@')) throw fail(400, 'bad-request');
+    const state = await mx.roomState(c.token, spaceId);
+    const space = state && spaceInfo(state);
+    if (!space || !space.joined.has(c.userId) || space.powerOf(c.userId) < ADMIN_LEVEL) throw fail(403, 'not-allowed');
+    return new Reply(200, { revoked: store.revokeForUser(userId, spaceId, now()) });
+  }
+
   async function list(req: IncomingMessage, roomId: string | null) {
     const c = await caller(req);
     if (!roomId) throw fail(400, 'bad-request');
     if ((await mx.membership(c.token, roomId, c.userId)) !== 'join') throw fail(403, 'not-allowed');
     const t = now();
-    return new Reply(200, store.pendingForRoom(roomId).map((i) => ({
+    // Codes claim accounts, so only the inviter and Admins of the space see them.
+    const spaces = new Map<string, SpaceInfo | null>();
+    const visible: Invite[] = [];
+    for (const i of store.pendingForRoom(roomId)) {
+      if (!spaces.has(i.spaceId)) spaces.set(i.spaceId, await mx.roomState(c.token, i.spaceId).then((s) => s && spaceInfo(s)));
+      if (canManage(i.inviterId, c.userId, spaces.get(i.spaceId)!)) visible.push(i);
+    }
+    return new Reply(200, visible.map((i) => ({
       code: i.code,
       email: i.email,
       name: i.name ?? undefined,
@@ -250,6 +279,7 @@ export function createApp({ cfg, store, mx, sendMail, key, now = Date.now }: Dep
     if (!code) {
       if (m === 'POST' && is('create')) return create(req, await readJson(req));
       if (m === 'GET' && is('list')) return list(req, url.searchParams.get('roomId'));
+      if (m === 'DELETE' && is('revoke-person')) return revokePerson(req, url.searchParams.get('spaceId'), url.searchParams.get('userId'));
     } else if (!action) {
       if (m === 'GET' && is('preview')) {
         limit(`preview:${ip}`, 60, MINUTE);

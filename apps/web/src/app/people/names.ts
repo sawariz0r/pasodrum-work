@@ -12,7 +12,10 @@ export function useDmName(): (dm: Dm) => string {
       .join(t('people.nameSeparator'));
 }
 
-/** Team people see the amber corner on client people; clients don't see it on the team. */
+/**
+ * Team people (Owner/Admin/Member somewhere) see the amber corner and the outside mark; clients and guests never do,
+ * since they are the outside people (RulesM5). Decided by my roles: the server never marks me as external.
+ */
 export function useShowExternal(): boolean {
-  return useWorkspace((x) => !x.me.external);
+  return useWorkspace((x) => Object.values(x.myRoles).some((r) => r === 'owner' || r === 'admin' || r === 'member'));
 }

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { claimInvite, createInvite, InviteError, listInvites, previewInvite, resendInvite, revokeInvite } from './invites';
+import { claimInvite, createInvite, InviteError, listInvites, normalizeEmail, previewInvite, resendInvite, revokeInvite } from './invites';
 
 const calls: { url: string; init: RequestInit }[] = [];
 let reply: { status: number; body?: unknown; raw?: string } = { status: 200 };
@@ -89,5 +89,12 @@ describe('invite service client', () => {
       ['POST', 'https://pasodrum.work/api/invites/k/resend'],
       ['DELETE', 'https://pasodrum.work/api/invites/k'],
     ]);
+  });
+});
+
+describe('normalizeEmail', () => {
+  it('matches the invite service rule', () => {
+    expect(normalizeEmail('  Henrik@Nordlys.NO ')).toBe('henrik@nordlys.no');
+    for (const bad of ['', 'henrik', 'henrik@', '@nordlys.no', 'hen rik@nordlys.no', 'h@nordlys', 'not an email']) expect(normalizeEmail(bad)).toBeNull();
   });
 });

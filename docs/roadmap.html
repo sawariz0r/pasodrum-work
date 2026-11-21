@@ -1,0 +1,276 @@
+<title>Pasodrum work roadmap</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: the app's own frame — a dark rail of phase tiles on the left, phase cards in the main pane; on phones the rail becomes a top strip. */
+:root {
+  --bg: #ffffff;
+  --side: #f7f6f3;
+  --rail: #18171d;
+  --ink: #1d1c22;
+  --muted: #55535c;
+  --subtle: #6e6c76;
+  --line: #e8e6e1;
+  --well: #f4f3ef;
+  --accent: #0e7c66;
+  --accentsoft: #e2f2ec;
+  --attention: #f2b544;
+  --attnsoft: #fff4d6;
+  --attnink: #6b4a00;
+  --railtext: #d8d6de;
+  --railmuted: #8c8a96;
+  --font-display: "Space Grotesk", "Hiragino Sans", -apple-system, "Segoe UI", sans-serif;
+  --font-body: Inter, "Hiragino Sans", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1b1b20; --side: #141418; --rail: #0d0d10; --ink: #ecebf0; --muted: #b3b1bc; --subtle: #908e9a;
+    --line: #2c2c33; --well: #222228; --accent: #3dd6a5; --accentsoft: #173a30; --attention: #f2b544;
+    --attnsoft: #3a2f14; --attnink: #f6d48a; --railtext: #d8d6de; --railmuted: #77757f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1b1b20; --side: #141418; --rail: #0d0d10; --ink: #ecebf0; --muted: #b3b1bc; --subtle: #908e9a;
+  --line: #2c2c33; --well: #222228; --accent: #3dd6a5; --accentsoft: #173a30; --attention: #f2b544;
+  --attnsoft: #3a2f14; --attnink: #f6d48a; --railtext: #d8d6de; --railmuted: #77757f; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.5; }
+.frame { display: grid; grid-template-columns: 76px minmax(0, 1fr); min-height: 100vh; }
+
+/* Rail */
+.rail { background: var(--rail); position: sticky; top: env(safe-area-inset-top, 0px); height: 100vh; display: flex; flex-direction: column; align-items: center; gap: 8px; padding-block: 16px; overflow-y: auto; }
+.rail .brand { width: 40px; height: 40px; border-radius: 11px; background: var(--accent); color: #fff; display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 18px; margin-bottom: 10px; }
+.tile { position: relative; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-family: var(--font-display); font-weight: 600; font-size: 14px; text-decoration: none; color: var(--railtext); background: rgba(255,255,255,0.07); transition: transform 180ms var(--ease), background 180ms var(--ease); }
+.tile:hover { transform: translateY(-1px); background: rgba(255,255,255,0.13); }
+.tile:focus-visible { outline: 2px solid var(--attention); outline-offset: 2px; }
+.tile.done { background: #0e7c66; color: #fff; }
+.tile.now { background: var(--attention); color: #2a1f00; box-shadow: 0 0 0 2px var(--rail), 0 0 0 4px var(--attention); }
+.tile.later { color: var(--railmuted); }
+.tile .dot { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border-radius: 5px; background: var(--rail); display: grid; place-items: center; }
+.tile .dot svg { width: 10px; height: 10px; }
+.rail .gap { width: 24px; height: 1px; background: rgba(255,255,255,0.12); margin-block: 4px; }
+
+/* Main */
+main { min-width: 0; padding-left: max(32px, env(safe-area-inset-left, 0px)); padding-right: max(32px, env(safe-area-inset-right, 0px)); padding-block: 36px 64px; }
+.wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header h1 { font-family: var(--font-display); font-weight: 700; font-size: 30px; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+.meter { display: flex; gap: 3px; margin-top: 16px; }
+.meter span { flex: 1; height: 6px; border-radius: 3px; background: var(--line); }
+.meter span.done { background: var(--accent); }
+.meter span.now { background: var(--attention); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; color: var(--subtle); font-size: 12.5px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+.now-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.now-strip div { background: var(--attnsoft); color: var(--attnink); border-radius: 10px; padding: 12px 14px; font-size: 13px; }
+.now-strip b { display: block; font-family: var(--font-display); font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+
+h2 { font-family: var(--font-display); font-weight: 600; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--subtle); margin: 8px 0 -14px; }
+
+.phase { display: grid; grid-template-columns: 64px minmax(0, 1fr) 210px; gap: 18px; padding: 20px 22px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); scroll-margin-top: 20px; transition: border-color 180ms var(--ease); }
+.phase:target { border-color: var(--attention); }
+.phase.now { border-color: var(--attention); box-shadow: 0 0 0 3px color-mix(in srgb, var(--attention) 22%, transparent); }
+.phase.done { background: var(--side); }
+.code { font-family: var(--font-display); font-weight: 700; font-size: 22px; color: var(--subtle); line-height: 1.1; }
+.phase.done .code { color: var(--accent); }
+.phase.now .code { color: var(--attnink); }
+.phase h3 { font-family: var(--font-display); font-weight: 600; font-size: 18px; margin: 0 0 8px; text-wrap: balance; }
+.feats { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.feats li { background: var(--well); border-radius: 6px; padding: 3px 8px; font-size: 13px; color: var(--ink); }
+.phase.done .feats li { background: var(--bg); }
+.exit { margin: 12px 0 0; color: var(--muted); font-size: 13px; }
+.exit b { color: var(--ink); font-weight: 600; }
+.side { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; font-size: 12.5px; color: var(--subtle); }
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 10px; font-weight: 600; font-size: 12px; }
+.pill.live { background: var(--accentsoft); color: var(--accent); }
+.pill.build { background: var(--attnsoft); color: var(--attnink); }
+.pill.todo { background: var(--well); color: var(--muted); }
+.pill.live::before, .pill.build::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.build::before { animation: pulse 1.4s var(--ease) infinite; }
+@keyframes pulse { 50% { opacity: 0.25; } }
+.design b { color: var(--ink); font-weight: 600; }
+
+.later-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+.later-grid section { border: 1px dashed var(--line); border-radius: 12px; padding: 14px 16px; }
+.later-grid h3 { font-family: var(--font-display); font-weight: 600; font-size: 15px; margin: 0 0 8px; }
+.later-grid ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 13px; display: grid; gap: 3px; }
+
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+@media (max-width: 760px) {
+  .frame { grid-template-columns: minmax(0, 1fr); }
+  .rail { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; height: auto; flex-direction: row; justify-content: flex-start; overflow-x: auto; padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--rail); }
+  .rail .brand { margin: 0 6px 0 0; flex: none; }
+  .rail .gap { width: 1px; height: 24px; margin: 0 2px; flex: none; }
+  .tile { flex: none; }
+  main { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+  .phase { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 16px; }
+  .side { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+}
+</style>
+
+<div class="frame">
+  <nav class="rail" aria-label="Phases">
+    <div class="brand" aria-hidden="true">P</div>
+    <a class="tile done" href="#m0" aria-label="M0, live">M0</a>
+    <a class="tile done" href="#m1" aria-label="M1, live">M1</a>
+    <a class="tile done" href="#m2" aria-label="M2, live">M2</a>
+    <a class="tile done" href="#m3" aria-label="M3, live">M3</a>
+    <a class="tile done" href="#m4" aria-label="M4, live">M4</a>
+    <span class="gap" aria-hidden="true"></span>
+    <a class="tile done" href="#m5" aria-label="M5, live">M5</a>
+    <span class="gap" aria-hidden="true"></span>
+    <a class="tile now" href="#m6" aria-label="M6, design awaiting approval">M6</a>
+    <a class="tile later" href="#m7" aria-label="M7">M7</a>
+    <a class="tile later" href="#m8" aria-label="M8">M8</a>
+    <a class="tile later" href="#m9" aria-label="M9">M9</a>
+  </nav>
+
+  <main>
+    <div class="wrap">
+      <header>
+        <h1>Pasodrum work roadmap</h1>
+        <div class="meter" aria-label="6 of 10 phases live, 1 in design">
+          <span class="done"></span><span class="done"></span><span class="done"></span><span class="done"></span><span class="done"></span>
+          <span class="done"></span><span class="now"></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--accent)"></i>Live on pasodrum.work</span>
+          <span><i style="background:var(--attention)"></i>Up next</span>
+          <span><i style="background:var(--line)"></i>Not started</span>
+          <span>Updated 21 Nov 2026</span>
+        </div>
+      </header>
+
+      <div class="now-strip">
+        <div><b>Just shipped: M5</b>Client spaces, guests, the outside mark, archive and remove, Another app, phone hand-off.</div>
+        <div><b>Awaiting approval: Batch F</b>Encryption screens for M6 are on the canvas.</div>
+        <div><b>Your check</b>Open the Element X link once on an iPhone and an Android phone.</div>
+      </div>
+
+      <h2>Live</h2>
+
+      <article class="phase done" id="m0">
+        <div class="code">M0</div>
+        <div>
+          <h3>Our own server</h3>
+          <ul class="feats"><li>Continuwuity server</li><li>Production on Coolify</li><li>Local dev stack</li><li>Server capability probe</li><li>Task board and decision log</li></ul>
+          <p class="exit"><b>Exit:</b> Element X chats on production.</p>
+        </div>
+        <div class="side"><span class="pill live">Live</span></div>
+      </article>
+
+      <article class="phase done" id="m1">
+        <div class="code">M1</div>
+        <div>
+          <h3>Walking skeleton</h3>
+          <ul class="feats"><li>Sign in</li><li>Workspace shell</li><li>Channel list</li><li>Read and send</li><li>Unread counts</li><li>Light and dark</li><li>English and Japanese</li></ul>
+          <p class="exit"><b>Exit:</b> two people chat live in Chrome and Safari, in both languages.</p>
+        </div>
+        <div class="side"><span class="pill live">Live</span><span class="design">Design <b>Batch A</b></span></div>
+      </article>
+
+      <article class="phase done" id="m2">
+        <div class="code">M2</div>
+        <div>
+          <h3>Full timeline</h3>
+          <ul class="feats"><li>Formatting</li><li>Mentions</li><li>Reactions</li><li>Edit and delete</li><li>Files and images</li><li>Typing</li><li>Join summaries</li><li>Floating composer</li></ul>
+          <p class="exit"><b>Exit:</b> everything Element X sends renders, with no blank rows.</p>
+        </div>
+        <div class="side"><span class="pill live">Live</span><span class="design">Design <b>Batch B</b></span></div>
+      </article>
+
+      <article class="phase done" id="m3">
+        <div class="code">M3</div>
+        <div>
+          <h3>Threads, Activity, Drafts, DMs</h3>
+          <ul class="feats"><li>Thread panel</li><li>Threads list</li><li>Activity</li><li>Drafts</li><li>DMs and group DMs</li><li>Profile cards</li></ul>
+          <p class="exit"><b>Exit:</b> the team uses it for daily internal chat.</p>
+        </div>
+        <div class="side"><span class="pill live">Live</span><span class="design">Design <b>Batch C</b></span></div>
+      </article>
+
+      <article class="phase done" id="m4">
+        <div class="code">M4</div>
+        <div>
+          <h3>Channels, people, invites</h3>
+          <ul class="feats"><li>Create and browse channels</li><li>Owner, Admin, Member</li><li>Add people</li><li>Invite email</li><li>Join page</li><li>Settings and profile</li><li>Devices</li><li>First run</li></ul>
+          <p class="exit"><b>Exit:</b> a new teammate goes from email to first message in under a minute.</p>
+        </div>
+        <div class="side"><span class="pill live">Live</span><span class="design">Design <b>Batch D</b></span></div>
+      </article>
+
+      <article class="phase done" id="m5">
+        <div class="code">M5</div>
+        <div>
+          <h3>Client spaces and guests</h3>
+          <ul class="feats"><li>New client space</li><li>Client's view</li><li>Guest's view</li><li>Outside mark</li><li>Space settings and people</li><li>Remove from space</li><li>Archive</li><li>Another app</li><li>Phone hand-off</li></ul>
+          <p class="exit"><b>Exit:</b> first friendly client onboarded; automated check that a client reaches nothing internal.</p>
+        </div>
+        <div class="side"><span class="pill live">Live</span><span class="design">Design <b>Batch E</b>, approved</span></div>
+      </article>
+
+      <h2>Now</h2>
+
+      <article class="phase now" id="m6">
+        <div class="code">M6</div>
+        <div>
+          <h3>Encryption</h3>
+          <ul class="feats"><li>Confirm this device</li><li>Recovery key</li><li>Key backup</li><li>Encrypted DMs</li><li>Encrypted private channels</li><li>Sign-out warning</li></ul>
+          <p class="exit"><b>Exit:</b> encrypted DMs work with Element X; a new browser restores history.</p>
+        </div>
+        <div class="side"><span class="pill build">Design review</span><span class="design">Design <b>Batch F</b>, drawn</span></div>
+      </article>
+
+      <h2>Coming</h2>
+
+      <article class="phase" id="m7">
+        <div class="code">M7</div>
+        <div>
+          <h3>Tabs and cards</h3>
+          <ul class="feats"><li>Pins tab</li><li>Files tab</li><li>Link previews</li><li>Add and remove tabs</li><li>Docs and Boards marked Soon</li></ul>
+          <p class="exit"><b>Exit:</b> removing a feature folder leaves the app working.</p>
+        </div>
+        <div class="side"><span class="pill todo">Planned</span><span class="design">Design <b>Batch G</b>, not drawn</span></div>
+      </article>
+
+      <article class="phase" id="m8">
+        <div class="code">M8</div>
+        <div>
+          <h3>Find and finish</h3>
+          <ul class="feats"><li>⌘K switcher</li><li>Message search, Japanese too</li><li>Shortcuts</li><li>Accessibility pass</li><li>Faster load</li><li>Error states</li></ul>
+          <p class="exit"><b>Exit:</b> launch checklist signed.</p>
+        </div>
+        <div class="side"><span class="pill todo">Planned</span><span class="design">Design <b>Batch H</b>, not drawn</span></div>
+      </article>
+
+      <article class="phase" id="m9">
+        <div class="code">M9</div>
+        <div>
+          <h3>Desktop app</h3>
+          <ul class="feats"><li>Tauri or Electron, one-day spike each</li><li>Installer</li><li>Update prompt</li><li>Notifications and badge</li><li>Tray</li><li>Deep links</li></ul>
+          <p class="exit"><b>Exit:</b> installer, notifications, badge, deep links and sign-in redirect work.</p>
+        </div>
+        <div class="side"><span class="pill todo">Planned</span><span class="design">Design <b>Batch H</b>, not drawn</span></div>
+      </article>
+
+      <h2>Beyond v1</h2>
+
+      <div class="later-grid">
+        <section>
+          <h3>Later</h3>
+          <ul><li>Docs (shown as Soon)</li><li>Boards (shown as Soon)</li><li>Voice clips</li><li>Phone layout of the app</li><li>Notifications while the app is closed</li><li>Company SSO</li></ul>
+        </section>
+        <section>
+          <h3>Not planned</h3>
+          <ul><li>Calls and huddles</li><li>Federation with other servers</li><li>Self-serve workspaces</li></ul>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>

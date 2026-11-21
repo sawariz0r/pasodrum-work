@@ -6,14 +6,15 @@ import { useNavigate } from 'react-router';
 import { useStore, useWorkspace, type Channel, type Member, type NotifyLevel, type PendingInvite } from '../../matrix';
 import { Button, Dialog, IconButton, isImeEnter, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '../../ui';
 import { HashIcon, LockIcon, MoreIcon } from '../icons';
-import { Face } from '../people/Face';
+import { ExternalCorner, Face } from '../people/Face';
+import { useShowExternal } from '../people/names';
 import { roleEvents, useProfileCard } from '../people/ProfileCardContext';
 import { channelPath, dmPath, spaceHome } from '../places';
 import { BubbleIcon, MailIcon, SearchIcon } from '../shell/icons';
 import s from './Channels.module.css';
 import { LeaveIcon, LinkIcon, PendingIcon, UserPlusIcon, XIcon } from './icons';
 import { addRoles, canManage } from './roles';
-import { channelLink, copyText, useChannel, useCopy, useRole, useSpace } from './shared';
+import { channelLink, copyText, isInviteFor, useChannel, useCopy, useRole, useSpace } from './shared';
 
 export type DetailsTab = 'about' | 'members' | 'settings';
 
@@ -66,7 +67,7 @@ export function ChannelDetailsDialog({ open, channelId, tab: initialTab, onClose
         </div>
         <div key={tab} role="tabpanel" aria-labelledby={`details-${tab}`} className={s.panel}>
           {tab === 'about' && <About channel={channel} onLeave={() => (channel.private ? setLeaving(true) : void leave().catch(() => {}))} />}
-          {tab === 'members' && <Members channel={channel} onAddPeople={onAddPeople} />}
+          {tab === 'members' && <Members channel={channel} onAddPeople={onAddPeople} onLeave={onClose} />}
           {tab === 'settings' && <Settings channel={channel} />}
         </div>
       </Dialog>
@@ -152,14 +153,8 @@ function About({ channel, onLeave }: { channel: Channel; onLeave: () => void }) 
 
 type Row = { kind: 'member'; member: Member } | { kind: 'pending'; key: string; label: string; userId?: string; invite?: PendingInvite };
 
-/** An account made from an email has the deterministic id `@name_domain:server` (D-07). */
-function isInviteFor(invite: PendingInvite, m: Member) {
-  const local = m.person.id.slice(1).split(':')[0]?.toLowerCase();
-  const email = invite.email.toLowerCase();
-  return local === email.replace('@', '_') || m.person.name.toLowerCase() === email;
-}
-
-function Members({ channel, onAddPeople }: { channel: Channel; onAddPeople: () => void }) {
+/** `onLeave` closes the dialog when a row takes you elsewhere (Message). */
+function Members({ channel, onAddPeople, onLeave }: { channel: Channel; onAddPeople: () => void; onLeave: () => void }) {
   const { t } = useTranslation();
   const store = useStore();
   const navigate = useNavigate();
@@ -169,6 +164,7 @@ function Members({ channel, onAddPeople }: { channel: Channel; onAddPeople: () =
   const space = useSpace(channel.spaceId);
   const manage = canManage(role);
   const mayAdd = addRoles(space, role).length > 0;
+  const showExternal = useShowExternal();
   const [members, setMembers] = useState<Member[]>([]);
   const [pending, setPending] = useState<PendingInvite[]>([]);
   const [query, setQuery] = useState('');
@@ -227,6 +223,7 @@ function Members({ channel, onAddPeople }: { channel: Channel; onAddPeople: () =
   };
   const message = async (userId: string) => {
     const id = await store.openDm([userId]);
+    onLeave();
     navigate(dmPath(id));
   };
   const tagOf = (r: Member['role']) => (r === 'member' ? null : r);
@@ -239,7 +236,7 @@ function Members({ channel, onAddPeople }: { channel: Channel; onAddPeople: () =
           <input type="search" aria-label={t('channels.findMembers')} placeholder={t('channels.findMembers')} value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
       </div>
-      {mayAdd && (
+      {mayAdd && !space?.archived && (
         <button type="button" className={s.addPeopleRow} onClick={onAddPeople}>
           <span className={s.addPeopleIcon}>
             <UserPlusIcon size={17} />
@@ -288,7 +285,14 @@ function Members({ channel, onAddPeople }: { channel: Channel; onAddPeople: () =
           const tag = tagOf(theirs);
           return (
             <li key={person.id} className={s.memberRow}>
-              <Face person={person} size={32} />
+              {showExternal && person.external ? (
+                <span className={s.spFace}>
+                  <Face person={person} size={32} />
+                  <ExternalCorner className={s.spCorner} />
+                </span>
+              ) : (
+                <Face person={person} size={32} />
+              )}
               <span className={s.memberName}>
                 <button type="button" className={s.personButton} onClick={(e) => card.open(person.id, e.currentTarget)}>
                   {person.name}

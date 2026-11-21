@@ -12,6 +12,14 @@ export class InviteError extends Error {
   }
 }
 
+const EMAIL = /^[a-z0-9._+-]+@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/;
+
+/** The invite service's own rule (services/invite/src/ids.ts), so a bad address is caught before anything is made. */
+export function normalizeEmail(input: string): string | null {
+  const email = input.trim().toLowerCase();
+  return email.length <= 200 && EMAIL.test(email) ? email : null;
+}
+
 const STATUS: Record<number, string> = { 400: 'invalid-email', 401: 'not-allowed', 403: 'not-allowed', 404: 'not-found', 409: 'exists', 410: 'expired', 429: 'rate-limited' };
 const str = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
@@ -94,3 +102,6 @@ export async function listInvites(token: string, roomId: string): Promise<Pendin
 
 export const resendInvite = (token: string, code: string) => call<unknown>('POST', `/${encodeURIComponent(code)}/resend`, { token }).then(() => undefined);
 export const revokeInvite = (token: string, code: string) => call<unknown>('DELETE', `/${encodeURIComponent(code)}`, { token }).then(() => undefined);
+/** Remove from space: every open code for this person in this space stops working. */
+export const revokeInvitesFor = (token: string, spaceId: string, userId: string) =>
+  call<unknown>('DELETE', `?spaceId=${encodeURIComponent(spaceId)}&userId=${encodeURIComponent(userId)}`, { token }).then(() => undefined);

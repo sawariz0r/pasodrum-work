@@ -252,6 +252,20 @@ describe('add people', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('adds to the space from the space menu', async () => {
+    const { store } = renderApp('/w/!pasodrum/c/!design');
+    const addPeople = vi.spyOn(store(), 'addPeople');
+    openMenu(within(sidebar()).getByRole('button', { name: 'Pasodrum' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Add people' }));
+    await flush();
+    expect(within(dialog()).getByRole('heading', { name: 'Add people to Pasodrum' })).toBeTruthy();
+    expect(within(dialog()).queryByRole('group', { name: 'Role' })).toBeNull();
+    enter('kari@nordlys.no');
+    fireEvent.click(within(dialog()).getByRole('button', { name: 'Add 1 person' }));
+    await flush();
+    expect(addPeople).toHaveBeenCalledWith('!pasodrum', { userIds: [], emails: ['kari@nordlys.no'], role: 'member' });
+  });
+
   it('opens from the empty channel too', async () => {
     renderApp('/w/!pasodrum/c/!design');
     const main = screen.getByRole('main');

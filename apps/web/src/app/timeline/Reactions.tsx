@@ -20,7 +20,7 @@ export function useReactedBy() {
   };
 }
 
-function Chip({ r, meId, fresh, onToggle }: { r: Reaction; meId: string; fresh: boolean; onToggle: (key: string, mine: boolean) => void }) {
+function Chip({ r, meId, fresh, onToggle }: { r: Reaction; meId: string; fresh: boolean; onToggle?: (key: string, mine: boolean) => void }) {
   const { t } = useTranslation();
   const reactedBy = useReactedBy();
   const [tip, setTip] = useState(false);
@@ -40,8 +40,9 @@ function Chip({ r, meId, fresh, onToggle }: { r: Reaction; meId: string; fresh: 
         type="button"
         className={[s.chip, fresh && s.chipNew].filter(Boolean).join(' ')}
         aria-pressed={r.mine}
+        aria-disabled={!onToggle || undefined}
         aria-label={t(r.mine ? 'timeline.reactionMine' : 'timeline.reaction', { emoji: r.key, count: r.count })}
-        onClick={() => onToggle(r.key, r.mine)}
+        onClick={() => onToggle?.(r.key, r.mine)}
         onFocus={show}
         onBlur={hide}
       >
@@ -66,8 +67,9 @@ export function Reactions({
 }: {
   reactions: Reaction[];
   meId: string;
-  onToggle: (key: string, mine: boolean) => void;
-  onPick: (key: string) => void;
+  /** Both absent = read-only (an archived client space): chips still show who reacted. */
+  onToggle?: (key: string, mine: boolean) => void;
+  onPick?: (key: string) => void;
 }) {
   const { t } = useTranslation();
   const [initial] = useState(() => new Set(reactions.map((r) => r.key)));
@@ -76,11 +78,13 @@ export function Reactions({
       {reactions.map((r) => (
         <Chip key={r.key} r={r} meId={meId} fresh={!initial.has(r.key)} onToggle={onToggle} />
       ))}
-      <ReactionPicker onPick={onPick} align="start">
-        <button type="button" className={s.addReaction} aria-label={t('timeline.addReaction')}>
-          <SmileIcon size={15} />
-        </button>
-      </ReactionPicker>
+      {onPick && (
+        <ReactionPicker onPick={onPick} align="start">
+          <button type="button" className={s.addReaction} aria-label={t('timeline.addReaction')}>
+            <SmileIcon size={15} />
+          </button>
+        </ReactionPicker>
+      )}
     </div>
   );
 }

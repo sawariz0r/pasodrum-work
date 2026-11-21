@@ -1,14 +1,17 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink } from 'react-router';
 import { useWorkspace, type Space } from '../../matrix';
-import { AttentionDot, avatarColor, Badge } from '../../ui';
+import { AttentionDot, Badge } from '../../ui';
+import { useChannels } from '../channels/ChannelsProvider';
+import { canManage } from '../channels/roles';
+import { forgetFreshSpace, isFreshSpace, spaceColour } from '../channels/shared';
 import { ExternalIcon, LogoMark, MoonIcon, SunIcon } from '../icons';
 import { channelPath, spaceHome } from '../places';
 import { setTheme, useTheme } from '../prefs';
 import type { RailItem } from '../registry';
 import { useRegistry } from '../RegistryProvider';
-import { BellIcon, BubbleIcon, HomeIcon } from './icons';
+import { BellIcon, BubbleIcon, HomeIcon, PlusIcon } from './icons';
 import { ProfileMenu } from './ProfileMenu';
 import { useMediaUrl } from '../timeline/Media';
 import s from './Shell.module.css';
@@ -24,12 +27,19 @@ export function Rail({ section, activeSpaceId, onSignOut }: { section: Section; 
   const { rail } = useRegistry();
   const theme = useTheme();
   const isTeam = spaces.some((x) => x.kind === 'workspace');
+  const mayCreate = useWorkspace((x) => canManage(x.myRoles[x.spaces.find((sp) => sp.kind === 'workspace')?.id ?? '']));
+  const channels = useChannels();
 
   return (
     <nav aria-label={t('shell.rail.label')} className={s.rail}>
       {spaces.map((space) => (
         <SpaceTile key={space.id} space={space} active={space.id === activeSpaceId} external={isTeam && space.kind === 'client'} />
       ))}
+      {mayCreate && (
+        <button type="button" className={s.tileNew} aria-label={t('spaces.newClientSpace')} onClick={() => channels.newClientSpace()}>
+          <PlusIcon size={18} strokeWidth={2} />
+        </button>
+      )}
       <div className={s.railDivider} />
       <SectionLink to="/" label={t('shell.rail.home')} icon={<HomeIcon />} current={section === 'home'} />
       <SectionLink to="/dms" label={t('shell.rail.dms')} icon={<BubbleIcon />} current={section === 'dms'} badge={unreadDms} />
@@ -56,7 +66,12 @@ function SpaceTile({ space, active, external }: { space: Space; active: boolean;
   const home = useWorkspace((x) => spaceHome(x, space.id)?.id);
   const attention = useWorkspace((x) => !active && (x.channels[space.id] ?? []).some((c) => c.unread > 0 || c.mentions > 0));
   const isWorkspace = space.kind === 'workspace';
-  const style = { '--tile-bg': isWorkspace ? '#0E7C66' : avatarColor(space.id) } as CSSProperties;
+  const style = { '--tile-bg': spaceColour(space) } as CSSProperties;
+  // ClientSpaceCreated: a space just made here pops in once.
+  const [fresh] = useState(() => isFreshSpace(space));
+  useEffect(() => {
+    if (fresh) forgetFreshSpace(space.name);
+  }, [fresh, space.name]);
   const avatar = useMediaUrl(space.avatarUrl, true);
   const content = avatar ? (
     <img src={avatar} alt="" />
@@ -68,7 +83,7 @@ function SpaceTile({ space, active, external }: { space: Space; active: boolean;
   return (
     <Link
       to={home ? channelPath(space.id, home) : `/w/${encodeURIComponent(space.id)}`}
-      className={s.tile}
+      className={[s.tile, space.archived && s.tileArchived, fresh && s.tileFresh].filter(Boolean).join(' ')}
       style={style}
       aria-label={t(isWorkspace ? 'shell.rail.workspace' : 'shell.rail.clientSpace', { name: space.name })}
       aria-current={active ? 'page' : undefined}

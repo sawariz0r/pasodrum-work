@@ -1,6 +1,7 @@
 import * as DM from '@radix-ui/react-dropdown-menu';
 import type { ComponentPropsWithRef, ReactNode } from 'react';
 import s from './Menu.module.css';
+import { rememberMenuTrigger } from './menuFocus';
 
 export const Menu = DM.Root;
 export const MenuTrigger = DM.Trigger;
@@ -23,9 +24,16 @@ export function MenuContent({ width, className, style, sideOffset = 8, collision
 
 export type MenuItemProps = ComponentPropsWithRef<typeof DM.Item> & { icon?: ReactNode };
 
-export function MenuItem({ icon, className, children, ...rest }: MenuItemProps) {
+export function MenuItem({ icon, className, children, onSelect, ...rest }: MenuItemProps) {
   return (
-    <DM.Item className={[s.item, className].filter(Boolean).join(' ')} {...rest}>
+    <DM.Item
+      className={[s.item, className].filter(Boolean).join(' ')}
+      onSelect={(e) => {
+        if (e.currentTarget instanceof HTMLElement) rememberMenuTrigger(e.currentTarget);
+        onSelect?.(e);
+      }}
+      {...rest}
+    >
       {icon && <span className={s.icon}>{icon}</span>}
       {children}
     </DM.Item>

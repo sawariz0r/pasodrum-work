@@ -2,7 +2,7 @@ import * as RD from '@radix-ui/react-dialog';
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PasswordRequired, useStore, useWorkspace, type Device, type NotifyLevel, type Profile } from '../../matrix';
-import { avatarColor, Button, Dialog, IconButton, initialsOf, isCjk, isImeEnter, TextField } from '../../ui';
+import { avatarColor, Button, Dialog, IconButton, initialsOf, isCjk, isImeEnter, TextField, useMenuReturnFocus } from '../../ui';
 import { currentLanguage, setLanguage, type Language } from '../i18n';
 import { timeIn, useCityName } from '../people/localTime';
 import { setThemePref, useThemePref, type ThemePref } from '../prefs';
@@ -35,11 +35,12 @@ const tabIcons: Record<SettingsTab, ReactNode> = {
 export function Settings({ tab, onTab, onClose }: { tab: SettingsTab; onTab: (tab: SettingsTab) => void; onClose: () => void }) {
   const { t } = useTranslation();
   const titleId = useId();
+  const returnFocus = useMenuReturnFocus(true);
   return (
     <RD.Root open onOpenChange={(open) => !open && onClose()}>
       <RD.Portal>
         <RD.Overlay className={s.overlay}>
-          <RD.Content className={s.dialog} aria-describedby={undefined}>
+          <RD.Content className={s.dialog} aria-describedby={undefined} onCloseAutoFocus={returnFocus}>
             <nav className={s.nav} aria-label={t('settings.title')}>
               <RD.Title className={s.navTitle}>{t('settings.title')}</RD.Title>
               {settingsTabs.map((id) => (

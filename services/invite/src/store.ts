@@ -63,10 +63,12 @@ export function openStore(path: string) {
       AND NOT EXISTS (SELECT 1 FROM invites c WHERE c.userId = i.userId AND c.claimedTs IS NOT NULL) ORDER BY createdTs DESC`),
     pendingForRoom: db.prepare(`SELECT * FROM invites WHERE claimedTs IS NULL AND revokedTs IS NULL
       AND EXISTS (SELECT 1 FROM json_each(invites.rooms) WHERE value = ?) ORDER BY createdTs`),
-    supersede: db.prepare('UPDATE invites SET revokedTs = coalesce(revokedTs, ?), secret = NULL WHERE userId = ? AND claimedTs IS NULL'),
+    supersede: db.prepare('UPDATE invites SET revokedTs = coalesce(revokedTs, ?), secret = NULL WHERE userId = ? AND spaceId = ? AND claimedTs IS NULL'),
+    claimedElsewhere: db.prepare('UPDATE invites SET revokedTs = coalesce(revokedTs, ?), secret = NULL WHERE userId = ? AND code != ? AND claimedTs IS NULL'),
     extend: db.prepare('UPDATE invites SET expiresTs = ? WHERE code = ?'),
     claim: db.prepare('UPDATE invites SET claimedTs = ?, secret = NULL WHERE code = ? AND claimedTs IS NULL'),
     revoke: db.prepare('UPDATE invites SET revokedTs = ? WHERE code = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
+    revokeForUser: db.prepare('UPDATE invites SET revokedTs = ? WHERE userId = ? AND spaceId = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
   };
   return {
     insert(i: Invite) {
@@ -83,18 +85,24 @@ export function openStore(path: string) {
     pendingForRoom(roomId: string): Invite[] {
       return q.pendingForRoom.all(roomId).map(toInvite);
     },
-    // Older codes for the account stop working when a fresh one is issued; only the newest holds the secret.
-    supersede(userId: string, ts: number) {
-      q.supersede.run(ts, userId);
+    // A fresh code for an account in a space replaces its older codes there; codes for other spaces stay (D-28).
+    supersede(userId: string, spaceId: string, ts: number) {
+      q.supersede.run(ts, userId, spaceId);
     },
     extend(code: string, expiresTs: number) {
       q.extend.run(expiresTs, code);
     },
-    claim(code: string, ts: number) {
+    // The account is claimed: its codes for other spaces die with it.
+    claim(code: string, userId: string, ts: number) {
       q.claim.run(ts, code);
+      q.claimedElsewhere.run(ts, userId, code);
     },
     revoke(code: string, ts: number) {
       q.revoke.run(ts, code);
+    },
+    /** Every open code for this person in this space; returns how many. */
+    revokeForUser(userId: string, spaceId: string, ts: number): number {
+      return Number(q.revokeForUser.run(ts, userId, spaceId).changes);
     },
     close: () => db.close(),
   };

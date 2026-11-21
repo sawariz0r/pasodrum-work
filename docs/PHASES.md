@@ -2,7 +2,7 @@
 
 Handoff file: read this after AGENTS.md §0 to pick up without chat history. Updated 2026-11-21.
 
-Production: https://pasodrum.work (Coolify, auto-deploys `main`). Repo: `sawariz0r/pasodrum-work` (push via `git@prpl.se:` alias, commit email oscar@prpl.se). Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ (mirror in `design/canvas/`).
+Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/roadmap.html`; republish after each phase). Production: https://pasodrum.work (Coolify, auto-deploys `main`). Repo: `sawariz0r/pasodrum-work` (push via `git@prpl.se:` alias, commit email oscar@prpl.se). Canvas: https://claude.ai/artifact/1sFjCeUornYw7f8rReZBtJ (mirror in `design/canvas/`).
 
 ## Status at a glance
 
@@ -13,16 +13,16 @@ Production: https://pasodrum.work (Coolify, auto-deploys `main`). Repo: `sawariz
 | M2 full timeline | done (ceo-review) | yes |
 | M3 threads, Activity, drafts, DMs | done (ceo-review) | yes |
 | M4 channels, people, invites, settings | done (ceo-review) | yes — invite mail needs `RESEND_API_KEY` |
-| M5 client spaces + guests | **design Batch E awaits CEO approval** | — |
-| M6 encryption | Batch F not designed | — |
+| M5 client spaces + guests | done (ceo-review) | yes — production needs the `#workspace` alias (`pnpm dev:seed` against prod once) |
+| M6 encryption | **Batch F drawn, awaits CEO approval** | — |
 | M7 tabs & cards | Batch G not designed | — |
 | M8 find & finish | Batch H not designed | — |
 | M9 desktop shell | Batch H (desktop bits) not designed | — |
 
 ## Waiting on the CEO
 
-1. **Approve Batch E** (M5) — includes the Owner rule: Owners can only step down themselves (Matrix can't let one PL-100 Owner demote another).
-2. **Resend:** verify `noreply.prpl.se` in Resend (SPF/DKIM at prpl.se's DNS), create a sending-only key for that domain, add `RESEND_API_KEY` to the Coolify resource. Until then invites are created but no email is sent ("Copy join link" still works).
+1. **Approve Batch F** (M6 encryption) on the canvas.
+2. **Element X on a real phone:** open `https://mobile.element.io/element/?account_provider=pasodrum.work` once on iOS and Android and confirm the server is pre-filled.
 3. Review the `tasks/ceo-review/` pile (M0–M4) when convenient.
 
 ## How we work (the loop that has worked)

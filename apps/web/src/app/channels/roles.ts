@@ -33,6 +33,12 @@ export function roleChoices(mine: Role | undefined, theirs: Role, self: boolean)
   return [];
 }
 
+/** Taking someone out of a client space: Owners remove anyone but themselves; Admins never Owners or other Admins (D-25, D-27). */
+export function canRemoveFromSpace(mine: Role | undefined, theirs: Role, self: boolean): boolean {
+  if (self || !canManage(mine)) return false;
+  return mine === 'owner' || (theirs !== 'owner' && theirs !== 'admin');
+}
+
 /** Channel names: lowercase, spaces become hyphens, 80 max. */
 export function channelSlug(raw: string) {
   return raw.toLowerCase().replace(/\s+/g, '-').slice(0, 80);

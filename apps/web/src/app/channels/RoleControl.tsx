@@ -90,6 +90,7 @@ export function RoleControl({ person, channelId, onMakeOwner }: { person: Person
       {menu && (
         <span
           role="menu"
+          data-claims-escape=""
           aria-label={t('channels.roleOf', { name: person.name })}
           className={s.roleMenu}
           onKeyDown={(e) => {

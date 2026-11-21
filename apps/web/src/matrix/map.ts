@@ -9,6 +9,9 @@ export interface RoomFacts {
   /** Any room type other than a space (boards, docs…); such rooms are not channels. */
   otherType: boolean;
   clientSpace: boolean;
+  /** M5. From `work.pasodrum.space`. */
+  colour?: string;
+  archived?: boolean;
   joinRule?: string;
   topic?: string;
   children: string[];
@@ -53,7 +56,13 @@ const channelOf = (r: RoomFacts, spaceId: string): Channel => ({
 export function workspaceOf(rooms: RoomFacts[], known: KnownSpaces = {}): { spaces: Space[]; channels: Record<string, Channel[]> } {
   const byId = new Map(rooms.map((r) => [r.id, r]));
   const joinedSpaces = rooms.filter((r) => r.joined && r.isSpace);
-  const spaces: Space[] = joinedSpaces.map((r): Space => ({ id: r.id, name: r.name, kind: r.clientSpace ? 'client' : 'workspace' }));
+  const spaces: Space[] = joinedSpaces.map((r): Space => ({
+    id: r.id,
+    name: r.name,
+    kind: r.clientSpace ? 'client' : 'workspace',
+    ...(r.colour ? { colour: r.colour } : {}),
+    ...(r.archived ? { archived: true } : {}),
+  }));
   const channels: Record<string, Channel[]> = {};
   for (const space of joinedSpaces) channels[space.id] = space.children.map((id) => byId.get(id)).filter(isChannel).map((r) => channelOf(r, space.id));
 
@@ -73,7 +82,7 @@ export function workspaceOf(rooms: RoomFacts[], known: KnownSpaces = {}): { spac
   }
 
   for (const list of Object.values(channels)) list.sort(byName);
-  spaces.sort((a, b) => (a.kind === b.kind ? byName(a, b) : a.kind === 'workspace' ? -1 : 1));
+  spaces.sort((a, b) => (a.kind === b.kind ? Number(!!a.archived) - Number(!!b.archived) || byName(a, b) : a.kind === 'workspace' ? -1 : 1));
   return { spaces, channels };
 }
 

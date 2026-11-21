@@ -7,6 +7,7 @@ import { DmIntro } from '../people/DmIntro';
 import { useDmName } from '../people/names';
 import { ThreadPanel } from '../thread/ThreadPanel';
 import { useOpenThread, useThreadNav } from '../thread/useThread';
+import { ArchivedBar, useArchivedSpace } from './ArchivedBar';
 import { Composer } from './Composer';
 import { Timeline } from './Timeline';
 import { TypingIndicator } from './TypingIndicator';
@@ -29,6 +30,7 @@ function ChannelPane({ channelId }: { channelId: string }) {
   const dmName = useDmName();
   const name = channelName ?? (dm ? dmName(dm) : '');
   const meId = useWorkspace((snap) => snap.me.id);
+  const archived = useArchivedSpace(channelId);
   const [unreadAtOpen] = useState(() => {
     const snap = store.getSnapshot();
     return findChannel(snap, channelId)?.unread ?? snap.dms.find((d) => d.id === channelId)?.unread ?? 0;
@@ -78,7 +80,7 @@ function ChannelPane({ channelId }: { channelId: string }) {
           <TypingIndicator channelId={channelId} />
         </div>
         <div className={s.dockSlot} ref={dockRef}>
-          <Composer channelId={channelId} channelName={name} isDm={!!dm} />
+          {archived ? <ArchivedBar space={archived} /> : <Composer channelId={channelId} channelName={name} isDm={!!dm} />}
         </div>
       </div>
       {threadId && row !== undefined && (

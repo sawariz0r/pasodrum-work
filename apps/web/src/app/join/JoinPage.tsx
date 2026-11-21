@@ -6,7 +6,11 @@ import { Avatar, avatarColor, Button, initialsOf, isCjk, isImeEnter, TextField }
 import type { Backend } from '../backend';
 import { formatList } from '../format';
 import { LogoMark } from '../icons';
-import { ArrowRightIcon, CheckIcon, ChevronIcon, CopyIcon, EnvelopeIcon, EyeIcon } from './icons';
+import { AccountPair } from '../another/AccountPair';
+import { elementXLink, hostOf, usePhone } from '../another/elementX';
+import { OpenOutIcon } from '../another/icons';
+import a from '../another/Another.module.css';
+import { ArrowRightIcon, ChevronIcon, EnvelopeIcon, EyeIcon } from './icons';
 import s from './Join.module.css';
 
 /** The signed-in person, when someone already is (JoinWrongAccount). */
@@ -31,14 +35,6 @@ export function strength(password: string): 0 | 1 | 2 | 3 | 4 {
   if (len < 8) return 1;
   if (len < 12) return 2;
   return /[^A-Za-z0-9]/.test(password) || len >= 16 ? 4 : 3;
-}
-
-function hostOf(url: string) {
-  try {
-    return new URL(url).host;
-  } catch {
-    return url;
-  }
 }
 
 /** Server + username for Element X and other apps; never shown anywhere else. */
@@ -75,7 +71,7 @@ export function JoinPage({
   const [failed, setFailed] = useState<'weak-password' | 'other'>();
   const [claimed, setClaimed] = useState<Claimed>();
   const [other, setOther] = useState(false);
-  const [copied, setCopied] = useState<'server' | 'username'>();
+  const phone = usePhone();
 
   useEffect(() => {
     let live = true;
@@ -91,12 +87,6 @@ export function JoinPage({
       live = false;
     };
   }, [backend, code]);
-
-  useEffect(() => {
-    if (!copied) return;
-    const id = setTimeout(() => setCopied(undefined), 1500);
-    return () => clearTimeout(id);
-  }, [copied]);
 
   const view = !preview
     ? unknown
@@ -141,10 +131,6 @@ export function JoinPage({
     } catch {
       navigate('/signin');
     }
-  }
-
-  function copy(what: 'server' | 'username', text: string) {
-    void navigator.clipboard?.writeText(text).then(() => setCopied(what), () => {});
   }
 
   const title =
@@ -259,27 +245,26 @@ export function JoinPage({
 
             {view === 'done' && account && (
               <div className={[s.body, s.tight].join(' ')}>
-                <Button size="lg" block className={s.cta} aria-busy={busy || undefined} onClick={() => void open()}>
-                  {t('join.open')}
-                  <ArrowRightIcon />
-                </Button>
-                <button type="button" className={s.toggle} aria-expanded={other} onClick={() => setOther(!other)}>
-                  <ChevronIcon />
-                  {t('join.otherApp')}
-                </button>
-                {other && (
-                  <dl className={s.account}>
-                    <dt>{t('join.server')}</dt>
-                    <dd>{account.server}</dd>
-                    <button type="button" className={s.copy} aria-label={t('join.copyServer')} onClick={() => copy('server', account.server)}>
-                      {copied === 'server' ? <CheckIcon /> : <CopyIcon />}
+                {phone ? (
+                  <>
+                    <a className={a.elementX} href={elementXLink(account.server)}>
+                      {t('another.openElementX')}
+                      <OpenOutIcon />
+                    </a>
+                    <AccountPair server={account.server} username={account.username} look="card" />
+                  </>
+                ) : (
+                  <>
+                    <Button size="lg" block className={s.cta} aria-busy={busy || undefined} onClick={() => void open()}>
+                      {t('join.open')}
+                      <ArrowRightIcon />
+                    </Button>
+                    <button type="button" className={s.toggle} aria-expanded={other} onClick={() => setOther(!other)}>
+                      <ChevronIcon />
+                      {t('another.title')}
                     </button>
-                    <dt>{t('join.username')}</dt>
-                    <dd>{account.username}</dd>
-                    <button type="button" className={s.copy} aria-label={t('join.copyUsername')} onClick={() => copy('username', account.username)}>
-                      {copied === 'username' ? <CheckIcon /> : <CopyIcon />}
-                    </button>
-                  </dl>
+                    {other && <AccountPair server={account.server} username={account.username} look="card" />}
+                  </>
                 )}
               </div>
             )}

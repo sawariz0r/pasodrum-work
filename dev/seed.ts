@@ -1,10 +1,20 @@
 // Seeds a fresh server with the workspace from the design canvas.
 // Local: pnpm dev:seed. Other server: MATRIX_BASE=https://… MATRIX_SERVER=… REGISTRATION_TOKEN=… BOOTSTRAP_TOKEN=… pnpm dev:seed
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { PASSWORD, SEED_FILE, SERVER, bootstrapToken, envToken, login, ok, register, send, state, userId } from './lib.ts';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { PASSWORD, SEED_FILE, SERVER, bootstrapToken, envToken, login, mx, ok, register, send, state, userId } from './lib.ts';
 import { channelUsers, powerLevels, type SpaceKind } from '../apps/web/src/matrix/levels.ts';
 
+// The invite service only trusts the workspace this alias points at (D-06).
+const WORKSPACE_ALIAS = `#workspace:${SERVER}`;
+const aliasPath = `/_matrix/client/v3/directory/room/${encodeURIComponent(WORKSPACE_ALIAS)}`;
+
 if (existsSync(SEED_FILE)) {
+  const seeded = JSON.parse(readFileSync(SEED_FILE, 'utf8')) as { rooms: { workspace: string } };
+  const sofia = await login('sofia');
+  if ((await mx(sofia, 'GET', aliasPath)).status === 404) {
+    await ok(sofia, 'PUT', aliasPath, { room_id: seeded.rooms.workspace });
+    console.log(`Added ${WORKSPACE_ALIAS}.`);
+  }
   console.log(`Already seeded (${SEED_FILE.pathname}). For a clean local server run pnpm dev:server:reset.`);
   process.exit(0);
 }
@@ -80,6 +90,7 @@ const joinRestricted = (roomId: string, who: Who[]) =>
 
 // Workspace "Pasodrum"
 const workspace = await space('Pasodrum', 'workspace');
+await ok(t.sofia, 'PUT', aliasPath, { room_id: workspace });
 await addTo(workspace, ['ingrid', 'jonas', 'tanaka']);
 const general = await channel(workspace, 'general', { restricted: true });
 const design = await channel(workspace, 'design', { restricted: true });

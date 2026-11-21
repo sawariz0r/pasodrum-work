@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { IconButton } from './IconButton';
 import { CloseIcon } from './icons';
 import s from './Dialog.module.css';
+import { useMenuReturnFocus } from './menuFocus';
 
 export type DialogProps = {
   open: boolean;
@@ -17,22 +18,49 @@ export type DialogProps = {
   role?: 'dialog' | 'alertdialog';
   className?: string;
   bodyClassName?: string;
+  /** A decorative column beside header, body and footer (NewClientSpace preview). */
+  aside?: ReactNode;
+  busy?: boolean;
 };
 
-export function Dialog({ open, onOpenChange, title, closeLabel, children, footer, width = 540, top, role, className, bodyClassName }: DialogProps) {
+export function Dialog({ open, onOpenChange, title, closeLabel, children, footer, width = 540, top, role, className, bodyClassName, aside, busy }: DialogProps) {
+  const returnFocus = useMenuReturnFocus(open);
+  const column = (
+    <>
+      <div className={s.header}>
+        <RD.Title className={s.title}>{title}</RD.Title>
+        <RD.Close asChild>
+          <IconButton label={closeLabel} icon={<CloseIcon />} />
+        </RD.Close>
+      </div>
+      {children && <div className={[s.body, bodyClassName].filter(Boolean).join(' ')}>{children}</div>}
+      {footer && <div className={s.footer}>{footer}</div>}
+    </>
+  );
   return (
     <RD.Root open={open} onOpenChange={onOpenChange}>
       <RD.Portal>
         <RD.Overlay className={s.overlay} style={top === undefined ? undefined : { paddingTop: top }}>
-          <RD.Content className={[s.content, className].filter(Boolean).join(' ')} style={{ maxWidth: width }} aria-describedby={undefined} {...(role && { role })}>
-            <div className={s.header}>
-              <RD.Title className={s.title}>{title}</RD.Title>
-              <RD.Close asChild>
-                <IconButton label={closeLabel} icon={<CloseIcon />} />
-              </RD.Close>
-            </div>
-            {children && <div className={[s.body, bodyClassName].filter(Boolean).join(' ')}>{children}</div>}
-            {footer && <div className={s.footer}>{footer}</div>}
+          <RD.Content
+            className={[s.content, aside && s.split, className].filter(Boolean).join(' ')}
+            style={{ maxWidth: width }}
+            aria-describedby={undefined}
+            aria-busy={busy || undefined}
+            onCloseAutoFocus={returnFocus}
+            // An inline editor inside (marked data-claims-escape) handles its own Escape; the dialog stays.
+            onEscapeKeyDown={(e) => {
+              if (e.target instanceof Element && e.target.closest('[data-claims-escape]')) e.preventDefault();
+            }}
+            {...(role && { role })}
+          >
+            {aside ? (
+              <>
+                {aside}
+                <div className={s.column}>{column}</div>
+              </>
+            ) : (
+              column
+            )}
           </RD.Content>
         </RD.Overlay>
       </RD.Portal>

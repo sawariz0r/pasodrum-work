@@ -1,15 +1,17 @@
 // Add people (AddPeople, AddPeopleMember, AddPeopleClient, AddPeopleErrors): colleagues by name, new people by email.
 // Owners/Admins in a workspace channel pick Member or Guest (an outside email is a Guest); a Member adds guests;
 // in a client space new people are clients. No shared link: a pending person has their own join link (D-25).
+// From the space menu the target is the space itself; its pending people are listed from its home channel.
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore, useWorkspace, type PendingInvite, type Person } from '../../matrix';
 import { Button, Dialog, isImeEnter } from '../../ui';
 import { Face } from '../people/Face';
+import { spaceHome } from '../places';
 import { SmallCloseIcon } from '../shell/icons';
 import s from './Channels.module.css';
 import { AlertIcon, CheckIcon, LinkIcon } from './icons';
-import { addRoles, type AddRole } from './roles';
+import { addRoles, canManage, type AddRole } from './roles';
 import { useChannel, useCopy, useRole, useSpace } from './shared';
 
 type Token = { kind: 'person'; person: Person } | { kind: 'email'; email: string; external: boolean };
@@ -18,13 +20,18 @@ type Problem = { who: string; reason: 'invalid-email' | 'other' };
 const emailShape = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const keyOf = (tk: Token) => (tk.kind === 'person' ? tk.person.id : tk.email.toLowerCase());
 
-export function AddPeopleDialog({ open, channelId, onClose }: { open: boolean; channelId: string; onClose: () => void }) {
+export function AddPeopleDialog({ open, targetId, onClose }: { open: boolean; targetId: string; onClose: () => void }) {
   const { t } = useTranslation();
   const store = useStore();
   const meId = useWorkspace((x) => x.me.id);
-  const channel = useChannel(channelId);
-  const space = useSpace(channel?.spaceId);
-  const roles = addRoles(space, useRole(channel?.spaceId));
+  const channel = useChannel(targetId);
+  const ownSpace = useSpace(targetId);
+  const space = useSpace(channel?.spaceId) ?? ownSpace;
+  const toSpace = !channel && !!ownSpace;
+  const listId = useWorkspace((x) => (toSpace ? spaceHome(x, targetId)?.id : targetId));
+  const myRole = useRole(space?.id);
+  // Guests live in channels only (D-25, D-27): the workspace itself takes Members, added by Owners/Admins.
+  const roles: AddRole[] = toSpace && space?.kind === 'workspace' ? (canManage(myRole) ? ['member'] : []) : addRoles(space, myRole);
   const [tokens, setTokens] = useState<Token[]>([]);
   const [query, setQuery] = useState('');
   const [found, setFound] = useState<Person[]>([]);
@@ -42,18 +49,19 @@ export function AddPeopleDialog({ open, channelId, onClose }: { open: boolean; c
       (p) => live && p.email && setDomain(p.email.split('@')[1] ?? ''),
       () => {},
     );
-    store.channelMembers(channelId).then(
+    (toSpace ? store.spaceMembers(targetId) : store.channelMembers(targetId)).then(
       (list) => live && setInChannel(new Set(list.filter((m) => !m.pending).map((m) => m.person.id))),
       () => {},
     );
-    store.pendingInvites(channelId).then(
-      (list) => live && setPending(list),
-      () => {},
-    );
+    if (listId)
+      store.pendingInvites(listId).then(
+        (list) => live && setPending(list),
+        () => {},
+      );
     return () => {
       live = false;
     };
-  }, [store, meId, channelId]);
+  }, [store, meId, targetId, toSpace, listId]);
 
   useEffect(() => {
     let live = true;
@@ -66,7 +74,7 @@ export function AddPeopleDialog({ open, channelId, onClose }: { open: boolean; c
     };
   }, [store, query]);
 
-  if (!channel || !roles.length) return null;
+  if (!space || !roles.length) return null;
 
   const bad = (tk: Token) => problems.some((p) => p.who.toLowerCase() === keyOf(tk).toLowerCase());
   const external = tokens.some((tk) => tk.kind === 'email' && tk.external);
@@ -123,7 +131,7 @@ export function AddPeopleDialog({ open, channelId, onClose }: { open: boolean; c
     try {
       const userIds = valid.flatMap((tk) => (tk.kind === 'person' ? [tk.person.id] : []));
       const emails = valid.flatMap((tk) => (tk.kind === 'email' ? [tk.email] : []));
-      const result = await store.addPeople(channelId, { userIds, emails, role });
+      const result = await store.addPeople(targetId, { userIds, emails, role });
       const failed = result.failed.filter((f) => f.reason !== 'already-member');
       if (!failed.length) {
         onClose();
@@ -149,7 +157,7 @@ export function AddPeopleDialog({ open, channelId, onClose }: { open: boolean; c
     <Dialog
       open={open}
       onOpenChange={(o) => !o && onClose()}
-      title={t('channels.addTo', { name: channel.name })}
+      title={channel ? t('channels.addTo', { name: channel.name }) : t('channels.addToSpace', { name: space.name })}
       closeLabel={t('people.close')}
       bodyClassName={s.addBody}
       footer={
@@ -206,7 +214,7 @@ export function AddPeopleDialog({ open, channelId, onClose }: { open: boolean; c
       )}
       <ul className={s.suggestions} aria-label={t('channels.suggestions')}>
         {people.map((p) => {
-          const status = inChannel.has(p.id) ? t('channels.inChannel') : tokens.some((tk) => keyOf(tk) === p.id) ? t('channels.added') : null;
+          const status = inChannel.has(p.id) ? t(toSpace ? 'channels.inSpace' : 'channels.inChannel') : tokens.some((tk) => keyOf(tk) === p.id) ? t('channels.added') : null;
           return (
             <li key={p.id} className={s.suggestion}>
               <Face person={p} size={30} />

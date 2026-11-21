@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 import { useWorkspace } from '../../matrix';
+import { AnotherAppDialog } from '../another/AnotherApp';
+import { PhoneIcon } from '../another/icons';
 import { Avatar, avatarColor, Menu, MenuContent, MenuItem, MenuSegments, MenuSeparator, MenuTrigger } from '../../ui';
 import { currentLanguage, setLanguage, type Language } from '../i18n';
 import { GlobeIcon, SignOutIcon } from '../icons';
@@ -18,6 +21,7 @@ export function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
   const color = avatarColor(me.id);
   const avatar = useMediaUrl(me.avatarUrl, true);
   const dot = <span className={[s.meDot, online && s.online].filter(Boolean).join(' ')} />;
+  const [another, setAnother] = useState(false);
 
   return (
     <Menu>
@@ -54,10 +58,14 @@ export function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
         <MenuItem icon={<GearIcon />} onSelect={() => navigate('/settings', { state: settingsState(location) })}>
           {t('shell.profileMenu.settings')}
         </MenuItem>
+        <MenuItem icon={<PhoneIcon />} onSelect={() => setAnother(true)}>
+          {t('another.title')}
+        </MenuItem>
         <MenuItem icon={<SignOutIcon />} onSelect={onSignOut}>
           {t('shell.profileMenu.signOut')}
         </MenuItem>
       </MenuContent>
+      <AnotherAppDialog open={another} onOpenChange={setAnother} />
     </Menu>
   );
 }

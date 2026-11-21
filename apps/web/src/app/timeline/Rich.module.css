@@ -563,6 +563,11 @@ button.replyQuote:hover {
     transform var(--dur-1) var(--ease-out);
 }
 
+.chip[aria-disabled='true'] {
+  cursor: default;
+  pointer-events: none;
+}
+
 .chip:hover {
   border-color: var(--subtle);
 }

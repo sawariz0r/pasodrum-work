@@ -11,6 +11,8 @@ export const TTL_MS = 14 * 24 * 60 * 60 * 1000;
 export type SpaceInfo = {
   name: string;
   kind: SpaceKind;
+  /** Who set `work.pasodrum.space` (what makes a room a client space). */
+  kindSender?: string;
   joined: Map<string, string>;
   powerOf: (userId: string) => number;
 };
@@ -34,9 +36,11 @@ export function spaceInfo(events: StateEvent[]): SpaceInfo {
     joined.set(e.state_key, typeof name === 'string' && name ? name : e.state_key.slice(1, e.state_key.indexOf(':')));
   }
   const name = find('m.room.name').name;
+  const kindEvent = events.find((e) => e.type === 'work.pasodrum.space' && (e.state_key ?? '') === '');
   return {
     name: typeof name === 'string' ? name : '',
-    kind: find('work.pasodrum.space').kind === 'client' ? 'client' : 'workspace',
+    kind: kindEvent?.content?.kind === 'client' ? 'client' : 'workspace',
+    ...(kindEvent?.sender ? { kindSender: kindEvent.sender } : {}),
     joined,
     powerOf: (userId) => (creators.includes(userId) ? Infinity : users[userId] ?? usersDefault),
   };
@@ -52,6 +56,17 @@ export function canInvite(role: Role, space: SpaceInfo, caller: string): boolean
     case 'guest': return space.kind === 'workspace';
     case 'client': return space.kind === 'client' && level >= ADMIN_LEVEL;
   }
+}
+
+/**
+ * D-06: anyone can make a room and call it a space, so only real ones count: the workspace is the room its alias points
+ * at; a client space is one whose `work.pasodrum.space` was set by an Owner/Admin of the workspace.
+ */
+export function isGenuine(spaceId: string, space: SpaceInfo, workspaceId: string | null, workspace: SpaceInfo | null): boolean {
+  if (!workspaceId) return false;
+  if (space.kind === 'workspace') return spaceId === workspaceId;
+  const by = space.kindSender;
+  return !!by && !!workspace && workspace.joined.has(by) && workspace.powerOf(by) >= ADMIN_LEVEL;
 }
 
 export function canManage(inviterId: string, caller: string, space: SpaceInfo | null): boolean {

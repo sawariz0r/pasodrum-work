@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { renderInvite, tileColor } from './email.ts';
 import { isCode, localpartFor, newCode, newPassword, normalizeEmail } from './ids.ts';
 import { parseAddress } from './mail.ts';
-import { canInvite, canManage, rateLimiter, spaceInfo, stateOf, teamOf, type StateEvent } from './rules.ts';
+import { canInvite, canManage, isGenuine, rateLimiter, spaceInfo, stateOf, teamOf, type StateEvent } from './rules.ts';
 import { keyFrom, seal, unseal } from './secret.ts';
 
 describe('ids', () => {
@@ -69,6 +69,18 @@ describe('permission rules (D-25)', () => {
     expect(workspace.joined.get(ingrid)).toBe('ingrid');
     expect(workspace.joined.has(stranger)).toBe(false);
     expect(workspace.powerOf(jonas)).toBe(0);
+  });
+
+  it('trusts only the aliased workspace and client spaces marked by a workspace Admin (D-06)', () => {
+    const marked = (by: string) => spaceInfo([{ type: 'work.pasodrum.space', state_key: '', sender: by, content: { kind: 'client' } }, member(by)]);
+    expect(isGenuine('!ws', workspace, '!ws', null)).toBe(true);
+    expect(isGenuine('!fake', workspace, '!ws', null)).toBe(false);
+    expect(isGenuine('!ws', workspace, null, null)).toBe(false);
+    expect(isGenuine('!c', marked(ingrid), '!ws', workspace)).toBe(true);
+    expect(isGenuine('!c', marked(jonas), '!ws', workspace)).toBe(false);
+    expect(isGenuine('!c', marked(stranger), '!ws', workspace)).toBe(false);
+    expect(isGenuine('!c', marked(ingrid), '!ws', null)).toBe(false);
+    expect(isGenuine('!c', client, '!ws', workspace)).toBe(false);
   });
 
   it('treats room-version-12 creators as top rank', () => {

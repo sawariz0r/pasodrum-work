@@ -17,5 +17,6 @@ export {
   type MenuItemProps,
   type MenuSegmentsProps,
 } from './Menu';
+export { useMenuReturnFocus } from './menuFocus';
 export { Skeleton, type SkeletonProps } from './Skeleton';
 export { TextField, type TextFieldProps } from './TextField';

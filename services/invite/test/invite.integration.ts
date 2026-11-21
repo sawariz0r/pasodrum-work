@@ -154,7 +154,8 @@ describe('invite service', () => {
     const third = await api(sofia, 'POST', '', { email, role: 'guest', spaceId: rooms.workspace, channelIds: [] });
     assert.equal(third.status, 201);
     assert.equal((await api(null, 'GET', `/${again.body.code}`)).body.state, 'revoked');
-    assert.ok((await api(jonas, 'GET', `?roomId=${encodeURIComponent(rooms.general)}`)).body.some((i: any) => i.code === third.body.code));
+    assert.ok((await api(sofia, 'GET', `?roomId=${encodeURIComponent(rooms.general)}`)).body.some((i: any) => i.code === third.body.code));
+    assert.ok(!(await api(jonas, 'GET', `?roomId=${encodeURIComponent(rooms.general)}`)).body.some((i: any) => i.code === third.body.code), 'not Jonas’s invite');
 
     // A guest can't read the space it was added to, so claim leaves its name in account data (merged, not replaced).
     const temp3 = unseal(key, db('SELECT secret FROM invites WHERE code = ?', third.body.code).secret);
@@ -171,6 +172,68 @@ describe('invite service', () => {
     });
     const after = await api(sofia, 'POST', '', { email, role: 'guest', spaceId: rooms.workspace, channelIds: [] });
     assert.deepEqual([after.status, after.body], [409, { error: 'exists', userId: r.body.userId }]);
+  });
+
+  it('remove from space: an Admin of the space revokes that person’s open codes there, and only there (D-28)', async () => {
+    const email = freshEmail('nordlys.no');
+    const r = await api(ingrid, 'POST', '', { email, role: 'client', spaceId: rooms.nordlys, channelIds: [rooms.projectUpdates] });
+    assert.equal(r.status, 201, JSON.stringify(r.body));
+    const q = (spaceId: string) => `?spaceId=${encodeURIComponent(spaceId)}&userId=${encodeURIComponent(r.body.userId)}`;
+    assert.equal((await api(jonas, 'DELETE', q(rooms.nordlys))).status, 403, 'not in the client space');
+    assert.equal((await api(henrik, 'DELETE', q(rooms.nordlys))).status, 403, 'a client');
+    assert.equal((await api(null, 'DELETE', q(rooms.nordlys))).status, 401);
+    assert.equal((await api(ingrid, 'DELETE', `?spaceId=${encodeURIComponent(rooms.nordlys)}`)).status, 400);
+
+    const ok = await api(ingrid, 'DELETE', q(rooms.nordlys));
+    assert.deepEqual([ok.status, ok.body], [200, { revoked: 1 }]);
+    assert.equal((await api(null, 'GET', `/${r.body.code}`)).body.state, 'revoked');
+    assert.deepEqual((await api(sofia, 'DELETE', q(rooms.nordlys))).body, { revoked: 0 });
+
+  });
+
+  it('codes are per space: removing someone from one space leaves their link for another; claiming one kills the rest', async () => {
+    const email = freshEmail('nordlys.no');
+    const a = await api(ingrid, 'POST', '', { email, role: 'client', spaceId: rooms.nordlys, channelIds: [rooms.projectUpdates] });
+    const b = await api(ingrid, 'POST', '', { email, role: 'guest', spaceId: rooms.workspace, channelIds: [rooms.design] });
+    assert.equal(b.status, 201, JSON.stringify(b.body));
+    assert.equal((await api(null, 'GET', `/${a.body.code}`)).body.state, 'open');
+    const q = `?spaceId=${encodeURIComponent(rooms.nordlys)}&userId=${encodeURIComponent(a.body.userId)}`;
+    assert.deepEqual((await api(ingrid, 'DELETE', q)).body, { revoked: 1 });
+    assert.equal((await api(null, 'GET', `/${b.body.code}`)).body.state, 'open');
+
+    const c = await api(ingrid, 'POST', '', { email, role: 'client', spaceId: rooms.nordlys, channelIds: [rooms.questions] });
+    assert.equal((await api(null, 'POST', `/${b.body.code}/claim`, { name: 'Per Space', password: 'a-good-long-password' })).status, 200);
+    assert.equal((await api(null, 'GET', `/${c.body.code}`)).body.state, 'revoked');
+  });
+
+  it('D-06: only real spaces count; a code that claims an account goes only to whoever manages its invite', async () => {
+    // A room anyone can make, posing as a workspace or a client space.
+    const fake = (await mx(jonas, 'POST', '/_matrix/client/v3/createRoom', { preset: 'private_chat', creation_content: { type: 'm.space' }, name: 'Pasodrum' })).body.room_id;
+    const marked = (await mx(jonas, 'POST', '/_matrix/client/v3/createRoom', {
+      preset: 'private_chat', creation_content: { type: 'm.space' }, name: 'Acme',
+      initial_state: [{ type: 'work.pasodrum.space', state_key: '', content: { kind: 'client' } }],
+    })).body.room_id;
+    for (const [role, spaceId] of [['member', fake], ['guest', fake], ['client', marked]]) {
+      const r = await api(jonas, 'POST', '', { email: freshEmail(), role, spaceId, channelIds: [] });
+      assert.deepEqual([r.status, r.body], [403, { error: 'not-allowed' }], `${role} in a fake space`);
+    }
+
+    // Ingrid's pending invite: Jonas inviting the same email gets no code (it would claim the account), just "exists".
+    const email = freshEmail();
+    const mine = await api(ingrid, 'POST', '', { email, role: 'member', spaceId: rooms.workspace, channelIds: [rooms.general] });
+    assert.equal(mine.status, 201);
+    const theirs = await api(jonas, 'POST', '', { email, role: 'guest', spaceId: rooms.workspace, channelIds: [rooms.design] });
+    assert.deepEqual([theirs.status, theirs.body], [409, { error: 'exists', userId: mine.body.userId }]);
+    assert.equal((await api(null, 'GET', `/${mine.body.code}`)).body.state, 'open');
+
+    // Codes and links in the pending list only for the inviter and Admins of the space.
+    const own = await api(jonas, 'POST', '', { email: freshEmail(), role: 'guest', spaceId: rooms.workspace, channelIds: [rooms.general] });
+    const seen = (await api(jonas, 'GET', `?roomId=${encodeURIComponent(rooms.general)}`)).body.map((i: any) => i.code);
+    assert.ok(seen.includes(own.body.code));
+    assert.ok(!seen.includes(mine.body.code));
+    assert.ok((await api(sofia, 'GET', `?roomId=${encodeURIComponent(rooms.general)}`)).body.some((i: any) => i.code === mine.body.code));
+    for (const code of [mine.body.code, own.body.code]) await api(sofia, 'DELETE', `/${code}`);
+    for (const id of [fake, marked]) await mx(jonas, 'POST', `/_matrix/client/v3/rooms/${encodeURIComponent(id)}/leave`, {});
   });
 
   it('expired codes cannot be claimed; unknown codes are 404; bad claims are 400', async () => {

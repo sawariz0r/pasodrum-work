@@ -40,11 +40,3 @@ export const EyeIcon = icon(
 );
 export const ArrowRightIcon = icon(<path d="M5 12h14M13 6l6 6-6 6" />, { size: 16, strokeWidth: 2.2 });
 export const ChevronIcon = icon(<path d="m9 6 6 6-6 6" />, { size: 12, strokeWidth: 2.6 });
-export const CopyIcon = icon(
-  <>
-    <rect x="9" y="9" width="12" height="12" rx="2" />
-    <path d="M5 15V5a2 2 0 0 1 2-2h10" />
-  </>,
-  { size: 15, strokeWidth: 2 },
-);
-export const CheckIcon = icon(<path d="M20 6 9 17l-5-5" />, { size: 15, strokeWidth: 2.4 });

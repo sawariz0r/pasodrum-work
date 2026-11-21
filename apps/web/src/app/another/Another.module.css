@@ -1,0 +1,222 @@
+/* Per AnotherApp(+JP), JoinDoneOther, JoinDonePhone, PhoneHandoff(+JP). Page chrome comes from join/Join.module.css. */
+
+/* Server + username */
+.pair {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  margin: 0;
+  border-radius: 12px;
+}
+
+.pair dt {
+  color: var(--muted);
+}
+
+.pair dd {
+  margin: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sheet {
+  gap: 2px 16px;
+  padding: 6px 6px 6px 16px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  font-size: 14.5px;
+}
+
+.card {
+  gap: 4px 12px;
+  padding: 12px 14px;
+  background: var(--well);
+  font-size: 14px;
+  animation: rise-in var(--dur-2) var(--ease-out);
+}
+
+.copy,
+.copyLink {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    color var(--dur-1) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+
+.copy:hover,
+.copyLink:hover {
+  background: var(--hover);
+}
+
+.copy:active,
+.copyLink:active {
+  transform: scale(var(--press));
+}
+
+.sheet .copy {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+.card .copy {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+}
+
+.check {
+  display: flex;
+  color: var(--accent);
+  animation: pop-in var(--dur-2) var(--ease-out);
+}
+
+.live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Another app sheet */
+.sheetBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 24px 24px;
+}
+
+.get {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--raised);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+
+.get:hover {
+  background: var(--hover);
+}
+
+.get:active {
+  transform: scale(var(--press));
+}
+
+.getIcon {
+  color: var(--subtle);
+}
+
+/* Phone */
+.laptop {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--accentsoft);
+  color: var(--accent);
+}
+
+.phoneBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.place {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  box-sizing: border-box;
+  padding: 0 6px 0 14px;
+  border-radius: 11px;
+  background: var(--well);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.placeIcon {
+  display: flex;
+  color: var(--muted);
+}
+
+.placeLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copyLink {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.elementX {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--onaccent);
+  font-size: 15.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+
+.elementX:hover {
+  background: var(--accenthover);
+}
+
+.elementX:active {
+  transform: scale(var(--press));
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(var(--pop));
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise));
+  }
+}

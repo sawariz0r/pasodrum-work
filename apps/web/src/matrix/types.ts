@@ -318,7 +318,8 @@ export interface WorkspaceStore {
   setRole(spaceId: string, userId: string, role: 'owner' | 'admin' | 'member'): Promise<void>;
   removeFromChannel(channelId: string, userId: string): Promise<void>;
   /** Existing people get a normal invite (auto-accepted by our app); new emails go through the invite service (D-07, D-26). */
-  addPeople(channelId: string, req: { userIds: string[]; emails: string[]; role: 'member' | 'guest' | 'client' }): Promise<AddPeopleResult>;
+  /** `targetId` is a channel, or a space: then they're added to the space and its home channel (workspace: #general, else the first public channel; client space: its first channel). */
+  addPeople(targetId: string, req: { userIds: string[]; emails: string[]; role: 'member' | 'guest' | 'client' }): Promise<AddPeopleResult>;
   pendingInvites(channelId: string): Promise<PendingInvite[]>;
   resendInvite(code: string): Promise<void>;
   revokeInvite(code: string): Promise<void>;

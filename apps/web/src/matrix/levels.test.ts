@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { channelUsers, levelFor, powerLevels } from './levels';
+import { archivedLevels, channelUsers, levelFor, powerLevels } from './levels';
 
 describe('D-27 power levels', () => {
   it('workspace: Admins manage levels, Owner/Admin invite, anyone links channels; channels let anyone invite', () => {
@@ -19,5 +19,12 @@ describe('D-27 power levels', () => {
 
   it('a role’s level per space kind', () => {
     expect([levelFor('owner', 'client', true), levelFor('admin', 'workspace', false), levelFor('member', 'client', true), levelFor('member', 'client', false), levelFor('member', 'workspace', true)]).toEqual([100, 50, 10, 0, 0]);
+  });
+
+  it('archive raises posting, reactions and redactions to Admin; unarchive restores D-27 (D-28)', () => {
+    const live = powerLevels('client', 'channel', { '@a:x': 50 });
+    const archived = archivedLevels(live, 'client', true);
+    expect(archived).toMatchObject({ users: { '@a:x': 50 }, events_default: 50, invite: 10, events: { 'm.reaction': 50, 'm.room.redaction': 50, 'm.room.power_levels': 50 } });
+    expect(archivedLevels(archived, 'client', false)).toEqual(live);
   });
 });

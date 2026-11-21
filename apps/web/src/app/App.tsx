@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
 import { useWorkspace, WorkspaceProvider, type InvitePreview, type Session, type WorkspaceStore } from '../matrix';
+import { hostOf, usePhone } from './another/elementX';
+import { PhoneHandoffSignedIn, PhoneHandoffSignedOut } from './another/PhoneHandoff';
 import { matrixBackend, type Backend } from './backend';
 import { FirstRun, startFirstRun } from './join/FirstRun';
 import { JoinRoute, JoinRouteSignedIn } from './join/JoinRoute';
@@ -37,6 +39,8 @@ export function AppRoutes({ backend }: { backend: Backend }) {
   const [expired, setExpired] = useState<Expired>();
   // After a deliberate sign-out, the next person shouldn't land on the previous person's page.
   const [signedOut, setSignedOut] = useState(false);
+  // Phones get the hand-off on every app route; /join/* works on phones (D-15, D-28).
+  const phone = usePhone();
 
   const onSignedIn = (session: Session, identifier: string) => {
     rememberIdentifier(identifier);
@@ -66,7 +70,15 @@ export function AppRoutes({ backend }: { backend: Backend }) {
     <Routes>
       <Route
         path="/signin"
-        element={signed ? <Navigate to={from && from !== '/signin' ? from : '/'} replace /> : <SignIn key={expired ? 'expired' : 'new'} backend={backend} expired={expired} onSignedIn={onSignedIn} />}
+        element={
+          signed ? (
+            <Navigate to={from && from !== '/signin' ? from : '/'} replace />
+          ) : phone ? (
+            <PhoneHandoffSignedOut server={hostOf(backend.defaultServer())} from={from} />
+          ) : (
+            <SignIn key={expired ? 'expired' : 'new'} backend={backend} expired={expired} onSignedIn={onSignedIn} />
+          )
+        }
       />
       <Route
         path="/join/:code"
@@ -87,10 +99,16 @@ export function AppRoutes({ backend }: { backend: Backend }) {
             <WorkspaceProvider store={signed.store}>
               <OnExpired onExpired={() => end({ identifier: lastIdentifier(), baseUrl: signed.session.baseUrl })} />
               <SettingsSync />
-              <FirstRun />
-              <WithSettings>
-                <Workspace onSignOut={() => end()} />
-              </WithSettings>
+              {phone ? (
+                <PhoneHandoffSignedIn />
+              ) : (
+                <>
+                  <FirstRun />
+                  <WithSettings>
+                    <Workspace onSignOut={() => end()} />
+                  </WithSettings>
+                </>
+              )}
             </WorkspaceProvider>
           ) : (
             <Navigate to="/signin" replace state={signedOut ? undefined : { from: location.pathname + location.search }} />

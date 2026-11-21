@@ -21,6 +21,7 @@ const app = createApp({
     serverName,
     publicUrl: env('PUBLIC_URL', `https://${serverName}`).replace(/\/+$/, ''),
     registrationToken: env('REGISTRATION_TOKEN'),
+    workspaceAlias: env('WORKSPACE_ALIAS', `#workspace:${serverName}`),
   },
   store: openStore(env('DB_PATH', '/data/invites.db')),
   mx: matrixClient(env('MATRIX_URL', 'http://continuwuity:6167')),

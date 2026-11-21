@@ -2,7 +2,7 @@ import { useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useWorkspace, type Channel, type Dm, type Space } from '../../matrix';
-import { avatarColor, Badge, IconButton } from '../../ui';
+import { Badge, IconButton } from '../../ui';
 import { useDrafts } from '../drafts';
 import { HashIcon, LockIcon } from '../icons';
 import { DmFace } from '../people/Face';
@@ -14,6 +14,10 @@ import { useMediaUrl } from '../timeline/Media';
 import s from './Shell.module.css';
 import { useSpaceDrafts } from './spaceRooms';
 import { ChannelsPlusMenu, SidebarAddPeople, WorkspaceMenu } from '../channels/ChannelMenus';
+import { useChannels } from '../channels/ChannelsProvider';
+import { OutsideRowMark } from '../channels/OutsideMark';
+import { canManage } from '../channels/roles';
+import { spaceColour } from '../channels/shared';
 
 const noChannels: Channel[] = [];
 
@@ -29,14 +33,19 @@ export function Sidebar({ space, active }: { space: Space; active?: SidebarActiv
   const threads = useWorkspace((x) => x.threads);
   const drafts = useSpaceDrafts(space.id, useDrafts());
   const dms = allDms.filter((d) => d.spaceIds.includes(space.id));
-  const clients = space.kind === 'workspace' ? spaces.filter((x) => x.kind === 'client') : [];
+  const role = useWorkspace((x) => x.myRoles[space.id]);
+  const showExternal = useShowExternal();
+  const channelsApi = useChannels();
+  // Client spaces are listed for the team only (RulesM5: clients and guests never see the list).
+  const team = role === 'owner' || role === 'admin' || role === 'member';
+  const clients = space.kind === 'workspace' && team ? spaces.filter((x) => x.kind === 'client') : [];
   const unreadThreads = threads.filter((th) => th.unread && channels.some((c) => c.id === th.channelId)).length;
   const is = (key: string, value: string) => !!active && key in active && (active as Record<string, string>)[key] === value;
 
   return (
     <aside aria-label={t('shell.sidebar.label', { workspace: space.name })} className={s.sidebar}>
       <div className={s.sideHead}>
-        <WorkspaceMenu space={space} channelId={active && 'channelId' in active ? active.channelId : undefined} className={s.spaceName} />
+        <WorkspaceMenu space={space} className={s.spaceName} />
         <IconButton outline label={t('shell.sidebar.newMessage')} icon={<ComposeIcon />} onClick={newMessage} />
       </div>
       <div className={s.sideList}>
@@ -67,7 +76,12 @@ export function Sidebar({ space, active }: { space: Space; active?: SidebarActiv
                 strong={c.unread > 0 || c.mentions > 0}
                 icon={c.private ? <LockIcon /> : <HashIcon />}
                 name={c.name}
-                end={!current && <Badge count={c.mentions} />}
+                end={
+                  <>
+                    {space.kind === 'workspace' && showExternal && !!c.outside?.length && <OutsideRowMark people={c.outside} />}
+                    {!current && <Badge count={c.mentions} />}
+                  </>
+                }
               />
             );
           })}
@@ -83,8 +97,21 @@ export function Sidebar({ space, active }: { space: Space; active?: SidebarActiv
           ))}
         </Section>
 
-        {clients.length > 0 && (
-          <Section label={t('shell.sidebar.clientSpaces')}>
+        {(clients.length > 0 || (team && space.kind === 'workspace' && canManage(role))) && (
+          <Section
+            label={t('shell.sidebar.clientSpaces')}
+            action={
+              canManage(role) && (
+                <IconButton
+                  size={24}
+                  className={s.sectionAction}
+                  label={t('spaces.newClientSpace')}
+                  icon={<PlusIcon size={14} strokeWidth={2.2} />}
+                  onClick={() => channelsApi.newClientSpace()}
+                />
+              )
+            }
+          >
             {clients.map((c) => (
               <ClientRow key={c.id} space={c} />
             ))}
@@ -134,7 +161,7 @@ function ClientRow({ space }: { space: Space }) {
       to={home ? channelPath(space.id, home) : `/w/${encodeURIComponent(space.id)}`}
       current={false}
       icon={
-        <span className={s.spaceChip} style={{ '--tile-bg': avatarColor(space.id) } as CSSProperties} aria-hidden="true">
+        <span className={[s.spaceChip, space.archived && s.chipArchived].filter(Boolean).join(' ')} style={{ '--tile-bg': spaceColour(space) } as CSSProperties} aria-hidden="true">
           {avatar ? <img src={avatar} alt="" /> : (Array.from(space.name.trim())[0] ?? '').toUpperCase()}
         </span>
       }

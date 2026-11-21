@@ -844,3 +844,41 @@
 .threadRetry:active {
   transform: scale(var(--press));
 }
+
+/* ArchivedSpace: the quiet bar in place of the composer */
+.archivedWrap {
+  padding: 22px 20px 14px;
+  pointer-events: none;
+}
+
+.archived {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  min-height: 52px;
+  padding: 8px 8px 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--well);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: auto;
+  animation: rise var(--dur-2) var(--ease-out) both;
+}
+
+.archivedIcon {
+  display: flex;
+  color: var(--subtle);
+}
+
+.archivedText {
+  flex: 1;
+  min-width: 0;
+}
+
+.archived .archivedUndo {
+  height: 34px;
+  background: var(--raised);
+}

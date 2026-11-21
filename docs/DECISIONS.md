@@ -102,15 +102,25 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-30 · Test only what's really necessary · Accepted · 2026-11-21
+- **CEO:** speed over coverage until the product settles; move fast, refactor and stabilise later.
+- Write tests only for: security and isolation (who can see or join what, invite service authz), data that could be lost or corrupted, and logic that is easy to break silently (power levels, ordering, IME Enter). Skip tests for layout, copy and straightforward UI wiring; a browser check covers those.
+- `pnpm check` stays the gate (typecheck, lint, existing tests, locales). Playwright e2e per milestone is dropped for now; manual browser check before push stays.
+
+### D-29 · Work emails stay on the public profile · Accepted · 2026-11-21
+- Any signed-in account can read any local profile by ID (Matrix default; Continuwuity can't limit it to shared rooms), including our `work.pasodrum.email` field. **CEO:** staff work emails aren't secret (guessable, sent to clients anyway), so they stay on the profile. Names and time zones are readable by ID as in any Matrix server.
+- Revisit if profiles ever carry something private, or if clients shouldn't be able to list who works here. The alternative designed: per-space state `work.pasodrum.member` keyed by own user ID (only that user can write; only space members can read).
+
 ### D-28 · M5 contract: client spaces, outside mark, Another app · Accepted · 2026-11-21
 - **Batch E approved** by the CEO 2026-11-21 (incl. Owners only step down themselves).
 - **Space state:** `work.pasodrum.space` (state key `''`) carries `{kind, colour?, archived?}`. `Space.colour` comes from it (absent → the old id-hash colour); `Space.archived` sorts the tile last and dims it.
-- **Archive** = raise `events_default` (and `m.reaction`/`m.room.redaction` events) to 50 in every channel of the space, so the server makes them read-only for everyone below Admin; Owners/Admins see the quiet bar with Unarchive and never post either (the UI shows the bar to all). Unarchive restores the D-27 levels. Nobody is removed.
+- **Archive** = raise `events_default` (and `m.reaction`/`m.room.redaction` events) to 50 in every channel of the space, so the server makes them read-only for everyone below Admin; Owners/Admins see the quiet bar with Unarchive and never post either (the UI shows the bar to all). Unarchive restores the D-27 levels. Nobody is removed. Known gap (room version 12, D-27): whoever created a channel outranks every level, so a team Member who made a channel can still post there after archiving; accepted.
 - **Outside mark:** `Channel.outside` = clients and guests in the channel (joined or invited), filled only when my role is owner/admin/member. DMs need no field: `Person.external` already marks them.
 - **Remove from space:** kick from the space and every channel in it, then revoke that person's open join codes for the space via the invite service (new endpoint if needed). Account is never deactivated (D-26 amendment).
 - **createClientSpace:** the name check is client-side over spaces I can see plus a server-side re-check of the room directory/hierarchy I can reach; on failure the store leaves (and forgets) whatever it created, so nothing half-made shows.
 - **Another app:** `anotherApp()` = `{server: host of the homeserver URL, username: the ID's localpart}` (D-07); the UI never builds it from IDs itself.
-- **Phones (D-15):** app routes on a narrow screen (< 640 px) show the PhoneHandoff page; `/join/*` works on phones.
+- **Phones (D-15):** app routes on a phone — `(max-width: 639.98px) and (pointer: coarse)`, so narrow desktop windows and high browser zoom keep the app — show the PhoneHandoff page; `/join/*` works on phones.
+- **Outside mark gate:** shown when any of my roles is owner/admin/member (from `myRoles`), never from `me.external` (the real store doesn't set it for me).
 
 ### D-27 · Power levels that implement D-25 · Accepted · 2026-11-20
 - **Levels:** Owner 100, Admin 50, client-space team ("staff") 10, everyone else 0.
@@ -202,3 +212,8 @@ Format: **Date · short title** → what was discovered, why it matters, what ch
 - Send while an upload is in progress waits for it and then sends. A failed or too-large upload blocks Send until it is retried or removed.
 - TipTap: with `useEditor(..., [])` the options are re-applied on every render, so handlers in `editorProps` always see current state; no refs needed. Autolink makes TipTap's Link inclusive, so we extend it with `inclusive: false`.
 - emojibase ships emoji newer than macOS/Windows can draw. Skip versions whose sample glyph renders as the missing-glyph box (checked once on a canvas).
+
+**2026-11-21 · Element X deep link (M5-03)**
+- `https://mobile.element.io/element/?account_provider=<server name>` opens Element X with the server already chosen, or shows its install page (Element X ≥ 25.05.2 iOS / 25.06.0 Android). `account_provider` is the server name, not a URL. The choice lasts only while the app runs. `login_hint` is for MAS/OIDC sign-in, so we don't send it (Continuwuity uses password login). Built in `app/another/elementX.ts`.
+- "Phone" means `(max-width: 639.98px) and (pointer: coarse)`. Width alone would also catch narrow desktop windows and zoomed-in pages, and those people would lose the app and the sign-in page (review of M5-03, D-28 amended).
+- **Continuwuity (M5, 2026-11-21):** room v12 IDs hash the create event — two identical `createRoom` calls in the same millisecond merge into one room, so create rooms sequentially. New rooms reach sync piecemeal (first only `m.room.create`), so wait for the state you need. A room forgotten during an in-flight sync comes back as joined. Inviting a nonexistent local user returns 200; kicking a non-member 403; `/messages` on an invisible room 200 with an empty chunk. A failed `createRoom` (e.g. 413) can leave a half-made room without returning its ID. Rename updates member state in every room.

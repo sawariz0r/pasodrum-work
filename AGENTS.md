@@ -17,7 +17,7 @@ You start with **no memory of prior chats** — orient yourself like this:
 4. **To work a task:** move its file `todo/ → implementing/`, set `stage: implementing` + `owner`, do the work, then move to `ceo-review/` with the **Outcome** filled in. Full workflow in [tasks/README.md](tasks/README.md).
 5. **Record as you go:** new decisions/learnings → `docs/DECISIONS.md`; correct this file when a rule changes.
 
-Status (2026-11-21): M4 (channels, people, roles per D-25/D-27, Add people, invite service + join page, settings, first run, guest view) built and tested end to end locally (email → join → first message). Production: https://pasodrum.work (push to main deploys; invite service needs RESEND_API_KEY in Coolify for mail). In ceo-review: M0–M4 tasks. Design: Batch E (M5) awaits CEO approval. Next: M5 client spaces + guests.
+Status (2026-11-21): M5 (client spaces, guests, outside mark, archive/remove, Another app, phone hand-off; invite service hardened per D-28 review) built, browser-tested locally and pushed. In ceo-review: M0–M5 tasks. Design: Batch F (M6 encryption) drawn, awaiting CEO approval. A design-discovery session explores new features on the canvas. Next: M6 after Batch F approval.
 
 ---
 
@@ -98,7 +98,8 @@ Status (2026-11-21): M4 (channels, people, roles per D-25/D-27, Add people, invi
 - **Production (no staging, D-18):** https://pasodrum.work on Coolify, Docker Compose from `deploy/docker-compose.yml` (Base Directory `/deploy`). Only `web` has a domain; it serves the app and forwards Matrix paths to continuwuity and `/api/invites` to `invite`. Redeploy in Coolify after pushing to `main`. Disposable until the CEO says otherwise. Seed/probe it with `set -a; . dev/.env.production; set +a; pnpm dev:seed && pnpm probe` (results in `docs/probe-results-<server>.md`).
 - `pnpm e2e` — Playwright on Chromium + WebKit against the seeded Docker server (`pnpm dev:server`).
 - CI also builds and smoke-tests with an **empty feature registry**.
-- Every milestone exit: `pnpm check` green, e2e green on both engines, manual Safari + Japanese IME pass, Element X smoke test on production, screens match approved designs in EN/JP × light/dark.
+- **Test only what's really necessary ([[D-30]]):** security/isolation, data loss, and logic that breaks silently. No tests for layout, copy or plain UI wiring — check those in a browser.
+- Every milestone exit: `pnpm check` green, browser check in EN/JP × light/dark against the approved designs, Element X smoke test on production.
 - For UI work, exercise it in a browser before claiming done; if you can't, say so.
 
 ---

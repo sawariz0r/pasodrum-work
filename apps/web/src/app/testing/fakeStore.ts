@@ -324,6 +324,54 @@ export interface FakeStoreOptions {
   threadFails?: boolean;
   /** M4. My role per space (default: Owner everywhere). */
   roles?: Record<string, Role>;
+  /** M5. Signed in as the client (Henrik: Nordlys only) or a guest (Ola: #design and #launch-site), as the server would show them. */
+  perspective?: 'client' | 'guest';
+}
+
+/** M5. What a client or guest gets from the server (RulesM5 shells): their spaces and channels, no outside marks, no client spaces. */
+function outsideView(perspective: 'client' | 'guest', me: Person | undefined): { view: Partial<WorkspaceSnapshot>; visible: string[] } {
+  const plain = (c: Channel): Channel => {
+    const rest = { ...c };
+    delete rest.outside;
+    return rest;
+  };
+  const dms = (keys: string[], spaceId: string) =>
+    sampleDms()
+      .filter((d) => d.people.length === 1 && keys.some((k) => people[k]!.id === d.people[0]!.id))
+      .map((d) => ({ ...d, spaceIds: [spaceId] }));
+  const empty = { threads: [], activity: [], typing: {} };
+  // Like the real store: my own Person never carries `external`, whoever I am.
+  const self = (p: Person): Person => {
+    const copy = { ...p };
+    delete copy.external;
+    return copy;
+  };
+  if (perspective === 'client') {
+    return {
+      visible: [people.so!.id, people.jb!.id, people.ih!.id],
+      view: {
+        ...empty,
+        me: self(me ?? people.hd!),
+        spaces: spaces.filter((sp) => sp.id === '!nordlys'),
+        channels: { '!nordlys': channels['!nordlys']!.map(plain) },
+        dms: dms(['jb', 'ih'], '!nordlys'),
+        myRoles: { '!nordlys': 'client' },
+      },
+    };
+  }
+  return {
+    visible: [people.ih!.id, people.jb!.id, people.so!.id, people.ml!.id, people.ek!.id, people.la!.id, people.tr!.id],
+    view: {
+      ...empty,
+      me: self(me ?? ola),
+      spaces: spaces.filter((sp) => sp.kind === 'workspace'),
+      channels: {
+        '!pasodrum': [plain(channels['!pasodrum']![0]!), ch('!launch-site', '!pasodrum', 'launch-site', { topic: 'Fjell Studio × Pasodrum', memberCount: 6 })],
+      },
+      dms: dms(['jb', 'ml'], '!pasodrum'),
+      myRoles: { '!pasodrum': 'guest' },
+    },
+  };
 }
 
 export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & { set(patch: Partial<WorkspaceSnapshot>): void } {
@@ -342,6 +390,8 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     activity: sampleActivity(),
     myRoles: opts.roles ?? { '!pasodrum': 'owner', '!nordlys': 'owner' },
   };
+  const outsider = opts.perspective ? outsideView(opts.perspective, opts.me) : undefined;
+  if (outsider) snapshot = { ...snapshot, ...outsider.view };
   const listeners = new Set<() => void>();
   let localId = 0;
 
@@ -576,7 +626,10 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     markActivityRead(itemId) {
       set({ activity: snapshot.activity.map((a) => (a.id === itemId ? { ...a, unread: false } : a)) });
     },
-    searchPeople: (query) => Promise.resolve(Object.values(people).filter((p) => p.id !== snapshot.me.id && p.name.toLowerCase().includes(query.toLowerCase()))),
+    searchPeople: (query) =>
+      Promise.resolve(
+        Object.values(people).filter((p) => p.id !== snapshot.me.id && (!outsider || outsider.visible.includes(p.id)) && p.name.toLowerCase().includes(query.toLowerCase())),
+      ),
     async openDm(userIds) {
       const hit = snapshot.dms.find((d) => d.people.length === userIds.length && d.people.every((p) => userIds.includes(p.id)));
       if (hit) return hit.id;
@@ -640,13 +693,21 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     async removeFromChannel(channelId, userId) {
       memberIds[channelId] = membersOf(channelId).filter((id) => id !== userId);
     },
-    async addPeople(channelId, req) {
+    async addPeople(target, req) {
       const ok = (e: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
       const result: AddPeopleResult = { added: [], invited: [], failed: [] };
+      // A space id adds to the space's people and its first channel.
+      const roster = snapshot.spaces.some((sp) => sp.id === target) ? rosterOf(target) : undefined;
+      const channelId = (roster && snapshot.channels[target]?.[0]?.id) || target;
+      const isIn = (id: string) => (roster ? [...roster.team, ...roster.clients] : membersOf(channelId)).includes(id);
+      const join = (id: string) => {
+        if (roster) (req.role === 'client' ? roster.clients : roster.team).push(id);
+        if (!membersOf(channelId).includes(id)) membersOf(channelId).push(id);
+      };
       for (const id of req.userIds) {
-        if (membersOf(channelId).includes(id)) result.failed.push({ who: id, reason: 'already-member' });
+        if (isIn(id)) result.failed.push({ who: id, reason: 'already-member' });
         else {
-          membersOf(channelId).push(id);
+          join(id);
           result.added.push(id);
         }
       }
@@ -656,12 +717,12 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
         else {
           const code = `c${localId++}`;
           const person = byEmail(email);
-          if (membersOf(channelId).includes(person.id)) {
+          if (isIn(person.id)) {
             result.failed.push({ who: email, reason: 'already-member' });
             continue;
           }
           waiting.set(person.id, person);
-          membersOf(channelId).push(person.id);
+          join(person.id);
           (pendingBy[channelId] ??= []).push({ code, email, role: req.role, createdTs: Date.now(), link: `https://pasodrum.work/join/${code}` });
           result.invited.push(email);
         }

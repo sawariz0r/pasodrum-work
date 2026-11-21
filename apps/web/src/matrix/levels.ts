@@ -47,3 +47,15 @@ export function levelFor(role: 'owner' | 'admin' | 'member', kind: SpaceKind, on
   if (role !== 'member') return LEVEL[role];
   return kind === 'client' && onTeam ? LEVEL.staff : LEVEL.member;
 }
+
+const ARCHIVE_EVENTS = ['m.reaction', 'm.room.redaction'];
+
+/** D-28: an archived channel is read-only below Admin; unarchiving restores the D-27 values. Everything else stays. */
+export function archivedLevels(content: Record<string, unknown>, kind: SpaceKind, archived: boolean): Record<string, unknown> {
+  const events = { ...((content.events as Record<string, number> | undefined) ?? {}) };
+  for (const type of ARCHIVE_EVENTS) {
+    if (archived) events[type] = LEVEL.admin;
+    else delete events[type];
+  }
+  return { ...content, events_default: archived ? LEVEL.admin : powerLevels(kind, 'channel', {}).events_default, events };
+}
