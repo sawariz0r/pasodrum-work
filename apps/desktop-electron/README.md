@@ -26,7 +26,7 @@ Every release:
 1. Bump `version` in `apps/desktop-electron/package.json`.
 2. `npm --prefix apps/desktop-electron ci && npm --prefix apps/desktop-electron run release` (signs and notarizes, ~5 min).
 3. Check it: `spctl -a -vv "apps/desktop-electron/release/mac-arm64/Pasodrum work.app"` says `accepted` and `Notarized Developer ID`.
-4. `PASODRUM_DOWNLOADS=<you>@<server>:/data/pasodrum-downloads/mac/ npm --prefix apps/desktop-electron run publish:feed` (uploads `latest-mac.yml` last, so apps only see a complete release).
+4. `PASODRUM_DOWNLOADS=<you>@<server>:/data/pasodrum-downloads/mac/ npm --prefix apps/desktop-electron run publish:feed` (one password prompt; `latest-mac.yml` goes last, so apps only see a complete release).
 5. First release only: set `MAC_DOWNLOAD = true` in `apps/web/src/platform/web.ts` and push, so browsers on Mac offer "Download for Mac".
 
 Installed apps check the feed at start and every 4 hours, download in the background and install on quit.

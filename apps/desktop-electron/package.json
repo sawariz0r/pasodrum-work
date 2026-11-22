@@ -9,7 +9,7 @@
     "start": "electron .",
     "pack": "electron-builder --mac --arm64 --dir -c.mac.identity=- -c.mac.hardenedRuntime=false -c.mac.notarize=false",
     "release": "rm -rf release && CSC_NAME=\"PRPL development AB (754ZSYKPH7)\" APPLE_KEYCHAIN_PROFILE=pasodrum-notary electron-builder --mac --arm64 --publish never",
-    "publish:feed": "cd release && rsync -av Pasodrum-work-*.zip* Pasodrum-work.dmg \"$PASODRUM_DOWNLOADS\" && rsync -av latest-mac.yml \"$PASODRUM_DOWNLOADS\""
+    "publish:feed": "cd release && scp Pasodrum-work-*.zip Pasodrum-work-*.zip.blockmap Pasodrum-work.dmg Pasodrum-work.dmg.blockmap latest-mac.yml \"$PASODRUM_DOWNLOADS\""
   },
   "build": {
     "appId": "work.pasodrum.app",
