@@ -1,7 +1,7 @@
 ---
 id: DES-05
 title: Rail tidy — archived client spaces leave the rail; theme into the profile menu, Activity takes its slot; delete a client space
-stage: implementing
+stage: ceo-review
 area: design
 milestone: side
 priority: P2
@@ -44,7 +44,11 @@ Canvas Discovery, section "DES-05 · Rail tidy · for approval" (canvas v90) and
 ## Outcome
 Split (CEO: "no over engineering"): **A + B ship first** (this commit); **C (delete) follows** after its review fixes and a Codex review.
 - **B:** `app/shell/Rail.tsx`: theme button gone; Activity icon-only above the avatar, with badge, count label and current state. `app/shell/ProfileMenu.tsx`: Light | Dark `MenuSegments` under Language, new `ThemeIcon`.
-- **A:** `Rail.tsx` hides a team member's archived client spaces, except the one being viewed (dimmed). `app/channels/ChannelMenus.tsx`: divider + "Archived client spaces" (Owner/Admin, only when one exists). New `app/channels/ArchivedSpaces.tsx`: tile, name, people count, Unarchive. The Owner's bin comes with C.
+- **A:** `Rail.tsx` hides a team member's archived client spaces, except the one being viewed (dimmed). `app/channels/ChannelMenus.tsx`: divider + "Archived client spaces" (Owner/Admin, only when one exists). New `app/channels/ArchivedSpaces.tsx`: tile, name, people count, Unarchive. The Owner's bin came with C.
+- **C (delete):** Owner of the workspace only, archived client space only, never the workspace. The Owner's app revokes the space's links (invite service checks Owner in the workspace and in the space), drops it from access roles, kicks everyone below the Owner from the space's rooms and then the space, removes the child links, and leaves. No "deleted" mark that other apps trust (D-45). Entry points: Client space settings in Archive's place, and the bin in the Archived list. Type the name to confirm.
+- **Gaps:** co-Owners and an Admin who created the space can't be kicked, so they keep it, archived and read-only, until they leave. Matrix can't erase server history or copies on devices.
 
 ## Review notes
 - Browser (local stack, Sofia = Owner, EN/JP × light/dark): theme row; icon-only Activity, highlighted on /activity; archived tile dimmed while viewed, gone after leaving; Pasodrum menu divider + Archived client spaces; list with Unarchive. Clients aren't in the workspace, so the rail filter doesn't touch them.
+- A+B pushed 2026-11-22 (a8e504d), live.
+- C: two reviews (Opus, Fable) found authorisation holes in a "deleted" mark that every app trusted. The mark was removed; the Owner's app now does the whole delete. Tests: Admin (incl. the space's creator), Staff, the workspace and an unarchived space are refused; an Owner's delete removes the client and Staff from the space and its channels; a second space, workspace channels, and a channel an Admin re-parented to the space are untouched; the service returns 403 for a creator-Admin. The browser check of delete ran on the earlier version (bin and Settings paths, client lost access). The local stack lost #general during testing (pre-fix code in a dev tab), so 4 older invite integration tests can't run until a reseed.

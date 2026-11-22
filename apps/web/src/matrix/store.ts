@@ -35,7 +35,7 @@ import { createEmailConfirm } from './confirm';
 import { CRYPTO_DB, createSecurity, cryptoCallbacks, withTimeout, type KeyHolder } from './crypto';
 import { sanitizeHtml, type SanitizedHtml } from './html';
 import { translateSegments } from './translate';
-import { createInvite, InviteError, listInvites, normalizeEmail, resendInvite, revokeAllFor, revokeInvitesFor, revokeInvite, type NewInvite } from './invites';
+import { createInvite, InviteError, listInvites, normalizeEmail, resendInvite, revokeAllFor, revokeInvitesFor, revokeInvitesForSpace, revokeInvite, type NewInvite } from './invites';
 import {
   connectionOf, emailFromId, hydra, looksExternal, mayChangeRole, mediaOf, membershipSummary, powerLevel, reactionsOf, replyFallback, roleOf, sameMembers, share,
   accessRoleOf, externalRecordOf, knownSpacesOf, linkPreviewOf, linksOf, pinnedIdsOf, stripReplyFallback, threadStats, workspaceOf,
@@ -1959,6 +1959,17 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   };
 
   /**
+   * DES-05: a room of a client space being deleted: its `m.space.parent` names the space and was set by the room's
+   * creator; never a DM, never a room the workspace lists.
+   */
+  const belongsTo = (room: Room, space: Room, ws: Room) => {
+    const parent = room.currentState.getStateEvents(EventType.SpaceParent, space.roomId);
+    if (!parent?.getContent().via?.length || parent.getSender() !== room.currentState.getStateEvents(EventType.RoomCreate, '')?.getSender()) return false;
+    if ((ws.currentState.getStateEvents(EventType.SpaceChild, room.roomId)?.getContent().via?.length ?? 0) > 0) return false;
+    return !room.isSpaceRoom() && !isDirect(room, directRooms());
+  };
+
+  /**
    * D-36: one External's rooms follow their access. Wanted client spaces: invited to the space and its home channel (its
    * other channels are restricted joins), level 1 in the space and its channels I can edit. Wanted workspace channels:
    * invited, level 1. Workspace channels and client spaces I'm in that aren't wanted: out (a space first, then its
@@ -2930,6 +2941,46 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         return next;
       }).catch((e: unknown) => Promise.reject(forbidden(e)));
       await settle(() => !!snapshot.spaces.find((s) => s.id === spaceId)?.archived === archived);
+    },
+    async deleteSpace(spaceId) {
+      await ready;
+      const space = client.getRoom(spaceId);
+      const wsId = (await client.getRoomIdForAlias(`#workspace:${server}`).catch(() => null))?.room_id;
+      const ws = wsId ? client.getRoom(wsId) : null;
+      if (
+        !space ||
+        !ws ||
+        !joined(space) ||
+        space.roomId === ws.roomId ||
+        !isClientSpace(space) ||
+        spaceStateOf(space).archived !== true ||
+        levelIn(ws, me.id) < LEVEL.owner ||
+        levelIn(space, me.id) < LEVEL.owner ||
+        !mayState(space, me.id, SPACE_STATE)
+      )
+        throw new Error('not-allowed');
+      // Its join links die before anything else changes.
+      await revokeInvitesForSpace(session.accessToken, spaceId).catch((e: unknown) => {
+        throw new Error('other', { cause: e });
+      });
+      // An access role that still names it would bring its Externals back.
+      for (const role of rolesNow().filter((r) => r.spaces.includes(spaceId)))
+        await writeState(ws.roomId, ACCESS_ROLE, (c) => ({ ...c, spaces: role.spaces.filter((id) => id !== spaceId) }), role.id).catch(noop);
+      const ids = [...space.currentState.getStateEvents(EventType.SpaceChild).map((ev) => ev.getStateKey()!), ...pageRoomsOf(space)];
+      const rooms = [...new Set(ids)].map((id) => client.getRoom(id)).filter((r): r is Room => !!r && joined(r) && belongsTo(r, space, ws));
+      // Its rooms, then the space: whoever is below me goes. Those I can't kick (a co-Owner, a v12 creator) keep it, archived.
+      for (const room of [...rooms, space]) {
+        await room.loadMembersIfNeeded().catch(noop);
+        const mine = levelIn(room, me.id);
+        for (const m of room.getMembers()) if (m.userId !== me.id && present(m.membership) && levelIn(room, m.userId) < mine) await client.kick(room.roomId, m.userId).catch(noop);
+      }
+      for (const room of rooms) await client.sendStateEvent(spaceId, EventType.SpaceChild, {} as never, room.roomId).catch(noop);
+      for (const id of [...rooms.map((r) => r.roomId), spaceId]) {
+        discarded.add(id);
+        await client.leave(id).catch(noop);
+        await client.forget(id, true).catch(noop);
+      }
+      await settle(() => !snapshot.spaces.some((s) => s.id === spaceId));
     },
     translate: (segments, to) => translateSegments(session.accessToken, segments, to),
     anotherApp: () => ({ server: new URL(client.baseUrl).host, username: client.getUserId()!.slice(1, client.getUserId()!.indexOf(':')) }),

@@ -323,6 +323,35 @@ describe('invite service', () => {
     assert.deepEqual((await api(sofia, 'DELETE', q)).body, { revoked: 0 });
   });
 
+  it('DES-05: revoke-space is for Owners of that client space; it kills its open codes and no other space’s', async () => {
+    const a = await api(jonas, 'POST', '', { email: freshEmail(), role: 'client', spaceId: kumo, channelIds: [kumoChat] });
+    const b = await api(ingrid, 'POST', '', { email: freshEmail('nordlys.no'), role: 'client', spaceId: rooms.nordlys, channelIds: [rooms.projectUpdates] });
+    assert.equal(a.status, 201, JSON.stringify(a.body));
+    assert.equal(b.status, 201, JSON.stringify(b.body));
+    const q = (spaceId: string) => `/space?spaceId=${encodeURIComponent(spaceId)}`;
+    assert.equal((await api(ingrid, 'DELETE', q(rooms.nordlys))).status, 403, 'an Admin');
+    assert.equal((await api(jonas, 'DELETE', q(kumo))).status, 403, 'Staff');
+    assert.equal((await api(henrik, 'DELETE', q(rooms.nordlys))).status, 403, 'a client');
+    assert.equal((await api(sofia, 'DELETE', q(rooms.workspace))).status, 403, 'the workspace');
+    // An Admin who created a client space outranks everyone in it (room v12), but isn't an Owner of the workspace.
+    const own = (await mxOk(ingrid, 'POST', '/_matrix/client/v3/createRoom', {
+      preset: 'private_chat', name: 'Own', creation_content: { type: 'm.space' },
+      initial_state: [{ type: 'work.pasodrum.space', state_key: '', content: { kind: 'client' } }],
+    })).room_id;
+    assert.equal((await api(ingrid, 'DELETE', q(own))).status, 403, 'a creator who is an Admin');
+    await mx(ingrid, 'POST', `/_matrix/client/v3/rooms/${enc(own)}/leave`, {});
+    assert.equal((await api(null, 'DELETE', q(kumo))).status, 401);
+    assert.equal((await api(sofia, 'DELETE', '/space')).status, 400);
+    for (const code of [a.body.code, b.body.code]) assert.equal((await api(null, 'GET', `/${code}`)).body.state, 'open');
+
+    const ok = await api(sofia, 'DELETE', q(kumo));
+    assert.equal(ok.status, 200);
+    assert.ok(ok.body.revoked >= 1);
+    assert.equal((await api(null, 'GET', `/${a.body.code}`)).body.state, 'revoked');
+    assert.equal((await api(null, 'GET', `/${b.body.code}`)).body.state, 'open');
+    await api(sofia, 'DELETE', `/${b.body.code}`);
+  });
+
   it('translate is team only: clients and guests are 403, no token is 401', async () => {
     const translate = (token: string | null, body: unknown) => fetch(INVITE.replace(/invites$/, 'translate'), {
       method: 'POST',

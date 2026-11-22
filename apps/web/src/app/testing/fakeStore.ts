@@ -1110,6 +1110,14 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
         channels: { ...snapshot.channels, [spaceId]: (snapshot.channels[spaceId] ?? []).map((c) => ({ ...c, canPin: !archived && !c.archived })) },
       });
     },
+    async deleteSpace(spaceId) {
+      const space = snapshot.spaces.find((sp) => sp.id === spaceId);
+      const workspace = snapshot.spaces.find((sp) => sp.kind === 'workspace');
+      if (!space || space.kind !== 'client' || !space.archived || snapshot.myRoles[workspace?.id ?? ''] !== 'owner') throw new Error('not-allowed');
+      const channels = { ...snapshot.channels };
+      delete channels[spaceId];
+      set({ spaces: snapshot.spaces.filter((sp) => sp.id !== spaceId), channels });
+    },
     // Keeps the ⟦n⟧ tokens where they were; a segment containing "fail" rejects so the failed state can be seen.
     async translate(segments, to) {
       await new Promise((r) => setTimeout(r, 700));

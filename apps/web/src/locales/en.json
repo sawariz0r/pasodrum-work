@@ -487,7 +487,13 @@
     "workspaceSettings": "Workspace settings",
     "archivedSpaces": "Archived client spaces",
     "peopleCount_one": "{{count}} person",
-    "peopleCount_other": "{{count}} people"
+    "peopleCount_other": "{{count}} people",
+    "delete": "Delete client space",
+    "deleteTitle": "Delete {{name}}?",
+    "deleteWhat": "Its channels and everyone’s access go. This can’t be undone.",
+    "deleteLabel": "Type the client space name to confirm",
+    "deleteButton": "Delete",
+    "deleteRow": "Delete {{name}}"
   },
   "security": {
     "gateTitle": "Confirm this device",
@@ -655,7 +661,8 @@
     "mainContact": "Couldn’t change the main contact",
     "role": "Couldn’t change {{name}}’s role",
     "colour": "Couldn’t change the colour of {{name}}",
-    "unarchiveSpace": "Couldn’t unarchive {{name}}"
+    "unarchiveSpace": "Couldn’t unarchive {{name}}",
+    "deleteSpace": "Couldn’t delete {{name}}. Try again."
   },
   "desktop": {
     "back": "Back",

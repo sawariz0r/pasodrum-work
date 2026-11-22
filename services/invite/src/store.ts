@@ -119,6 +119,7 @@ export function openStore(path: string) {
     claim: db.prepare('UPDATE invites SET claimedTs = ?, secret = NULL WHERE code = ? AND claimedTs IS NULL'),
     revoke: db.prepare('UPDATE invites SET revokedTs = ? WHERE code = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
     revokeForUser: db.prepare('UPDATE invites SET revokedTs = ? WHERE userId = ? AND spaceId = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
+    revokeForSpace: db.prepare('UPDATE invites SET revokedTs = ? WHERE spaceId = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
     revokeAllForUser: db.prepare('UPDATE invites SET revokedTs = ? WHERE userId = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
     latestClaimed: db.prepare('SELECT * FROM invites WHERE userId = ? AND claimedTs IS NOT NULL ORDER BY claimedTs DESC'),
     confirmKey: db.prepare('SELECT sealed, keyId FROM confirm_keys WHERE userId = ?'),
@@ -181,6 +182,10 @@ export function openStore(path: string) {
     /** Every open code for this person in this space; returns how many. */
     revokeForUser(userId: string, spaceId: string, ts: number): number {
       return Number(q.revokeForUser.run(ts, userId, spaceId).changes);
+    },
+    /** Every open code in this space; returns how many. */
+    revokeForSpace(spaceId: string, ts: number): number {
+      return Number(q.revokeForSpace.run(ts, spaceId).changes);
     },
     /** Every open code for this person, in every space; returns how many. */
     revokeAllForUser(userId: string, ts: number): number {

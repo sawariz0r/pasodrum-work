@@ -479,7 +479,13 @@
     "renameFailed": "{{name}} に変更できませんでした",
     "workspaceSettings": "ワークスペースの設定",
     "archivedSpaces": "アーカイブ済みのクライアントスペース",
-    "peopleCount_other": "{{count}}人"
+    "peopleCount_other": "{{count}}人",
+    "delete": "クライアントスペースを削除",
+    "deleteTitle": "{{name}} を削除しますか？",
+    "deleteWhat": "チャンネルと全員のアクセスがなくなります。元に戻せません。",
+    "deleteLabel": "確認のためスペース名を入力",
+    "deleteButton": "削除",
+    "deleteRow": "{{name}} を削除"
   },
   "security": {
     "gateTitle": "このデバイスを確認",
@@ -646,7 +652,8 @@
     "mainContact": "主担当を変更できませんでした",
     "role": "{{name}} さんの役割を変更できませんでした",
     "colour": "{{name}} の色を変更できませんでした",
-    "unarchiveSpace": "{{name}} のアーカイブを解除できませんでした"
+    "unarchiveSpace": "{{name}} のアーカイブを解除できませんでした",
+    "deleteSpace": "{{name}} を削除できませんでした。もう一度お試しください。"
   },
   "desktop": {
     "back": "戻る",

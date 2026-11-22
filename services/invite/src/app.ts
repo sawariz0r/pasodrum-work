@@ -6,7 +6,7 @@ import { isCode, localpartFor, localpartOf, newCode, newPassword, normalizeEmail
 import type { SendMail } from './mail.ts';
 import { MatrixError, type Matrix } from './matrix.ts';
 import { createPresence } from './presence.ts';
-import { ADMIN_LEVEL, TTL_MS, canInvite, canManage, isGenuine, normalizeRole, rateLimiter, spaceInfo, stateOf, teamOf, type SpaceInfo } from './rules.ts';
+import { ADMIN_LEVEL, OWNER_LEVEL, TTL_MS, canDelete, canInvite, canManage, isGenuine, normalizeRole, rateLimiter, spaceInfo, stateOf, teamOf, type SpaceInfo } from './rules.ts';
 import { seal, unseal } from './secret.ts';
 import type { Invite, Store } from './store.ts';
 import { parseRequest, translate as callTranslate, type TranslateConfig } from './translate.ts';
@@ -312,6 +312,21 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
     return new Reply(200, { revoked: store.revokeAllForUser(userId, now()) });
   }
 
+  // DES-05 delete a client space: every open code for it stops working. Owners of the workspace who are Owners there.
+  async function revokeSpace(req: IncomingMessage, spaceId: string | null) {
+    const c = await caller(req);
+    if (!spaceId?.startsWith('!')) throw fail(400, 'bad-request');
+    const state = await mx.roomState(c.token, spaceId);
+    const space = state && spaceInfo(state);
+    if (!space || !canDelete(space, c.userId)) throw fail(403, 'not-allowed');
+    // A v12 creator outranks everyone in the space itself, so the Owner check is on the workspace.
+    const workspaceId = await mx.resolveAlias(c.token, cfg.workspaceAlias);
+    const wsState = workspaceId && workspaceId !== spaceId && (await mx.roomState(c.token, workspaceId));
+    const workspace = wsState && spaceInfo(wsState);
+    if (!workspace || !workspace.joined.has(c.userId) || workspace.powerOf(c.userId) < OWNER_LEVEL) throw fail(403, 'not-allowed');
+    return new Reply(200, { revoked: store.revokeForSpace(spaceId, now()) });
+  }
+
   async function list(req: IncomingMessage, roomId: string | null) {
     const c = await caller(req);
     if (!roomId) throw fail(400, 'bad-request');
@@ -386,6 +401,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
       if (m === 'DELETE' && is('revoke-person')) return revokePerson(req, url.searchParams.get('spaceId'), url.searchParams.get('userId'));
     } else if (!action) {
       if (code === 'person' && m === 'DELETE' && is('revoke-all')) return revokeAll(req, url.searchParams.get('userId'));
+      if (code === 'space' && m === 'DELETE' && is('revoke-space')) return revokeSpace(req, url.searchParams.get('spaceId'));
       if (m === 'GET' && is('preview')) {
         limit(`preview:${ip}`, 60, MINUTE);
         return preview(code);

@@ -276,6 +276,74 @@ describe('client spaces', () => {
   });
 });
 
+describe('delete a client space (DES-05)', () => {
+  const name = `M5 del ${stamp()}`;
+  let spaceId = '';
+  let channels: string[] = [];
+  let keep = '';
+  let hijacked = '';
+  let code = '';
+
+  beforeAll(async () => {
+    const emails = (await mayInvite()) ? [`m5-del-${stamp()}@acme.example`] : [];
+    // Made by an Admin (room v12 creator: nobody can kick her); Sofia, the Owner, joins as team.
+    const made = await ingrid.store.createClientSpace({ name, colour: '#7A3E9D', channels: ['general', 'notes'], team: [JONAS, SOFIA], clientEmails: emails });
+    spaceId = made.spaceId;
+    madeSpaces.push(spaceId);
+    keep = (await sofia.store.createClientSpace({ name: `M5 keep ${stamp()}`, colour: '#2F4A6D', channels: ['general'], team: [INGRID, JONAS], clientEmails: [] })).spaceId;
+    madeSpaces.push(keep);
+    channels = (await until(sofia.store, (s) => s.channels[spaceId]?.length === 2 && s.channels[spaceId], 30_000)).map((c) => c.id);
+    await until(jonas.store, (s) => s.channels[spaceId]?.length === 2 && s.channels[keep]?.length === 1, 30_000);
+    for (const id of [spaceId, ...channels]) {
+      await mx(ingrid.session.accessToken, 'POST', `/_matrix/client/v3/rooms/${E(id)}/invite`, { user_id: HENRIK });
+      expect((await mx(henrik.session.accessToken, 'POST', `/_matrix/client/v3/join/${E(id)}`, {})).status).toBe(200);
+    }
+    if (emails.length) code = (await ingrid.store.pendingInvites(made.channelId))[0]!.code;
+    // A workspace channel an Admin hands to the space: off the workspace's list, its parent and child links pointing there.
+    hijacked = await sofia.store.createChannel({ spaceId: pasodrum, name: `m5-hijack-${stamp()}`, private: false });
+    expect((await mx(jonas.session.accessToken, 'POST', `/_matrix/client/v3/join/${E(hijacked)}`, {})).status).toBe(200);
+    const i = ingrid.session.accessToken;
+    expect((await mx(i, 'POST', `/_matrix/client/v3/join/${E(hijacked)}`, {})).status).toBe(200);
+    expect((await mx(i, 'PUT', `/_matrix/client/v3/rooms/${E(pasodrum)}/state/m.space.child/${E(hijacked)}`, {})).status).toBe(200);
+    expect((await mx(i, 'PUT', `/_matrix/client/v3/rooms/${E(hijacked)}/state/m.space.parent/${E(spaceId)}`, { via: ['pasodrum.localhost'], canonical: true })).status).toBe(200);
+    expect((await mx(i, 'PUT', `/_matrix/client/v3/rooms/${E(spaceId)}/state/m.space.child/${E(hijacked)}`, { via: ['pasodrum.localhost'] })).status).toBe(200);
+  }, 90_000);
+
+  afterAll(async () => {
+    for (const a of [jonas, ingrid, sofia]) await mx(a.session.accessToken, 'POST', `/_matrix/client/v3/rooms/${E(hijacked)}/leave`);
+  });
+
+  it('refuses Admins (the space’s creator too), Staff, the workspace and a space that isn’t archived', async () => {
+    expect((await rejection(sofia.store.deleteSpace(spaceId)))?.message).toBe('not-allowed');
+    await ingrid.store.setArchived(spaceId, true);
+    await until(sofia.store, (s) => s.spaces.find((x) => x.id === spaceId)?.archived, 30_000);
+    expect((await rejection(ingrid.store.deleteSpace(spaceId)))?.message).toBe('not-allowed');
+    expect((await rejection(jonas.store.deleteSpace(spaceId)))?.message).toBe('not-allowed');
+    expect((await rejection(sofia.store.deleteSpace(pasodrum)))?.message).toBe('not-allowed');
+    expect((await rejection(sofia.store.deleteSpace(keep)))?.message).toBe('not-allowed');
+  });
+
+  it('the Owner deletes it: links die, clients and Staff are out of it and its channels; nothing else is touched', async () => {
+    await sofia.store.deleteSpace(spaceId);
+    expect(sofia.store.getSnapshot().spaces.some((s) => s.id === spaceId)).toBe(false);
+    if (code) expect((await previewInvite(code)).state).toBe('used');
+    for (const a of [jonas, henrik, sofia]) {
+      const joined = await joinedRooms(a.session.accessToken);
+      expect([spaceId, ...channels].filter((id) => joined.includes(id)), a.session.userId).toEqual([]);
+    }
+    for (const id of channels) expect([403, 404], id).toContain((await mx(henrik.session.accessToken, 'POST', `/_matrix/client/v3/join/${E(id)}`, {})).status);
+    await until(jonas.store, (s) => !s.spaces.some((x) => x.id === spaceId) && s, 30_000);
+
+    for (const a of [sofia, jonas]) {
+      expect(await joinedRooms(a.session.accessToken), a.session.userId).toContain(hijacked);
+      expect(a.store.getSnapshot().channels[keep]).toHaveLength(1);
+      expect(a.store.getSnapshot().channels[pasodrum]!.length).toBeGreaterThan(0);
+    }
+    expect(sofia.store.getSnapshot().channels[nordlys]!.length).toBeGreaterThan(0);
+    expect((await sofia.store.spaceMembers(keep)).map((m) => m.person.id).sort()).toEqual([INGRID, JONAS, SOFIA].sort());
+  });
+});
+
 describe('client’s eye: a client reaches nothing internal (D-06)', () => {
   let internal: string[] = [];
   let other: string[] = [];

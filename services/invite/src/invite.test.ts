@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { renderInvite, tileColor } from './email.ts';
 import { isCode, localpartFor, newCode, newPassword, normalizeEmail } from './ids.ts';
 import { parseAddress } from './mail.ts';
-import { canInvite, canManage, isGenuine, normalizeRole, rateLimiter, spaceInfo, stateOf, teamOf, type StateEvent } from './rules.ts';
+import { canDelete, canInvite, canManage, isGenuine, normalizeRole, rateLimiter, spaceInfo, stateOf, teamOf, type StateEvent } from './rules.ts';
 import { keyFrom, seal, unseal } from './secret.ts';
 
 describe('ids', () => {
@@ -114,6 +114,15 @@ describe('permission rules (D-25, D-36)', () => {
   it('reads the old role names', () => {
     expect(['member', 'guest', 'staff', 'external', 'client'].map(normalizeRole)).toEqual(['staff', 'external', 'staff', 'external', 'client']);
     for (const bad of ['owner', 'admin', '', 42, null]) expect(normalizeRole(bad)).toBeNull();
+  });
+
+  it('only an Owner of a client space deletes it; never the workspace (DES-05)', () => {
+    expect(canDelete(client, sofia)).toBe(true);
+    expect(canDelete(client, ingrid)).toBe(false);
+    expect(canDelete(client, kari)).toBe(false);
+    expect(canDelete(client, henrik)).toBe(false);
+    expect(canDelete(client, stranger)).toBe(false);
+    expect(canDelete(workspace, sofia)).toBe(false);
   });
 
   it('the inviter or an Admin of the space manages an invite', () => {

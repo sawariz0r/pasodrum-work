@@ -1,14 +1,14 @@
-// Client space settings (SpaceSettings, SpacePeople, RemoveFromSpace, ArchiveSpace). Owners and Admins, from the space menu.
-// General: name, colour (saves as it changes), Archive. People (D-36 PeopleSpaceInvite): an invite field for clients on top, then the
+// Client space settings (SpaceSettings, SpacePeople, RemoveFromSpace, ArchiveSpace, DES-05 DeleteSpace). Owners and Admins, from the space menu.
+// General: name, colour (saves as it changes), Archive; once archived, Delete for workspace Owners. People (D-36 PeopleSpaceInvite): an invite field for clients on top, then the
 // team (Externals tagged), then the client, pending with the clock.
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useStore, useWorkspace, type Member, type PendingInvite, type Person, type Space } from '../../matrix';
 import { Button, Dialog, IconButton, isImeEnter, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '../../ui';
-import { HashIcon, LogoMark, MoreIcon } from '../icons';
+import { HashIcon, LogoMark, MoreIcon, TrashIcon } from '../icons';
 import { Face, PersonCorner } from '../people/Face';
-import { dmPath } from '../places';
+import { channelPath, dmPath, spaceHome } from '../places';
 import { BubbleIcon, MailIcon } from '../shell/icons';
 import { firstName, useToast } from '../toast';
 import s from './Channels.module.css';
@@ -19,9 +19,9 @@ import { copyText, isInviteFor, spaceColour, useRole, useSpace, useWorkspaceName
 
 export type SpaceTab = 'general' | 'people';
 
-type Props = { open: boolean; spaceId: string; tab?: SpaceTab; onClose: () => void };
+type Props = { open: boolean; spaceId: string; tab?: SpaceTab; onClose: () => void; onDelete: (spaceId: string) => void };
 
-export function SpaceSettingsDialog({ open, spaceId, tab: initialTab = 'general', onClose }: Props) {
+export function SpaceSettingsDialog({ open, spaceId, tab: initialTab = 'general', onClose, onDelete }: Props) {
   const { t } = useTranslation();
   const store = useStore();
   const space = useSpace(spaceId);
@@ -79,7 +79,11 @@ export function SpaceSettingsDialog({ open, spaceId, tab: initialTab = 'general'
         </div>
         <div key={tab} role="tabpanel" aria-labelledby={`space-${tab}`} className={s.panel}>
           {tab === 'general' ? (
-            <General space={space} onArchive={() => ask({ kind: 'archive' })} />
+            <General
+              space={space}
+              onArchive={() => ask({ kind: 'archive' })}
+              onDelete={() => onDelete(space.id)}
+            />
           ) : (
             <People space={space} members={members} tick={tick} onAdded={() => setTick((n) => n + 1)} onRemove={(member) => ask({ kind: 'remove', member })} onLeave={onClose} />
           )}
@@ -131,11 +135,12 @@ export function SpaceTile({ space, size, name, className }: { space: Space; size
   );
 }
 
-function General({ space, onArchive }: { space: Space; onArchive: () => void }) {
+function General({ space, onArchive, onDelete }: { space: Space; onArchive: () => void; onDelete: () => void }) {
   const { t } = useTranslation();
   const store = useStore();
   const toast = useToast();
   const spaces = useWorkspace((x) => x.spaces);
+  const owner = useWorkspace((x) => x.myRoles[x.spaces.find((sp) => sp.kind === 'workspace')?.id ?? ''] === 'owner');
   const [name, setName] = useState(space.name);
   const [failed, setFailed] = useState<string | null>(null);
   // The last name sent: Enter then blur (or Escape) must not save twice.
@@ -201,7 +206,7 @@ function General({ space, onArchive }: { space: Space; onArchive: () => void }) 
         </div>
         <Swatches labelledBy="space-colour" value={spaceColour(space)} size={30} onPick={(colour) => void store.updateSpace(space.id, { colour }).catch(() => toast(t('failed.colour', { name: space.name })))} />
       </div>
-      {!space.archived && (
+      {!space.archived ? (
         <div className={`${s.box} ${s.actions}`}>
           <button type="button" className={`${s.action} ${s.danger}`} onClick={onArchive}>
             <span>
@@ -210,6 +215,17 @@ function General({ space, onArchive }: { space: Space; onArchive: () => void }) 
             {t('spaces.archive')}
           </button>
         </div>
+      ) : (
+        owner && (
+          <div className={`${s.box} ${s.actions}`}>
+            <button type="button" className={`${s.action} ${s.danger}`} onClick={onDelete}>
+              <span>
+                <TrashIcon size={17} />
+              </span>
+              {t('spaces.delete')}
+            </button>
+          </div>
+        )
       )}
     </div>
   );
@@ -596,6 +612,116 @@ function ArchiveDialog({ open, space, members, alert, onCancel, onArchive }: Arc
           ))}
         </span>
       </div>
+    </Dialog>
+  );
+}
+
+/** DES-05 DeleteSpace: typing the space's name arms Delete; afterwards you land on the workspace. */
+export function DeleteSpaceDialog({ open, spaceId, onClose }: { open: boolean; spaceId: string; onClose: () => void }) {
+  const { t } = useTranslation();
+  const store = useStore();
+  const navigate = useNavigate();
+  const space = useSpace(spaceId);
+  const home = useWorkspace((x) => {
+    const ws = x.spaces.find((sp) => sp.kind === 'workspace');
+    const channel = ws && spaceHome(x, ws.id);
+    return ws && channel ? channelPath(ws.id, channel.id) : '/';
+  });
+  const [members, setMembers] = useState<Member[]>([]);
+  const [typed, setTyped] = useState('');
+  const [failed, setFailed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const inputId = useId();
+  const whatId = useId();
+  // The name it opened with: the snapshot drops the space while the delete finishes.
+  const [name] = useState(space?.name ?? '');
+
+  useEffect(() => {
+    let live = true;
+    store.spaceMembers(spaceId).then(
+      (list) => live && setMembers(list),
+      () => {},
+    );
+    return () => {
+      live = false;
+    };
+  }, [store, spaceId]);
+
+  if (!space && !busy) return null;
+  const armed = typed.trim() === name && !busy;
+  const faces = members.filter((m) => !m.pending).slice(0, 4);
+  const remove = () => {
+    if (!armed) return;
+    setFailed(false);
+    setBusy(true);
+    store.deleteSpace(spaceId).then(
+      () => {
+        onClose();
+        navigate(home);
+      },
+      () => {
+        setBusy(false);
+        setFailed(true);
+      },
+    );
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => !o && onClose()}
+      role="alertdialog"
+      width={440}
+      top={168}
+      title={t('spaces.deleteTitle', { name })}
+      closeLabel={t('people.close')}
+      alert={failed ? t('failed.deleteSpace', { name }) : undefined}
+      busy={busy}
+      bodyClassName={s.spConfirmBody}
+      footer={
+        <>
+          <span className={s.spacer} />
+          <Button variant="secondary" onClick={onClose}>
+            {t('people.cancel')}
+          </Button>
+          <Button variant="danger" disabled={!armed} onClick={remove}>
+            {t('spaces.deleteButton')}
+          </Button>
+        </>
+      }
+    >
+      {space && (
+        <div className={`${s.spCard} ${s.spCardRow}`}>
+          <SpaceTile space={space} size="card" />
+          <span className={s.spCardName}>{name}</span>
+          <span className={s.spPile}>
+            {faces.map((m) => (
+              <Face key={m.person.id} person={m.person} size={26} className={s.spPileFace} />
+            ))}
+          </span>
+        </div>
+      )}
+      <p id={whatId} className={s.dsWhat}>
+        {t('spaces.deleteWhat')}
+      </p>
+      <label htmlFor={inputId} className={s.dsLabel}>
+        {t('spaces.deleteLabel')}
+      </label>
+      <input
+        id={inputId}
+        className={s.dsInput}
+        autoComplete="off"
+        placeholder={name}
+        aria-describedby={whatId}
+        value={typed}
+        onChange={(e) => setTyped(e.target.value)}
+        onKeyDown={(e) => {
+          if (isImeEnter(e)) {
+            e.preventDefault();
+            remove();
+          }
+        }}
+      />
     </Dialog>
   );
 }

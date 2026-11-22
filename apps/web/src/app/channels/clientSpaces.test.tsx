@@ -315,3 +315,47 @@ describe('review fixes', () => {
   });
 });
 
+
+describe('delete a client space (DES-05)', () => {
+  const openSettings = async () => {
+    openMenu(screen.getByRole('button', { name: 'Nordlys' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Client space settings' }));
+    await flush();
+  };
+
+  it('is offered only to the workspace Owner, and only once the space is archived', async () => {
+    const { store } = renderApp('/w/!nordlys/c/!project-updates', { roles: { '!pasodrum': 'admin', '!nordlys': 'admin' } });
+    await flush();
+    await openSettings();
+    expect(within(dialog()).queryByRole('button', { name: 'Delete client space' })).toBeNull();
+    fireEvent.keyDown(dialog(), { key: 'Escape' });
+    await act(() => store().setArchived('!nordlys', true));
+    await openSettings();
+    expect(within(dialog()).queryByRole('button', { name: 'Delete client space' })).toBeNull();
+    expect(within(dialog()).queryByRole('button', { name: 'Archive client space' })).toBeNull();
+  });
+
+  it('arms Delete only on the exact name, then the space is gone and you land on the workspace', async () => {
+    const { store, where } = renderApp('/w/!nordlys/c/!project-updates');
+    await flush();
+    await openSettings();
+    expect(within(dialog()).queryByRole('button', { name: 'Delete client space' })).toBeNull();
+    fireEvent.keyDown(dialog(), { key: 'Escape' });
+    await act(() => store().setArchived('!nordlys', true));
+    await openSettings();
+    fireEvent.click(within(dialog()).getByRole('button', { name: 'Delete client space' }));
+    await flush();
+    const ask = screen.getByRole('alertdialog', { name: 'Delete Nordlys?' });
+    const remove = within(ask).getByRole('button', { name: 'Delete' }) as HTMLButtonElement;
+    const name = within(ask).getByRole('textbox', { name: 'Type the client space name to confirm' });
+    expect(remove.disabled).toBe(true);
+    fireEvent.change(name, { target: { value: 'nordlys' } });
+    expect(remove.disabled).toBe(true);
+    fireEvent.change(name, { target: { value: 'Nordlys ' } });
+    expect(remove.disabled).toBe(false);
+    fireEvent.click(remove);
+    await flush();
+    expect(store().getSnapshot().spaces.some((sp) => sp.id === '!nordlys')).toBe(false);
+    expect(where()).toMatch(/^\/w\/!pasodrum\/c\//);
+  });
+});

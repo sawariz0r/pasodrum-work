@@ -5,6 +5,7 @@ export type Person = { id: string; name: string };
 export type StateEvent = { type: string; state_key?: string; sender?: string; content?: Record<string, unknown> };
 
 export const ROLES: readonly Role[] = ['staff', 'external', 'client'];
+export const OWNER_LEVEL = 100;
 export const ADMIN_LEVEL = 50;
 export const STAFF_LEVEL = 10;
 
@@ -90,6 +91,11 @@ export function isGenuine(spaceId: string, space: SpaceInfo, workspaceId: string
   if (space.kind === 'workspace') return spaceId === workspaceId;
   const by = space.kindSender;
   return !!by && !!workspace && workspace.joined.has(by) && workspace.powerOf(by) >= ADMIN_LEVEL;
+}
+
+/** DES-05: deleting a client space (its open codes die first) is for Owners of it; the workspace is never deleted. */
+export function canDelete(space: SpaceInfo, caller: string): boolean {
+  return space.kind === 'client' && space.joined.has(caller) && space.powerOf(caller) >= OWNER_LEVEL;
 }
 
 export function canManage(inviterId: string, caller: string, space: SpaceInfo | null): boolean {

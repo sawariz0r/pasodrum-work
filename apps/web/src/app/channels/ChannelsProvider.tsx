@@ -6,7 +6,7 @@ import { ArchivedSpacesDialog } from './ArchivedSpaces';
 import { ChannelDetailsDialog, type DetailsTab } from './ChannelDetails';
 import { CreateChannelDialog } from './CreateChannel';
 import { NewClientSpaceDialog } from './NewClientSpace';
-import { SpaceSettingsDialog, type SpaceTab } from './SpaceSettings';
+import { DeleteSpaceDialog, SpaceSettingsDialog, type SpaceTab } from './SpaceSettings';
 import { WorkspaceSettingsDialog, type WorkspaceTab } from '../workspace/WorkspaceSettings';
 
 export interface ChannelsApi {
@@ -20,9 +20,10 @@ export interface ChannelsApi {
   workspaceSettings(tab?: WorkspaceTab): void;
   archivedSpaces(): void;
   /** Owners, archived client spaces only (DES-05 C). */
+  deleteSpace(spaceId: string): void;
 }
 
-const ChannelsContext = createContext<ChannelsApi>({ newChannel() {}, addPeople() {}, details() {}, newClientSpace() {}, spaceSettings() {}, workspaceSettings() {}, archivedSpaces() {} });
+const ChannelsContext = createContext<ChannelsApi>({ newChannel() {}, addPeople() {}, details() {}, newClientSpace() {}, spaceSettings() {}, workspaceSettings() {}, archivedSpaces() {}, deleteSpace() {} });
 
 export function useChannels(): ChannelsApi {
   return useContext(ChannelsContext);
@@ -35,7 +36,8 @@ type Sheet =
   | { kind: 'newSpace' }
   | { kind: 'space'; spaceId: string; tab: SpaceTab }
   | { kind: 'workspace'; tab: WorkspaceTab }
-  | { kind: 'archived' };
+  | { kind: 'archived' }
+  | { kind: 'deleteSpace'; spaceId: string };
 
 export function ChannelsProvider({ children }: { children: ReactNode }) {
   // A fresh dialog each time one opens (`n`); `open: false` keeps the last one mounted for its exit animation.
@@ -50,6 +52,7 @@ export function ChannelsProvider({ children }: { children: ReactNode }) {
       spaceSettings: (spaceId, tab = 'general') => show({ kind: 'space', spaceId, tab }),
       workspaceSettings: (tab = 'people') => show({ kind: 'workspace', tab }),
       archivedSpaces: () => show({ kind: 'archived' }),
+      deleteSpace: (spaceId) => show({ kind: 'deleteSpace', spaceId }),
     };
   }, []);
   const close = useCallback(() => setState((st) => ({ ...st, open: false })), []);
@@ -64,8 +67,9 @@ export function ChannelsProvider({ children }: { children: ReactNode }) {
         <ChannelDetailsDialog key={n} open={open} channelId={sheet.channelId} tab={sheet.tab} onClose={close} onAddPeople={() => api.addPeople(sheet.channelId)} />
       )}
       {sheet?.kind === 'newSpace' && <NewClientSpaceDialog key={n} open={open} onClose={close} />}
-      {sheet?.kind === 'space' && <SpaceSettingsDialog key={n} open={open} spaceId={sheet.spaceId} tab={sheet.tab} onClose={close} />}
-      {sheet?.kind === 'archived' && <ArchivedSpacesDialog key={n} open={open} onClose={close} />}
+      {sheet?.kind === 'space' && <SpaceSettingsDialog key={n} open={open} spaceId={sheet.spaceId} tab={sheet.tab} onClose={close} onDelete={api.deleteSpace} />}
+      {sheet?.kind === 'archived' && <ArchivedSpacesDialog key={n} open={open} onClose={close} onDelete={api.deleteSpace} />}
+      {sheet?.kind === 'deleteSpace' && <DeleteSpaceDialog key={n} open={open} spaceId={sheet.spaceId} onClose={close} />}
       {sheet?.kind === 'workspace' && <WorkspaceSettingsDialog key={n} open={open} tab={sheet.tab} onClose={close} onAddPeople={api.addPeople} />}
     </ChannelsContext.Provider>
   );

@@ -2672,6 +2672,9 @@ button.personButton:hover {
   font-size: 13px;
 }
 
+.aslBin {
+  margin-left: -2px;
+}
 
 /* Delete a client space (DES-05 TidyDeleteSpace) */
 .dsWhat {

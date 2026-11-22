@@ -554,6 +554,11 @@ export interface WorkspaceStore {
   removeFromSpace(spaceId: string, userId: string): Promise<void>;
   /** Archived = every channel read-only for everyone; nobody removed. Owners/Admins can undo. */
   setArchived(spaceId: string, archived: boolean): Promise<void>;
+  /**
+   * DES-05. Workspace Owners, archived client spaces only: its open join links die, then everyone leaves the space and its
+   * channels. Rejects Error('not-allowed') or Error('other').
+   */
+  deleteSpace(spaceId: string): Promise<void>;
   anotherApp(): AnotherAppInfo;
   /** SIDE-01. Our translation service: same number of segments back, in order. Rejects with Error('rate-limited' | 'unavailable' | 'failed'). */
   translate(segments: string[], to: 'en' | 'ja'): Promise<string[]>;

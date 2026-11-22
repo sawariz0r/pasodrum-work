@@ -1,19 +1,21 @@
-// Archived client spaces (DES-05 TidyArchivedList): off the rail, listed from the Pasodrum menu. Unarchive here.
+// Archived client spaces (DES-05 TidyArchivedList): off the rail, listed from the Pasodrum menu. Unarchive here; Owners also get the bin.
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useStore, useWorkspace, type Space } from '../../matrix';
-import { Dialog } from '../../ui';
+import { Dialog, IconButton } from '../../ui';
+import { TrashIcon } from '../icons';
 import { useToast } from '../toast';
 import s from './Channels.module.css';
 import { UsersIcon } from './icons';
 import { SpaceTile } from './SpaceSettings';
 
-type Props = { open: boolean; onClose: () => void };
+type Props = { open: boolean; onClose: () => void; onDelete: (spaceId: string) => void };
 
-export function ArchivedSpacesDialog({ open, onClose }: Props) {
+export function ArchivedSpacesDialog({ open, onClose, onDelete }: Props) {
   const { t } = useTranslation();
   const spaces = useWorkspace((x) => x.spaces);
+  const owner = useWorkspace((x) => x.myRoles[x.spaces.find((sp) => sp.kind === 'workspace')?.id ?? ''] === 'owner');
   const archived = spaces.filter((sp) => sp.kind === 'client' && sp.archived);
   const empty = archived.length === 0;
   useEffect(() => {
@@ -32,14 +34,14 @@ export function ArchivedSpacesDialog({ open, onClose }: Props) {
     >
       <div role="list">
         {archived.map((space) => (
-          <Row key={space.id} space={space} onClose={onClose} />
+          <Row key={space.id} space={space} onClose={onClose} onDelete={owner ? () => onDelete(space.id) : undefined} />
         ))}
       </div>
     </Dialog>
   );
 }
 
-function Row({ space, onClose }: { space: Space; onClose: () => void }) {
+function Row({ space, onClose, onDelete }: { space: Space; onClose: () => void; onDelete?: () => void }) {
   const { t } = useTranslation();
   const store = useStore();
   const navigate = useNavigate();
@@ -90,6 +92,18 @@ function Row({ space, onClose }: { space: Space; onClose: () => void }) {
       >
         {t('spaces.unarchive')}
       </button>
+      {onDelete && (
+        <IconButton
+          size={30}
+          className={s.aslBin}
+          label={t('spaces.deleteRow', { name: space.name })}
+          icon={<TrashIcon />}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+        />
+      )}
     </div>
   );
 }
