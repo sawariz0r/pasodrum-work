@@ -76,7 +76,7 @@ Status (2026-11-21, late): M0–M8 and side features D-36…D-40 live (people & 
 
 ### Workflow
 - **Subagents** for plan/investigate, implement, and review. Parallelize independent work; brief each subagent fully (they lack conversation context).
-- **Independent review:** for deeper review, ask the CEO to run a different model (e.g. Codex) for an independent pass. Cross-model review is valued.
+- **Independent review:** for security- or data-loss-sensitive work, run one Fable review subagent (`model: "fable"`) yourself and fix must-fix findings. Don't ask the CEO to run Codex (CEO, 2026-11-22: "work smarter").
 - **File-based task board** in [tasks/](tasks/): `backlog → todo → implementing → ceo-review → done`. See [tasks/README.md](tasks/README.md).
 - **Decisions** get logged in DECISIONS.md (ADR-style). **Learnings** get appended there too.
 - **Escalate only important decisions** to the CTO/CEO (scope, server choice, security model, anything irreversible). Decide the rest and log it.
