@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { EditorContent, useEditor, useEditorState, type Editor } from '@tiptap/react';
 import { useStore, useWorkspace, type Draft, type Person, type Upload, type WorkspaceSnapshot, type WorkspaceStore } from '../../matrix';
 import { clearDraft, getDraft, setDraft, useDraftsFor } from '../drafts';
+import { armNotifyAsk } from '../prefs';
 import { isImeEnter } from '../../ui';
 import { useComposer } from './context';
 import { editableContent, toDraft } from './draft';
@@ -56,6 +57,7 @@ function sendNow(editor: Editor, store: WorkspaceStore, place: Place, replyToId:
   if (replyToId) draft.replyTo = replyToId;
   if (place.threadRootId) draft.threadRootId = place.threadRootId;
   store.send(place.channelId, draft);
+  armNotifyAsk();
   clearDraft(place.channelId, place.threadRootId);
   editor.commands.clearContent(true);
   cancelReply();

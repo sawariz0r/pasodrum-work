@@ -5,8 +5,7 @@
   box-sizing: border-box;
   width: 100%;
   max-width: 390px;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--titlebar, 0px));
   margin: 0 auto;
   padding: 28px 24px 40px;
   background: var(--bg);

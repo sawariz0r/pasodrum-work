@@ -159,3 +159,34 @@ export function lastIdentifier(): string {
 export function rememberIdentifier(identifier: string) {
   write(identifierKey, identifier);
 }
+
+const notifyAskKey = 'pasodrum.notifyAsk';
+const notifyAskListeners = new Set<() => void>();
+// Absent until the first send; 'ask' shows the NotifyAsk card; 'done' after Turn on or ×.
+let notifyAsk = read(notifyAskKey);
+
+function setNotifyAsk(value: 'ask' | 'done') {
+  notifyAsk = value;
+  write(notifyAskKey, value);
+  notifyAskListeners.forEach((l) => l());
+}
+
+/** The first message I send arms the NotifyAsk card. */
+export function armNotifyAsk() {
+  if (notifyAsk === null) setNotifyAsk('ask');
+}
+
+export function closeNotifyAsk() {
+  setNotifyAsk('done');
+}
+
+function subscribeNotifyAsk(cb: () => void) {
+  notifyAskListeners.add(cb);
+  return () => {
+    notifyAskListeners.delete(cb);
+  };
+}
+
+export function useNotifyAsk(): boolean {
+  return useSyncExternalStore(subscribeNotifyAsk, () => notifyAsk === 'ask');
+}

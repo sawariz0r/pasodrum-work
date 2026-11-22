@@ -2,8 +2,7 @@
 .page {
   display: flex;
   flex-wrap: wrap;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--titlebar, 0px));
   background: var(--bg);
   color: var(--ink);
 }
@@ -14,8 +13,7 @@
   flex-direction: column;
   gap: 40px;
   box-sizing: border-box;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--titlebar, 0px));
   padding: 44px 48px;
   background: var(--rail);
   color: #f3f2f6;
@@ -114,8 +112,7 @@
   flex: 999 1 520px;
   flex-direction: column;
   box-sizing: border-box;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--titlebar, 0px));
   padding: 32px 40px;
 }
 

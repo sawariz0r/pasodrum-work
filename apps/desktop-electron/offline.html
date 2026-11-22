@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pasodrum work</title>
+<style>
+@font-face { font-family: 'Space Grotesk'; font-weight: 700; src: url(space-grotesk-700.woff2) format('woff2'); }
+:root {
+  --bg: #ffffff; --rail: #18171d; --ink: #1d1c22; --muted: #55535c; --well: #f4f3ef;
+  --accent: #0e7c66; --accenthover: #0b6956; --onaccent: #ffffff;
+  --cjk: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', Meiryo, 'Noto Sans JP';
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1b20; --rail: #0d0d10; --ink: #ecebf0; --muted: #b3b1bc; --well: #202026;
+    --accent: #3dd6a5; --accenthover: #5fe0b8; --onaccent: #04271d;
+    color-scheme: dark;
+  }
+}
+html, body { height: 100%; margin: 0; }
+body {
+  box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 64px 24px; background: var(--bg); color: var(--ink); text-align: center; user-select: none;
+  font-family: Inter, system-ui, var(--cjk), sans-serif; -webkit-font-smoothing: antialiased;
+  word-break: auto-phrase; text-wrap: pretty;
+}
+body::before { content: ''; position: fixed; inset: 0 0 auto; height: 40px; background: var(--rail); -webkit-app-region: drag; }
+.tile { width: 64px; height: 64px; border-radius: 18px; background: var(--well); color: var(--muted); display: flex; align-items: center; justify-content: center; }
+h1 { margin: 20px 0 0; max-width: 380px; font: 700 26px/1.25 'Space Grotesk', var(--cjk), sans-serif; letter-spacing: -0.015em; }
+:lang(ja) h1 { letter-spacing: 0; }
+button { margin-top: 24px; height: 40px; padding: 0 20px; border: 0; border-radius: 10px; background: var(--accent); color: var(--onaccent); font: inherit; font-size: 15px; font-weight: 600; }
+button:hover { background: var(--accenthover); }
+</style>
+</head>
+<body>
+<div class="tile"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 2 20 20"/><path d="M5.8 8.6A6 6 0 0 0 7 20h10"/><path d="M10.2 4.3A6 6 0 0 1 17.5 9H18a4 4 0 0 1 3 6.7"/></svg></div>
+<h1>Can’t reach Pasodrum work</h1>
+<button type="button">Try again</button>
+<script>
+  const [h1, button] = [document.querySelector('h1'), document.querySelector('button')];
+  if (navigator.language.startsWith('ja')) {
+    document.documentElement.lang = 'ja';
+    h1.textContent = 'Pasodrum work に接続できません';
+    button.textContent = '再試行';
+  }
+  const to = new URLSearchParams(location.search).get('to');
+  const retry = () => fetch(to, { mode: 'no-cors', cache: 'no-store' }).then(() => location.replace(to), () => {});
+  button.onclick = retry;
+  setInterval(retry, 5000);
+</script>
+</body>
+</html>

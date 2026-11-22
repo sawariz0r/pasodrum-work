@@ -8,6 +8,7 @@ import { HashIcon, LockIcon } from '../icons';
 import { DmFace } from '../people/Face';
 import { useDmName } from '../people/names';
 import { useNewMessage } from '../people/NewMessage';
+import { SideCard } from '../notify/SideCard';
 import { channelPath, draftsPath, spaceDmPath, threadsPath } from '../places';
 import { ComposeIcon, PlusIcon, SendIcon, ThreadIcon } from './icons';
 import s from './Shell.module.css';
@@ -81,6 +82,7 @@ export function Sidebar({ space, active }: { space: Space; active?: SidebarActiv
           ))}
         </Section>
       </div>
+      <SideCard />
     </aside>
   );
 }

@@ -2,10 +2,11 @@ import { useEffect, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import type { InvitePreview, Person, Session } from '../../matrix';
+import { platform } from '../../platform';
 import { Avatar, avatarColor, Button, initialsOf, isCjk, isImeEnter, TextField } from '../../ui';
 import type { Backend } from '../backend';
 import { formatList } from '../format';
-import { LogoMark } from '../icons';
+import { DownloadIcon, LogoMark } from '../icons';
 import { AccountPair } from '../another/AccountPair';
 import { elementXLink, hostOf, usePhone } from '../another/elementX';
 import { OpenOutIcon } from '../another/icons';
@@ -72,6 +73,7 @@ export function JoinPage({
   const [claimed, setClaimed] = useState<Claimed>();
   const [other, setOther] = useState(false);
   const phone = usePhone();
+  const download = platform.downloadUrl();
 
   useEffect(() => {
     let live = true;
@@ -162,6 +164,12 @@ export function JoinPage({
         <span className={s.wordmark}>
           {t('common.brand')} <span>{t('common.brandSuffix')}</span>
         </span>
+        {download && (
+          <a className={s.headDownload} href={download}>
+            <DownloadIcon />
+            {t('download.app')}
+          </a>
+        )}
       </header>
 
       <main className={s.main}>
@@ -259,6 +267,12 @@ export function JoinPage({
                       {t('join.open')}
                       <ArrowRightIcon />
                     </Button>
+                    {download && (
+                      <a className={s.download} href={download}>
+                        <DownloadIcon />
+                        {t('download.mac')}
+                      </a>
+                    )}
                     <button type="button" className={s.toggle} aria-expanded={other} onClick={() => setOther(!other)}>
                       <ChevronIcon />
                       {t('another.title')}

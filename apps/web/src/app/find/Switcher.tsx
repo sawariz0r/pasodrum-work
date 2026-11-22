@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type CSSProper
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { fold, useStore, useWorkspace, type Channel, type Dm, type Person } from '../../matrix';
+import { platform } from '../../platform';
 import { IconButton, isImeEnter, useMenuReturnFocus } from '../../ui';
 import { HashIcon, LockIcon } from '../icons';
 import { Face, others } from '../people/Face';
@@ -54,6 +55,8 @@ export function FindButton() {
   const { t } = useTranslation();
   const find = useFind();
   const workspace = useWorkspaceName();
+  // The desktop app's title bar has the search field instead (DesktopWindow).
+  if (platform.desktop) return null;
   return (
     <IconButton
       className={s.headButton}

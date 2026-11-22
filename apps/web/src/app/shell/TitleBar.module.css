@@ -1,0 +1,72 @@
+/* DesktopWindow → Real size (Mac). The strip and its drag region are in tokens.css; 82px clears the traffic lights. */
+.bar {
+  position: fixed;
+  top: 0;
+  right: 92px;
+  left: 82px;
+  display: flex;
+  align-items: center;
+  height: var(--titlebar);
+  color: #ffffff;
+  user-select: none;
+  -webkit-app-region: drag;
+}
+
+.arrows {
+  display: flex;
+  gap: 2px;
+}
+
+.arrow,
+.search {
+  border: 0;
+  cursor: default;
+  -webkit-app-region: no-drag;
+}
+
+.arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.arrow:disabled {
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.middle {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 16px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 440px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 13px;
+}
+
+.label {
+  flex: 1;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

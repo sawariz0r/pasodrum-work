@@ -2,8 +2,7 @@
 .shell {
   position: relative;
   display: flex;
-  height: 100vh;
-  height: 100dvh;
+  height: calc(100dvh - var(--titlebar, 0px));
   overflow: hidden;
   background: var(--bg);
   color: var(--ink);

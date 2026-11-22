@@ -1,20 +1,22 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-const subs = [];
-let pending = null;
+let onRoute = null;
+let pendingRoute = null;
+let onUpdate = null;
+let updateReady = false;
 
-ipcRenderer.on('open-route', (_e, route) => {
-  if (subs.length) subs.forEach((cb) => cb(route));
-  else pending = route;
-});
+ipcRenderer.on('open-route', (_e, route) => (onRoute ? onRoute(route) : (pendingRoute = route)));
+ipcRenderer.on('update-ready', () => { updateReady = true; onUpdate?.(); });
 
 contextBridge.exposeInMainWorld('pasodrumShell', {
   shell: 'electron',
-  notify: (n) => ipcRenderer.send('notify', { title: n.title, body: n.body, route: n.route }),
+  notify: ({ title, body, route, tag }) => ipcRenderer.send('notify', { title, body, route, tag }),
   setBadge: (unread) => ipcRenderer.send('badge', unread),
   openExternal: (url) => ipcRenderer.send('external', url),
   onOpenRoute: (cb) => {
-    subs.push(cb);
-    if (pending != null) { const r = pending; pending = null; cb(r); }
+    onRoute = cb;
+    if (pendingRoute != null) { cb(pendingRoute); pendingRoute = null; }
   },
+  onUpdateReady: (cb) => { onUpdate = cb; if (updateReady) cb(); },
+  restartToUpdate: () => ipcRenderer.send('restart'),
 });

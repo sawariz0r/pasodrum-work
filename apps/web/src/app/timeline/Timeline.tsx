@@ -255,7 +255,8 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
     if (atBottom.current && el.scrollTop === stuckAt.current) stickToBottom();
     atBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight <= bottomSlackPx && performance.now() - jumpedAt.current > jumpMs;
     if (atBottom.current) setSeenId(st.newestId ?? null);
-    if (atBottom.current && markedId.current !== (st.newestId ?? null)) {
+    // Read only while the window has focus: a hidden window's open conversation still badges and notifies.
+    if (atBottom.current && document.hasFocus() && markedId.current !== (st.newestId ?? null)) {
       markedId.current = st.newestId ?? null;
       if (rootId) store.markThreadRead(channelId, rootId);
       else store.markRead(channelId);
@@ -265,6 +266,11 @@ export function Timeline({ channelId, channelName, timeline, meId, unreadAtOpen 
       else store.loadOlder(channelId);
     }
   }, [store, channelId, rootId, stickToBottom]);
+
+  useEffect(() => {
+    window.addEventListener('focus', check);
+    return () => window.removeEventListener('focus', check);
+  }, [check]);
 
   // Keep what's on screen in place: stick to the bottom when there, otherwise hold the first message still
   // while older history or its skeleton is inserted above it.

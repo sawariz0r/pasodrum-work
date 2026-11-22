@@ -1,114 +1,156 @@
-const { app, BrowserWindow, Notification, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, Menu, Notification, dialog, ipcMain, screen, shell } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const BASE = process.env.PASODRUM_URL || 'http://localhost:4173';
-const SCHEME = 'pasodrum-electron';
+const BASE = process.env.PASODRUM_URL || (app.isPackaged ? 'https://pasodrum.work' : 'http://localhost:4173');
+const ORIGIN = new URL(BASE).origin;
+const BOUNDS = path.join(app.getPath('userData'), 'window.json');
 
 let win = null;
-let coldRoute = '';
-const notes = new Set();
+let quitting = false;
+let updater = null;
+let updateReady = false;
+const notes = new Map();
 
-function log(...a) {
-  const line = `${new Date().toISOString()} ${a.map((x) => (typeof x === 'string' ? x : JSON.stringify(x))).join(' ')}\n`;
-  try { fs.appendFileSync(path.join(app.getPath('userData'), 'shell.log'), line); } catch {}
+const EN = {
+  about: 'About Pasodrum work', restart: 'Restart to Update', check: 'Check for Updates…', settings: 'Settings…',
+  hide: 'Hide Pasodrum work', quit: 'Quit Pasodrum work', file: 'File', edit: 'Edit', view: 'View', window: 'Window',
+  help: 'Help', upToDate: 'You’re up to date',
+};
+const JA = {
+  about: 'Pasodrum work について', restart: '再起動して更新', check: '更新を確認…', settings: '設定…',
+  hide: 'Pasodrum work を非表示', quit: 'Pasodrum work を終了', file: 'ファイル', edit: '編集', view: '表示', window: 'ウインドウ',
+  help: 'ヘルプ', upToDate: '最新の状態です',
+};
+let L = EN;
+
+function openExternal(url) {
+  if (/^https?:\/\//i.test(url)) shell.openExternal(url);
 }
-
-function routeOf(link) {
-  try { const u = new URL(link); return u.pathname + u.search + u.hash; } catch { return null; }
-}
-
-function isHttp(url) { return /^https?:\/\//i.test(url); }
-
-function openExternal(url) { if (isHttp(url)) { log('external', url); shell.openExternal(url); } }
 
 function show() {
-  if (!win) return;
   if (win.isMinimized()) win.restore();
   win.show();
   win.focus();
-  app.focus({ steal: true });
 }
 
 function openRoute(route) {
-  log('open-route', route);
-  if (!win) { coldRoute = route; return; }
+  if (!win) return;
   show();
   win.webContents.send('open-route', route);
 }
 
-function handleLink(link) {
-  const route = routeOf(link);
-  if (route != null) openRoute(route);
+function restart() {
+  quitting = true;
+  updater.quitAndInstall();
 }
 
-if (!app.requestSingleInstanceLock()) app.exit(0);
+async function checkNow() {
+  const result = updater && (await updater.checkForUpdates().catch(() => null));
+  if (!updater || (result && !result.isUpdateAvailable)) dialog.showMessageBox({ message: L.upToDate });
+}
 
-app.on('second-instance', (_e, argv) => {
-  const link = argv.find((a) => a.startsWith(`${SCHEME}://`));
-  if (link) handleLink(link); else show();
-});
+function buildMenu() {
+  Menu.setApplicationMenu(Menu.buildFromTemplate([
+    {
+      label: app.name,
+      submenu: [
+        { role: 'about', label: L.about },
+        updateReady ? { label: L.restart, click: restart } : { label: L.check, click: checkNow },
+        { type: 'separator' },
+        { label: L.settings, accelerator: 'Cmd+,', click: () => openRoute('/settings') },
+        { type: 'separator' },
+        { role: 'hide', label: L.hide },
+        { role: 'quit', label: L.quit },
+      ],
+    },
+    { role: 'fileMenu', label: L.file },
+    { role: 'editMenu', label: L.edit },
+    { role: 'viewMenu', label: L.view },
+    { role: 'windowMenu', label: L.window },
+    { role: 'help', label: L.help, submenu: [] },
+  ]));
+}
 
-app.on('open-url', (e, link) => { e.preventDefault(); log('open-url', link); handleLink(link); });
+function startUpdater() {
+  updater = require('electron-updater').autoUpdater;
+  if (process.env.PASODRUM_FEED) updater.setFeedURL({ provider: 'generic', url: process.env.PASODRUM_FEED });
+  updater.on('update-downloaded', () => {
+    updateReady = true;
+    buildMenu();
+    win?.webContents.send('update-ready');
+  });
+  updater.on('error', () => { quitting = false; });
+  const check = () => updater.checkForUpdates().catch(() => {});
+  check();
+  setInterval(check, 4 * 60 * 60 * 1000);
+}
 
-app.setAsDefaultProtocolClient(SCHEME);
+function savedBounds() {
+  try {
+    const b = JSON.parse(fs.readFileSync(BOUNDS, 'utf8'));
+    const a = screen.getDisplayMatching(b).workArea;
+    if (b.x < a.x + a.width && b.x + b.width > a.x && b.y >= a.y && b.y < a.y + a.height) return b;
+  } catch {}
+  return { width: 1280, height: 800 };
+}
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 1280,
-    height: 820,
-    title: 'Pasodrum',
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.cjs'),
-      contextIsolation: true,
-      sandbox: true,
-      nodeIntegration: false,
-    },
+    ...savedBounds(),
+    minWidth: 800,
+    minHeight: 600,
+    title: 'Pasodrum work',
+    titleBarStyle: 'hiddenInset',
+    trafficLightPosition: { x: 16, y: 13 },
+    backgroundColor: '#18171D',
+    webPreferences: { preload: path.join(__dirname, 'preload.cjs'), sandbox: true, backgroundThrottling: false },
   });
-  const origin = new URL(BASE).origin;
-  win.webContents.setWindowOpenHandler(({ url }) => { openExternal(url); return { action: 'deny' }; });
-  win.webContents.on('will-navigate', (e, url) => {
-    if (new URL(url).origin !== origin) { e.preventDefault(); openExternal(url); }
+  const web = win.webContents;
+  web.setWindowOpenHandler(({ url }) => {
+    if (new URL(url).origin === ORIGIN) win.loadURL(url);
+    else openExternal(url);
+    return { action: 'deny' };
   });
-  win.webContents.on('console-message', (e) => {
-    if (e.level === 'error' || e.level === 'warning') log('console', e.level, e.message);
+  web.on('will-navigate', (e, url) => {
+    if (new URL(url).origin !== ORIGIN) { e.preventDefault(); openExternal(url); }
+  });
+  web.on('did-fail-load', (_e, code, _desc, url, isMainFrame) => {
+    if (isMainFrame && code !== -3) win.loadFile(path.join(__dirname, 'offline.html'), { query: { to: url } });
+  });
+  web.on('did-finish-load', () => { if (updateReady) web.send('update-ready'); });
+  win.on('close', (e) => {
+    fs.writeFileSync(BOUNDS, JSON.stringify(win.getNormalBounds()));
+    if (quitting) return;
+    e.preventDefault();
+    if (win.isFullScreen()) { win.once('leave-full-screen', () => win.hide()); win.setFullScreen(false); }
+    else win.hide();
   });
   win.on('closed', () => { win = null; });
-  win.loadURL(BASE + coldRoute);
-  coldRoute = '';
+  win.loadURL(BASE);
 }
 
-ipcMain.on('notify', (_e, { title, body, route }) => {
+ipcMain.on('notify', (_e, { title, body, route, tag }) => {
+  const key = String(tag ?? route);
+  notes.get(key)?.close();
   const n = new Notification({ title: String(title), body: String(body) });
-  notes.add(n);
-  n.on('click', () => { notes.delete(n); log('notification-click', route); openRoute(String(route)); });
-  n.on('close', () => notes.delete(n));
-  n.on('show', () => log('notification-show', title));
-  n.on('failed', (_ev, err) => log('notification-failed', err));
+  notes.set(key, n);
+  n.on('click', () => openRoute(String(route)));
+  n.on('close', () => { if (notes.get(key) === n) notes.delete(key); });
   n.show();
 });
-
-ipcMain.on('badge', (_e, n) => { app.setBadgeCount(Number(n) || 0); log('badge', app.getBadgeCount()); });
-
+ipcMain.on('badge', (_e, n) => app.dock.setBadge(n > 99 ? '99+' : n > 0 ? String(n) : ''));
 ipcMain.on('external', (_e, url) => openExternal(String(url)));
+ipcMain.on('restart', () => { if (updateReady) restart(); });
 
-function checkUpdates() {
-  const { autoUpdater } = require('electron-updater');
-  autoUpdater.logger = { info: (m) => log('upd', m), warn: (m) => log('upd-warn', m), error: (m) => log('upd-err', String(m)), debug: (m) => log('upd-dbg', m) };
-  for (const ev of ['checking-for-update', 'update-available', 'update-not-available', 'download-progress', 'update-downloaded', 'error']) {
-    autoUpdater.on(ev, (x) => {
-      log('update-event', ev, ev === 'error' ? String(x && x.stack || x) : x && x.version);
-      if (ev === 'update-downloaded') setTimeout(() => autoUpdater.quitAndInstall(), 2000);
-    });
-  }
-  autoUpdater.checkForUpdates().catch((err) => log('update-check-failed', String(err)));
-}
+if (!app.requestSingleInstanceLock()) app.exit(0);
+app.on('second-instance', () => win && show());
+app.on('before-quit', () => { quitting = true; });
+app.on('activate', () => (win ? show() : createWindow()));
 
 app.whenReady().then(() => {
-  log('ready', app.getVersion(), process.versions.electron, process.versions.chrome);
+  if (app.getLocale().startsWith('ja')) L = JA;
+  buildMenu();
   createWindow();
-  if (process.argv.includes('--check-update')) setTimeout(checkUpdates, 3000);
-  app.on('activate', () => { if (!win) createWindow(); else show(); });
+  if (app.isPackaged) startUpdater();
 });
-
-app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });

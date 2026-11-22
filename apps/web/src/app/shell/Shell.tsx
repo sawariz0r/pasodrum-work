@@ -26,9 +26,11 @@ import { ConnectionBanner } from './ConnectionBanner';
 import { DrawerContext, DrawerToggle, useNarrow } from './Drawer';
 import { NotAvailable } from './NotAvailable';
 import { Notifier } from '../notify/Notifier';
+import { platform } from '../../platform';
 import { Rail, type Section } from './Rail';
 import s from './Shell.module.css';
 import { Sidebar } from './Sidebar';
+import { TitleBarControls } from './TitleBar';
 
 const SignOut = createContext<() => void>(() => {});
 
@@ -44,6 +46,7 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
       <ToastProvider>
       <FindProvider>
       <Notifier />
+      {platform.desktop && <TitleBarControls />}
       <ProfileCardProvider>
         <NewMessageProvider>
           <ChannelsProvider>

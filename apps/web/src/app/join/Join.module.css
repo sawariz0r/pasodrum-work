@@ -3,8 +3,7 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--titlebar, 0px));
   background: var(--side);
   color: var(--ink);
 }
@@ -35,6 +34,25 @@
 .wordmark span {
   color: var(--subtle);
   font-weight: 500;
+}
+
+/* DesktopDownload: only in a browser on a Mac, once the signed build is up. */
+.headDownload {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  margin-left: auto;
+  padding: 0 12px;
+  border-radius: 9px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.headDownload:hover {
+  background: var(--hover);
 }
 
 .main {
@@ -236,6 +254,26 @@ form.body .cta {
 .cta:disabled {
   background: var(--line);
   color: var(--subtle);
+}
+
+.download {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  box-sizing: border-box;
+  border: 1px solid var(--field);
+  border-radius: 12px;
+  background: var(--raised);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.download:hover {
+  background: var(--hover);
 }
 
 .toggle {

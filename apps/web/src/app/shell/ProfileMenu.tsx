@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 import { useWorkspace } from '../../matrix';
+import { platform } from '../../platform';
 import { PhoneIcon } from '../another/icons';
 import { Avatar, avatarColor, Menu, MenuContent, MenuItem, MenuSegments, MenuSeparator, MenuTrigger } from '../../ui';
 import { currentLanguage, setLanguage, type Language } from '../i18n';
 import { lazyComponent } from '../lazy';
-import { GlobeIcon, SignOutIcon } from '../icons';
+import { DownloadIcon, GlobeIcon, SignOutIcon } from '../icons';
 import { GearIcon } from '../settings/icons';
 import { settingsState } from '../settings/SettingsRoute';
 import { useMediaUrl } from '../timeline/Media';
@@ -25,6 +26,7 @@ export function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
   const dot = <span className={[s.meDot, online && s.online].filter(Boolean).join(' ')} />;
   // null until first opened: the dialog's code loads then (M8).
   const [another, setAnother] = useState<boolean | null>(null);
+  const download = platform.downloadUrl();
 
   return (
     <Menu>
@@ -64,6 +66,11 @@ export function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
         <MenuItem icon={<PhoneIcon />} onSelect={() => setAnother(true)}>
           {t('another.title')}
         </MenuItem>
+        {download && (
+          <MenuItem icon={<DownloadIcon />} onSelect={() => window.location.assign(download)}>
+            {t('download.mac')}
+          </MenuItem>
+        )}
         <MenuItem icon={<SignOutIcon />} onSelect={onSignOut}>
           {t('shell.profileMenu.signOut')}
         </MenuItem>

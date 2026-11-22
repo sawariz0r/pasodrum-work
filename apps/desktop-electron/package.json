@@ -1,23 +1,26 @@
 {
   "name": "pasodrum-desktop-electron",
-  "productName": "Pasodrum Electron",
-  "version": "0.1.0",
+  "productName": "Pasodrum work",
+  "version": "1.0.0",
   "private": true,
-  "description": "M9-01 spike: Electron shell for Pasodrum work",
+  "description": "Pasodrum work for Mac",
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --mac --arm64"
+    "pack": "electron-builder --mac --arm64 --dir -c.mac.identity=- -c.mac.hardenedRuntime=false -c.mac.notarize=false",
+    "release": "rm -rf release && CSC_NAME=\"PRPL development AB (754ZSYKPH7)\" APPLE_KEYCHAIN_PROFILE=pasodrum-notary electron-builder --mac --arm64 --publish never",
+    "publish:feed": "cd release && rsync -av Pasodrum-work-*.zip* Pasodrum-work.dmg \"$PASODRUM_DOWNLOADS\" && rsync -av latest-mac.yml \"$PASODRUM_DOWNLOADS\""
   },
   "build": {
-    "appId": "work.pasodrum.spike.electron",
-    "productName": "Pasodrum Electron",
+    "appId": "work.pasodrum.app",
     "directories": {
       "output": "release"
     },
     "files": [
       "main.cjs",
       "preload.cjs",
+      "offline.html",
+      "space-grotesk-700.woff2",
       "package.json"
     ],
     "mac": {
@@ -25,20 +28,20 @@
         "dmg",
         "zip"
       ],
-      "identity": "-",
-      "category": "public.app-category.business"
+      "category": "public.app-category.business",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": true,
+      "artifactName": "Pasodrum-work-${version}-${arch}.${ext}"
     },
-    "protocols": [
-      {
-        "name": "Pasodrum",
-        "schemes": [
-          "pasodrum-electron"
-        ]
-      }
-    ],
+    "dmg": {
+      "artifactName": "Pasodrum-work.dmg"
+    },
     "publish": {
       "provider": "generic",
-      "url": "http://localhost:8788"
+      "url": "https://pasodrum.work/download/mac"
     }
   },
   "devDependencies": {

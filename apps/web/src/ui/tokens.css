@@ -131,6 +131,24 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Desktop app (DesktopWindow): a 40px strip in the rail colour that drags the window; app/shell/TitleBar.tsx adds the controls.
+   The padding sits on html because the dialogs' scroll lock zeroes body padding. */
+html[data-desktop] {
+  --titlebar: 40px;
+  padding-top: var(--titlebar);
+}
+
+html[data-desktop] body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: var(--titlebar);
+  background: var(--rail);
+  -webkit-app-region: drag;
+}
+
 button,
 input,
 textarea,
