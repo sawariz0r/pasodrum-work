@@ -257,7 +257,7 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [LinkCardDark](canvas/LinkCardDark.dc.html) — Link card — dark `#artboard-LinkCardDark`
 - [LinkCardMulti](canvas/LinkCardMulti.dc.html) — Two links: only the first gets a card `#artboard-LinkCardMulti`
 
-## People & access · `people` · 39 artboards
+## People & access · `people` · 45 artboards
 
 **People and access (approved 2026-11-21)**
 
@@ -273,11 +273,11 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [PeopleSpaceInvite](canvas/PeopleSpaceInvite.dc.html) — Client space settings: People with an invite field `#artboard-PeopleSpaceInvite`
 - [PeopleSpaceInviteJP](canvas/PeopleSpaceInviteJP.dc.html) — Client space settings: People (JP) `#artboard-PeopleSpaceInviteJP`
 - [PeopleSpaceInviteDark](canvas/PeopleSpaceInviteDark.dc.html) — Client space settings: People (dark) `#artboard-PeopleSpaceInviteDark`
-- [PeopleRemoveExternal](canvas/PeopleRemoveExternal.dc.html) — Remove an External from Pasodrum `#artboard-PeopleRemoveExternal`
+- [RemoveExternalSignOut](canvas/RemoveExternalSignOut.dc.html) — Remove an External from Pasodrum `#artboard-RemoveExternalSignOut`
 - [PeopleWorkspace](canvas/PeopleWorkspace.dc.html) — Workspace settings: People, an External’s roles `#artboard-PeopleWorkspace`
 - [PeopleWorkspaceJP](canvas/PeopleWorkspaceJP.dc.html) — Workspace settings: People (JP) `#artboard-PeopleWorkspaceJP`
 - [PeopleWorkspaceDark](canvas/PeopleWorkspaceDark.dc.html) — Workspace settings: People (dark) `#artboard-PeopleWorkspaceDark`
-- [PeopleRemoveExternalJP](canvas/PeopleRemoveExternalJP.dc.html) — Remove an External (JP) `#artboard-PeopleRemoveExternalJP`
+- [RemoveExternalSignOutJPDark](canvas/RemoveExternalSignOutJPDark.dc.html) — Remove an External (JP, dark) `#artboard-RemoveExternalSignOutJPDark`
 - [PeopleAccess](canvas/PeopleAccess.dc.html) — Workspace settings: Access (roles) `#artboard-PeopleAccess`
 - [PeopleAccessNew](canvas/PeopleAccessNew.dc.html) — Access: a new role `#artboard-PeopleAccessNew`
 - [PeopleAccessNotApplied](canvas/PeopleAccessNotApplied.dc.html) — Access: a person not applied `#artboard-PeopleAccessNotApplied`
@@ -306,6 +306,15 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 
 - [ClientMarkFinal](canvas/ClientMarkFinal.dc.html) — Client and External marks (final) `#artboard-ClientMarkFinal`
 - [ClientMarkPlaces](canvas/ClientMarkPlaces.dc.html) — Client and External marks: everywhere they show (final) `#artboard-ClientMarkPlaces`
+
+**Remove from Pasodrum (SIDE-08, approved 2026-11-22)**
+
+- [RemoveStaffMenu](canvas/RemoveStaffMenu.dc.html) — Workspace People: ⋯ on a Staff row, Remove from Pasodrum `#artboard-RemoveStaffMenu`
+- [RemoveStaffMenuJPDark](canvas/RemoveStaffMenuJPDark.dc.html) — Workspace People: ⋯ on a Staff row (JP, dark) `#artboard-RemoveStaffMenuJPDark`
+- [RemoveStaff](canvas/RemoveStaff.dc.html) — Remove a Staff member from Pasodrum `#artboard-RemoveStaff`
+- [RemoveStaffJP](canvas/RemoveStaffJP.dc.html) — Remove a Staff member (JP) `#artboard-RemoveStaffJP`
+- [RemoveStaffDark](canvas/RemoveStaffDark.dc.html) — Remove a Staff member (dark) `#artboard-RemoveStaffDark`
+- [RemoveStaffJPDark](canvas/RemoveStaffJPDark.dc.html) — Remove a Staff member (JP, dark) `#artboard-RemoveStaffJPDark`
 
 ## Client spaces & guests · `client-spaces` · 41 artboards
 
@@ -392,7 +401,7 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [JoinPhone](canvas/JoinPhone.dc.html) — Join page on a phone `#artboard-JoinPhone`
 - [JoinDonePhone](canvas/JoinDonePhone.dc.html) — Joined on a phone: Element X next `#artboard-JoinDonePhone`
 
-## Devices & encryption · `devices` · 50 artboards
+## Devices & encryption · `devices` · 55 artboards
 
 **Confirm a new device (M6)**
 
@@ -416,9 +425,6 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 
 **Recovery key, reset & sign-out**
 
-- [RecoveryKeySave](canvas/RecoveryKeySave.dc.html) — Save the recovery key (first time), copied `#artboard-RecoveryKeySave`
-- [RecoveryKeySaveJP](canvas/RecoveryKeySaveJP.dc.html) — Save the recovery key — Japanese `#artboard-RecoveryKeySaveJP`
-- [RecoveryKeySaveDark](canvas/RecoveryKeySaveDark.dc.html) — Save the recovery key — dark `#artboard-RecoveryKeySaveDark`
 - [RecoveryKeyPassword](canvas/RecoveryKeyPassword.dc.html) — Password first, only when the server asks `#artboard-RecoveryKeyPassword`
 - [RecoveryKeyEnter](canvas/RecoveryKeyEnter.dc.html) — Enter the recovery key (new device) `#artboard-RecoveryKeyEnter`
 - [RecoveryKeyWrong](canvas/RecoveryKeyWrong.dc.html) — Wrong recovery key `#artboard-RecoveryKeyWrong`
@@ -452,6 +458,17 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [HistoryRestoredRow](canvas/HistoryRestoredRow.dc.html) — Client: Jonas shared earlier messages; restored messages carry a small mark `#artboard-HistoryRestoredRow`
 - [HistoryRestoredRowJP](canvas/HistoryRestoredRowJP.dc.html) — Restored messages — Japanese `#artboard-HistoryRestoredRowJP`
 - [HistoryRestoredRowDark](canvas/HistoryRestoredRowDark.dc.html) — Restored messages — dark `#artboard-HistoryRestoredRowDark`
+
+**Save the recovery key (SIDE-09)**
+
+- [SaveKeyPasswords](canvas/SaveKeyPasswords.dc.html) — Save the recovery key — Chrome, Edge: Save to Passwords `#artboard-SaveKeyPasswords`
+- [SaveKeyPasswordsSaved](canvas/SaveKeyPasswordsSaved.dc.html) — Save the recovery key — sent to Passwords `#artboard-SaveKeyPasswordsSaved`
+- [SaveKeyPasswordsJP](canvas/SaveKeyPasswordsJP.dc.html) — Save the recovery key — Save to Passwords, Japanese `#artboard-SaveKeyPasswordsJP`
+- [SaveKeyPasswordsDark](canvas/SaveKeyPasswordsDark.dc.html) — Save the recovery key — sent to Passwords, dark `#artboard-SaveKeyPasswordsDark`
+- [SaveKeyDownload](canvas/SaveKeyDownload.dc.html) — Save the recovery key — Safari, Firefox, Mac app: Download `#artboard-SaveKeyDownload`
+- [SaveKeyDownloadSaved](canvas/SaveKeyDownloadSaved.dc.html) — Save the recovery key — downloaded `#artboard-SaveKeyDownloadSaved`
+- [SaveKeyDownloadJP](canvas/SaveKeyDownloadJP.dc.html) — Save the recovery key — downloaded, Japanese `#artboard-SaveKeyDownloadJP`
+- [SaveKeyDownloadJPDark](canvas/SaveKeyDownloadJPDark.dc.html) — Save the recovery key — Download, Japanese, dark `#artboard-SaveKeyDownloadJPDark`
 
 ## Confirm by email · `confirm-email` · 32 artboards
 
@@ -538,7 +555,7 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [TranslatedDark](canvas/TranslatedDark.dc.html) — Translate — translated, dark `#artboard-TranslatedDark`
 - [TranslatedJPDark](canvas/TranslatedJPDark.dc.html) — Translate — translated, Japanese dark `#artboard-TranslatedJPDark`
 
-## Docs · `docs` · 32 artboards
+## Docs · `docs` · 34 artboards
 
 **Docs (approved 2026-11-21)**
 
@@ -581,7 +598,12 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 
 - [DocsFileBlock](canvas/DocsFileBlock.dc.html) — Docs: file block `#artboard-DocsFileBlock`
 
-## Boards · `boards` · 42 artboards
+**No pages yet, dark (DES-06, approved 2026-11-22)**
+
+- [DocsNoneDark](canvas/DocsNoneDark.dc.html) — Docs — no pages yet, dark `#artboard-DocsNoneDark`
+- [DocsNoneJPDark](canvas/DocsNoneJPDark.dc.html) — Docs — no pages yet, Japanese, dark `#artboard-DocsNoneJPDark`
+
+## Boards · `boards` · 44 artboards
 
 - [BoardsSoon](canvas/BoardsSoon.dc.html) — Boards in the rail: Soon `#artboard-BoardsSoon`
 - [BoardsPage](canvas/BoardsPage.dc.html) — Boards — project board `#artboard-BoardsPage`
@@ -632,6 +654,11 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [BoardsAllJP](canvas/BoardsAllJP.dc.html) — Boards — All issues, Japanese `#artboard-BoardsAllJP`
 - [BoardsAllDark](canvas/BoardsAllDark.dc.html) — Boards — All issues, dark `#artboard-BoardsAllDark`
 
+**No projects yet, dark (DES-06, approved 2026-11-22)**
+
+- [BoardsNoProjectsDark](canvas/BoardsNoProjectsDark.dc.html) — Boards — no projects, dark `#artboard-BoardsNoProjectsDark`
+- [BoardsNoProjectsJPDark](canvas/BoardsNoProjectsJPDark.dc.html) — Boards — no projects, Japanese, dark `#artboard-BoardsNoProjectsJPDark`
+
 ## Desktop app · `desktop` · 6 artboards
 
 **Desktop app (DES-03, approved 2026-11-22)**
@@ -643,7 +670,7 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [DesktopBadge](canvas/DesktopBadge.dc.html) — Desktop app — Dock, taskbar, tray `#artboard-DesktopBadge`
 - [DesktopOffline](canvas/DesktopOffline.dc.html) — Desktop app — can’t reach `#artboard-DesktopOffline`
 
-## Discovery · `discovery` · 15 artboards
+## Discovery · `discovery` · 7 artboards
 
 **Discovery — Marking client projects**
 
@@ -654,14 +681,3 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [ClientMarkMany](canvas/ClientMarkMany.dc.html) — Marking client projects: many clients, many outsiders `#artboard-ClientMarkMany`
 - [ClientMarkLine](canvas/ClientMarkLine.dc.html) — Marking client projects: their company, said once `#artboard-ClientMarkLine`
 - [ExternalMark](canvas/ExternalMark.dc.html) — The External mark: not a company `#artboard-ExternalMark`
-
-**DES-06 · Empty-state buttons · for approval**
-
-- [EmptyStateDocs](canvas/EmptyStateDocs.dc.html) — CHANGED · Docs — no pages yet · replaces DocsNone · button = standard 36px button `#artboard-EmptyStateDocs`
-- [EmptyStateBoards](canvas/EmptyStateBoards.dc.html) — CHANGED · Boards — no projects · replaces BoardsNoProjects · button = standard 36px button `#artboard-EmptyStateBoards`
-- [EmptyStateDocsJP](canvas/EmptyStateDocsJP.dc.html) — CHANGED · Docs — no pages yet, Japanese · replaces DocsNoneJP · button = standard 36px button `#artboard-EmptyStateDocsJP`
-- [EmptyStateBoardsJP](canvas/EmptyStateBoardsJP.dc.html) — CHANGED · Boards — no projects, Japanese · replaces BoardsNoProjectsJP · button = standard 36px button `#artboard-EmptyStateBoardsJP`
-- [EmptyStateDocsDark](canvas/EmptyStateDocsDark.dc.html) — CHANGED · Docs — no pages yet, dark · replaces DocsNone (dark) · button = standard 36px button `#artboard-EmptyStateDocsDark`
-- [EmptyStateBoardsDark](canvas/EmptyStateBoardsDark.dc.html) — CHANGED · Boards — no projects, dark · replaces BoardsNoProjects (dark) · button = standard 36px button `#artboard-EmptyStateBoardsDark`
-- [EmptyStateDocsJPDark](canvas/EmptyStateDocsJPDark.dc.html) — CHANGED · Docs — no pages yet, Japanese, dark · replaces DocsNoneJP (dark) · button = standard 36px button `#artboard-EmptyStateDocsJPDark`
-- [EmptyStateBoardsJPDark](canvas/EmptyStateBoardsJPDark.dc.html) — CHANGED · Boards — no projects, Japanese, dark · replaces BoardsNoProjectsJP (dark) · button = standard 36px button `#artboard-EmptyStateBoardsJPDark`

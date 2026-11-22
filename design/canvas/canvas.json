@@ -2063,36 +2063,6 @@
    "is_interactive": true,
    "page": "devices"
   },
-  "RecoveryKeySave.dc.html": {
-   "x": 0,
-   "y": 8180,
-   "w": 1440,
-   "h": 900,
-   "title": "Save the recovery key (first time), copied",
-   "expand": "fill",
-   "is_interactive": true,
-   "page": "devices"
-  },
-  "RecoveryKeySaveJP.dc.html": {
-   "x": 1520,
-   "y": 8180,
-   "w": 1440,
-   "h": 900,
-   "title": "Save the recovery key — Japanese",
-   "expand": "fill",
-   "is_interactive": true,
-   "page": "devices"
-  },
-  "RecoveryKeySaveDark.dc.html": {
-   "x": 3040,
-   "y": 8180,
-   "w": 1440,
-   "h": 900,
-   "title": "Save the recovery key — dark",
-   "expand": "fill",
-   "is_interactive": true,
-   "page": "devices"
-  },
   "RecoveryKeyPassword.dc.html": {
    "x": 0,
    "y": 9200,
@@ -3627,14 +3597,6 @@
    "title": "Client space settings: People (dark)",
    "page": "people"
   },
-  "PeopleRemoveExternal.dc.html": {
-   "x": 4560,
-   "y": 3680,
-   "w": 1440,
-   "h": 900,
-   "title": "Remove an External from Pasodrum",
-   "page": "people"
-  },
   "PeopleWorkspaceJP.dc.html": {
    "x": 1520,
    "y": 4700,
@@ -3649,14 +3611,6 @@
    "w": 1440,
    "h": 900,
    "title": "Workspace settings: People (dark)",
-   "page": "people"
-  },
-  "PeopleRemoveExternalJP.dc.html": {
-   "x": 4560,
-   "y": 4700,
-   "w": 1440,
-   "h": 900,
-   "title": "Remove an External (JP)",
    "page": "people"
   },
   "PeopleAccessNew.dc.html": {
@@ -4730,85 +4684,205 @@
    "is_interactive": false,
    "page": "client-spaces"
   },
-  "EmptyStateDocs.dc.html": {
+  "RemoveStaffMenu.dc.html": {
    "x": 0,
-   "y": 19500,
+   "y": 20000,
    "w": 1440,
    "h": 900,
-   "title": "CHANGED · Docs — no pages yet · replaces DocsNone · button = standard 36px button",
+   "title": "Workspace People: ⋯ on a Staff row, Remove from Pasodrum",
    "expand": "fill",
    "is_interactive": true,
-   "page": "discovery"
+   "page": "people"
   },
-  "EmptyStateDocsDark.dc.html": {
+  "RemoveStaffMenuJPDark.dc.html": {
+   "x": 1520,
+   "y": 20000,
+   "w": 1440,
+   "h": 900,
+   "title": "Workspace People: ⋯ on a Staff row (JP, dark)",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "people"
+  },
+  "RemoveExternalSignOut.dc.html": {
+   "x": 4560,
+   "y": 3680,
+   "w": 1440,
+   "h": 900,
+   "title": "Remove an External from Pasodrum",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "people"
+  },
+  "RemoveExternalSignOutJPDark.dc.html": {
+   "x": 4560,
+   "y": 4700,
+   "w": 1440,
+   "h": 900,
+   "title": "Remove an External (JP, dark)",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "people"
+  },
+  "RemoveStaff.dc.html": {
+   "x": 3040,
+   "y": 20000,
+   "w": 1440,
+   "h": 900,
+   "title": "Remove a Staff member from Pasodrum",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "people"
+  },
+  "RemoveStaffJP.dc.html": {
+   "x": 4560,
+   "y": 20000,
+   "w": 1440,
+   "h": 900,
+   "title": "Remove a Staff member (JP)",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "people"
+  },
+  "RemoveStaffDark.dc.html": {
    "x": 0,
-   "y": 20500,
+   "y": 21040,
    "w": 1440,
    "h": 900,
-   "title": "CHANGED · Docs — no pages yet, dark · replaces DocsNone (dark) · button = standard 36px button",
+   "title": "Remove a Staff member (dark)",
    "expand": "fill",
    "is_interactive": true,
-   "page": "discovery"
+   "page": "people"
   },
-  "EmptyStateDocsJP.dc.html": {
-   "x": 3040,
-   "y": 19500,
-   "w": 1440,
-   "h": 900,
-   "title": "CHANGED · Docs — no pages yet, Japanese · replaces DocsNoneJP · button = standard 36px button",
-   "expand": "fill",
-   "is_interactive": true,
-   "page": "discovery"
-  },
-  "EmptyStateDocsJPDark.dc.html": {
-   "x": 3040,
-   "y": 20500,
-   "w": 1440,
-   "h": 900,
-   "title": "CHANGED · Docs — no pages yet, Japanese, dark · replaces DocsNoneJP (dark) · button = standard 36px button",
-   "expand": "fill",
-   "is_interactive": true,
-   "page": "discovery"
-  },
-  "EmptyStateBoards.dc.html": {
+  "RemoveStaffJPDark.dc.html": {
    "x": 1520,
-   "y": 19500,
+   "y": 21040,
    "w": 1440,
    "h": 900,
-   "title": "CHANGED · Boards — no projects · replaces BoardsNoProjects · button = standard 36px button",
+   "title": "Remove a Staff member (JP, dark)",
    "expand": "fill",
    "is_interactive": true,
-   "page": "discovery"
+   "page": "people"
   },
-  "EmptyStateBoardsDark.dc.html": {
+  "SaveKeyPasswords.dc.html": {
+   "x": 0,
+   "y": 21320,
+   "w": 1440,
+   "h": 900,
+   "title": "Save the recovery key — Chrome, Edge: Save to Passwords",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "devices"
+  },
+  "SaveKeyPasswordsSaved.dc.html": {
    "x": 1520,
-   "y": 20500,
+   "y": 21320,
    "w": 1440,
    "h": 900,
-   "title": "CHANGED · Boards — no projects, dark · replaces BoardsNoProjects (dark) · button = standard 36px button",
+   "title": "Save the recovery key — sent to Passwords",
    "expand": "fill",
    "is_interactive": true,
-   "page": "discovery"
+   "page": "devices"
   },
-  "EmptyStateBoardsJP.dc.html": {
-   "x": 4560,
-   "y": 19500,
+  "SaveKeyPasswordsJP.dc.html": {
+   "x": 3040,
+   "y": 21320,
    "w": 1440,
    "h": 900,
-   "title": "CHANGED · Boards — no projects, Japanese · replaces BoardsNoProjectsJP · button = standard 36px button",
+   "title": "Save the recovery key — Save to Passwords, Japanese",
    "expand": "fill",
    "is_interactive": true,
-   "page": "discovery"
+   "page": "devices"
   },
-  "EmptyStateBoardsJPDark.dc.html": {
+  "SaveKeyPasswordsDark.dc.html": {
    "x": 4560,
-   "y": 20500,
+   "y": 21320,
    "w": 1440,
    "h": 900,
-   "title": "CHANGED · Boards — no projects, Japanese, dark · replaces BoardsNoProjectsJP (dark) · button = standard 36px button",
+   "title": "Save the recovery key — sent to Passwords, dark",
    "expand": "fill",
    "is_interactive": true,
-   "page": "discovery"
+   "page": "devices"
+  },
+  "SaveKeyDownload.dc.html": {
+   "x": 0,
+   "y": 22340,
+   "w": 1440,
+   "h": 900,
+   "title": "Save the recovery key — Safari, Firefox, Mac app: Download",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "devices"
+  },
+  "SaveKeyDownloadSaved.dc.html": {
+   "x": 1520,
+   "y": 22340,
+   "w": 1440,
+   "h": 900,
+   "title": "Save the recovery key — downloaded",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "devices"
+  },
+  "SaveKeyDownloadJP.dc.html": {
+   "x": 3040,
+   "y": 22340,
+   "w": 1440,
+   "h": 900,
+   "title": "Save the recovery key — downloaded, Japanese",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "devices"
+  },
+  "SaveKeyDownloadJPDark.dc.html": {
+   "x": 4560,
+   "y": 22340,
+   "w": 1440,
+   "h": 900,
+   "title": "Save the recovery key — Download, Japanese, dark",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "devices"
+  },
+  "DocsNoneDark.dc.html": {
+   "x": 0,
+   "y": 12920,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — no pages yet, dark",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "docs"
+  },
+  "DocsNoneJPDark.dc.html": {
+   "x": 1520,
+   "y": 12920,
+   "w": 1440,
+   "h": 900,
+   "title": "Docs — no pages yet, Japanese, dark",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "docs"
+  },
+  "BoardsNoProjectsDark.dc.html": {
+   "x": 0,
+   "y": 16240,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — no projects, dark",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "boards"
+  },
+  "BoardsNoProjectsJPDark.dc.html": {
+   "x": 1520,
+   "y": 16240,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — no projects, Japanese, dark",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "boards"
   }
  },
  "order": [
@@ -5010,9 +5084,6 @@
   "ApproveCompare.dc.html",
   "ApproveDone.dc.html",
   "ApproveDark.dc.html",
-  "RecoveryKeySave.dc.html",
-  "RecoveryKeySaveJP.dc.html",
-  "RecoveryKeySaveDark.dc.html",
   "RecoveryKeyPassword.dc.html",
   "RecoveryKeyEnter.dc.html",
   "RecoveryKeyWrong.dc.html",
@@ -5170,10 +5241,8 @@
   "PeopleAddDark.dc.html",
   "PeopleSpaceInviteJP.dc.html",
   "PeopleSpaceInviteDark.dc.html",
-  "PeopleRemoveExternal.dc.html",
   "PeopleWorkspaceJP.dc.html",
   "PeopleWorkspaceDark.dc.html",
-  "PeopleRemoveExternalJP.dc.html",
   "PeopleAccessNew.dc.html",
   "PeopleAccessNotApplied.dc.html",
   "PeopleAccessJP.dc.html",
@@ -5295,14 +5364,26 @@
   "TidyDeleteSpace.dc.html",
   "TidyDeleteSpaceJP.dc.html",
   "TidyDeleteSettingsJP.dc.html",
-  "EmptyStateDocs.dc.html",
-  "EmptyStateDocsDark.dc.html",
-  "EmptyStateDocsJP.dc.html",
-  "EmptyStateDocsJPDark.dc.html",
-  "EmptyStateBoards.dc.html",
-  "EmptyStateBoardsDark.dc.html",
-  "EmptyStateBoardsJP.dc.html",
-  "EmptyStateBoardsJPDark.dc.html"
+  "RemoveStaffMenu.dc.html",
+  "RemoveStaffMenuJPDark.dc.html",
+  "RemoveExternalSignOut.dc.html",
+  "RemoveExternalSignOutJPDark.dc.html",
+  "RemoveStaff.dc.html",
+  "RemoveStaffJP.dc.html",
+  "RemoveStaffDark.dc.html",
+  "RemoveStaffJPDark.dc.html",
+  "SaveKeyPasswords.dc.html",
+  "SaveKeyPasswordsSaved.dc.html",
+  "SaveKeyPasswordsJP.dc.html",
+  "SaveKeyPasswordsDark.dc.html",
+  "SaveKeyDownload.dc.html",
+  "SaveKeyDownloadSaved.dc.html",
+  "SaveKeyDownloadJP.dc.html",
+  "SaveKeyDownloadJPDark.dc.html",
+  "DocsNoneDark.dc.html",
+  "DocsNoneJPDark.dc.html",
+  "BoardsNoProjectsDark.dc.html",
+  "BoardsNoProjectsJPDark.dc.html"
  ],
  "notes": {
   "overview-Foundations--workspace": {
@@ -5849,21 +5930,56 @@
    "size": "m",
    "fill": "orange"
   },
-  "disc-DES-06": {
+  "people-SIDE-08-title": {
    "x": 0,
-   "y": 19260,
-   "text": "DES-06 · Empty-state buttons · for approval",
+   "y": 19760,
+   "text": "Remove from Pasodrum (SIDE-08, approved 2026-11-22)",
    "kind": "title1",
-   "page": "discovery",
+   "page": "people",
+   "size": "l",
+   "maxW": 6000
+  },
+  "people-SIDE-08-rules": {
+   "x": 3040,
+   "y": 21040,
+   "w": 560,
+   "page": "people",
+   "fill": "orange",
+   "text": "Rules (approved 2026-11-22)\n\n• Owners remove Admins, Staff and Externals. Admins remove Staff and Externals. Nobody removes an Owner or themselves. Clients keep “Remove from space”.\n\n• One click: out of Pasodrum, every channel and client space; join links die; the account is locked (signed out everywhere, sign-in refused; reversible).\n\n• Their messages stay, with the usual “left the channel” row. DMs stay readable. Issues keep their assignee."
+  },
+  "devices-Save-the-recovery-key-SIDE-09": {
+   "x": 0,
+   "y": 21080,
+   "text": "Save the recovery key (SIDE-09)",
+   "kind": "title1",
+   "page": "devices",
    "size": "l",
    "maxW": 5920
   },
-  "disc-DES-06-rules": {
-   "x": 6080,
-   "y": 19500,
-   "text": "Proposed rule (DES-06)\n\n• Every \"nothing here yet\" page: 64 tile, 22 title, then one standard button (36 high, radius 9, 14/600, padding 16, icon gap 7).\n• Tile → title → button: 20 apart.\n\nBoards changes: button 40 → 36, radius 10 → 9, 15 → 14, padding 15/18 → 16/16, gap 8 → 7, 22 → 20 above.\nDocs changes: padding 11/14 → 16/16, gap 6 → 7.",
+  "docs-DES-06": {
+   "x": 0,
+   "y": 12680,
+   "text": "No pages yet, dark (DES-06, approved 2026-11-22)",
+   "kind": "title1",
+   "page": "docs",
+   "size": "l",
+   "maxW": 2960
+  },
+  "boards-DES-06": {
+   "x": 0,
+   "y": 16000,
+   "text": "No projects yet, dark (DES-06, approved 2026-11-22)",
+   "kind": "title1",
+   "page": "boards",
+   "size": "l",
+   "maxW": 2960
+  },
+  "boards-DES-06-rules": {
+   "x": 3040,
+   "y": 16240,
+   "text": "Rule: empty pages (DES-06, approved 2026-11-22)\n\n• Every \"nothing here yet\" page: 64 tile, 22 title, then one standard button (36 high, radius 9, 14/600, padding 16, icon gap 7).\n• Tile → title → button: 20 apart.\n• Same for Docs and Boards.",
    "w": 560,
-   "page": "discovery",
+   "page": "boards",
    "size": "m",
    "fill": "orange"
   }

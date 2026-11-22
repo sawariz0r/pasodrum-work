@@ -389,3 +389,7 @@ Format: **Date · short title** → what was discovered, why it matters, what ch
 **2026-11-22 · The server admin room stays out of our app**
 - Continuwuity's admin room is made by its bot `@conduit:<server>` and carries the alias `#admins:<server>`. Its replies to `!admin …` are `m.notice` with `m.in_reply_to` on the admin's command, so they used to land in the admin's Activity as replies.
 - `adminRoom()` in `matrix/store.ts` matches either signal (never the display name). `ours()` = joined and not the admin room; it feeds `roomsJoined()`, the thread scan, the team-room trust list and housekeeping. Activity, DMs, badges and search all derive from those. Admin commands belong in Element.
+
+**2026-11-22 · Empty pages share one piece (DES-06, CEO approved the boards)**
+- "Nothing here yet" pages use `ui/EmptyState` (64 tile, 22 title, 20 apart) with a plain `ui/Button` (36, no size overrides). Docs and Boards had drifted because their approved boards were drawn differently (36 vs 40 px); the canvas now matches.
+- DMs (`.dmsEmptyButton`, 40) and NotAvailable (`.unavailableAction`, 38) still differ; move them onto `ui/EmptyState` when their boards change.

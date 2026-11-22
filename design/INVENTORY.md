@@ -316,8 +316,8 @@ Approved 2026-11-22 (CEO, in the DES-05 chat), canvas v94. B on **Overview & fou
 
 ## Empty-state buttons (DES-06)
 
-Proposed 2026-11-22. Boards on **Discovery**, section "DES-06 · Empty-state buttons · for approval". Replace DocsNone(+JP) and BoardsNoProjects(+JP) once approved.
+Approved 2026-11-22 (CEO). Boards on the **Docs** and **Boards** pages. DocsNone(+JP) and BoardsNoProjects(+JP) now show the new button (the components changed); dark boards added.
 
 | Screen / state | Artboard | Status |
 |---|---|---|
-| Docs "No pages yet" and Boards "No projects yet": one standard 36px button, tile → title → button 20 apart | EmptyStateDocs(+JP, Dark, JPDark), EmptyStateBoards(+JP, Dark, JPDark) | for approval |
+| Docs "No pages yet" and Boards "No projects yet": one standard 36px button, tile → title → button 20 apart | DocsNone(+JP, Dark, JPDark), BoardsNoProjects(+JP, Dark, JPDark) | approved 2026-11-22 |
