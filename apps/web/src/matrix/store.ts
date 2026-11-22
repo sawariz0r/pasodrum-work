@@ -332,6 +332,10 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   const SYSTEM_ID = `@${SYSTEM}:${server}`;
   /** D-38. Made by the system sender (help DMs): only that account can create such a room. */
   const systemRoom = (room: Room) => room.currentState.getStateEvents(EventType.RoomCreate, '')?.getSender() === SYSTEM_ID;
+  /** Continuwuity's admin room (its bot answers `!admin` there): Element's business, never shown in ours. */
+  const adminRoom = (room: Room) =>
+    room.currentState.getStateEvents(EventType.RoomCreate, '')?.getSender() === `@conduit:${server}` || room.getCanonicalAlias() === `#admins:${server}`;
+  const ours = (room: Room) => joined(room) && !adminRoom(room);
   let workspaceRoom: Room | undefined;
   let scanCache: Scan | null = null;
   let me: Person = { id: session.userId, name: localpart(session.userId) };
@@ -647,7 +651,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
 
   // Threads
   // D-37: typed rooms (spaces, pages, projects) aren't conversations.
-  const roomsJoined = () => client.getRooms().filter((r) => joined(r) && !r.getType());
+  const roomsJoined = () => client.getRooms().filter((r) => ours(r) && !r.getType());
   const spacesJoined = () => client.getRooms().filter((r) => joined(r) && r.isSpaceRoom());
 
   const scan = (): Scan => {
@@ -662,7 +666,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       return root;
     };
     // Project rooms too: issue comments are threads (their live replies), kept out of Threads and Activity below.
-    for (const room of client.getRooms().filter((r) => joined(r) && !r.isSpaceRoom())) {
+    for (const room of client.getRooms().filter((r) => ours(r) && !r.isSpaceRoom())) {
       for (const ev of [...room.getLiveTimeline().getEvents(), ...room.getPendingEvents()]) {
         const root = note(room, ev);
         if (root) {
@@ -673,7 +677,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     }
     for (const [rootId, st] of threadStore) {
       const room = client.getRoom(st.roomId);
-      if (!room || !joined(room)) continue;
+      if (!room || !ours(room)) continue;
       s.roots.set(rootId, room);
       st.replies.forEach((ev) => note(room, ev));
     }
@@ -906,7 +910,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     for (const room of roomsJoined()) room.getLiveTimeline().getEvents().forEach((ev) => consider(room, ev));
     for (const st of threadStore.values()) {
       const room = client.getRoom(st.roomId);
-      if (room && joined(room) && !room.getType()) st.replies.forEach((ev) => consider(room, ev));
+      if (room && ours(room) && !room.getType()) st.replies.forEach((ev) => consider(room, ev));
     }
     const projects = client.getRooms().filter((r) => joined(r) && r.getType() === PROJECT_TYPE);
     items.push(
@@ -1033,7 +1037,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       if (stopped) return;
       const was = invitedNow();
       const direct = directRooms();
-      const team = was.first ? client.getRooms().filter((r) => joined(r) && !visiting.has(r.roomId) && (r.isSpaceRoom() || (!r.getType() && !isDirect(r, direct)))) : teamRooms();
+      const team = was.first ? client.getRooms().filter((r) => ours(r) && !visiting.has(r.roomId) && (r.isSpaceRoom() || (!r.getType() && !isDirect(r, direct)))) : teamRooms();
       const rooms = new Set([...was.rooms, ...team.map((r) => r.roomId)]);
       const people = new Set(was.people);
       for (const r of team) {
@@ -1149,7 +1153,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     const direct = directRooms();
     const team = client.getRooms().some((r) => r.isSpaceRoom() && joined(r) && !isClientSpace(r));
     for (const room of client.getRooms()) {
-      if (!joined(room) || discarded.has(room.roomId) || visiting.has(room.roomId)) continue;
+      if (!ours(room) || discarded.has(room.roomId) || visiting.has(room.roomId)) continue;
       if (team || room.isSpaceRoom() || isDirect(room, direct)) ensureMembers(room);
       if (!room.getType()) listThreads(room);
     }

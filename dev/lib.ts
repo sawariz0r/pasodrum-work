@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
+import { createInterface } from 'node:readline';
 
 export const BASE = process.env.MATRIX_BASE ?? 'http://localhost:8008';
 export const SERVER = process.env.MATRIX_SERVER ?? 'pasodrum.localhost';
@@ -91,3 +92,34 @@ export async function state(token: string, roomId: string, type: string, key: st
 }
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Asks on the terminal without echoing (passwords, tokens). */
+export function askHidden(question: string): Promise<string> {
+  process.stdout.write(question);
+  const stdin = process.stdin;
+  if (!stdin.isTTY) {
+    const rl = createInterface({ input: stdin });
+    return new Promise((resolve) => rl.once('line', (a) => (rl.close(), process.stdout.write('\n'), resolve(a))));
+  }
+  return new Promise((resolve) => {
+    let value = '';
+    stdin.setRawMode(true);
+    stdin.setEncoding('utf8');
+    stdin.resume();
+    const onData = (chunk: string) => {
+      for (const ch of chunk) {
+        if (ch === '\r' || ch === '\n') {
+          stdin.setRawMode(false);
+          stdin.pause();
+          stdin.off('data', onData);
+          process.stdout.write('\n');
+          return resolve(value);
+        }
+        if (ch === '\u0003') process.exit(130);
+        if (ch === '\u007f' || ch === '\b') value = value.slice(0, -1);
+        else value += ch;
+      }
+    };
+    stdin.on('data', onData);
+  });
+}
