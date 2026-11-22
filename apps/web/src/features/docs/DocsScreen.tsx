@@ -5,7 +5,7 @@ import { rememberSpace } from '../../app/prefs';
 import { DrawerToggle } from '../../app/shell/Drawer';
 import { NotAvailable } from '../../app/shell/NotAvailable';
 import { useDocsBoards, useWorkspace } from '../../matrix';
-import { Button } from '../../ui';
+import { Button, EmptyState } from '../../ui';
 import { pagePath, useCreatePage } from './actions';
 import { BigPageIcon, PlusBold } from './icons';
 import { locate, useScope } from './model';
@@ -46,19 +46,14 @@ function NoPages({ spaceId, canCreate }: { spaceId: string; canCreate: boolean }
   const t = useT();
   const create = useCreatePage();
   return (
-    <div className={s.none}>
+    <EmptyState
+      icon={<BigPageIcon />}
+      title={t('noPages')}
+      action={canCreate && <Button icon={<PlusBold />} onClick={() => create({ spaceId })}>{t('newPage')}</Button>}
+    >
       <div className={s.floatingToggle}>
         <DrawerToggle />
       </div>
-      <div className={s.noneTile}>
-        <BigPageIcon />
-      </div>
-      <h1 className={s.noneTitle}>{t('noPages')}</h1>
-      {canCreate && (
-        <Button icon={<PlusBold />} className={s.noneButton} onClick={() => create({ spaceId })}>
-          {t('newPage')}
-        </Button>
-      )}
-    </div>
+    </EmptyState>
   );
 }

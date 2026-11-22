@@ -5,7 +5,7 @@ import { rememberSpace } from '../../app/prefs';
 import { NotAvailable } from '../../app/shell/NotAvailable';
 import { DrawerToggle } from '../../app/shell/Drawer';
 import { useDocsBoards, useStore, useWorkspace, type Column, type DocsBoardsSnapshot, type Issue, type Person, type Project } from '../../matrix';
-import { Button, Skeleton } from '../../ui';
+import { Button, EmptyState, Skeleton } from '../../ui';
 import { Board } from './Board';
 import { ColumnDialog, DeleteIssueDialog, NewIssueDialog, NewProjectDialog } from './Dialogs';
 import { AllIssuesIcon, BoardsGlyph, BoardViewIcon, ListViewIcon, PersonIcon, PlusIcon } from './icons';
@@ -246,20 +246,15 @@ function Filter({ issues, limit, withNobody, value, onChange }: { issues: Issue[
 function NoProjects({ team, onNew }: { team: boolean; onNew: () => void }) {
   const t = useT();
   return (
-    <div className={s.empty}>
+    <EmptyState
+      icon={<BoardsGlyph />}
+      title={t('noProjects')}
+      action={team && <Button icon={<PlusIcon strokeWidth={2.2} />} onClick={onNew}>{t('newProject')}</Button>}
+    >
       <header className={s.bareHeader}>
         <DrawerToggle />
       </header>
-      <div className={s.emptyIcon}>
-        <BoardsGlyph />
-      </div>
-      <h2 className={s.emptyTitle}>{t('noProjects')}</h2>
-      {team && (
-        <Button className={s.emptyButton} icon={<PlusIcon strokeWidth={2.2} />} onClick={onNew}>
-          {t('newProject')}
-        </Button>
-      )}
-    </div>
+    </EmptyState>
   );
 }
 

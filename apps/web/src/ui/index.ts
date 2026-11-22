@@ -4,6 +4,7 @@ export { Banner, type BannerProps } from './Banner';
 export { Button, type ButtonProps } from './Button';
 export { Dialog, type DialogProps } from './Dialog';
 export { DropLine, type DropLineProps } from './DropLine';
+export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { IconButton, type IconButtonProps } from './IconButton';
 export { isImeEnter } from './ime';
 export { initialsOf, isCjk } from './initialsOf';

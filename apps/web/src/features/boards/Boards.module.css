@@ -609,42 +609,9 @@
   padding: 0 16px;
 }
 
-.empty {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 24px 120px;
-  text-align: center;
-}
 
-.emptyIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
-  background: var(--well);
-  color: var(--subtle);
-}
 
-.emptyTitle {
-  margin: 20px 0 0;
-  font-family: var(--font-title);
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
 
-.emptyButton {
-  margin-top: 22px;
-  height: 40px;
-  padding: 0 18px 0 15px;
-  border-radius: 10px;
-  font-size: 15px;
-}
 
 /* ---------- Menus and popovers ---------- */
 .menu {
@@ -1211,8 +1178,7 @@
 }
 
 :lang(ja) .titleField,
-:lang(ja) .bigTitle,
-:lang(ja) .emptyTitle {
+:lang(ja) .bigTitle {
   letter-spacing: 0;
 }
 

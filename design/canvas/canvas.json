@@ -4729,6 +4729,86 @@
    "title": "Delete a client space — Client space settings — Japanese dark",
    "is_interactive": false,
    "page": "client-spaces"
+  },
+  "EmptyStateDocs.dc.html": {
+   "x": 0,
+   "y": 19500,
+   "w": 1440,
+   "h": 900,
+   "title": "CHANGED · Docs — no pages yet · replaces DocsNone · button = standard 36px button",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "discovery"
+  },
+  "EmptyStateDocsDark.dc.html": {
+   "x": 0,
+   "y": 20500,
+   "w": 1440,
+   "h": 900,
+   "title": "CHANGED · Docs — no pages yet, dark · replaces DocsNone (dark) · button = standard 36px button",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "discovery"
+  },
+  "EmptyStateDocsJP.dc.html": {
+   "x": 3040,
+   "y": 19500,
+   "w": 1440,
+   "h": 900,
+   "title": "CHANGED · Docs — no pages yet, Japanese · replaces DocsNoneJP · button = standard 36px button",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "discovery"
+  },
+  "EmptyStateDocsJPDark.dc.html": {
+   "x": 3040,
+   "y": 20500,
+   "w": 1440,
+   "h": 900,
+   "title": "CHANGED · Docs — no pages yet, Japanese, dark · replaces DocsNoneJP (dark) · button = standard 36px button",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "discovery"
+  },
+  "EmptyStateBoards.dc.html": {
+   "x": 1520,
+   "y": 19500,
+   "w": 1440,
+   "h": 900,
+   "title": "CHANGED · Boards — no projects · replaces BoardsNoProjects · button = standard 36px button",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "discovery"
+  },
+  "EmptyStateBoardsDark.dc.html": {
+   "x": 1520,
+   "y": 20500,
+   "w": 1440,
+   "h": 900,
+   "title": "CHANGED · Boards — no projects, dark · replaces BoardsNoProjects (dark) · button = standard 36px button",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "discovery"
+  },
+  "EmptyStateBoardsJP.dc.html": {
+   "x": 4560,
+   "y": 19500,
+   "w": 1440,
+   "h": 900,
+   "title": "CHANGED · Boards — no projects, Japanese · replaces BoardsNoProjectsJP · button = standard 36px button",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "discovery"
+  },
+  "EmptyStateBoardsJPDark.dc.html": {
+   "x": 4560,
+   "y": 20500,
+   "w": 1440,
+   "h": 900,
+   "title": "CHANGED · Boards — no projects, Japanese, dark · replaces BoardsNoProjectsJP (dark) · button = standard 36px button",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "discovery"
   }
  },
  "order": [
@@ -5214,7 +5294,15 @@
   "TidyDeleteSettings.dc.html",
   "TidyDeleteSpace.dc.html",
   "TidyDeleteSpaceJP.dc.html",
-  "TidyDeleteSettingsJP.dc.html"
+  "TidyDeleteSettingsJP.dc.html",
+  "EmptyStateDocs.dc.html",
+  "EmptyStateDocsDark.dc.html",
+  "EmptyStateDocsJP.dc.html",
+  "EmptyStateDocsJPDark.dc.html",
+  "EmptyStateBoards.dc.html",
+  "EmptyStateBoardsDark.dc.html",
+  "EmptyStateBoardsJP.dc.html",
+  "EmptyStateBoardsJPDark.dc.html"
  ],
  "notes": {
   "overview-Foundations--workspace": {
@@ -5758,6 +5846,24 @@
    "text": "Rules (approved 2026-11-22)\n\n• Team: an archived client space leaves the rail; while you view one its tile shows dimmed.\n• Pasodrum menu (Owner/Admin): New client space + Archived client spaces, after a divider.\n• Delete: Owner only, archived spaces only, type the name. Pasodrum can never be deleted.\n• Clients: unchanged.",
    "w": 560,
    "page": "client-spaces",
+   "size": "m",
+   "fill": "orange"
+  },
+  "disc-DES-06": {
+   "x": 0,
+   "y": 19260,
+   "text": "DES-06 · Empty-state buttons · for approval",
+   "kind": "title1",
+   "page": "discovery",
+   "size": "l",
+   "maxW": 5920
+  },
+  "disc-DES-06-rules": {
+   "x": 6080,
+   "y": 19500,
+   "text": "Proposed rule (DES-06)\n\n• Every \"nothing here yet\" page: 64 tile, 22 title, then one standard button (36 high, radius 9, 14/600, padding 16, icon gap 7).\n• Tile → title → button: 20 apart.\n\nBoards changes: button 40 → 36, radius 10 → 9, 15 → 14, padding 15/18 → 16/16, gap 8 → 7, 22 → 20 above.\nDocs changes: padding 11/14 → 16/16, gap 6 → 7.",
+   "w": 560,
+   "page": "discovery",
    "size": "m",
    "fill": "orange"
   }

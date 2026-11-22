@@ -793,17 +793,6 @@
 }
 
 /* No pages, loading */
-.none {
-  position: relative;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  padding: 40px 24px 120px;
-  text-align: center;
-}
 
 .floatingToggle {
   position: absolute;
@@ -811,30 +800,8 @@
   left: 16px;
 }
 
-.noneTile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
-  background: var(--well);
-  color: var(--subtle);
-}
 
-.noneTitle {
-  margin: 0;
-  font-family: var(--font-title);
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: normal;
-}
 
-.noneButton {
-  gap: 6px;
-  padding: 0 14px 0 11px;
-}
 
 .skeleton {
   display: flex;

@@ -643,7 +643,7 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [DesktopBadge](canvas/DesktopBadge.dc.html) — Desktop app — Dock, taskbar, tray `#artboard-DesktopBadge`
 - [DesktopOffline](canvas/DesktopOffline.dc.html) — Desktop app — can’t reach `#artboard-DesktopOffline`
 
-## Discovery · `discovery` · 7 artboards
+## Discovery · `discovery` · 15 artboards
 
 **Discovery — Marking client projects**
 
@@ -654,3 +654,14 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [ClientMarkMany](canvas/ClientMarkMany.dc.html) — Marking client projects: many clients, many outsiders `#artboard-ClientMarkMany`
 - [ClientMarkLine](canvas/ClientMarkLine.dc.html) — Marking client projects: their company, said once `#artboard-ClientMarkLine`
 - [ExternalMark](canvas/ExternalMark.dc.html) — The External mark: not a company `#artboard-ExternalMark`
+
+**DES-06 · Empty-state buttons · for approval**
+
+- [EmptyStateDocs](canvas/EmptyStateDocs.dc.html) — CHANGED · Docs — no pages yet · replaces DocsNone · button = standard 36px button `#artboard-EmptyStateDocs`
+- [EmptyStateBoards](canvas/EmptyStateBoards.dc.html) — CHANGED · Boards — no projects · replaces BoardsNoProjects · button = standard 36px button `#artboard-EmptyStateBoards`
+- [EmptyStateDocsJP](canvas/EmptyStateDocsJP.dc.html) — CHANGED · Docs — no pages yet, Japanese · replaces DocsNoneJP · button = standard 36px button `#artboard-EmptyStateDocsJP`
+- [EmptyStateBoardsJP](canvas/EmptyStateBoardsJP.dc.html) — CHANGED · Boards — no projects, Japanese · replaces BoardsNoProjectsJP · button = standard 36px button `#artboard-EmptyStateBoardsJP`
+- [EmptyStateDocsDark](canvas/EmptyStateDocsDark.dc.html) — CHANGED · Docs — no pages yet, dark · replaces DocsNone (dark) · button = standard 36px button `#artboard-EmptyStateDocsDark`
+- [EmptyStateBoardsDark](canvas/EmptyStateBoardsDark.dc.html) — CHANGED · Boards — no projects, dark · replaces BoardsNoProjects (dark) · button = standard 36px button `#artboard-EmptyStateBoardsDark`
+- [EmptyStateDocsJPDark](canvas/EmptyStateDocsJPDark.dc.html) — CHANGED · Docs — no pages yet, Japanese, dark · replaces DocsNoneJP (dark) · button = standard 36px button `#artboard-EmptyStateDocsJPDark`
+- [EmptyStateBoardsJPDark](canvas/EmptyStateBoardsJPDark.dc.html) — CHANGED · Boards — no projects, Japanese, dark · replaces BoardsNoProjectsJP (dark) · button = standard 36px button `#artboard-EmptyStateBoardsJPDark`
