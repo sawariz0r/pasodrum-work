@@ -130,7 +130,7 @@ describe('confirm by email (D-38)', () => {
     assert.equal(mine.length, 1);
     const [msg] = mine;
     assert.equal(msg.sender, SYSTEM);
-    assert.match(msg.content.body, /^Kari Nord needs your help\nThe email to confirm their new device didn’t arrive\.\nNordlys · .+ · their time \d\d:\d\d$/);
+    assert.match(msg.content.body, /^Kari Nord needs your help\nThe email to confirm their new device didn’t arrive\.\nCheck the address below is theirs, then ask them to look in spam and tap Send it again\.\nNordlys · .+ · their time \d\d:\d\d$/);
     assert.ok(msg.content.body.includes(email));
     assert.deepEqual({ ...msg.content['work.pasodrum.help'], local_time: undefined }, {
       user_id: client, name: 'Kari Nord', space_id: rooms.nordlys, space_name: 'Nordlys', reason: 'email-missing', email, local_time: undefined, tz: 'Europe/Oslo',
@@ -140,5 +140,43 @@ describe('confirm by email (D-38)', () => {
     const post = await mx(ingrid, 'PUT', `/_matrix/client/v3/rooms/${enc(roomId)}/send/m.room.message/t${Date.now()}`, { msgtype: 'm.text', body: 'hi' });
     assert.equal(post.status, 403, 'read-only');
     assert.equal((await mx(ingrid, 'GET', `/_matrix/client/v3/rooms/${enc(roomId)}/state/m.room.encryption/`)).status, 404, 'not encrypted');
+  });
+
+  // SIDE-05: Sofia (Nordlys's Owner) marked as its main contact; Ingrid added the client.
+  it('help goes to the main contact, not the inviter', async () => {
+    const r = await api(ingrid, 'POST', '', { email: freshEmail('nordlys.no'), name: 'Ola Nord', role: 'client', spaceId: rooms.nordlys, channelIds: [rooms.projectUpdates] });
+    assert.equal(r.status, 201, JSON.stringify(r.body));
+    const c = await api(null, 'POST', `/${r.body.code}/claim`, { name: 'Ola Nord', password: 'a-good-long-password' });
+    assert.equal(c.status, 200, JSON.stringify(c.body));
+    const ola = c.body.userId as string;
+    const device = await signIn(c.body.identifier, 'a-good-long-password', 'Chrome on Mac');
+    // Ingrid's app invites and Ola's app joins; the service reads the space with the client's own token.
+    assert.equal((await mx(ingrid, 'POST', `/_matrix/client/v3/rooms/${enc(rooms.nordlys!)}/invite`, { user_id: ola })).status, 200);
+    assert.equal((await mx(device, 'POST', `/_matrix/client/v3/join/${enc(rooms.nordlys!)}`, {})).status, 200);
+
+    const sofia = await login('sofia');
+    const sofiaId = `@sofia:${SERVER}`;
+    const path = `/_matrix/client/v3/rooms/${enc(rooms.nordlys!)}/state/work.pasodrum.space/`;
+    const original = (await mx(sofia, 'GET', path)).body;
+    assert.equal(original.kind, 'client');
+    assert.equal((await mx(sofia, 'PUT', path, { ...original, contacts: [sofiaId] })).status, 200);
+    try {
+      const contact = { id: sofiaId, name: 'Sofia Olsen' };
+      assert.deepEqual((await api(device, 'GET', '/confirm/me')).body.contact, contact);
+      const h = await api(device, 'POST', '/confirm/help', { reason: 'email-missing' });
+      assert.deepEqual([h.status, h.body], [200, { contact, sent: true }]);
+
+      const forOla = async (token: string, contactId: string) => {
+        const roomId = db('SELECT roomId FROM help_rooms WHERE contactId = ?', contactId)?.roomId as string | undefined;
+        if (!roomId) return [];
+        assert.equal((await mx(token, 'POST', `/_matrix/client/v3/join/${enc(roomId)}`, {})).status, 200);
+        const page = (await mx(token, 'GET', `/_matrix/client/v3/rooms/${enc(roomId)}/messages?dir=b&limit=50`)).body;
+        return page.chunk.filter((e: any) => e.content?.['work.pasodrum.help']?.user_id === ola);
+      };
+      assert.equal((await forOla(sofia, sofiaId)).length, 1);
+      assert.equal((await forOla(ingrid, `@ingrid:${SERVER}`)).length, 0);
+    } finally {
+      assert.equal((await mx(sofia, 'PUT', path, original)).status, 200);
+    }
   });
 });

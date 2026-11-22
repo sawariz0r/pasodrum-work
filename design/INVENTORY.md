@@ -244,6 +244,10 @@ Approved 2026-11-21 (CEO). Rules: DocsBoardsRules. Components: DocsPage, BoardsP
 | Issue mentions and assignments in Activity (issue key in place of the channel) | BoardsBuiltStates | approved 2026-11-21 |
 | Issue panel lies over the board at every width; clicking empty board closes it | BoardsBuiltStates | approved 2026-11-21 |
 | Docs file block (same card as a file in chat) | DocsFileBlock | approved 2026-11-21 |
+| SIDE-07: Docs and Boards show only the active space, no space heading (layout "space" is now the default of DocsPage/BoardsPage, so every Docs/Boards board shows it) | DocsPage(+JP, Dark), DocsNordlys, BoardsPage(+JP, Dark), BoardsNordlys | approved 2026-11-22 |
+| SIDE-07: My issues across every space, space name per group | BoardsMine(+JP) | approved 2026-11-22 |
+| SIDE-07: All issues (team, Pasodrum tile only): every open issue across spaces, grouped by project, face filter top right, dashed face = nobody | BoardsAll, BoardsAllPerson, BoardsAllJP, BoardsAllDark | approved 2026-11-22 |
+| SIDE-07: in Docs/Boards a space tile stays in Docs/Boards and opens that space | rules note on the Boards page | approved 2026-11-22 |
 
 ## Confirm by email (D-38)
 
@@ -258,7 +262,7 @@ Approved 2026-11-21 (CEO). Boards on the canvas page **Confirm by email** (moved
 | Help is on the way (client) | EmailConfirmHelped, EmailConfirmHelpedJP, EmailConfirmHelpedDark | approved 2026-11-21 |
 | The confirm email (EN, JP) | EmailConfirmEmail | approved 2026-11-21 |
 | Link page (any device, phone-first): confirm, confirmed, no longer works, help on the way | EmailConfirmLinkAsk, EmailConfirmLinkOk, EmailConfirmLinkExpired, EmailConfirmLinkHelped, EmailConfirmLinkAskJP, EmailConfirmLinkOkJP, EmailConfirmLinkAskDark, EmailConfirmLinkOkDark | approved 2026-11-21 |
-| Staff: a client needs your help (DM from Pasodrum) | EmailConfirmStaffHelp, EmailConfirmStaffHelpJP, EmailConfirmStaffHelpDark | approved 2026-11-21 |
+| Staff: a client needs your help (DM from Pasodrum), with the next step per reason (DES-04) | EmailConfirmStaffHelp, EmailConfirmStaffHelpJP, EmailConfirmStaffHelpDark, EmailConfirmStaffHelpStuckJP, EmailConfirmStaffHelpLinkDark | approved 2026-11-22 |
 | Rules: confirm by email | EmailConfirmRules | approved 2026-11-21 |
 
 | Send/help failed → muted "Something went wrong. Try again." line; link page can't reach us → clock tile + same line; link page line muted (was red) | EmailConfirmBuiltStates | approved 2026-11-21 |
@@ -277,3 +281,25 @@ Approved 2026-11-21 (CEO). One row component for the Home, Docs and Boards colum
 | Home sidebar (reference; only the selected row turns quiet grey) — EN/JP × light/dark | SidebarRowsHome | approved 2026-11-21 |
 | Docs sidebar on Home's row: icons and names line up, sub-page chevron at the end, column 248 — EN/JP × light/dark | SidebarRowsDocs | approved 2026-11-21 |
 | Boards sidebar on Home's row: My issues a normal row with a quiet count, swatch in the icon column, column 248 — EN/JP × light/dark | SidebarRowsBoards | approved 2026-11-21 |
+
+## Main contacts (SIDE-05)
+
+Approved 2026-11-21 (CEO). Boards on the canvas page **Client spaces & guests**, section "Main contacts (SIDE-05, approved 2026-11-21)"; rules in the orange note beside ContactHelpPill.
+
+| Screen / state | Artboard | Status |
+|---|---|---|
+| Client space settings → People: "Main contact" tag; ⋯ Make main contact / Remove as main contact (Owner, Admin; Staff rows incl. your own) | SpaceContacts, SpaceContactsJP, SpaceContactsDark, SpaceContactsJPDark | approved 2026-11-21 |
+| Client's help pill names the main contact (EmailConfirm unchanged otherwise) | ContactHelpPill | approved 2026-11-21 |
+
+## Desktop app (DES-03, M9)
+
+Approved 2026-11-22 (CEO). Boards on the canvas page **Desktop app**. Shell-neutral (Tauri or Electron). Reused unchanged: DesktopNotification, Offline/Reconnecting/BackOnline, SignIn, Window1024/Window800, device confirmation.
+
+| Screen / state | Artboard | Status |
+|---|---|---|
+| Rules: window, closing, links (no screen), badge, updates, device name, where Download shows | DesktopRules | approved 2026-11-22 |
+| Download for Mac / Windows: profile menu row (browser only); InviteLanding header + join done buttons back on, label per OS | DesktopDownload | approved 2026-11-22 |
+| App window + our own title bar (rail colour, ← →, search field (no shortcut hint); Mac lights inset, Windows controls drawn); empty before sign-in | DesktopWindow | approved 2026-11-22 |
+| Update ready: sidebar card → Restart; Mac app menu (Restart to Update / Check for Updates…) | DesktopUpdate | approved 2026-11-22 |
+| Dock badge, Windows taskbar overlay + tray menu (Open / Quit) | DesktopBadge | approved 2026-11-22 |
+| Can't reach Pasodrum work (window can't load the app) | DesktopOffline | approved 2026-11-22 |

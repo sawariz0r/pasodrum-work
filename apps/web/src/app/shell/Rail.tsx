@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, NavLink } from 'react-router';
+import { Link, NavLink, useLocation } from 'react-router';
 import { useWorkspace, type Space } from '../../matrix';
 import { AttentionDot, Badge } from '../../ui';
 import { useChannels } from '../channels/ChannelsProvider';
@@ -8,7 +8,7 @@ import { canManage } from '../channels/roles';
 import { forgetFreshSpace, isFreshSpace, spaceColour } from '../channels/shared';
 import { LogoMark, MoonIcon, SunIcon } from '../icons';
 import { channelPath, spaceHome } from '../places';
-import { setTheme, useTheme } from '../prefs';
+import { rememberSpace, setTheme, useTheme } from '../prefs';
 import type { RailItem } from '../registry';
 import { useRegistry } from '../RegistryProvider';
 import { BellIcon, BubbleIcon, HomeIcon, PlusIcon } from './icons';
@@ -28,11 +28,14 @@ export function Rail({ section, activeSpaceId, onSignOut }: { section: Section; 
   const theme = useTheme();
   const mayCreate = useWorkspace((x) => canManage(x.myRoles[x.spaces.find((sp) => sp.kind === 'workspace')?.id ?? '']));
   const channels = useChannels();
+  const { pathname } = useLocation();
+  // In a feature page (Docs, Boards), a space tile stays on that page and shows the space (D-42).
+  const stay = section === 'feature' ? rail.find((i) => pathname === i.to || pathname.startsWith(i.to + '/'))?.to : undefined;
 
   return (
     <nav aria-label={t('shell.rail.label')} className={s.rail}>
       {spaces.map((space) => (
-        <SpaceTile key={space.id} space={space} active={space.id === activeSpaceId} />
+        <SpaceTile key={space.id} space={space} active={space.id === activeSpaceId} stay={stay} />
       ))}
       {mayCreate && (
         <button type="button" className={s.tileNew} aria-label={t('spaces.newClientSpace')} onClick={() => channels.newClientSpace()}>
@@ -60,7 +63,7 @@ export function Rail({ section, activeSpaceId, onSignOut }: { section: Section; 
   );
 }
 
-function SpaceTile({ space, active }: { space: Space; active: boolean }) {
+function SpaceTile({ space, active, stay }: { space: Space; active: boolean; stay?: string }) {
   const { t } = useTranslation();
   const home = useWorkspace((x) => spaceHome(x, space.id)?.id);
   const attention = useWorkspace((x) => !active && (x.channels[space.id] ?? []).some((c) => !c.archived && (c.unread > 0 || c.mentions > 0)));
@@ -81,7 +84,8 @@ function SpaceTile({ space, active }: { space: Space; active: boolean }) {
   );
   return (
     <Link
-      to={home ? channelPath(space.id, home) : `/w/${encodeURIComponent(space.id)}`}
+      to={stay ?? (home ? channelPath(space.id, home) : `/w/${encodeURIComponent(space.id)}`)}
+      onClick={stay ? () => rememberSpace(space.id) : undefined}
       className={[s.tile, space.archived && s.tileArchived, fresh && s.tileFresh].filter(Boolean).join(' ')}
       style={style}
       aria-label={t(isWorkspace ? 'shell.rail.workspace' : 'shell.rail.clientSpace', { name: space.name })}

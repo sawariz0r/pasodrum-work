@@ -31,6 +31,7 @@ export function HelpRow({ m, help, head }: { m: Message; help: HelpCard; head: b
             <span className={h.needs}>{t('security.helpCard.needs', { name: who.name })}</span>
           </div>
           <div className={h.reason}>{t(`security.helpCard.reason.${reason}`)}</div>
+          <div className={h.next}>{t(`security.helpCard.next.${reason}`)}</div>
           <div className={h.facts}>{meta}</div>
           <div className={h.actions}>
             <a className={h.email} href={`mailto:${email}`}>

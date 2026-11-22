@@ -377,7 +377,8 @@
       "staff": "スタッフ",
       "external": "外部",
       "client": "クライアント",
-      "pending": "参加待ち"
+      "pending": "参加待ち",
+      "mainContact": "主担当"
     },
     "more": "{{name}} のその他の操作",
     "copyJoinLink": "参加リンクをコピー",
@@ -470,6 +471,8 @@
     "archived": "{{name}} はアーカイブ済みです",
     "unarchive": "アーカイブを解除",
     "removeFrom": "{{name}} から外す",
+    "makeMainContact": "主担当にする",
+    "removeMainContact": "主担当から外す",
     "removeTitle": "{{person}} を {{name}} から外しますか？",
     "removeButton": "外す",
     "renameFailed": "{{name}} に変更できませんでした",
@@ -596,6 +599,11 @@
         "email-missing": "新しいデバイスの確認メールが届いていません。",
         "stuck": "新しいデバイスの確認で困っています。",
         "link-broken": "確認リンクが使えませんでした。"
+      },
+      "next": {
+        "email-missing": "下のアドレスが本人のものか確認し、迷惑メールを見て「もう一度送る」を押すよう伝えてください。",
+        "stuck": "「リンクをメールで受け取る」を押して、届いたメールを開くよう伝えてください。",
+        "link-broken": "サインイン中のデバイスで新しいリンクを受け取り、15分以内に最新のメールを開くよう伝えてください。"
       }
     }
   },
@@ -627,6 +635,7 @@
     "remove": "{{name}} さんを外せませんでした",
     "resend": "{{name}} さんにリンクを再送できませんでした",
     "message": "{{name}} さんにメッセージを送れませんでした",
+    "mainContact": "主担当を変更できませんでした",
     "role": "{{name}} さんの役割を変更できませんでした",
     "colour": "{{name}} の色を変更できませんでした",
     "unarchiveSpace": "{{name}} のアーカイブを解除できませんでした"

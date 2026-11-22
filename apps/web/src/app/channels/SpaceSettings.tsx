@@ -12,7 +12,7 @@ import { dmPath } from '../places';
 import { BubbleIcon, MailIcon } from '../shell/icons';
 import { firstName, useToast } from '../toast';
 import s from './Channels.module.css';
-import { AlertIcon, ArchiveIcon, LeaveIcon, LinkIcon, PendingIcon, UserPlusIcon, XIcon } from './icons';
+import { AlertIcon, ArchiveIcon, LeaveIcon, LinkIcon, PendingIcon, StarIcon, UserPlusIcon, XIcon } from './icons';
 import { Swatches } from './NewClientSpace';
 import { canAddPeople, canManage, canRemoveFromSpace } from './roles';
 import { copyText, isInviteFor, spaceColour, useRole, useSpace, useWorkspaceName } from './shared';
@@ -254,6 +254,14 @@ function People({ space, members, tick, onAdded, onRemove, onLeave }: PeopleProp
     const mayRemove = canRemoveFromSpace(mine, m.role, me);
     const tag = m.pending ? 'pending' : m.role === 'owner' || m.role === 'admin' || m.role === 'external' ? m.role : null;
     const label = t('channels.more', { name: person.name });
+    const staffSide = !m.pending && (m.role === 'owner' || m.role === 'admin' || m.role === 'staff');
+    const isContact = staffSide && !!space.contacts?.includes(person.id);
+    const mayMark = manage && staffSide;
+    const mark = mayMark && (
+      <MenuItem icon={<StarIcon />} onSelect={() => void store.setMainContact(space.id, person.id, !isContact).catch(() => toast(t('failed.mainContact')))}>
+        {t(isContact ? 'spaces.removeMainContact' : 'spaces.makeMainContact')}
+      </MenuItem>
+    );
     return (
       <li key={person.id} className={s.memberRow}>
         {m.pending ? (
@@ -269,17 +277,25 @@ function People({ space, members, tick, onAdded, onRemove, onLeave }: PeopleProp
         )}
         <span className={s.memberName}>
           <span>{person.name}</span>
+          {isContact && (
+            <span className={`${s.tag} ${s.tagContact}`}>
+              <StarIcon size={11} fill="currentColor" strokeWidth={0} />
+              {t('channels.tags.mainContact')}
+            </span>
+          )}
           {me && <span className={s.you}>{t('channels.you')}</span>}
         </span>
         {tag && <span className={[s.tag, tag === 'pending' && s.tagPending, tag === 'external' && s.tagOutside].filter(Boolean).join(' ')}>{t(`channels.tags.${tag}`)}</span>}
         <span className={s.moreCell}>
-          {manage && !me && (mayRemove || !m.pending || invite) && (
+          {manage && (me ? mayMark : mayRemove || !m.pending || invite) && (
             <Menu>
               <MenuTrigger asChild>
                 <IconButton size={30} label={label} icon={<MoreIcon />} />
               </MenuTrigger>
               <MenuContent align="end" width={264} aria-label={label}>
-                {m.pending ? (
+                {me ? (
+                  mark
+                ) : m.pending ? (
                   <>
                     {invite?.link && (
                       <MenuItem icon={<LinkIcon />} onSelect={() => void copyText(invite.link!).catch(() => {})}>
@@ -297,7 +313,8 @@ function People({ space, members, tick, onAdded, onRemove, onLeave }: PeopleProp
                     {t('people.message')}
                   </MenuItem>
                 )}
-                {mayRemove && (
+                {!me && mark}
+                {!me && mayRemove && (
                   <>
                     {(!m.pending || invite) && <MenuSeparator />}
                     <MenuItem icon={<XIcon />} className={s.danger} onSelect={() => onRemove(m)}>

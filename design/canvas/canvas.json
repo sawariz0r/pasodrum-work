@@ -79,6 +79,10 @@
    "name": "Boards"
   },
   {
+   "id": "desktop",
+   "name": "Desktop app"
+  },
+  {
    "id": "discovery",
    "name": "Discovery"
   }
@@ -4269,47 +4273,47 @@
   },
   "SwitcherSpaces.dc.html": {
    "x": 0,
-   "y": 0,
+   "y": 6380,
    "w": 1440,
    "h": 900,
    "title": "⌘K across spaces: the space under each channel",
    "expand": "fill",
-   "page": "discovery"
+   "page": "search"
   },
   "SwitcherTags.dc.html": {
    "x": 1520,
-   "y": 0,
+   "y": 6380,
    "w": 1440,
    "h": 900,
    "title": "⌘K people tags: External, client space, team untagged",
    "expand": "fill",
-   "page": "discovery"
+   "page": "search"
   },
   "SwitcherSpacesJP.dc.html": {
    "x": 3040,
-   "y": 0,
+   "y": 6380,
    "w": 1440,
    "h": 900,
    "title": "⌘K across spaces — Japanese (recent)",
    "expand": "fill",
-   "page": "discovery"
+   "page": "search"
   },
   "SwitcherTagsDark.dc.html": {
-   "x": 4560,
-   "y": 0,
+   "x": 0,
+   "y": 7400,
    "w": 1440,
    "h": 900,
    "title": "⌘K people tags — dark",
    "expand": "fill",
-   "page": "discovery"
+   "page": "search"
   },
   "SwitcherWhoSees.dc.html": {
-   "x": 6080,
-   "y": 0,
+   "x": 1520,
+   "y": 7400,
    "w": 1440,
    "h": 620,
    "title": "⌘K: what a client and an External see",
-   "page": "discovery"
+   "page": "search"
   },
   "OutsideMarkSmall.dc.html": {
    "x": 0,
@@ -4376,48 +4380,71 @@
   },
   "ClientMarkFinal.dc.html": {
    "x": 0,
-   "y": 19180,
+   "y": 15620,
    "w": 1440,
    "h": 3900,
    "title": "Client and External marks (final)",
-   "page": "discovery",
+   "page": "people",
    "is_interactive": false
   },
   "ClientMarkPlaces.dc.html": {
    "x": 1520,
-   "y": 19180,
+   "y": 15620,
    "w": 1440,
    "h": 3000,
    "title": "Client and External marks: everywhere they show (final)",
-   "page": "discovery",
+   "page": "people",
    "is_interactive": false
   },
-  "BoardsBuiltStates.dc.html": {
+  "SpaceContacts.dc.html": {
    "x": 0,
-   "y": 9560,
+   "y": 14500,
    "w": 1440,
-   "h": 4708,
-   "title": "Boards: built without a board",
-   "is_interactive": false,
-   "page": "boards"
+   "h": 900,
+   "title": "Client space People: make someone a main contact",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "client-spaces"
   },
-  "DocsFileBlock.dc.html": {
-   "x": 0,
-   "y": 11660,
+  "SpaceContactsJP.dc.html": {
+   "x": 1520,
+   "y": 14500,
    "w": 1440,
-   "h": 781,
-   "title": "Docs: file block",
-   "is_interactive": false,
-   "page": "docs"
+   "h": 900,
+   "title": "Client space People: main contact (JP)",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "client-spaces"
   },
-  "EmailConfirmBuiltStates.dc.html": {
-   "x": 0,
-   "y": 7604,
+  "SpaceContactsDark.dc.html": {
+   "x": 3040,
+   "y": 14500,
    "w": 1440,
-   "h": 5420,
-   "title": "Confirm by email: gaps",
-   "is_interactive": false,
-   "page": "confirm-email"
+   "h": 900,
+   "title": "Client space People: remove a main contact (dark)",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "client-spaces"
+  },
+  "SpaceContactsJPDark.dc.html": {
+   "x": 4560,
+   "y": 14500,
+   "w": 1440,
+   "h": 900,
+   "title": "Client space People: main contact (JP, dark)",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "client-spaces"
+  },
+  "ContactHelpPill.dc.html": {
+   "x": 0,
+   "y": 15520,
+   "w": 1440,
+   "h": 900,
+   "title": "Help pill names the main contact (EN/JP × light/dark)",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "client-spaces"
   },
   "SidebarRowRules.dc.html": {
    "x": 0,
@@ -4450,6 +4477,141 @@
    "h": 1380,
    "title": "Sidebar rows — Boards, before / after",
    "page": "overview"
+  },
+  "BoardsBuiltStates.dc.html": {
+   "x": 0,
+   "y": 9560,
+   "w": 1440,
+   "h": 4708,
+   "title": "Boards: built without a board",
+   "is_interactive": false,
+   "page": "boards"
+  },
+  "DocsFileBlock.dc.html": {
+   "x": 0,
+   "y": 11660,
+   "w": 1440,
+   "h": 781,
+   "title": "Docs: file block",
+   "is_interactive": false,
+   "page": "docs"
+  },
+  "EmailConfirmBuiltStates.dc.html": {
+   "x": 0,
+   "y": 7604,
+   "w": 1440,
+   "h": 5420,
+   "title": "Confirm by email: gaps",
+   "is_interactive": false,
+   "page": "confirm-email"
+  },
+  "BoardsAll.dc.html": {
+   "x": 0,
+   "y": 14868,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — All issues",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "boards"
+  },
+  "BoardsAllPerson.dc.html": {
+   "x": 1520,
+   "y": 14868,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — All issues, one person",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "boards"
+  },
+  "BoardsAllJP.dc.html": {
+   "x": 3040,
+   "y": 14868,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — All issues, Japanese",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "boards"
+  },
+  "BoardsAllDark.dc.html": {
+   "x": 4560,
+   "y": 14868,
+   "w": 1440,
+   "h": 900,
+   "title": "Boards — All issues, dark",
+   "expand": "fill",
+   "is_interactive": true,
+   "page": "boards"
+  },
+  "DesktopRules.dc.html": {
+   "x": 0,
+   "y": 300,
+   "w": 1440,
+   "h": 840,
+   "title": "Desktop app — rules",
+   "is_interactive": false,
+   "page": "desktop"
+  },
+  "DesktopDownload.dc.html": {
+   "x": 1520,
+   "y": 300,
+   "w": 1440,
+   "h": 1240,
+   "title": "Desktop app — Download app",
+   "is_interactive": false,
+   "page": "desktop"
+  },
+  "DesktopWindow.dc.html": {
+   "x": 0,
+   "y": 1660,
+   "w": 1440,
+   "h": 2360,
+   "title": "Desktop app — window and title bar",
+   "is_interactive": false,
+   "page": "desktop"
+  },
+  "DesktopUpdate.dc.html": {
+   "x": 1520,
+   "y": 1660,
+   "w": 1440,
+   "h": 1410,
+   "title": "Desktop app — update ready",
+   "is_interactive": false,
+   "page": "desktop"
+  },
+  "DesktopBadge.dc.html": {
+   "x": 0,
+   "y": 4140,
+   "w": 1440,
+   "h": 850,
+   "title": "Desktop app — Dock, taskbar, tray",
+   "is_interactive": false,
+   "page": "desktop"
+  },
+  "DesktopOffline.dc.html": {
+   "x": 1520,
+   "y": 4140,
+   "w": 1440,
+   "h": 1270,
+   "title": "Desktop app — can’t reach",
+   "is_interactive": false,
+   "page": "desktop"
+  },
+  "EmailConfirmStaffHelpStuckJP.dc.html": {
+   "x": 4560,
+   "y": 6204,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email"
+  },
+  "EmailConfirmStaffHelpLinkDark.dc.html": {
+   "x": 6080,
+   "y": 6204,
+   "w": 1440,
+   "h": 900,
+   "page": "confirm-email"
   }
  },
  "order": [
@@ -4899,13 +5061,30 @@
   "ExternalMark.dc.html",
   "ClientMarkFinal.dc.html",
   "ClientMarkPlaces.dc.html",
-  "BoardsBuiltStates.dc.html",
-  "DocsFileBlock.dc.html",
-  "EmailConfirmBuiltStates.dc.html",
+  "SpaceContacts.dc.html",
+  "SpaceContactsJP.dc.html",
+  "SpaceContactsDark.dc.html",
+  "SpaceContactsJPDark.dc.html",
+  "ContactHelpPill.dc.html",
   "SidebarRowRules.dc.html",
   "SidebarRowsHome.dc.html",
   "SidebarRowsDocs.dc.html",
-  "SidebarRowsBoards.dc.html"
+  "SidebarRowsBoards.dc.html",
+  "BoardsBuiltStates.dc.html",
+  "DocsFileBlock.dc.html",
+  "EmailConfirmBuiltStates.dc.html",
+  "BoardsAll.dc.html",
+  "BoardsAllPerson.dc.html",
+  "BoardsAllJP.dc.html",
+  "BoardsAllDark.dc.html",
+  "DesktopRules.dc.html",
+  "DesktopDownload.dc.html",
+  "DesktopWindow.dc.html",
+  "DesktopUpdate.dc.html",
+  "DesktopBadge.dc.html",
+  "DesktopOffline.dc.html",
+  "EmailConfirmStaffHelpStuckJP.dc.html",
+  "EmailConfirmStaffHelpLinkDark.dc.html"
  ],
  "notes": {
   "overview-Foundations--workspace": {
@@ -5307,19 +5486,19 @@
   },
   "discSwitcherSpaces": {
    "x": 0,
-   "y": -280,
-   "text": "Discovery — ⌘K: which space, who’s who",
+   "y": 6100,
+   "text": "⌘K: which space, who’s who — approved 2026-11-21",
    "kind": "title1",
-   "maxW": 7520,
-   "page": "discovery"
+   "maxW": 4480,
+   "page": "search"
   },
   "discSwitcherSpacesRules": {
-   "x": 7600,
-   "y": 0,
+   "x": 3040,
+   "y": 7400,
    "w": 560,
-   "page": "discovery",
+   "page": "search",
    "fill": "orange",
-   "text": "Rules (for feedback)\n\n• Space line under a channel only when your ⌘K spans more than one space: a small └ then the space name, one step smaller than the channel name. Then every channel row has it, Pasodrum too. One space: rows as today.\n\n• DMs and People: a tag right after the name. External → the yellow “External”; a client → their client space’s name in that space’s colour (“Nordlys”); team → nothing. Outside mark on the avatar as everywhere else.\n\n• Names come only from spaces you’re in yourself, so ⌘K can’t name a space you’re not in.\n\n• Clients see no tags (Externals are team to them). A client in one space sees ⌘K exactly as today.\n\n• Recent conversations use the same rows."
+   "text": "Rules (approved 2026-11-21)\n\n• Space line under a channel only when your ⌘K spans more than one space: a small └ then the space name, one step smaller than the channel name. Then every channel row has it, Pasodrum too. One space: rows as today.\n\n• DMs and People: a tag right after the name. External → the yellow “External”; a client → their client space’s name in that space’s colour (“Nordlys”); team → nothing. Outside mark on the avatar as everywhere else.\n\n• Names come only from spaces you’re in yourself, so ⌘K can’t name a space you’re not in.\n\n• Clients see no tags (Externals are team to them). A client in one space sees ⌘K exactly as today.\n\n• Recent conversations use the same rows."
   },
   "discOutsideMark": {
    "x": 0,
@@ -5337,6 +5516,32 @@
    "fill": "gray",
    "size": "m",
    "text": "One page per feature\n\n• Sign in\n• Messages & composer\n• Threads, activity & drafts\n• DMs & profiles\n• Channels\n• Pins, files & link cards\n• People & access\n• Client spaces & guests\n• Invites, joining & first run\n• Devices & encryption\n• Confirm by email\n• Search & ⌘K\n• Settings\n• Translate\n• Docs\n• Boards\n• Discovery: open explorations\n\nArtboards keep their file names; only the layout moved (2026-11-21)."
+  },
+  "people-Client-and-External-marks-approved": {
+   "x": 0,
+   "y": 15380,
+   "text": "Client and External marks (approved 2026-11-21)",
+   "kind": "title1",
+   "page": "people",
+   "size": "l",
+   "maxW": 7520
+  },
+  "client-spaces-Main-contacts": {
+   "x": 0,
+   "y": 14260,
+   "text": "Main contacts (SIDE-05, approved 2026-11-21)",
+   "kind": "title1",
+   "page": "client-spaces",
+   "size": "l",
+   "maxW": 6000
+  },
+  "client-spaces-Main-contacts-rules": {
+   "x": 1520,
+   "y": 15520,
+   "w": 560,
+   "page": "client-spaces",
+   "fill": "orange",
+   "text": "Rules (approved 2026-11-21)\n\n• Owners and Admins mark Staff as a client space’s main contact from People → ⋯ (Make main contact / Remove as main contact). One or more; Owners and Admins count as Staff; never Externals or clients. Your own row has the item too.\n\n• A main contact gets a “Main contact” tag beside their name.\n\n• “Need help?” names the first main contact and reaches every main contact. With none marked it goes to whoever added the client, then the space’s Owners and Admins, as today (D-38)."
   },
   "boards-DES-02": {
    "x": 0,
@@ -5373,6 +5578,31 @@
    "page": "overview",
    "size": "l",
    "maxW": 5920
+  },
+  "boards-All-issues": {
+   "x": 0,
+   "y": 14628,
+   "text": "All issues and the active space (approved 2026-11-22)",
+   "kind": "title1",
+   "page": "boards",
+   "size": "l",
+   "maxW": 7520
+  },
+  "boards-side07-rules": {
+   "x": 6080,
+   "y": 14868,
+   "w": 560,
+   "page": "boards",
+   "fill": "orange",
+   "text": "Rules: space-scoped Docs and Boards, All issues (approved 2026-11-22)\n\n• Docs and Boards show only the space whose tile is lit. No space heading.\n\n• In Docs or Boards, a space tile keeps you there and opens that space. Home goes back to channels.\n\n• My issues: mine, every space.\n\n• All issues: only in Pasodrum (team). Every open issue in every space you’re in, grouped by project, space named on each group. Active space first; late first.\n\n• Press a face top right to see that person’s issues; dashed face = nobody. Press again to clear.\n\n• A custom column (Waiting on client) is named on the row. List only, no New issue.\n\n• In a client space, and for clients: My issues only, no All issues."
+  },
+  "desktop-DES-03": {
+   "x": 0,
+   "y": 0,
+   "text": "Desktop app (DES-03, approved 2026-11-22)",
+   "kind": "title1",
+   "page": "desktop",
+   "maxW": 2960
   }
  },
  "designSystems": []

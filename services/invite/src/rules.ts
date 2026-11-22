@@ -21,6 +21,8 @@ export type SpaceInfo = {
   kind: SpaceKind;
   /** Who set `work.pasodrum.space` (what makes a room a client space). */
   kindSender?: string;
+  /** SIDE-05: the client space's main contacts (`work.pasodrum.space` `contacts`), in marking order. */
+  contacts: string[];
   joined: Map<string, string>;
   /** Rooms this space lists as children (`m.space.child` with a `via`). */
   children: Set<string>;
@@ -54,10 +56,12 @@ export function spaceInfo(events: StateEvent[]): SpaceInfo {
   }
   const name = find('m.room.name').name;
   const kindEvent = events.find((e) => e.type === 'work.pasodrum.space' && (e.state_key ?? '') === '');
+  const contacts = kindEvent?.content?.contacts;
   return {
     name: typeof name === 'string' ? name : '',
     kind: kindEvent?.content?.kind === 'client' ? 'client' : 'workspace',
     ...(kindEvent?.sender ? { kindSender: kindEvent.sender } : {}),
+    contacts: Array.isArray(contacts) ? contacts.filter((id): id is string => typeof id === 'string') : [],
     joined,
     children,
     parents,

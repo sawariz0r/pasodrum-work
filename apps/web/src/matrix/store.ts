@@ -193,6 +193,7 @@ function factsOf(room: Room): RoomFacts {
     clientSpace: space.kind === 'client',
     ...(typeof space.colour === 'string' && space.colour ? { colour: space.colour } : {}),
     ...(space.archived === true ? { archived: true } : {}),
+    ...(Array.isArray(space.contacts) ? { contacts: space.contacts.filter((id): id is string => typeof id === 'string') } : {}),
     joinRule: room.getJoinRule(),
     ...(typeof topic === 'string' && topic ? { topic } : {}),
     children: state
@@ -2849,6 +2850,29 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
         const s = snapshot.spaces.find((x) => x.id === spaceId);
         return !!s && (!name || s.name === name) && (patch.colour === undefined || (s.colour ?? '') === patch.colour);
       });
+    },
+    async setMainContact(spaceId, userId, on) {
+      await ready;
+      const space = client.getRoom(spaceId);
+      if (!space || !joined(space) || !isClientSpace(space)) throw new Error('not-allowed');
+      // The help lookup only trusts contacts at staff level in the space; a colleague added by Staff may still sit at 0 (D-36).
+      if (on) {
+        await workspaceRoom?.loadMembersIfNeeded().catch(noop);
+        const level = teamLevel(userId);
+        if (inWorkspace(userId) && levelIn(space, userId) < LEVEL.staff && mayEditLevel(space, userId, level)) await setLevel(space, userId, level).catch(noop);
+      }
+      try {
+        await writeState(spaceId, SPACE_STATE, (content) => {
+          const was = Array.isArray(content.contacts) ? content.contacts.filter((id): id is string => typeof id === 'string') : [];
+          const contacts = !on ? was.filter((id) => id !== userId) : was.includes(userId) ? was : [...was, userId];
+          const next: Record<string, unknown> = { ...content, contacts };
+          if (!contacts.length) delete next.contacts;
+          return next;
+        });
+      } catch (e) {
+        throw forbidden(e);
+      }
+      await settle(() => !!snapshot.spaces.find((x) => x.id === spaceId)?.contacts?.includes(userId) === on);
     },
     async spaceMembers(spaceId) {
       await ready;

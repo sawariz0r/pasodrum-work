@@ -1,4 +1,4 @@
-// The Docs tree (DocsPage, DocsNordlys, DocsDragPage): one group per space in scope, pages nested, drag to move.
+// The Docs tree (DocsPage, DocsNordlys, DocsDragPage): the lit space's pages, nested, drag to move (D-42).
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { draggable, dropTargetForElements, monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
@@ -6,13 +6,11 @@ import { pointerOutsideOfPreview } from '@atlaskit/pragmatic-drag-and-drop/eleme
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { CompanyTile } from '../../app/people/Face';
-import { useShowExternal } from '../../app/people/names';
 import shell from '../../app/shell/Shell.module.css';
 import { useToast } from '../../app/toast';
 import { useDocsBoards, useStore, type PageNode, type Space } from '../../matrix';
-import { DropLine, IconButton, SideHeading, Skeleton, sideRow } from '../../ui';
-import { ChevronDown, ChevronRight, PageIcon, Pencil, PlusBold, Search } from './icons';
+import { DropLine, IconButton, Skeleton, sideRow } from '../../ui';
+import { ChevronDown, ChevronRight, PageIcon, Pencil, Search } from './icons';
 import { flatten, locate, useScope } from './model';
 import { pagePath, useCreatePage } from './actions';
 import { useT } from './strings';
@@ -114,11 +112,7 @@ function Tree({ scope, activeId, query }: { scope: Space[]; activeId?: string; q
 
 function Group(props: { space: Space; activeId?: string; query: string; closed: ReadonlySet<string>; toggle: (id: string) => void; drop: Drop | null }) {
   const { space, activeId, query, closed, toggle, drop } = props;
-  const t = useT();
-  const create = useCreatePage();
-  const showExternal = useShowExternal();
   const pages = useDocsBoards((x) => x.pages[space.id]);
-  const [folded, setFolded] = useState(false);
 
   const rows: { node: PageNode; depth: number; ancestry: string[] }[] = [];
   if (pages && query) {
@@ -135,40 +129,28 @@ function Group(props: { space: Space; activeId?: string; query: string; closed: 
 
   return (
     <div role="group" aria-label={space.name}>
-      <SideHeading
-        open={!folded}
-        onToggle={() => setFolded(!folded)}
-        lead={space.kind === 'client' && showExternal && <CompanyTile space={space} size={14} />}
-        label={space.name}
-        action={
-          pages?.canCreate && (
-            <IconButton size={24} className={sideRow.sectionAction} label={t('newPage')} icon={<PlusBold size={14} />} onClick={() => create({ spaceId: space.id })} />
-          )
-        }
-      />
-      {!folded &&
-        (pages ? (
-          rows.map((r) => (
-            <Row
-              key={r.node.id}
-              node={r.node}
-              depth={r.depth}
-              ancestry={r.ancestry}
-              active={r.node.id === activeId}
-              open={!query && !closed.has(r.node.id)}
-              flat={!!query}
-              canMove={pages.canCreate && !query}
-              toggle={toggle}
-              drop={drop?.ref === r.node.id ? drop.mode : null}
-            />
-          ))
-        ) : (
-          <div className={s.loadingRows} aria-hidden="true">
-            <Skeleton width="72%" height={12} />
-            <Skeleton width="54%" height={12} />
-            <Skeleton width="64%" height={12} />
-          </div>
-        ))}
+      {pages ? (
+        rows.map((r) => (
+          <Row
+            key={r.node.id}
+            node={r.node}
+            depth={r.depth}
+            ancestry={r.ancestry}
+            active={r.node.id === activeId}
+            open={!query && !closed.has(r.node.id)}
+            flat={!!query}
+            canMove={pages.canCreate && !query}
+            toggle={toggle}
+            drop={drop?.ref === r.node.id ? drop.mode : null}
+          />
+        ))
+      ) : (
+        <div className={s.loadingRows} aria-hidden="true">
+          <Skeleton width="72%" height={12} />
+          <Skeleton width="54%" height={12} />
+          <Skeleton width="64%" height={12} />
+        </div>
+      )}
     </div>
   );
 }

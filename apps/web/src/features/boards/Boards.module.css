@@ -33,6 +33,11 @@
   overflow-y: auto;
 }
 
+.navGap {
+  flex: none;
+  height: 12px;
+}
+
 .swatch {
   flex: none;
   width: 12px;
@@ -1403,4 +1408,26 @@
   .filter {
     display: none;
   }
+}
+
+.listSpace {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-left: auto;
+  color: var(--subtle);
+  font-size: 13px;
+}
+
+.rowTitleCell {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.rowColumn {
+  flex: none;
+  color: var(--subtle);
+  font-size: 12.5px;
 }

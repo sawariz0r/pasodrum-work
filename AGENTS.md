@@ -17,7 +17,7 @@ You start with **no memory of prior chats** — orient yourself like this:
 4. **To work a task:** move its file `todo/ → implementing/`, set `stage: implementing` + `owner`, do the work, then move to `ceo-review/` with the **Outcome** filled in. Full workflow in [tasks/README.md](tasks/README.md).
 5. **Record as you go:** new decisions/learnings → `docs/DECISIONS.md`; correct this file when a rule changes.
 
-Status (2026-11-21, late): M0–M8 and side features D-36…D-40 live (people & access, Docs & Boards, confirm by email, live relay, client marks). CEO still to test: confirm by email (SIDE-04) and the DM risk line. Backlog: SIDE-05/06/07, DES-01. Next phase M9. Read docs/PHASES.md "Next session" first.
+Status (2026-11-21, late): M0–M8 and side features D-36…D-40 live (people & access, Docs & Boards, confirm by email, live relay, client marks). CEO still to test: confirm by email (SIDE-04) and the DM risk line. Live 2026-11-22: DES-01, DES-02. In flight: SIDE-05 (ready to push), SIDE-07 (building), M9 shell spike, DES-03 desktop boards. SIDE-06 dropped. Read docs/PHASES.md "Next session" first.
 
 ---
 
@@ -81,6 +81,9 @@ Status (2026-11-21, late): M0–M8 and side features D-36…D-40 live (people & 
 - **Decisions** get logged in DECISIONS.md (ADR-style). **Learnings** get appended there too.
 - **Escalate only important decisions** to the CTO/CEO (scope, server choice, security model, anything irreversible). Decide the rest and log it.
 
+### Writing to the CEO
+The CEO has ADHD and skims. First line = the action or question; options as 2–4 one-liners, recommendation first; numbered steps; max 5 items per list; no preamble, recap or closer. Full rules: `~/.claude/CLAUDE.md`, from [i-have-adhd](https://raw.githubusercontent.com/ayghri/i-have-adhd/refs/heads/main/skills/i-have-adhd/SKILL.md).
+
 ### Coding standards
 - Reuse > extend > create. Match existing API shapes and density.
 - Don't add features/abstractions/error-handling beyond what the task needs. Trust internal code; validate at boundaries only (user input, server responses, invite service input).
@@ -96,6 +99,7 @@ Status (2026-11-21, late): M0–M8 and side features D-36…D-40 live (people & 
 - First account on a fresh server must use the one-time token printed in `pnpm dev:server:logs`; it becomes the server admin. After that the `REGISTRATION_TOKEN` from `dev/.env` works.
 - `pnpm dev:seed` — seeds the canvas workspace (password `pasodrum-dev-password` for all accounts). `pnpm probe` — server capability checks → `docs/probe-results.md`. `pnpm test:invite` — invite service integration tests (needs the stack up and seeded).
 - **Production (no staging, D-18):** https://pasodrum.work on Coolify, Docker Compose from `deploy/docker-compose.yml` (Base Directory `/deploy`). Only `web` has a domain; it serves the app and forwards Matrix paths to continuwuity and `/api/invites` to `invite`. Redeploy in Coolify after pushing to `main`. Disposable until the CEO says otherwise. Seed/probe it with `set -a; . dev/.env.production; set +a; pnpm dev:seed && pnpm probe` (results in `docs/probe-results-<server>.md`).
+- **Real people on production:** Shiori is a real user, so never add her to channels/spaces/DMs, sign in as her, or use her for tests or demos (CEO, 2026-11-22). Use Oscar's account or local seed accounts instead.
 - `pnpm e2e` — Playwright on Chromium + WebKit against the seeded Docker server (`pnpm dev:server`).
 - CI also builds and smoke-tests with an **empty feature registry**.
 - **Test only what's really necessary ([[D-30]]):** security/isolation, data loss, and logic that breaks silently. No tests for layout, copy or plain UI wiring — check those in a browser.

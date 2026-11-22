@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Help pill names the main contact</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.pd-light{--bg:#FFFFFF;--side:#F7F6F3;--rail:#18171D;--ink:#1D1C22;--muted:#55535C;--subtle:#6E6C76;--line:#E8E6E1;--hover:#F0EEE9;--raised:#FFFFFF;--well:#F4F3EF;--accent:#0E7C66;--onaccent:#FFFFFF;--accentsoft:#E2F2EC;--link:#0B6A86;--mentionbg:#FFF7DD;--chip:#E3EEF6;--sidetext:#2F2E35;--sidemuted:#5F5D67;--sideactive:#0E7C66;--onsideactive:#FFFFFF;--danger:#D4351C;--shadow:0 18px 48px rgba(20,18,30,.18);--warnbg:#FFF4D6;--warnink:#6B4A00;--dangertext:#B42318;--skel:#E7E4DD}
+.pd-dark{--bg:#1B1B20;--side:#141418;--rail:#0D0D10;--ink:#ECEBF0;--muted:#B3B1BC;--subtle:#908E9A;--line:#2C2C33;--hover:#25252B;--raised:#222228;--well:#202026;--accent:#3DD6A5;--onaccent:#04271D;--accentsoft:#15382F;--link:#7CC8F0;--mentionbg:#33290F;--chip:#1E3242;--sidetext:#DAD8E0;--sidemuted:#9A98A4;--sideactive:#1F5F4F;--onsideactive:#FFFFFF;--danger:#D4351C;--shadow:0 18px 56px rgba(0,0,0,.55);--warnbg:#3A2E10;--warnink:#F5D58A;--dangertext:#FF8A7A;--skel:#28282F}
+.pd-root button{font-family:inherit}
+.pd-root :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pd-row:not(.pd-active):hover{background:var(--hover)!important}
+.pd-ico:hover{background:var(--hover)!important;color:var(--ink)!important}
+.pd-rail:hover .pd-railicon{background:rgba(255,255,255,.10)!important}
+.pd-msg:not(.pd-mention):hover{background:var(--hover)!important}
+.pd-actions{opacity:0;transition:opacity .12s}
+.pd-msg:hover .pd-actions,.pd-msg:focus-within .pd-actions{opacity:1}
+.pd-msg:hover .pd-time{visibility:visible!important}
+.pd-thread:hover{background:var(--raised)!important;border-color:var(--line)!important}
+.pd-card:hover{border-color:var(--subtle)!important}
+.pd-btn2:hover{background:var(--hover)!important}
+.pd-input::placeholder{color:var(--subtle)}
+.pd-input:focus{outline:none}
+.pd-composer:focus-within{border-color:var(--subtle)!important}
+@keyframes pd-blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.pd-dot{animation:pd-blink 1.2s infinite}
+.pd-root{--cjk:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,"Noto Sans JP";--lh:1.5}
+.pd-ja{--lh:1.7}
+.pd-ja h1,.pd-ja h2{letter-spacing:0!important}
+.pd-rail{white-space:nowrap}
+.pd-ja .pd-rail{font-size:10px!important}
+@keyframes pd-shimmer{0%,100%{opacity:.55}50%{opacity:1}}
+.pd-skel{background:var(--skel);border-radius:6px;animation:pd-shimmer 1.4s ease-in-out infinite}
+.pd-railskel{background:rgba(255,255,255,.09);animation:pd-shimmer 1.4s ease-in-out infinite}
+.pd-link:hover{text-decoration:underline}
+.pd-seg:not([aria-checked="true"]):hover{color:var(--ink)!important}
+.pd-light{--quotebar:#D3D0C8;--editbg:#F1F8F5;--tip:#1D1C22;--ontip:#FFFFFF;--scrim:rgba(14,13,18,.97)}
+.pd-dark{--quotebar:#4A4952;--editbg:#16251F;--tip:#3A3A44;--ontip:#FFFFFF;--scrim:rgba(6,6,9,.97)}
+.pd-root{--mono:"SF Mono",ui-monospace,Menlo,Consolas,"Roboto Mono",monospace}
+.pd-ja{--mono:"SF Mono",ui-monospace,Menlo,Consolas,"Hiragino Sans","Yu Gothic UI",monospace}
+.pd-force .pd-actions{opacity:1}
+.pd-force .pd-time{visibility:visible!important}
+.pd-root .pd-msg.pd-force:not(.pd-mention){background:var(--hover)!important}
+.pd-root .pd-msg.pd-editing{background:var(--editbg)!important}
+.pd-code .pd-copy{opacity:0;transition:opacity .12s}
+.pd-code:hover .pd-copy,.pd-code:focus-within .pd-copy{opacity:1}
+.pd-quote:hover{background:var(--hover)}
+.pd-media:hover{filter:brightness(.95)}
+.pd-menuitem:hover,.pd-emo:hover{background:var(--hover)!important}
+.pd-viewbtn:hover{background:rgba(255,255,255,.2)!important}
+.pd-root{--ease-out:cubic-bezier(.2,.8,.2,1);--ease-in-out:cubic-bezier(.4,0,.2,1);--dur-1:120ms;--dur-2:180ms;--dur-3:240ms}
+@keyframes pd-pop{from{opacity:0;scale:.96}}
+@keyframes pd-rise{from{opacity:0;translate:0 4px}}
+@keyframes pd-fade{from{opacity:0}}
+.pd-pop{animation:pd-pop var(--dur-2) var(--ease-out) both}
+.pd-rise{animation:pd-rise var(--dur-2) var(--ease-out) both}
+.pd-fadein{animation:pd-fade var(--dur-2) var(--ease-out) both}
+.pd-menuitem,.pd-emo,.pd-quote,.pd-media,.pd-viewbtn{transition:background-color var(--dur-1) var(--ease-out),filter var(--dur-1) var(--ease-out)}
+@media (prefers-reduced-motion: reduce){.pd-pop,.pd-rise{animation-name:pd-fade}}
+@keyframes pd-caret{0%,49%{opacity:1}50%,100%{opacity:0}}
+.pd-caret{display:inline-block;width:1.5px;height:1.15em;margin:0 1px -.2em;background:var(--ink);animation:pd-caret 1s steps(1) infinite}
+@media (prefers-reduced-motion: reduce){.pd-skel,.pd-railskel,.pd-dot{animation:none}}
+.pd-lrow,.pd-card2{transition:background-color var(--dur-1) var(--ease-out),border-color var(--dur-1) var(--ease-out),box-shadow var(--dur-1) var(--ease-out)}
+.pd-lrow:not(.pd-sel):hover{background:var(--hover)!important}
+.pd-card2:not(.pd-sel):hover{border-color:var(--subtle)!important}
+.pd-draft .pd-dtools{opacity:0;transition:opacity var(--dur-1) var(--ease-out)}
+.pd-draft:hover .pd-dtools,.pd-draft:focus-within .pd-dtools{opacity:1}
+.pd-name{cursor:pointer}.pd-name:hover{text-decoration:underline}
+.pd-chip{transition:background-color var(--dur-1) var(--ease-out),color var(--dur-1) var(--ease-out),border-color var(--dur-1) var(--ease-out)}
+@keyframes pd-slide{from{opacity:0;translate:12px 0}}
+.pd-slide{animation:pd-slide var(--dur-3) var(--ease-out) both}
+.pd-clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media (prefers-reduced-motion: reduce){.pd-slide{animation-name:pd-fade}}
+.pd-float .pd-msg,.pd-float .pd-clamp2{overflow-wrap:anywhere}
+.pd-composer,.pd-pop,.pd-rise{pointer-events:auto}
+.pd-tab{transition:color var(--dur-1) var(--ease-out),border-color var(--dur-2) var(--ease-out)}
+.pd-tab:not([aria-selected="true"]):hover{color:var(--ink)!important}
+.pd-field:focus-within{border-color:var(--accent)!important;box-shadow:0 0 0 4px var(--accentsoft)}
+.pd-mrow .pd-mmore{opacity:0;transition:opacity var(--dur-1) var(--ease-out)}
+.pd-mrow:hover .pd-mmore,.pd-mrow:focus-within .pd-mmore,.pd-mrow.pd-sel .pd-mmore{opacity:1}
+
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 1px; background: #E8E6E1"><div style="min-width: 0; min-height: 0"><div class="pd-root pd-light" lang="en" style="width: 100%; height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; padding: 32px; background: var(--bg); color: var(--ink); font-family: Inter, var(--cjk), system-ui, sans-serif; word-break: auto-phrase; text-wrap: pretty"><div role="group" style="width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; text-align: center"><div style="width: 64px; height: 64px; border-radius: 18px; background: var(--accentsoft); color: var(--accent); display: flex; align-items: center; justify-content: center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"></rect><path d="M2 20h20M9 10.5l2 2 4-4"></path></svg></div><h2 style="margin: 20px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.25">Confirm it’s you</h2><p style="margin: 10px 0 0; font-size: 15px; line-height: var(--lh); color: var(--muted)">You’re signed in on a new device, so we’ll email you a link to check it’s really you. Sorry for the extra step: it keeps your messages private.</p><button style="width: 100%; height: 48px; margin-top: 24px; border: 0; border-radius: 12px; background: var(--accent); color: var(--onaccent); font-size: 15.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"></rect><path d="m3.5 7.5 8.5 6 8.5-6"></path></svg>Email me a link</button><button style="margin-top: 28px; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 6px; border: 1px solid var(--line); border-radius: 20px; background: var(--raised); color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer"><span style="flex: none; display: inline-flex; width: 28px; height: 28px; border-radius: 14px; background: #0E7C66; color: #FFFFFF; font-size: 11px; font-weight: 700; align-items: center; justify-content: center">SO</span>Need help? Ask Sam Okafor</button></div></div></div><div style="min-width: 0; min-height: 0"><div class="pd-root pd-light pd-ja" lang="ja" style="width: 100%; height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; padding: 32px; background: var(--bg); color: var(--ink); font-family: Inter, var(--cjk), system-ui, sans-serif; word-break: auto-phrase; text-wrap: pretty"><div role="group" style="width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; text-align: center"><div style="width: 64px; height: 64px; border-radius: 18px; background: var(--accentsoft); color: var(--accent); display: flex; align-items: center; justify-content: center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"></rect><path d="M2 20h20M9 10.5l2 2 4-4"></path></svg></div><h2 style="margin: 20px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.25">ご本人の確認</h2><p style="margin: 10px 0 0; font-size: 15px; line-height: var(--lh); color: var(--muted)">新しいデバイスでサインインしています。ご本人か確認するため、リンクをメールでお送りします。お手数ですが、メッセージを守るための確認です。</p><button style="width: 100%; height: 48px; margin-top: 24px; border: 0; border-radius: 12px; background: var(--accent); color: var(--onaccent); font-size: 15.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"></rect><path d="m3.5 7.5 8.5 6 8.5-6"></path></svg>リンクをメールで受け取る</button><button style="margin-top: 28px; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 6px; border: 1px solid var(--line); border-radius: 20px; background: var(--raised); color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer"><span style="flex: none; display: inline-flex; width: 28px; height: 28px; border-radius: 14px; background: #0E7C66; color: #FFFFFF; font-size: 11px; font-weight: 700; align-items: center; justify-content: center">SO</span>Sam Okafor さんに相談する</button></div></div></div><div style="min-width: 0; min-height: 0"><div class="pd-root pd-dark" lang="en" style="width: 100%; height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; padding: 32px; background: var(--bg); color: var(--ink); font-family: Inter, var(--cjk), system-ui, sans-serif; word-break: auto-phrase; text-wrap: pretty"><div role="group" style="width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; text-align: center"><div style="width: 64px; height: 64px; border-radius: 18px; background: var(--accentsoft); color: var(--accent); display: flex; align-items: center; justify-content: center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"></rect><path d="M2 20h20M9 10.5l2 2 4-4"></path></svg></div><h2 style="margin: 20px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.25">Confirm it’s you</h2><p style="margin: 10px 0 0; font-size: 15px; line-height: var(--lh); color: var(--muted)">You’re signed in on a new device, so we’ll email you a link to check it’s really you. Sorry for the extra step: it keeps your messages private.</p><button style="width: 100%; height: 48px; margin-top: 24px; border: 0; border-radius: 12px; background: var(--accent); color: var(--onaccent); font-size: 15.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"></rect><path d="m3.5 7.5 8.5 6 8.5-6"></path></svg>Email me a link</button><button style="margin-top: 28px; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 6px; border: 1px solid var(--line); border-radius: 20px; background: var(--raised); color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer"><span style="flex: none; display: inline-flex; width: 28px; height: 28px; border-radius: 14px; background: #0E7C66; color: #FFFFFF; font-size: 11px; font-weight: 700; align-items: center; justify-content: center">SO</span>Need help? Ask Sam Okafor</button></div></div></div><div style="min-width: 0; min-height: 0"><div class="pd-root pd-dark pd-ja" lang="ja" style="width: 100%; height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; padding: 32px; background: var(--bg); color: var(--ink); font-family: Inter, var(--cjk), system-ui, sans-serif; word-break: auto-phrase; text-wrap: pretty"><div role="group" style="width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; text-align: center"><div style="width: 64px; height: 64px; border-radius: 18px; background: var(--accentsoft); color: var(--accent); display: flex; align-items: center; justify-content: center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"></rect><path d="M2 20h20M9 10.5l2 2 4-4"></path></svg></div><h2 style="margin: 20px 0 0; font-family: 'Space Grotesk', var(--cjk), sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.25">ご本人の確認</h2><p style="margin: 10px 0 0; font-size: 15px; line-height: var(--lh); color: var(--muted)">新しいデバイスでサインインしています。ご本人か確認するため、リンクをメールでお送りします。お手数ですが、メッセージを守るための確認です。</p><button style="width: 100%; height: 48px; margin-top: 24px; border: 0; border-radius: 12px; background: var(--accent); color: var(--onaccent); font-size: 15.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"></rect><path d="m3.5 7.5 8.5 6 8.5-6"></path></svg>リンクをメールで受け取る</button><button style="margin-top: 28px; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 6px; border: 1px solid var(--line); border-radius: 20px; background: var(--raised); color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer"><span style="flex: none; display: inline-flex; width: 28px; height: 28px; border-radius: 14px; background: #0E7C66; color: #FFFFFF; font-size: 11px; font-weight: 700; align-items: center; justify-content: center">SO</span>Sam Okafor さんに相談する</button></div></div></div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

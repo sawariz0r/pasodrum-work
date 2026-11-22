@@ -7,7 +7,7 @@ import { HELP_REASONS, helpMessage, type HelpReason, type SystemAccount } from '
 import { emailFor, isCode, localpartOf, newCode } from './ids.ts';
 import type { SendMail } from './mail.ts';
 import type { Matrix } from './matrix.ts';
-import { ADMIN_LEVEL, rateLimiter, spaceInfo, type Person, type SpaceInfo } from './rules.ts';
+import { ADMIN_LEVEL, STAFF_LEVEL, rateLimiter, spaceInfo, type Person, type SpaceInfo } from './rules.ts';
 import { seal, unseal } from './secret.ts';
 import type { ConfirmRequest, Store } from './store.ts';
 
@@ -69,7 +69,17 @@ export function confirmRoutes({ cfg, store, mx, sendMail, key, system, now }: Co
       .slice(0, 5)
       .map(([id, name]) => ({ id, name }));
 
-  /** Who added them (if still there), else that space's Owners and Admins; with no invite on record, the space the app names. */
+  // SIDE-05: marked main contacts still in the space at Staff or above, in marking order.
+  const mainContacts = (space: SpaceInfo, except: string): Person[] =>
+    space.contacts
+      .filter((id) => id !== except && id !== system.id && space.joined.has(id) && space.powerOf(id) >= STAFF_LEVEL)
+      .slice(0, 5)
+      .map((id) => ({ id, name: space.joined.get(id)! }));
+
+  /**
+   * The space's main contacts (all of them get the help DM), else who added them (if still there), else its top Owner or
+   * Admin; with no invite on record, the space the app names.
+   */
   async function contactsOf(c: Caller, spaceHint: unknown): Promise<{ contacts: Person[]; spaceId: string | null; spaceName: string | null }> {
     const invite = store.latestClaimed(c.userId);
     if (invite) {
@@ -77,30 +87,40 @@ export function confirmRoutes({ cfg, store, mx, sendMail, key, system, now }: Co
       const space = state && spaceInfo(state);
       const named = { spaceId: invite.spaceId, spaceName: space?.name || invite.spaceName };
       if (!space) return { ...named, contacts: [{ id: invite.inviterId, name: invite.inviterName }] };
+      const main = mainContacts(space, c.userId);
+      if (main.length) return { ...named, contacts: main };
       const inviter = space.joined.get(invite.inviterId);
-      return { ...named, contacts: inviter ? [{ id: invite.inviterId, name: inviter }] : admins(space, c.userId) };
+      return { ...named, contacts: inviter ? [{ id: invite.inviterId, name: inviter }] : admins(space, c.userId).slice(0, 1) };
     }
     if (typeof spaceHint === 'string' && spaceHint.startsWith('!')) {
       const state = await mx.roomState(c.token, spaceHint);
       const space = state && spaceInfo(state);
-      if (space?.joined.has(c.userId)) return { spaceId: spaceHint, spaceName: space.name || null, contacts: admins(space, c.userId) };
+      if (space?.joined.has(c.userId)) {
+        const main = mainContacts(space, c.userId);
+        return { spaceId: spaceHint, spaceName: space.name || null, contacts: main.length ? main : admins(space, c.userId).slice(0, 1) };
+      }
     }
     return { spaceId: null, spaceName: null, contacts: [] };
   }
 
-  async function sendHelp(h: { userId: string; email: string; reason: HelpReason; spaceId: string | null; spaceName: string | null; tz: string | null; contact: Person }) {
+  async function sendHelp(h: { userId: string; email: string; reason: HelpReason; spaceId: string | null; spaceName: string | null; tz: string | null; contacts: Person[] }) {
     const t = now();
     const undo = store.claimHelp(h.userId, t, HELP_EVERY);
     if (!undo) return false;
+    let failures: unknown[];
     try {
       const name = (await system.nameOf(h.userId)) ?? localpartOf(h.userId);
-      await system.send(h.contact.id, helpMessage({ ...h, name, localTime: h.tz ? clock(t, h.tz) : null }));
-      return true;
+      const message = helpMessage({ ...h, name, localTime: h.tz ? clock(t, h.tz) : null });
+      const sends = await Promise.allSettled(h.contacts.map((contact) => system.send(contact.id, message)));
+      failures = sends.flatMap((s) => (s.status === 'rejected' ? [s.reason] : []));
+      if (failures.length === sends.length) throw failures[0];
     } catch (e) {
       undo();
       console.error(`help failed: ${(e as Error).message}`);
       throw fail(502, 'failed');
     }
+    for (const e of failures) console.error(`help failed for one contact: ${(e as Error).message}`);
+    return true;
   }
 
   const isOpen = (r: ConfirmRequest, t: number) => !r.confirmedTs && !r.replacedTs && r.expiresTs > t;
@@ -189,7 +209,7 @@ export function confirmRoutes({ cfg, store, mx, sendMail, key, system, now }: Co
     const { contacts, spaceId, spaceName } = await contactsOf(c, body.spaceId);
     const contact = contacts[0];
     if (!contact) throw fail(409, 'no-contact');
-    const sent = await sendHelp({ userId: c.userId, email: emailOf(c.userId), reason: body.reason as HelpReason, spaceId, spaceName, tz: validZone(body.tz), contact });
+    const sent = await sendHelp({ userId: c.userId, email: emailOf(c.userId), reason: body.reason as HelpReason, spaceId, spaceName, tz: validZone(body.tz), contacts });
     return new Reply(200, { contact, sent });
   }
 
@@ -224,7 +244,7 @@ export function confirmRoutes({ cfg, store, mx, sendMail, key, system, now }: Co
       spaceId: r.spaceId,
       spaceName: r.spaceName,
       tz: validZone(body.tz) ?? r.tz,
-      contact,
+      contacts: r.contacts,
     });
     return new Reply(200, { contact: { name: contact.name }, sent });
   }

@@ -81,7 +81,7 @@ const unjoined: Record<string, Omit<JoinableChannel, 'joined'>[]> = {
 const spaces: Space[] = [
   { id: '!pasodrum', name: 'Pasodrum', kind: 'workspace' },
   { id: '!kumo', name: 'Kumo', kind: 'client', colour: '#9A3412' },
-  { id: '!nordlys', name: 'Nordlys', kind: 'client', colour: '#2F4A6D' },
+  { id: '!nordlys', name: 'Nordlys', kind: 'client', colour: '#2F4A6D', contacts: [people.jb!.id] },
 ];
 
 /** Workspace first, then client spaces by name; archived ones last. */
@@ -1066,6 +1066,18 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     },
     async updateSpace(spaceId, patch) {
       set({ spaces: snapshot.spaces.map((sp) => (sp.id === spaceId ? { ...sp, ...patch } : sp)).sort(spaceOrder) });
+    },
+    async setMainContact(spaceId, userId, on) {
+      set({
+        spaces: snapshot.spaces.map((sp) => {
+          if (sp.id !== spaceId) return sp;
+          const was = sp.contacts ?? [];
+          const contacts = !on ? was.filter((id) => id !== userId) : was.includes(userId) ? was : [...was, userId];
+          const next: Space = { ...sp, contacts };
+          if (!contacts.length) delete next.contacts;
+          return next;
+        }),
+      });
     },
     spaceMembers: (spaceId) => {
       const r = rosterOf(spaceId);

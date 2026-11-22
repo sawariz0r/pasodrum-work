@@ -1062,6 +1062,13 @@ button.personButton:hover {
   font-weight: 700;
 }
 
+.tagContact {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px 2px 6px;
+}
+
 .tagOutside {
   background: #efede8;
   color: #55535c;

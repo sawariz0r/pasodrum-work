@@ -1,7 +1,7 @@
 ---
 id: M9-01
 title: Desktop shell spike — Tauri vs Electron
-stage: ceo-review
+stage: done
 area: infra
 milestone: M9
 priority: P1
@@ -26,7 +26,7 @@ A one-day spike each of Tauri and Electron wrapping the existing web app against
 - Today the app only calls `platform.persistStorage()` and `platform.deviceName()`; notify/badge/route/openExternal are not wired yet, so the spikes exercise them from a harness.
 
 ## Outcome
-Both shells run the real web app from its URL (`http://localhost:4173` here, `https://pasodrum.work` in production) through one shared seam: the shell injects `window.pasodrumShell`, `platform/desktop.ts` uses it (committed). Each shell has its own folder: `apps/desktop-tauri/`, `apps/desktop-electron/`. Full evidence is in each `RESULT.md`. Recommendation: **Tauri**, logged as **D-44 (Proposed)**.
+Both shells run the real web app from its URL (`http://localhost:4173` here, `https://pasodrum.work` in production) through one shared seam: the shell injects `window.pasodrumShell`, `platform/desktop.ts` uses it (committed). Each shell has its own folder: `apps/desktop-tauri/`, `apps/desktop-electron/`. Full evidence is in each `RESULT.md`. Recommended Tauri; **the CEO picked Electron** (D-44 Accepted). The Tauri folder was removed after the pick; it stays in branch history (`04a0ade`).
 
 | Check (macOS 27, arm64, local stack) | Tauri 2.12 (WKWebView) | Electron 45 (Chromium 156) |
 |---|---|---|
@@ -57,4 +57,4 @@ Both shells run the real web app from its URL (`http://localhost:4173` here, `ht
 **Not done:** no UI (desktop boards are in DES-03). Nothing on `main`.
 
 ## Review notes
-(CEO)
+CEO 2026-11-22: "Not many clients are expected to download it. So electron it is?" Electron chosen; download size accepted. CEO has an Apple Developer ID. Build continues in M9-02.

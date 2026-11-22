@@ -1,7 +1,7 @@
 ---
 id: SIDE-06
 title: Board/page rooms don't push-notify in other apps (Element X)
-stage: backlog
+stage: done
 area: matrix
 milestone: side
 priority: P3
@@ -16,3 +16,6 @@ An issue is a normal message in its project room (D-37, so other apps can read i
 
 ## Fix (small)
 When our app joins a page/project room, set a room push rule (`override`/`room` rule, `dont_notify`) for it, keeping @mentions. CEO: not important now (own app later).
+
+## Outcome
+Dropped (CEO, 2026-11-21): Element X won't be used later, so push noise there doesn't matter.

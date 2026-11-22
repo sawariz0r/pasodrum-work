@@ -1,5 +1,5 @@
 import type { Channel, Space } from '../matrix';
-import { lastPlace } from './prefs';
+import { lastPlace, useLastSpace } from './prefs';
 
 export function channelPath(spaceId: string, channelId: string) {
   return `/w/${encodeURIComponent(spaceId)}/c/${encodeURIComponent(channelId)}`;
@@ -26,9 +26,13 @@ export function homeChannel(places: Places): Channel | undefined {
 }
 
 /** The space whose sidebar shows when the URL names no known channel. */
-export function fallbackSpace(spaces: Space[], spaceId?: string): Space | undefined {
-  const last = lastPlace().space;
+export function fallbackSpace(spaces: Space[], spaceId?: string, last = lastPlace().space): Space | undefined {
   return spaces.find((s) => s.id === spaceId) ?? spaces.find((s) => s.id === last) ?? spaces[0];
+}
+
+/** fallbackSpace that re-renders when the lit tile changes. */
+export function useFallbackSpace(spaces: Space[], spaceId?: string): Space | undefined {
+  return fallbackSpace(spaces, spaceId, useLastSpace());
 }
 
 const enc = encodeURIComponent;
