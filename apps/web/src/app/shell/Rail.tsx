@@ -6,9 +6,9 @@ import { AttentionDot, Badge } from '../../ui';
 import { useChannels } from '../channels/ChannelsProvider';
 import { canManage } from '../channels/roles';
 import { forgetFreshSpace, isFreshSpace, spaceColour } from '../channels/shared';
-import { LogoMark, MoonIcon, SunIcon } from '../icons';
+import { LogoMark } from '../icons';
 import { channelPath, spaceHome } from '../places';
-import { rememberSpace, setTheme, useTheme } from '../prefs';
+import { rememberSpace } from '../prefs';
 import type { RailItem } from '../registry';
 import { useRegistry } from '../RegistryProvider';
 import { BellIcon, BubbleIcon, HomeIcon, PlusIcon } from './icons';
@@ -25,8 +25,10 @@ export function Rail({ section, activeSpaceId, onSignOut }: { section: Section; 
   const unreadDms = useWorkspace((x) => x.dms.filter((d) => d.unread > 0).length);
   const unreadActivity = useWorkspace((x) => x.activity.filter((a) => a.unread).length);
   const { rail } = useRegistry();
-  const theme = useTheme();
-  const mayCreate = useWorkspace((x) => canManage(x.myRoles[x.spaces.find((sp) => sp.kind === 'workspace')?.id ?? '']));
+  const myRole = useWorkspace((x) => x.myRoles[x.spaces.find((sp) => sp.kind === 'workspace')?.id ?? '']);
+  const mayCreate = canManage(myRole);
+  // DES-05: the team finds archived client spaces in the Pasodrum menu; the tile stays only while you're in one.
+  const team = mayCreate || myRole === 'staff';
   const channels = useChannels();
   const { pathname } = useLocation();
   // In a feature page (Docs, Boards), a space tile stays on that page and shows the space (D-42).
@@ -34,9 +36,11 @@ export function Rail({ section, activeSpaceId, onSignOut }: { section: Section; 
 
   return (
     <nav aria-label={t('shell.rail.label')} className={s.rail}>
-      {spaces.map((space) => (
-        <SpaceTile key={space.id} space={space} active={space.id === activeSpaceId} stay={stay} />
-      ))}
+      {spaces
+        .filter((sp) => !(team && sp.kind === 'client' && sp.archived && sp.id !== activeSpaceId))
+        .map((space) => (
+          <SpaceTile key={space.id} space={space} active={space.id === activeSpaceId} stay={stay} />
+        ))}
       {mayCreate && (
         <button type="button" className={s.tileNew} aria-label={t('spaces.newClientSpace')} onClick={() => channels.newClientSpace()}>
           <PlusIcon size={18} strokeWidth={2} />
@@ -45,19 +49,11 @@ export function Rail({ section, activeSpaceId, onSignOut }: { section: Section; 
       <div className={s.railDivider} />
       <SectionLink to="/" label={t('shell.rail.home')} icon={<HomeIcon />} current={section === 'home'} />
       <SectionLink to="/dms" label={t('shell.rail.dms')} icon={<BubbleIcon />} current={section === 'dms'} badge={unreadDms} />
-      <SectionLink to="/activity" label={t('shell.rail.activity')} icon={<BellIcon />} current={section === 'activity'} badge={unreadActivity} />
       {rail.map((item) => (
         <RailLink key={item.id} item={item} />
       ))}
       <div className={s.railSpacer} />
-      <button
-        type="button"
-        className={`${s.railItem} ${s.railToggle}`}
-        aria-label={t(theme === 'dark' ? 'shell.rail.lightTheme' : 'shell.rail.darkTheme')}
-        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      >
-        <span className={s.railIcon}>{theme === 'dark' ? <SunIcon /> : <MoonIcon />}</span>
-      </button>
+      <SectionLink to="/activity" label={t('shell.rail.activity')} icon={<BellIcon />} current={section === 'activity'} badge={unreadActivity} iconOnly />
       <ProfileMenu onSignOut={onSignOut} />
     </nav>
   );
@@ -97,17 +93,31 @@ function SpaceTile({ space, active, stay }: { space: Space; active: boolean; sta
   );
 }
 
-function SectionLink({ to, label, icon, current, badge = 0 }: { to: string; label: string; icon: ReactNode; current: boolean; badge?: number }) {
+function SectionLink({
+  to,
+  label,
+  icon,
+  current,
+  badge = 0,
+  iconOnly,
+}: {
+  to: string;
+  label: string;
+  icon: ReactNode;
+  current: boolean;
+  badge?: number;
+  iconOnly?: boolean;
+}) {
   const { t } = useTranslation();
   return (
     <Link
       to={to}
-      className={s.railItem}
+      className={iconOnly ? `${s.railItem} ${s.railIconOnly}` : s.railItem}
       aria-current={current ? 'page' : undefined}
       aria-label={badge > 0 ? t('shell.rail.unread', { label, count: badge }) : label}
     >
       <span className={s.railIcon}>{icon}</span>
-      {label}
+      {!iconOnly && label}
       <Badge count={badge} size="sm" className={s.railBadge} />
     </Link>
   );

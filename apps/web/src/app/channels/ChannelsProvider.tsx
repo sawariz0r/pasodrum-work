@@ -1,7 +1,8 @@
 // One place that opens the Batch D/E dialogs: New channel, Add people, channel details (and Leave from there),
-// New client space, Client space settings, Workspace settings (D-36).
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+// New client space, Client space settings, Workspace settings (D-36), Archived client spaces and Delete a client space (DES-05).
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { AddPeopleDialog } from './AddPeople';
+import { ArchivedSpacesDialog } from './ArchivedSpaces';
 import { ChannelDetailsDialog, type DetailsTab } from './ChannelDetails';
 import { CreateChannelDialog } from './CreateChannel';
 import { NewClientSpaceDialog } from './NewClientSpace';
@@ -17,9 +18,11 @@ export interface ChannelsApi {
   spaceSettings(spaceId: string, tab?: SpaceTab): void;
   /** Owners and Admins: People and Access (D-36). */
   workspaceSettings(tab?: WorkspaceTab): void;
+  archivedSpaces(): void;
+  /** Owners, archived client spaces only (DES-05 C). */
 }
 
-const ChannelsContext = createContext<ChannelsApi>({ newChannel() {}, addPeople() {}, details() {}, newClientSpace() {}, spaceSettings() {}, workspaceSettings() {} });
+const ChannelsContext = createContext<ChannelsApi>({ newChannel() {}, addPeople() {}, details() {}, newClientSpace() {}, spaceSettings() {}, workspaceSettings() {}, archivedSpaces() {} });
 
 export function useChannels(): ChannelsApi {
   return useContext(ChannelsContext);
@@ -31,7 +34,8 @@ type Sheet =
   | { kind: 'details'; channelId: string; tab: DetailsTab }
   | { kind: 'newSpace' }
   | { kind: 'space'; spaceId: string; tab: SpaceTab }
-  | { kind: 'workspace'; tab: WorkspaceTab };
+  | { kind: 'workspace'; tab: WorkspaceTab }
+  | { kind: 'archived' };
 
 export function ChannelsProvider({ children }: { children: ReactNode }) {
   // A fresh dialog each time one opens (`n`); `open: false` keeps the last one mounted for its exit animation.
@@ -45,9 +49,10 @@ export function ChannelsProvider({ children }: { children: ReactNode }) {
       newClientSpace: () => show({ kind: 'newSpace' }),
       spaceSettings: (spaceId, tab = 'general') => show({ kind: 'space', spaceId, tab }),
       workspaceSettings: (tab = 'people') => show({ kind: 'workspace', tab }),
+      archivedSpaces: () => show({ kind: 'archived' }),
     };
   }, []);
-  const close = () => setState((st) => ({ ...st, open: false }));
+  const close = useCallback(() => setState((st) => ({ ...st, open: false })), []);
   const { sheet, open, n } = state;
 
   return (
@@ -60,6 +65,7 @@ export function ChannelsProvider({ children }: { children: ReactNode }) {
       )}
       {sheet?.kind === 'newSpace' && <NewClientSpaceDialog key={n} open={open} onClose={close} />}
       {sheet?.kind === 'space' && <SpaceSettingsDialog key={n} open={open} spaceId={sheet.spaceId} tab={sheet.tab} onClose={close} />}
+      {sheet?.kind === 'archived' && <ArchivedSpacesDialog key={n} open={open} onClose={close} />}
       {sheet?.kind === 'workspace' && <WorkspaceSettingsDialog key={n} open={open} tab={sheet.tab} onClose={close} onAddPeople={api.addPeople} />}
     </ChannelsContext.Provider>
   );

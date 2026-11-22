@@ -175,14 +175,13 @@ describe('shell', () => {
 
   it('switches theme and language instantly and remembers them', async () => {
     renderApp('/w/!pasodrum/c/!design');
-    fireEvent.click(screen.getByRole('button', { name: 'Switch to dark theme' }));
-    expect(document.documentElement.dataset.theme).toBe('dark');
-    expect(localStorage.getItem('pasodrum.theme')).toBe('dark');
-    fireEvent.click(screen.getByRole('button', { name: 'Switch to light theme' }));
-    expect(document.documentElement.dataset.theme).toBe('light');
-
     fireEvent.keyDown(screen.getByRole('button', { name: 'Your profile: Sofia Olsen, active' }), { key: 'Enter' });
     await flush();
+    fireEvent.click(screen.getByRole('menuitemradio', { name: 'Dark' }));
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(localStorage.getItem('pasodrum.theme')).toBe('dark');
+    fireEvent.click(screen.getByRole('menuitemradio', { name: 'Light' }));
+    expect(document.documentElement.dataset.theme).toBe('light');
     fireEvent.click(screen.getByRole('menuitemradio', { name: '日本語' }));
     await flush();
     expect(document.documentElement.lang).toBe('ja');

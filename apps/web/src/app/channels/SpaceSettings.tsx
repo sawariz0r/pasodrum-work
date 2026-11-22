@@ -122,10 +122,10 @@ export function SpaceSettingsDialog({ open, spaceId, tab: initialTab = 'general'
 }
 
 /** A client space's tile at the sizes the settings boards use. */
-function SpaceTile({ space, size, name }: { space: Space; size: 'title' | 'field' | 'label' | 'card'; name?: string }) {
+export function SpaceTile({ space, size, name, className }: { space: Space; size: 'title' | 'field' | 'label' | 'card'; name?: string; className?: string }) {
   const initial = (Array.from((name ?? space.name).trim())[0] ?? '?').toUpperCase();
   return (
-    <span className={`${s.spTile} ${s[`spTile_${size}`]}`} style={{ '--tile-bg': spaceColour(space) } as CSSProperties} aria-hidden="true">
+    <span className={[s.spTile, s[`spTile_${size}`], className].filter(Boolean).join(' ')} style={{ '--tile-bg': spaceColour(space) } as CSSProperties} aria-hidden="true">
       {initial}
     </span>
   );

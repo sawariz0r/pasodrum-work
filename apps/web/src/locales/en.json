@@ -61,8 +61,6 @@
       "home": "Home",
       "dms": "DMs",
       "activity": "Activity",
-      "lightTheme": "Switch to light theme",
-      "darkTheme": "Switch to dark theme",
       "profileActive": "Your profile: {{name}}, active",
       "profileOffline": "Your profile: {{name}}, offline",
       "unread": "{{label}}, {{count}} unread"
@@ -98,6 +96,9 @@
       "language": "Language",
       "english": "English",
       "japanese": "日本語",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
       "settings": "Settings",
       "signOut": "Sign out"
     },
@@ -483,7 +484,10 @@
     "removeTitle": "Remove {{person}} from {{name}}?",
     "removeButton": "Remove",
     "renameFailed": "Couldn’t rename to {{name}}",
-    "workspaceSettings": "Workspace settings"
+    "workspaceSettings": "Workspace settings",
+    "archivedSpaces": "Archived client spaces",
+    "peopleCount_one": "{{count}} person",
+    "peopleCount_other": "{{count}} people"
   },
   "security": {
     "gateTitle": "Confirm this device",

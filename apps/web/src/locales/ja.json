@@ -61,8 +61,6 @@
       "home": "ホーム",
       "dms": "DM",
       "activity": "通知",
-      "lightTheme": "ライトテーマに切り替え",
-      "darkTheme": "ダークテーマに切り替え",
       "profileActive": "プロフィール：{{name}}（アクティブ）",
       "profileOffline": "プロフィール：{{name}}（オフライン）",
       "unread": "{{label}}（未読 {{count}} 件）"
@@ -97,6 +95,9 @@
       "language": "言語",
       "english": "English",
       "japanese": "日本語",
+      "theme": "テーマ",
+      "light": "ライト",
+      "dark": "ダーク",
       "settings": "設定",
       "signOut": "サインアウト"
     },
@@ -476,7 +477,9 @@
     "removeTitle": "{{person}} を {{name}} から外しますか？",
     "removeButton": "外す",
     "renameFailed": "{{name}} に変更できませんでした",
-    "workspaceSettings": "ワークスペースの設定"
+    "workspaceSettings": "ワークスペースの設定",
+    "archivedSpaces": "アーカイブ済みのクライアントスペース",
+    "peopleCount_other": "{{count}}人"
   },
   "security": {
     "gateTitle": "このデバイスを確認",

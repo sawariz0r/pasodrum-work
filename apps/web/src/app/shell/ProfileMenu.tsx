@@ -7,7 +7,8 @@ import { PhoneIcon } from '../another/icons';
 import { Avatar, avatarColor, Menu, MenuContent, MenuItem, MenuSegments, MenuSeparator, MenuTrigger } from '../../ui';
 import { currentLanguage, setLanguage, type Language } from '../i18n';
 import { lazyComponent } from '../lazy';
-import { DownloadIcon, GlobeIcon, SignOutIcon } from '../icons';
+import { DownloadIcon, GlobeIcon, SignOutIcon, ThemeIcon } from '../icons';
+import { setTheme, useTheme, type Theme } from '../prefs';
 import { GearIcon } from '../settings/icons';
 import { settingsState } from '../settings/SettingsRoute';
 import { useMediaUrl } from '../timeline/Media';
@@ -21,6 +22,7 @@ export function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
   const location = useLocation();
   const me = useWorkspace((x) => x.me);
   const online = useWorkspace((x) => x.connection === 'online');
+  const theme = useTheme();
   const color = avatarColor(me.id);
   const avatar = useMediaUrl(me.avatarUrl, true);
   const dot = <span className={[s.meDot, online && s.online].filter(Boolean).join(' ')} />;
@@ -57,6 +59,16 @@ export function ProfileMenu({ onSignOut }: { onSignOut: () => void }) {
           options={[
             { value: 'en', label: t('shell.profileMenu.english'), lang: 'en' },
             { value: 'ja', label: t('shell.profileMenu.japanese'), lang: 'ja' },
+          ]}
+        />
+        <MenuSegments
+          label={t('shell.profileMenu.theme')}
+          icon={<ThemeIcon />}
+          value={theme}
+          onValueChange={(v) => setTheme(v as Theme)}
+          options={[
+            { value: 'light', label: t('shell.profileMenu.light') },
+            { value: 'dark', label: t('shell.profileMenu.dark') },
           ]}
         />
         <MenuSeparator />

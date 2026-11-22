@@ -28,7 +28,7 @@ beforeEach(async () => {
 afterEach(cleanup);
 
 describe('rail tiles (M5)', () => {
-  it('uses the space colour, and an archived space dims and moves to the end', async () => {
+  it('uses the space colour; an archived space leaves the team’s rail (DES-05)', async () => {
     const { store } = renderApp('/w/!pasodrum/c/!general');
     await flush();
     const tile = () => within(rail()).getByRole('link', { name: 'Nordlys, client space' });
@@ -38,7 +38,7 @@ describe('rail tiles (M5)', () => {
     await act(() => store().createClientSpace({ name: 'Aker', colour: '#1F6F5C', channels: ['general'], team: [], clientEmails: [] }));
     await act(() => store().setArchived('!nordlys', true));
     const names = within(rail()).getAllByRole('link', { name: /client space$/ }).map((a) => a.getAttribute('aria-label'));
-    expect(names).toEqual(['Aker, client space', 'Kumo, client space', 'Nordlys, client space']);
+    expect(names).toEqual(['Aker, client space', 'Kumo, client space']);
   });
 });
 

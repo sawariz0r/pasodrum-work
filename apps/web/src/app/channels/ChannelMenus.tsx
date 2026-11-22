@@ -11,7 +11,7 @@ import { rememberRecent } from '../prefs';
 import { ChevronDownIcon, PlusIcon as SmallPlusIcon } from '../shell/icons';
 import s from './Channels.module.css';
 import { useChannels } from './ChannelsProvider';
-import { ChevronIcon, GearIcon, InfoIcon, PlusIcon, SpacesIcon, UserPlusIcon } from './icons';
+import { ArchiveIcon, ChevronIcon, GearIcon, InfoIcon, PlusIcon, SpacesIcon, UserPlusIcon } from './icons';
 import { canAddPeople, canBrowse, canCreateIn, canManage } from './roles';
 import { findChannel, SpaceMark, useRole, useSpace } from './shared';
 
@@ -36,6 +36,7 @@ export function WorkspaceMenu({ space, className }: { space: Space; className?: 
   const newSpace = manage && space.kind === 'workspace';
   const settings = manage && space.kind === 'client';
   const workspaceSettings = manage && space.kind === 'workspace';
+  const archivedSpaces = useWorkspace((x) => newSpace && x.spaces.some((sp) => sp.kind === 'client' && sp.archived));
   if (!browse && !create && !add && !newSpace && !settings) return <h2 className={className}>{space.name}</h2>;
   return (
     <div className={s.spaceMenu}>
@@ -68,9 +69,15 @@ export function WorkspaceMenu({ space, className }: { space: Space; className?: 
             {t('common.addPeople')}
           </MenuItem>
         )}
+        {newSpace && add && <MenuSeparator />}
         {newSpace && (
           <MenuItem icon={<SpacesIcon />} onSelect={() => channels.newClientSpace()}>
             {t('spaces.newClientSpace')}
+          </MenuItem>
+        )}
+        {archivedSpaces && (
+          <MenuItem icon={<ArchiveIcon />} onSelect={() => channels.archivedSpaces()}>
+            {t('spaces.archivedSpaces')}
           </MenuItem>
         )}
         {workspaceSettings && (

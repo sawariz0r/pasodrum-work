@@ -303,3 +303,13 @@ Approved 2026-11-22 (CEO). Boards on the canvas page **Desktop app**. Shell-neut
 | Update ready: sidebar card → Restart; Mac app menu (Restart to Update / Check for Updates…) | DesktopUpdate | approved 2026-11-22 |
 | Dock badge, Windows taskbar overlay + tray menu (Open / Quit) | DesktopBadge | approved 2026-11-22 |
 | Can't reach Pasodrum work (window can't load the app) | DesktopOffline | approved 2026-11-22 |
+
+## Rail tidy (DES-05)
+
+Approved 2026-11-22 (CEO, in the DES-05 chat), canvas v94. B on **Overview & foundations** ("Rail: theme in the profile menu, Activity icon-only"); A and C on **Client spaces & guests** ("Archived client spaces & delete"). `Main` now draws the new rail by default (prop `railTidy`, default true).
+
+| Screen / state | Artboard | Status |
+|---|---|---|
+| A: archived client spaces leave the team's rail; Pasodrum menu: divider, New client space + Archived client spaces (Owner/Admin) → list with Unarchive + bin (Owner); viewing an archived space shows its tile dimmed until you leave | TidyArchivedMenu, TidyArchivedList, TidyArchivedListJP, TidyArchivedOpen | approved 2026-11-22 |
+| B: theme toggle → profile menu (Light \| Dark under Language); Activity icon-only in its rail slot, badge kept | TidyRail, TidyProfileMenu, TidyProfileMenuJP, TidyActivityJP, TidyClient | approved 2026-11-22 |
+| C: delete an archived client space (Owner only): Client space settings → General, in Archive’s place; confirm with the space card, one line, type the name to arm Delete | TidyDeleteSettings, TidyDeleteSpace, TidyDeleteSpaceJP, TidyDeleteSettingsJP | approved 2026-11-22 |

@@ -4612,6 +4612,123 @@
    "w": 1440,
    "h": 900,
    "page": "confirm-email"
+  },
+  "TidyArchivedMenu.dc.html": {
+   "x": 0,
+   "y": 17120,
+   "w": 1440,
+   "h": 900,
+   "title": "Rail tidy — archived space gone, Pasodrum menu",
+   "is_interactive": false,
+   "page": "client-spaces"
+  },
+  "TidyArchivedList.dc.html": {
+   "x": 1520,
+   "y": 17120,
+   "w": 1440,
+   "h": 900,
+   "title": "Rail tidy — Archived client spaces — dark",
+   "is_interactive": false,
+   "page": "client-spaces"
+  },
+  "TidyArchivedListJP.dc.html": {
+   "x": 3040,
+   "y": 17120,
+   "w": 1440,
+   "h": 900,
+   "title": "Rail tidy — Archived client spaces — Japanese",
+   "is_interactive": false,
+   "page": "client-spaces"
+  },
+  "TidyArchivedOpen.dc.html": {
+   "x": 4560,
+   "y": 17120,
+   "w": 1440,
+   "h": 900,
+   "title": "Rail tidy — archived space open, no tile — Japanese dark",
+   "is_interactive": false,
+   "page": "client-spaces"
+  },
+  "TidyRail.dc.html": {
+   "x": 0,
+   "y": 20440,
+   "w": 1440,
+   "h": 900,
+   "title": "Rail tidy — Activity in the theme slot",
+   "is_interactive": false,
+   "page": "overview"
+  },
+  "TidyProfileMenu.dc.html": {
+   "x": 1520,
+   "y": 20440,
+   "w": 1440,
+   "h": 900,
+   "title": "Rail tidy — profile menu with theme — dark",
+   "is_interactive": false,
+   "page": "overview"
+  },
+  "TidyProfileMenuJP.dc.html": {
+   "x": 3040,
+   "y": 20440,
+   "w": 1440,
+   "h": 900,
+   "title": "Rail tidy — profile menu with theme — Japanese",
+   "is_interactive": false,
+   "page": "overview"
+  },
+  "TidyActivityJP.dc.html": {
+   "x": 4560,
+   "y": 20440,
+   "w": 1440,
+   "h": 900,
+   "title": "Rail tidy — on Activity — Japanese dark",
+   "is_interactive": false,
+   "page": "overview"
+  },
+  "TidyClient.dc.html": {
+   "x": 0,
+   "y": 21460,
+   "w": 1440,
+   "h": 900,
+   "title": "Rail tidy — client’s rail",
+   "is_interactive": false,
+   "page": "overview"
+  },
+  "TidyDeleteSpace.dc.html": {
+   "x": 1520,
+   "y": 18140,
+   "w": 1440,
+   "h": 900,
+   "title": "Delete a client space — confirm — dark",
+   "is_interactive": false,
+   "page": "client-spaces"
+  },
+  "TidyDeleteSpaceJP.dc.html": {
+   "x": 3040,
+   "y": 18140,
+   "w": 1440,
+   "h": 900,
+   "title": "Delete a client space — confirm, name typed — Japanese",
+   "is_interactive": false,
+   "page": "client-spaces"
+  },
+  "TidyDeleteSettings.dc.html": {
+   "x": 0,
+   "y": 18140,
+   "w": 1440,
+   "h": 900,
+   "title": "Delete a client space — Client space settings (Owner, archived)",
+   "is_interactive": false,
+   "page": "client-spaces"
+  },
+  "TidyDeleteSettingsJP.dc.html": {
+   "x": 4560,
+   "y": 18140,
+   "w": 1440,
+   "h": 900,
+   "title": "Delete a client space — Client space settings — Japanese dark",
+   "is_interactive": false,
+   "page": "client-spaces"
   }
  },
  "order": [
@@ -5084,7 +5201,20 @@
   "DesktopBadge.dc.html",
   "DesktopOffline.dc.html",
   "EmailConfirmStaffHelpStuckJP.dc.html",
-  "EmailConfirmStaffHelpLinkDark.dc.html"
+  "EmailConfirmStaffHelpLinkDark.dc.html",
+  "TidyArchivedMenu.dc.html",
+  "TidyArchivedList.dc.html",
+  "TidyArchivedListJP.dc.html",
+  "TidyArchivedOpen.dc.html",
+  "TidyRail.dc.html",
+  "TidyProfileMenu.dc.html",
+  "TidyProfileMenuJP.dc.html",
+  "TidyActivityJP.dc.html",
+  "TidyClient.dc.html",
+  "TidyDeleteSettings.dc.html",
+  "TidyDeleteSpace.dc.html",
+  "TidyDeleteSpaceJP.dc.html",
+  "TidyDeleteSettingsJP.dc.html"
  ],
  "notes": {
   "overview-Foundations--workspace": {
@@ -5603,6 +5733,33 @@
    "kind": "title1",
    "page": "desktop",
    "maxW": 2960
+  },
+  "overview-Rail-tidy": {
+   "x": 0,
+   "y": 20140,
+   "text": "Rail: theme in the profile menu, Activity icon-only (DES-05, approved 2026-11-22)",
+   "kind": "title1",
+   "page": "overview",
+   "size": "l",
+   "maxW": 5920
+  },
+  "client-spaces-Archived-delete": {
+   "x": 0,
+   "y": 16820,
+   "text": "Archived client spaces & delete (DES-05, approved 2026-11-22)",
+   "kind": "title1",
+   "page": "client-spaces",
+   "size": "l",
+   "maxW": 5920
+  },
+  "client-spaces-Archived-delete-rules": {
+   "x": 6080,
+   "y": 17120,
+   "text": "Rules (approved 2026-11-22)\n\n• Team: an archived client space leaves the rail; while you view one its tile shows dimmed.\n• Pasodrum menu (Owner/Admin): New client space + Archived client spaces, after a divider.\n• Delete: Owner only, archived spaces only, type the name. Pasodrum can never be deleted.\n• Clients: unchanged.",
+   "w": 560,
+   "page": "client-spaces",
+   "size": "m",
+   "fill": "orange"
   }
  },
  "designSystems": []
