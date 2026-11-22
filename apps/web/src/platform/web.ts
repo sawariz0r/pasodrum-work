@@ -2,7 +2,7 @@ import type { Platform } from './index';
 
 const badgePrefix = /^\(\d+\) /;
 const yieldedKey = 'pasodrum.yielded';
-const MAC_DOWNLOAD = false; // M9-02: true once the signed build is on /download/mac
+const MAC_DOWNLOAD = true;
 
 export function createWebPlatform(): Platform {
   let routeListener: ((route: string) => void) | undefined;
