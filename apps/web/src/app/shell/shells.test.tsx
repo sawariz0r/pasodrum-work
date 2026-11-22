@@ -79,7 +79,7 @@ describe('profile menu dialogs', () => {
     fireEvent.pointerDown(me, { button: 0, ctrlKey: false });
     fireEvent.click(await screen.findByRole('menuitem', { name: item }));
     await flush();
-    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+    fireEvent.keyDown(await screen.findByRole('dialog', {}, { timeout: 4000 }), { key: 'Escape' });
     await act(() => new Promise((r) => setTimeout(r, 10)));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(document.activeElement).toBe(screen.getByRole('button', { name: /Your profile/ }));
