@@ -11,3 +11,4 @@ test-results/
 .DS_Store
 !apps/web/.env.development
 apps/desktop-electron/release/
+apps/desktop-electron/electron-builder.env

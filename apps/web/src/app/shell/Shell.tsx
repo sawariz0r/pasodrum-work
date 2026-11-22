@@ -25,6 +25,7 @@ import { ChannelTabs } from './ChannelTabs';
 import { ConnectionBanner } from './ConnectionBanner';
 import { DrawerContext, DrawerToggle, useNarrow } from './Drawer';
 import { NotAvailable } from './NotAvailable';
+import { Notifier } from '../notify/Notifier';
 import { Rail, type Section } from './Rail';
 import s from './Shell.module.css';
 import { Sidebar } from './Sidebar';
@@ -42,6 +43,7 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
     <SignOut.Provider value={onSignOut}>
       <ToastProvider>
       <FindProvider>
+      <Notifier />
       <ProfileCardProvider>
         <NewMessageProvider>
           <ChannelsProvider>

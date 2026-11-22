@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import { initI18n } from './app/i18n';
 import { applyTheme } from './app/prefs';
+import { platform } from './platform';
 import './ui/tokens.css';
 
 const path = location.pathname;
@@ -18,6 +19,7 @@ const Dev = !import.meta.env.DEV
 
 initI18n();
 applyTheme();
+if (platform.desktop) document.documentElement.dataset.desktop = '';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

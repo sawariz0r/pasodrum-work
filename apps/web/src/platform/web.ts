@@ -2,20 +2,26 @@ import type { Platform } from './index';
 
 const badgePrefix = /^\(\d+\) /;
 const yieldedKey = 'pasodrum.yielded';
+const MAC_DOWNLOAD = false; // M9-02: true once the signed build is on /download/mac
 
 export function createWebPlatform(): Platform {
-  const routeListeners = new Set<(route: string) => void>();
+  let routeListener: ((route: string) => void) | undefined;
 
   return {
-    notify({ title, body, route }) {
+    notify({ title, body, route, tag }) {
       if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-      if (document.visibilityState !== 'hidden') return;
-      const notification = new Notification(title, { body });
+      const notification = new Notification(title, { body, tag });
       notification.onclick = () => {
         window.focus();
         notification.close();
-        routeListeners.forEach((cb) => cb(route));
+        routeListener?.(route);
       };
+    },
+
+    notifyPermission: () => (typeof Notification === 'undefined' ? 'denied' : Notification.permission),
+
+    async askNotify() {
+      if (typeof Notification !== 'undefined') await Notification.requestPermission();
     },
 
     setBadge(unread) {
@@ -30,8 +36,19 @@ export function createWebPlatform(): Platform {
     },
 
     onOpenRoute(cb) {
-      routeListeners.add(cb);
+      routeListener = cb;
     },
+
+    desktop: false,
+
+    downloadUrl() {
+      const ua = typeof navigator === 'undefined' ? '' : navigator.userAgent;
+      return MAC_DOWNLOAD && /Macintosh|Mac OS X/.test(ua) && !/iPhone|iPad/.test(ua) && navigator.maxTouchPoints < 2 ? '/download/mac' : null;
+    },
+
+    onUpdateReady() {},
+
+    restartToUpdate() {},
 
     openExternal(url) {
       window.open(url, '_blank', 'noopener,noreferrer');

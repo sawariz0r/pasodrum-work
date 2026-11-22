@@ -1,14 +1,16 @@
 import type { Platform } from './index';
 import { createWebPlatform } from './web';
 
-/** Injected by the desktop shell before the app's scripts run (Electron preload / Tauri initialization script). */
+/** Injected by the desktop shell before the app's scripts run (Electron preload). */
 export interface ShellBridge {
-  readonly shell: 'tauri' | 'electron';
-  notify(n: { title: string; body: string; route: string }): void;
+  readonly shell: 'electron';
+  notify(n: { title: string; body: string; route: string; tag?: string }): void;
   setBadge(unread: number): void;
   openExternal(url: string): void;
   /** In-app path ("/c/x?y#z") from a notification click or deep link. A route that arrived before the first subscriber is delivered to it. */
   onOpenRoute(cb: (route: string) => void): void;
+  onUpdateReady(cb: () => void): void;
+  restartToUpdate(): void;
 }
 
 declare global {
@@ -20,9 +22,15 @@ declare global {
 export function createDesktopPlatform(shell: ShellBridge): Platform {
   return {
     ...createWebPlatform(),
+    desktop: true,
     notify: (n) => shell.notify(n),
+    notifyPermission: () => 'granted',
     setBadge: (unread) => shell.setBadge(unread),
     openExternal: (url) => shell.openExternal(url),
     onOpenRoute: (cb) => shell.onOpenRoute(cb),
+    onUpdateReady: (cb) => shell.onUpdateReady(cb),
+    restartToUpdate: () => shell.restartToUpdate(),
+    downloadUrl: () => null,
+    deviceName: () => (document.documentElement.lang === 'ja' ? 'Mac の Pasodrum work' : 'Pasodrum work on Mac'),
   };
 }

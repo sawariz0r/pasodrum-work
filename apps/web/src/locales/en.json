@@ -647,5 +647,23 @@
     "role": "Couldn’t change {{name}}’s role",
     "colour": "Couldn’t change the colour of {{name}}",
     "unarchiveSpace": "Couldn’t unarchive {{name}}"
+  },
+  "desktop": {
+    "back": "Back",
+    "forward": "Forward",
+    "updateReady": "Update ready",
+    "restart": "Restart",
+    "later": "Later"
+  },
+  "notify": {
+    "title": "Notifications",
+    "turnOn": "Turn on",
+    "notNow": "Not now",
+    "clientChannel": "#{{channel}} · {{where}}",
+    "body": "{{name}}: {{text}}"
+  },
+  "download": {
+    "mac": "Download for Mac",
+    "app": "Download app"
   }
 }

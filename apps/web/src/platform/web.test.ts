@@ -36,7 +36,7 @@ afterEach(() => {
 });
 
 describe('notify', () => {
-  test('shows a notification when granted and hidden; click focuses and opens the route', () => {
+  test('shows a notification when granted; click focuses and opens the route', () => {
     const platform = createWebPlatform();
     const onRoute = vi.fn();
     const focus = vi.spyOn(window, 'focus').mockImplementation(() => {});
@@ -51,12 +51,6 @@ describe('notify', () => {
     expect(focus).toHaveBeenCalled();
     expect(shown?.close).toHaveBeenCalled();
     expect(onRoute).toHaveBeenCalledWith('/c/general');
-  });
-
-  test('stays silent when the tab is visible', () => {
-    setVisibility('visible');
-    createWebPlatform().notify({ title: 'Ana', body: 'hi', route: '/' });
-    expect(FakeNotification.instances).toHaveLength(0);
   });
 
   test.each(['default', 'denied'] as const)('stays silent when permission is %s', (permission) => {

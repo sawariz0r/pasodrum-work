@@ -639,5 +639,23 @@
     "role": "{{name}} さんの役割を変更できませんでした",
     "colour": "{{name}} の色を変更できませんでした",
     "unarchiveSpace": "{{name}} のアーカイブを解除できませんでした"
+  },
+  "desktop": {
+    "back": "戻る",
+    "forward": "進む",
+    "updateReady": "更新の準備完了",
+    "restart": "再起動",
+    "later": "あとで"
+  },
+  "notify": {
+    "title": "通知",
+    "turnOn": "オンにする",
+    "notNow": "今はしない",
+    "clientChannel": "#{{channel}} · {{where}}",
+    "body": "{{name}}：{{text}}"
+  },
+  "download": {
+    "mac": "Mac 版をダウンロード",
+    "app": "アプリをダウンロード"
   }
 }
