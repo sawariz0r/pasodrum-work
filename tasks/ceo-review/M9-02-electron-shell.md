@@ -34,6 +34,8 @@ A signed, notarized Electron app for Mac that loads https://pasodrum.work, match
 - Rules: no Shiori; never sign in to production from tooling; nothing to `main` without the CEO's yes.
 
 ## Outcome
+**Shipped 2026-11-22:** `main` at `8e0a2d1`; signed 1.0.2 on https://pasodrum.work/download/mac (feed `latest-mac.yml` 1.0.2); Download for Mac on in Mac browsers. Uploads use `scp -o IPQoS=none` (macOS marks scp as low priority: 0.17 → 19 MB/s).
+
 Built on branch `claude/m9-shell-spike-cff79a` (not on `main`). Plan: Fable; build: three Opus agents (shell/signing/feed, title bar/downloads, notifications/badge/cards).
 
 - **Shell** (`apps/desktop-electron/`, ~155-line `main.cjs`): one window that remembers its place (first 1280×800, min 800×600), `hiddenInset` traffic lights at {16,13} (red centre 22.75/19.75 pt vs the board's 22/20). Close hides it to the Dock; ⌘Q quits. EN/JP app menu with Restart to Update / Check for Updates…; links outside pasodrum.work go to the browser; "Can't reach" page (EN/JP, light/dark, retries every 5 s). Unpackaged runs default to localhost, so tooling can never reach production.

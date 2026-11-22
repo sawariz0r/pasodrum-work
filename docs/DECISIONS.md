@@ -393,3 +393,8 @@ Format: **Date · short title** → what was discovered, why it matters, what ch
 **2026-11-22 · Empty pages share one piece (DES-06, CEO approved the boards)**
 - "Nothing here yet" pages use `ui/EmptyState` (64 tile, 22 title, 20 apart) with a plain `ui/Button` (36, no size overrides). Docs and Boards had drifted because their approved boards were drawn differently (36 vs 40 px); the canvas now matches.
 - DMs (`.dmsEmptyButton`, 40) and NotAvailable (`.unavailableAction`, 38) still differ; move them onto `ui/EmptyState` when their boards change.
+
+**2026-11-22 · Desktop shell facts (M9)**
+- macOS `scp` marks uploads as low-priority traffic (QoS); our network throttled it to ~0.17 MB/s vs ~19 MB/s with `-o IPQoS=none`. The built-in `rsync` is openrsync and was just as slow. `publish:feed` uses one `scp -o IPQoS=none`.
+- An ad-hoc-signed Electron app never keeps macOS notification permission and Squirrel.Mac refuses its updates; both work once the app is Developer ID signed and notarized. Unsigned `pack` builds also need hardened runtime off (library validation crash).
+- `hiddenInset` puts the traffic lights on whatever page is loaded, so the shell must not assume the web version draws the title bar: it opens with the native title bar and switches only for pages with `<html data-desktop>`.
