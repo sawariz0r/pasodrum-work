@@ -64,7 +64,9 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 
 **Live on pasodrum.work:** M0–M8; SIDE-01 Translate, SIDE-02 privacy line, SIDE-03 share history, SIDE-04 confirm by email; people & access (Staff/External/Client, access roles); Docs & Boards (live editing, boards, cards in chat, unread markers); live cursors over a WebSocket relay in the invite service (CEO: "flawless"); ⌘K space line + people tags; client company tile / External ↗ / composer risk line.
 
-**Production data done:** `migrate:pins`, `migrate:people`, `migrate-docs --apply`, `seed-welcome` (Shiori's EN/JP welcome pages + example projects; Shiori added to the Nordlys team). The "Pasodrum" system account is created by the invite service at startup (env `SYSTEM_PASSWORD`, `CONFIRM_KEY_SECRET` from Coolify's `SERVICE_PASSWORD_64_*`). **Back up `CONFIRM_KEY_SECRET`** — losing it forces every client to start fresh. Seed test accounts stay for now (CEO).
+**Production data done:** `migrate:pins`, `migrate:people`, `migrate-docs --apply`, `seed-welcome` (Shiori's EN/JP welcome pages + example projects; Shiori added to the Nordlys team). The "Pasodrum" system account is created by the invite service at startup (env `SYSTEM_PASSWORD`, `CONFIRM_KEY_SECRET` from Coolify's `SERVICE_PASSWORD_64_*`). **Back up `CONFIRM_KEY_SECRET`** — losing it forces every client to start fresh.
+
+**Production clean slate (OPS-01, 2026-11-22):** seed accounts deactivated (Sofia, Ingrid, Jonas, Tanaka, Lea). Left: Oscar, Shiori, the Pasodrum system account, test client Henrik (Nordlys). Pasodrum has a fresh empty #general; Nordlys has fresh empty #project-updates and #questions. Kept: the EN/JP welcome pages and the "Pasodrum work" project (Sofia's issues reassigned to Oscar). Old channels, Meter portal, Henrik's "Test" page and test DMs are unlinked and empty (still on the server; Matrix never deletes). Still on Oscar: `!admin users deactivate @oscar+test_prpl.se:pasodrum.work` in the admin room; leave the old archived 汐里✨ channel and the 2 DMs he started with Ingrid and Tanaka. Sofia (deactivated) stays the room-v12 creator of both spaces; Oscar holds 100 everywhere.
 
 **Open sessions:** "Build Docs and Boards (D-37)" (keep for follow-ups), "Build confirm by email (D-38)" (archive after the CEO's test), "Design discovery" (icon/mark exploration — CEO said leave it alone). Everything else is archived.
 
@@ -85,7 +87,7 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 - **Product gaps:** channel rename (contract); voice clips show as audio files (no waveform); Activity covers recent synced history only (no `/notifications`); thread read state shares one room position (server drops `thread_id`).
 - **Server:** Continuwuity loses ~3% of to-device messages that arrive concurrently (DECISIONS learnings). No upstream report for now (CEO); our own sends are serialized. Revisit if "Not available on this device" shows up in real use.
 - **Tests:** one M3 thread-unread integration test is flaky (failed 1 of ~3 runs); invite service rate limit (60/h per caller) trips repeated local runs — restart the `invite` container.
-- **Production data** is disposable until the CEO says otherwise (D-18): seed accounts + test rooms live there; wipe or deactivate before a second real person joins.
+- **Production data** is no longer disposable test data (OPS-01): no seeding, no probe runs there. Test on the local stack.
 
 ## Key decisions to know (full text in DECISIONS.md)
 
