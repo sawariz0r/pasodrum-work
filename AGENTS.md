@@ -17,7 +17,7 @@ You start with **no memory of prior chats** — orient yourself like this:
 4. **To work a task:** move its file `todo/ → implementing/`, set `stage: implementing` + `owner`, do the work, then move to `ceo-review/` with the **Outcome** filled in. Full workflow in [tasks/README.md](tasks/README.md).
 5. **Record as you go:** new decisions/learnings → `docs/DECISIONS.md`; correct this file when a rule changes.
 
-Status (2026-11-21, late): M0–M8 and side features D-36…D-40 live (people & access, Docs & Boards, confirm by email, live relay, client marks). CEO still to test: confirm by email (SIDE-04) and the DM risk line. Live 2026-11-22: DES-01, DES-02. In flight: SIDE-05 (ready to push), SIDE-07 (building), M9 shell spike, DES-03 desktop boards. SIDE-06 dropped. Read docs/PHASES.md "Next session" first.
+Status (2026-11-22, night): M0–M9 live, including the signed Mac app (D-44, `/download/mac`). Also live: DES-01…06, SIDE-05, SIDE-07, SIDE-08 (remove from workspace, D-46), SIDE-09 (save recovery key), DES-05 (rail tidy + delete archived client space, D-45), SEED-01 (JP welcome page + board). Production was wiped to a clean slate (OPS-01). CEO to do: run `pnpm add:system-admin oscar` on production once (needed for SIDE-08 Remove); test confirm by email (SIDE-04). Read docs/PHASES.md "Next session" first.
 
 ---
 
