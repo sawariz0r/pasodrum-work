@@ -1,14 +1,14 @@
 ---
 id: M9-02
 title: Electron desktop app (Mac), signed + auto-update, Download app back on
-stage: todo
+stage: implementing
 area: frontend
 milestone: M9
 priority: P1
 slice: false
 depends_on: [M9-01]
 created: 2026-11-22
-owner:
+owner: claude (m9-shell-spike session)
 ---
 
 ## Goal
