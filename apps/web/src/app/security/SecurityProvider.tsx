@@ -10,7 +10,8 @@ import { Button, Dialog, TextField, isImeEnter } from '../../ui';
 import { CheckIcon } from '../../ui/icons';
 import { LaptopIcon, PhoneIcon } from '../settings/icons';
 import { settingsState } from '../settings/SettingsRoute';
-import { CopyIcon, EyeOffIcon, KeyIcon, RefreshIcon } from './icons';
+import { platform } from '../../platform';
+import { CopyIcon, DownloadIcon, EyeOffIcon, KeyIcon, RefreshIcon } from './icons';
 import { Dots, FailTile, FieldError, OkTile, type View } from './parts';
 import { shareConfirmation, startShare, useShareView, type Share } from './share/ShareHistory';
 import { firstName } from '../toast';
@@ -566,6 +567,7 @@ function useFlowView(
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [stored, setStored] = useState(false);
   // Each step (and each new key shown) starts empty.
   const stepId = flow ? `${flow.step}:${flow.step === 'save' ? flow.key : ''}` : '';
   const [stepNow, setStepNow] = useState(stepId);
@@ -576,6 +578,7 @@ function useFlowView(
     setFailed(false);
     setBusy(false);
     setCopied(false);
+    setStored(false);
   }
 
   if (!flow) return undefined;
@@ -770,6 +773,15 @@ function useFlowView(
           () => setCopied(true),
           () => {},
         );
+      // SIDE-09: the key goes only to the browser's password manager or a local file.
+      const toPasswords = platform.savesPasswords();
+      const download = () => {
+        platform.saveTextFile(t('security.keyFile'), `${flow.key}\n`);
+        setStored(true);
+      };
+      // A Chromium without a password manager (an embedded browser) rejects; the file is the fallback.
+      const saveKey = () => (toPasswords ? void platform.savePassword(t('security.keyLabel'), flow.key).then(() => setStored(true), download) : download());
+      const storedLabel = toPasswords ? t('security.savedPasswords') : t('security.downloaded');
       return {
         key: 'save',
         title: t('security.saveTitle'),
@@ -786,7 +798,7 @@ function useFlowView(
               ))}
             </div>
             <span aria-live="polite" className={s.sr}>
-              {copied ? t('security.copied') : ''}
+              {stored ? storedLabel : copied ? t('security.copied') : ''}
             </span>
           </>
         ),
@@ -794,6 +806,13 @@ function useFlowView(
           <>
             <Button variant="secondary" onClick={copy} icon={copied ? <CheckIcon key="ok" className={s.copiedIcon} size={15} strokeWidth={2.6} /> : <CopyIcon className={s.mutedIcon} />}>
               {copied ? t('security.copied') : t('security.copy')}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={saveKey}
+              icon={stored ? <CheckIcon key="ok" className={s.copiedIcon} size={15} strokeWidth={2.6} /> : toPasswords ? <KeyIcon className={s.mutedIcon} size={15} strokeWidth={2} /> : <DownloadIcon className={s.mutedIcon} />}
+            >
+              {stored ? storedLabel : toPasswords ? t('security.savePasswords') : t('security.download')}
             </Button>
             <span className={s.spacer} />
             <Button onClick={close}>{t('security.saved')}</Button>

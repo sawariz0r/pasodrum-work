@@ -4,6 +4,9 @@ const badgePrefix = /^\(\d+\) /;
 const yieldedKey = 'pasodrum.yielded';
 const MAC_DOWNLOAD = true;
 
+// Chromium only, so not in TypeScript's DOM types.
+declare const PasswordCredential: new (data: { id: string; password: string; name?: string }) => Credential;
+
 export function createWebPlatform(): Platform {
   let routeListener: ((route: string) => void) | undefined;
 
@@ -56,6 +59,21 @@ export function createWebPlatform(): Platform {
 
     async persistStorage() {
       return (await navigator.storage?.persist?.()) ?? false;
+    },
+
+    savesPasswords: () => typeof window !== 'undefined' && 'PasswordCredential' in window,
+
+    async savePassword(id, secret) {
+      await navigator.credentials.store(new PasswordCredential({ id, password: secret, name: 'Pasodrum work' }));
+    },
+
+    saveTextFile(name, text) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+      a.download = name;
+      a.click();
+      // Safari drops a download whose URL is revoked at once.
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     },
 
     lock(name, onWaiting) {

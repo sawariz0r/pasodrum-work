@@ -53,6 +53,10 @@ export const CopyIcon = icon(
   </>,
   { size: 15, strokeWidth: 2 },
 );
+export const DownloadIcon = icon(
+  <path d="M12 15V3m-5 7 5 5 5-5M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />,
+  { size: 15, strokeWidth: 2 },
+);
 export const EyeOffIcon = icon(
   <>
     <path d="M9.9 4.2A9.8 9.8 0 0 1 12 4c6.5 0 10 8 10 8a17.7 17.7 0 0 1-2.2 3.2M6.6 6.6A17.6 17.6 0 0 0 2 12s3.5 8 10 8a9.7 9.7 0 0 0 5.4-1.6" />

@@ -31,6 +31,8 @@ export function createDesktopPlatform(shell: ShellBridge): Platform {
     onUpdateReady: (cb) => shell.onUpdateReady(cb),
     restartToUpdate: () => shell.restartToUpdate(),
     downloadUrl: () => null,
+    // Electron has no password manager; a download opens the macOS Save panel.
+    savesPasswords: () => false,
     deviceName: () => (document.documentElement.lang === 'ja' ? 'Mac の Pasodrum work' : 'Pasodrum work on Mac'),
   };
 }

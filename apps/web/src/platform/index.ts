@@ -19,6 +19,12 @@ export interface Platform {
   restartToUpdate(): void;
   openExternal(url: string): void;
   persistStorage(): Promise<boolean>;
+  /** SIDE-09: the browser's password manager takes a secret from the page (Chrome, Edge); false in Safari, Firefox and the desktop app. */
+  savesPasswords(): boolean;
+  /** Offers the secret to the password manager; resolves before the person answers its prompt. */
+  savePassword(id: string, secret: string): Promise<void>;
+  /** Saves a text file through the browser's download (the desktop app asks where). */
+  saveTextFile(name: string, text: string): void;
   /** Name for a new sign-in's device, e.g. "Safari on Mac" (shown in Devices and when confirming a device). */
   deviceName(): string;
   /**

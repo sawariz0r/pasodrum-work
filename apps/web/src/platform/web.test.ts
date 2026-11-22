@@ -124,3 +124,56 @@ describe('persistStorage', () => {
     await expect(createWebPlatform().persistStorage()).resolves.toBe(false);
   });
 });
+
+// SIDE-09 (D-30, security): the recovery key reaches only the chosen save target, never the network or storage.
+describe('saving the recovery key', () => {
+  const KEY = 'EsTc 4Rk9 Wq2N 7hXb';
+  let fetchSpy: ReturnType<typeof vi.fn>;
+  beforeEach(() => {
+    fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+  const untouched = () => {
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(JSON.stringify({ ...localStorage, ...sessionStorage })).not.toContain(KEY);
+    expect(location.href).not.toContain('4Rk9');
+  };
+
+  test('Save to Passwords hands the key to the password manager only', async () => {
+    class FakeCredential {
+      constructor(public data: { id: string; password: string; name?: string }) {}
+    }
+    vi.stubGlobal('PasswordCredential', FakeCredential);
+    const store = vi.fn(async () => undefined);
+    setNavigator('credentials', { store });
+    const platform = createWebPlatform();
+    expect(platform.savesPasswords()).toBe(true);
+    await platform.savePassword('Recovery key', KEY);
+    expect(store).toHaveBeenCalledOnce();
+    expect((store.mock.calls[0] as unknown as [FakeCredential])[0].data).toEqual({ id: 'Recovery key', password: KEY, name: 'Pasodrum work' });
+    untouched();
+  });
+
+  test('Download makes a local file and frees it', async () => {
+    const blobs: Blob[] = [];
+    const created = vi.spyOn(URL, 'createObjectURL').mockImplementation((b) => (blobs.push(b as Blob), 'blob:local/1'));
+    const revoked = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+      expect(this.download).toBe('Pasodrum recovery key.txt');
+      expect(this.href).toBe('blob:local/1');
+    });
+    vi.useFakeTimers();
+    createWebPlatform().saveTextFile('Pasodrum recovery key.txt', `${KEY}\n`);
+    expect(click).toHaveBeenCalledOnce();
+    vi.advanceTimersByTime(1000);
+    vi.useRealTimers();
+    expect(await blobs[0]!.text()).toBe(`${KEY}\n`);
+    expect(revoked).toHaveBeenCalledWith('blob:local/1');
+    untouched();
+    created.mockRestore();
+    revoked.mockRestore();
+    click.mockRestore();
+  });
+});

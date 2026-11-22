@@ -139,11 +139,12 @@ Words: "Confirm this device", "Not confirmed", "Not available on this device", "
 | Rules for M6 | RulesM6 | approved |
 | Confirm this device (new device): gate, no other device, waiting, compare emoji, done, declined, timeout, mismatch | ConfirmGate(+JP, Dark), ConfirmGateNoDevice, ConfirmWaiting, ConfirmCompare(+JP), ConfirmDone, ConfirmDeclined, ConfirmTimeoutJP, ConfirmMismatch | approved |
 | Approve on the device already signed in: ask, compare, done | ApproveAsk(+JP), ApproveCompare, ApproveDone, ApproveDark | approved |
-| Recovery key: save once, password when asked, enter, wrong | RecoveryKeySave(+JP, Dark), RecoveryKeyPassword, RecoveryKeyEnter(+JP), RecoveryKeyWrong | approved |
+| Recovery key: save once, password when asked, enter, wrong | RecoveryKeyPassword, RecoveryKeyEnter(+JP), RecoveryKeyWrong | approved |
 | Can't confirm → reset, wrong password | ResetConfirm(+JP), ResetWrongPassword | approved |
 | Messages this device can't open (DM, thread, list preview) | UndecryptableDM, UndecryptableThread, UndecryptableJP, UndecryptableDark | approved |
 | Sign-out warning (last confirmed device), no backup | SignOutWarn(+JP), SignOutNoBackup | approved |
 | Settings → Devices: Not confirmed tag, Recovery key row, Confirm this device | SettingsDevicesM6(+JP, Dark), SettingsDevicesUnconfirmed | approved |
+| SIDE-09 save the recovery key: Copy + Save to Passwords (Chrome, Edge) or Download (Safari, Firefox, Mac app), saved states (replaced RecoveryKeySave(+JP, Dark)) | SaveKeyPasswords, SaveKeyPasswordsSaved, SaveKeyPasswordsJP, SaveKeyPasswordsDark, SaveKeyDownload, SaveKeyDownloadSaved, SaveKeyDownloadJP, SaveKeyDownloadJPDark | approved 2026-11-22 |
 
 ## Side features
 
