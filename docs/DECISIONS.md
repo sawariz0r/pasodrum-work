@@ -107,6 +107,7 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Decision:** Electron (CEO: "Not many clients are expected to download it. So electron it is?"). The encrypted store is protected from eviction (`storage.persist()` true; WKWebView said false), restarts after Cmd-Q and kill -9 came back clean, it runs the same engine as Chrome, the shell is plain JS (no Rust toolchain), and notification clicks are built in. Packaging with electron-builder, updates with electron-updater.
 - **Accepted cost:** download size (~114 MB dmg, ~259 MB app vs Tauri's 11 MB) and ~211 MB at idle.
 - **Needs:** an Apple Developer ID plus notarization (the CEO has one): Squirrel.Mac only installs signed updates, and macOS only keeps notification permission for a signed app. Authenticode on Windows later. The Tauri spike stays in branch history (`claude/m9-shell-spike-cff79a`).
+- **Releases:** CEO runs `release` + `publish:feed` locally on a signed-in Mac. Move to a path-filtered macOS GitHub Actions job if releases get frequent or someone else needs to ship.
 
 ### D-43 · Main contacts for a client space (SIDE-05), amends D-38 · Accepted (CEO approved the boards) · 2026-11-21
 - **Decision:** Owners and Admins mark one or more Staff (Owners and Admins count) as a client space's main contacts, from client space settings → People → ⋯ (Make main contact / Remove as main contact; your own row too). Never Externals or clients. Contacts get a "Main contact" tag. Boards: SpaceContacts*, ContactHelpPill.

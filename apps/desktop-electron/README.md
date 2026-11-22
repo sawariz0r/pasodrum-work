@@ -11,6 +11,8 @@ Electron shell around https://pasodrum.work (D-44). Plain CommonJS, no bundler, 
 
 ## Release (CEO, on your Mac, from the repo root)
 
+Releases are a local command on a signed-in Mac, no CI (D-44).
+
 One time:
 
 1. Xcode → Settings → Accounts → Manage Certificates → + → **Developer ID Application** (PRPL development AB).
