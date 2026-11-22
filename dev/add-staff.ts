@@ -1,9 +1,7 @@
 // Adds a team account to the workspace (no email needed): pnpm add:staff <username> "<Display name>" [admin|staff]
 // Production: set -a; . dev/.env.production; set +a; pnpm add:staff shiori "Shiori" admin
-// The password is asked for and never echoed.
-import { readFileSync } from 'node:fs';
-import { createInterface } from 'node:readline';
-import { SEED_FILE, SERVER, enc, envToken, login, mx, ok, userId } from './lib.ts';
+// The passwords (the new account's, then the Owner's) are asked for and never echoed. OWNER=<username> if not oscar.
+import { SERVER, askHidden, enc, envToken, login, mx, ok, userId } from './lib.ts';
 
 const [localpart, name, role = 'staff'] = process.argv.slice(2);
 if (!localpart || !name || !['admin', 'staff'].includes(role)) {
@@ -11,35 +9,6 @@ if (!localpart || !name || !['admin', 'staff'].includes(role)) {
   process.exit(1);
 }
 
-function askHidden(question: string): Promise<string> {
-  process.stdout.write(question);
-  const stdin = process.stdin;
-  if (!stdin.isTTY) {
-    const rl = createInterface({ input: stdin });
-    return new Promise((resolve) => rl.once('line', (a) => (rl.close(), process.stdout.write('\n'), resolve(a))));
-  }
-  return new Promise((resolve) => {
-    let value = '';
-    stdin.setRawMode(true);
-    stdin.setEncoding('utf8');
-    stdin.resume();
-    const onData = (chunk: string) => {
-      for (const ch of chunk) {
-        if (ch === '\r' || ch === '\n') {
-          stdin.setRawMode(false);
-          stdin.pause();
-          stdin.off('data', onData);
-          process.stdout.write('\n');
-          return resolve(value);
-        }
-        if (ch === '\u0003') process.exit(130);
-        if (ch === '\u007f' || ch === '\b') value = value.slice(0, -1);
-        else value += ch;
-      }
-    };
-    stdin.on('data', onData);
-  });
-}
 
 const password = await askHidden(`Password for ${localpart}: `);
 if (password.length < 8) throw new Error('Use at least 8 characters.');
@@ -56,9 +25,10 @@ const me: string = reg.body.access_token;
 const id = userId(localpart);
 await ok(me, 'PUT', `/_matrix/client/v3/profile/${enc(id)}/displayname`, { displayname: name });
 
-const seeded = JSON.parse(readFileSync(SEED_FILE, 'utf8')) as { rooms: { workspace: string } };
-const workspace = seeded.rooms.workspace;
-const owner = await login('sofia');
+// The workspace is the room #workspace points at (D-06); an Owner or Admin of it adds the new account.
+const workspace: string = (await ok(me, 'GET', `/_matrix/client/v3/directory/room/${enc(`#workspace:${SERVER}`)}`)).room_id;
+const ownerName = process.env.OWNER ?? 'oscar';
+const owner = await login(ownerName, await askHidden(`Password for ${ownerName} (adds them): `));
 
 // D-36: Staff 10, Admin 50, in the workspace and each of its channels.
 const level = role === 'admin' ? 50 : 10;

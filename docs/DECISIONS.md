@@ -384,6 +384,7 @@ Format: **Date · short title** → what was discovered, why it matters, what ch
 - Matrix can't delete a room. "Retire" = remove its `m.space.child` (and its `work.pasodrum.docs.page` entry for pages), then its room-v12 creator removes every member and leaves. Clients drop it; the events stay on the server.
 - Replacement channels must copy the app's `createChannel` (restricted to the space, history shared, `powerLevels(kind, 'channel', channelUsers(...))`). Free the name first: the app refuses a name already in the space's hierarchy. Kept members get invites and the app auto-accepts them, because the room is a child of their space.
 - A full account list needs `!admin users list-users` in the admin room (Oscar only). The client API only shows accounts that share a room with you.
+- Full wipe instead (CEO): a room's v12 creator can never change, so the only way to remove every seed trace is a fresh database. `pnpm bootstrap` registers the first account (it becomes server admin) and builds the workspace with today's `powerLevels()`, so no migrations are needed. `pnpm add:staff` now finds the workspace by `#workspace` and logs in as an Owner (asked for, default `oscar`) instead of the seed account. Tested on a throwaway Continuwuity container.
 
 **2026-11-22 · The server admin room stays out of our app**
 - Continuwuity's admin room is made by its bot `@conduit:<server>` and carries the alias `#admins:<server>`. Its replies to `!admin …` are `m.notice` with `m.in_reply_to` on the admin's command, so they used to land in the admin's Activity as replies.
