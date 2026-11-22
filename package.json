@@ -25,6 +25,7 @@
     "setup:prod": "bash scripts/setup-production-env.sh",
     "add:staff": "node dev/add-staff.ts",
     "bootstrap": "node dev/bootstrap.ts",
+    "seed:welcome-jp": "node dev/seed-welcome-jp.ts",
     "add:system": "node dev/add-system.ts",
     "migrate:pins": "node dev/migrate-pins.ts",
     "migrate:people": "node dev/migrate-people.ts"
