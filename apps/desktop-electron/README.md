@@ -15,6 +15,7 @@ Releases are a local command on a signed-in Mac, no CI (D-44).
 
 One time:
 
+0. `bash scripts/desktop-signing-setup.sh` installs the Developer ID certificate and stores the `pasodrum-notary` profile (does steps 1–3 for you).
 1. Xcode → Settings → Accounts → Manage Certificates → + → **Developer ID Application** (PRPL development AB).
 2. Check it: `security find-identity -v -p codesigning` lists `Developer ID Application: PRPL development AB (754ZSYKPH7)`.
 3. Store the notary login: `xcrun notarytool store-credentials pasodrum-notary` (key ID, issuer ID and `.p8` path from App Store Connect → Users and Access → Integrations → Keys).
