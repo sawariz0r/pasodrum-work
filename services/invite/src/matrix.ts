@@ -154,6 +154,18 @@ export function matrixClient(base: string) {
       await ok('account data', token, 'PUT', path, update(r.status === 200 ? r.body : {}));
     },
 
+    // MSC4323; server admins only. Their tokens get 401 M_USER_LOCKED and sign-in is refused. False: no such account.
+    async lock(token: string, userId: string): Promise<boolean> {
+      const r = await call(token, 'PUT', `/_matrix/client/v1/admin/lock/${enc(userId)}`, { locked: true });
+      if (r.status === 404) return false;
+      if (r.status >= 300) throw new MatrixError('lock', r);
+      return true;
+    },
+
+    async isServerAdmin(token: string, userId: string): Promise<boolean> {
+      return (await call(token, 'GET', `/_matrix/client/v1/admin/lock/${enc(userId)}`)).status === 200;
+    },
+
     async logout(token: string): Promise<void> {
       await call(token, 'POST', '/_matrix/client/v3/logout', {});
     },

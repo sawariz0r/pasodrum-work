@@ -35,7 +35,7 @@ import { createEmailConfirm } from './confirm';
 import { CRYPTO_DB, createSecurity, cryptoCallbacks, withTimeout, type KeyHolder } from './crypto';
 import { sanitizeHtml, type SanitizedHtml } from './html';
 import { translateSegments } from './translate';
-import { createInvite, InviteError, listInvites, normalizeEmail, resendInvite, revokeAllFor, revokeInvitesFor, revokeInvitesForSpace, revokeInvite, type NewInvite } from './invites';
+import { createInvite, InviteError, listInvites, normalizeEmail, removePersonFor, resendInvite, revokeInvitesFor, revokeInvitesForSpace, revokeInvite, type NewInvite } from './invites';
 import {
   connectionOf, emailFromId, hydra, looksExternal, mayChangeRole, mediaOf, membershipSummary, powerLevel, reactionsOf, replyFallback, roleOf, sameMembers, share,
   accessRoleOf, externalRecordOf, knownSpacesOf, linkPreviewOf, linksOf, pinnedIdsOf, stripReplyFallback, threadStats, workspaceOf,
@@ -1919,15 +1919,18 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       return { ...c, users };
     });
 
-  /** Out of one room, level entry cleared. A room I'm not in I pass through (join, kick, leave) when its join rule lets me. */
-  const evict = async (roomId: string, userId: string, stay = false) => {
+  /** Out of one room, level entry cleared. A room I'm not in I pass through (join, kick, leave) when its join rule lets me; one that won't let me in goes into `shut`. */
+  const evict = async (roomId: string, userId: string, stay = false, shut?: Set<string>) => {
     const room = client.getRoom(roomId);
     const passing = !room || !joined(room);
     let entered = false;
     if (passing) visiting.add(roomId);
     try {
       if (passing) {
-        await client.joinRoom(roomId, { viaServers: [server] });
+        await client.joinRoom(roomId, { viaServers: [server] }).catch((e: unknown) => {
+          shut?.add(roomId);
+          throw e;
+        });
         entered = true;
       }
       if (present(await membershipOf(roomId, userId))) await client.kick(roomId, userId);
@@ -1942,7 +1945,7 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
    * lists; channels I'm not in only when they were in the space. Throws when the space refuses; resolves to the channels
    * that couldn't be done.
    */
-  const outOfSpace = async (space: Room, userId: string) => {
+  const outOfSpace = async (space: Room, userId: string, shut?: Set<string>) => {
     const wasIn = present(await membershipOf(space.roomId, userId));
     if (wasIn) await client.kick(space.roomId, userId);
     if (userId in usersOf(space)) await dropLevel(space.roomId, userId).catch(noop);
@@ -1951,10 +1954,10 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       const id = e.getStateKey()!;
       const room = client.getRoom(id);
       if (!e.getContent().via?.length || room?.isSpaceRoom() || (!wasIn && !(room && joined(room)))) continue;
-      await evict(id, userId).catch(() => unreached.push(id));
+      await evict(id, userId, false, shut).catch(() => unreached.push(id));
     }
     // Page rooms (D-37) aren't children; one I pass through stays joined, since the last member leaving would close it for good.
-    for (const id of pageRoomsOf(space)) if (wasIn || client.getRoom(id)?.getMyMembership() === KnownMembership.Join) await evict(id, userId, true).catch(() => unreached.push(id));
+    for (const id of pageRoomsOf(space)) if (wasIn || client.getRoom(id)?.getMyMembership() === KnownMembership.Join) await evict(id, userId, true, shut).catch(() => unreached.push(id));
     return unreached;
   };
 
@@ -3185,31 +3188,39 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       if (!mayEditAccess() || (await isClient(userId))) throw new Error('not-allowed');
       return { failed: await syncExternal(userId, wantOf(recordsNow()[userId], rolesNow())) };
     },
-    async removeExternal(userId) {
+    async removeFromWorkspace(userId) {
       await ready;
       const ws = workspaceRoom;
-      if (!ws || !mayEditAccess()) throw new Error('not-allowed');
+      if (!ws) throw new Error('not-allowed');
       await ws.loadMembersIfNeeded().catch(noop);
-      if (userId === me.id || isMember(ws, userId)) throw new Error('not-allowed');
+      const member = isMember(ws, userId);
+      const record = recordsNow()[userId];
+      const mine = levelIn(ws, me.id);
+      // A non-member needs an External record, so a client (never given one) is refused here too.
+      if (mine < LEVEL.admin || userId === me.id || levelIn(ws, userId) >= mine || !(member || (record && mayEditAccess()))) throw new Error('not-allowed');
+      await removePersonFor(session.accessToken, userId).catch((e: unknown) => {
+        throw new Error(e instanceof InviteError && e.code === 'not-allowed' ? 'not-allowed' : 'other', { cause: e });
+      });
       let partial = false;
       const miss = () => void (partial = true);
-      const want = wantOf(recordsNow()[userId], rolesNow());
-      const passed = new Set<string>();
-      await revokeAllFor(session.accessToken, userId).catch(miss);
-      for (const space of clientSpaces()) await outOfSpace(space, userId).then((left) => left.length && miss(), miss);
-      for (const room of workspaceChannels()) await evict(room.roomId, userId).catch(miss);
-      // Workspace channels open to its members that I'm not in: passed through (private ones I can't enter).
-      const mine = new Set(workspaceChannels().map((r) => r.roomId));
-      for (const r of await hierarchy(ws.roomId).catch(() => [])) if ((r.join_rule as string | undefined) === 'restricted' && !mine.has(r.room_id)) await evict(r.room_id, userId).then(() => passed.add(r.room_id), miss);
-      // A room their access names that I'm not in and couldn't pass through: they may still be there.
-      for (const id of [...want.channels, ...want.spaces]) {
-        const r = client.getRoom(id);
-        if (!(r && joined(r)) && !passed.has(id)) miss();
+      // A room that won't let me in isn't a miss: a private channel I'm not in is covered by the lock, and nobody is in a closed one.
+      const shut = new Set<string>();
+      const left = (ids: string[]) => void (ids.some((id) => !shut.has(id)) && miss());
+      let throughSpace = false;
+      if (member) throughSpace = await outOfSpace(ws, userId, shut).then((ids) => (left(ids), true), () => (miss(), false));
+      for (const space of clientSpaces()) await outOfSpace(space, userId, shut).then(left, miss);
+      if (!throughSpace) {
+        for (const room of workspaceChannels()) await evict(room.roomId, userId).catch(miss);
+        // Workspace channels open to its members that I'm not in: passed through.
+        const joinedNow = new Set(workspaceChannels().map((r) => r.roomId));
+        for (const r of await hierarchy(ws.roomId).catch(() => (miss(), [])))
+          if ((r.join_rule as string | undefined) === 'restricted' && !joinedNow.has(r.room_id)) await evict(r.room_id, userId, false, shut).catch(() => left([r.room_id]));
       }
       // The record goes last: a partial run leaves them listed with no access, so "Not applied" shows what's left.
-      await writeRecord(userId, partial ? { roles: [], channels: [] } : null).catch(miss);
+      // A Staff member half removed gets an empty record too, so they stay listed and the retry is allowed.
+      if (record || partial) await writeRecord(userId, partial ? { roles: [], channels: [] } : null).catch(miss);
       if (partial) throw new Error('partial');
-      await settle(() => !snapshot.externals[userId]);
+      await settle(() => !isMember(ws, userId) && !snapshot.externals[userId]);
     },
     linkPreview(url) {
       let preview = previews.get(url);

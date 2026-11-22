@@ -110,6 +110,7 @@ export function PeoplePane({ workspaceId, people, onPeople, onChanged, onAddPeop
     const held = external ? accessRoles.filter((r) => m.roles?.includes(r.id)) : [];
     const oneOffs = external ? (externals[person.id]?.channels ?? []).flatMap((id) => channelOf(id) ?? []) : [];
     const choices = external ? [] : roleChoices(mine, m.role, me);
+    const removable = external || (mine === 'owner' && (m.role === 'admin' || m.role === 'staff')) || (mine === 'admin' && m.role === 'staff');
     const label = t('channels.more', { name });
     return (
       <li key={person.id} className={s.row}>
@@ -185,7 +186,7 @@ export function PeoplePane({ workspaceId, people, onPeople, onChanged, onAddPeop
                     {t('people.message')}
                   </MenuItem>
                 )}
-                {external && (
+                {removable && (
                   <MenuItem icon={<LeaveIcon size={16} strokeWidth={2} />} className={s.danger} onSelect={() => onRemove(m)}>
                     {t('workspaceSettings.removeFrom', { workspace })}
                   </MenuItem>

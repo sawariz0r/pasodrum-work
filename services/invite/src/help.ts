@@ -86,6 +86,10 @@ export function systemAccount(mx: Matrix, store: Store, serverName: string, pass
         (t) => {
           token = t;
           console.log(`system sender ${id} ready`);
+          void mx.isServerAdmin(t, id).then(
+            (admin) => admin || console.error('system account is not a server admin: run pnpm add:system-admin'),
+            () => {},
+          );
         },
         (e: unknown) => {
           console.error(`system sender not ready (retry in ${wait / 1000}s): ${(e as Error).message}`);
@@ -131,6 +135,8 @@ export function systemAccount(mx: Matrix, store: Store, serverName: string, pass
 
   return {
     id,
+    configured: !!password,
+    lock: (userId: string) => signedIn((t) => mx.lock(t, userId)),
     nameOf: (userId: string) => signedIn((t) => mx.displayName(t, userId)),
     send: (contactId: string, content: Record<string, unknown>) =>
       signedIn(async (t) => mx.send(t, await roomFor(t, contactId), content)),

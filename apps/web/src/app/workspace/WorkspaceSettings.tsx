@@ -1,4 +1,4 @@
-// Workspace settings → People and Access (D-36; PeopleWorkspace, PeopleAccess*, PeopleRemoveExternal). Owners and Admins, from the workspace menu.
+// Workspace settings → People and Access (D-36; PeopleWorkspace, PeopleAccess*, RemoveExternalSignOut, RemoveStaff). Owners and Admins, from the workspace menu.
 import * as RD from '@radix-ui/react-dialog';
 import { useCallback, useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +11,7 @@ import { canManage } from '../channels/roles';
 import { KeyIcon } from '../security/icons';
 import { AccessPane } from './AccessPane';
 import { PeoplePane } from './PeoplePane';
-import { RemoveExternalDialog } from './RemoveExternal';
+import { RemovePersonDialog } from './RemovePerson';
 import s from './Workspace.module.css';
 
 export type WorkspaceTab = 'people' | 'access';
@@ -103,7 +103,7 @@ export function WorkspaceSettingsDialog({ open, tab: initialTab = 'people', onCl
         </RD.Portal>
       </RD.Root>
       {confirm?.kind === 'remove' && (
-        <RemoveExternalDialog
+        <RemovePersonDialog
           open={open}
           workspace={workspace}
           member={confirm.member}

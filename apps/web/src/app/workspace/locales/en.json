@@ -23,6 +23,7 @@
     "removeFrom": "Remove from {{workspace}}",
     "removeTitle": "Remove {{name}} from {{workspace}}?",
     "removeButton": "Remove",
+    "removeSignsOut": "Signs them out everywhere. Their messages stay.",
     "loses": "Loses",
     "newRole": "New role",
     "roleList": "Roles",

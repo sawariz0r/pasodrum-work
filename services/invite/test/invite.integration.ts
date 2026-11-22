@@ -1,8 +1,9 @@
 // Integration tests against the local stack (pnpm dev:server, pnpm dev:seed). Run: pnpm test:invite
 import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { before, describe, it } from 'node:test';
-import { SEED_FILE, SERVER, login, mx, ok as mxOk } from '../../../dev/lib.ts';
+import { PASSWORD, SEED_FILE, SERVER, envToken, login, mx, ok as mxOk, register } from '../../../dev/lib.ts';
 import { powerLevels } from '../../../apps/web/src/matrix/levels.ts';
 import { keyFrom, unseal } from '../src/secret.ts';
 import { INVITE, MAILPIT, api, db, freshEmail, localpartOf, mailTo } from './helpers.ts';
@@ -307,20 +308,116 @@ describe('invite service', () => {
     await api(sofia, 'DELETE', `/${a.body.code}`);
   });
 
-  it('D-36: revoke-all is Owner/Admin only and kills a person’s codes in every space', async () => {
-    const email = freshEmail();
-    const a = await api(jonas, 'POST', '', { email, role: 'client', spaceId: kumo, channelIds: [kumoChat] });
-    const b = await api(sofia, 'POST', '', { email, role: 'external', spaceId: rooms.workspace, channelIds: [rooms.design] });
-    assert.equal(b.status, 201, JSON.stringify(b.body));
-    const q = `/person?userId=${encodeURIComponent(a.body.userId)}`;
-    assert.equal((await api(jonas, 'DELETE', q)).status, 403, 'Staff');
-    assert.equal((await api(henrik, 'DELETE', q)).status, 403, 'a client');
-    assert.equal((await api(null, 'DELETE', q)).status, 401);
-    assert.equal((await api(ingrid, 'DELETE', '/person')).status, 400);
-    for (const code of [a.body.code, b.body.code]) assert.equal((await api(null, 'GET', `/${code}`)).body.state, 'open');
-    assert.deepEqual((await api(ingrid, 'DELETE', q)).body, { revoked: 2 });
-    for (const code of [a.body.code, b.body.code]) assert.equal((await api(null, 'GET', `/${code}`)).body.state, 'revoked');
-    assert.deepEqual((await api(sofia, 'DELETE', q)).body, { revoked: 0 });
+  // SIDE-08. Targets are throwaway accounts: the seeded people are shared with other test runs.
+  describe('remove from Pasodrum', () => {
+    const person = (id: string) => `/person?userId=${enc(id)}`;
+    const whoami = (token: string) => mx(token, 'GET', '/_matrix/client/v3/account/whoami');
+    const setLevel = async (id: string, level: number | null) => {
+      const path = `/_matrix/client/v3/rooms/${enc(rooms.workspace)}/state/m.room.power_levels/`;
+      const pl = await mxOk(sofia, 'GET', path);
+      const users = { ...pl.users };
+      if (level === null) delete users[id];
+      else users[id] = level;
+      await mxOk(sofia, 'PUT', path, { ...pl, users });
+    };
+    // A fresh account in the workspace at `level`, as if added with pnpm add:staff.
+    const teammate = async (level: number) => {
+      const localpart = `t-remove-${randomBytes(4).toString('hex')}`;
+      const token = await register(localpart, envToken());
+      const id = `@${localpart}:${SERVER}`;
+      await mxOk(sofia, 'POST', `/_matrix/client/v3/rooms/${enc(rooms.workspace)}/invite`, { user_id: id });
+      await mxOk(token, 'POST', `/_matrix/client/v3/join/${enc(rooms.workspace)}`, {});
+      await setLevel(id, level);
+      return { id, localpart, token };
+    };
+    const cleanUp = async (id: string) => {
+      await mx(sofia, 'POST', `/_matrix/client/v3/rooms/${enc(rooms.workspace)}/kick`, { user_id: id });
+      await setLevel(id, null);
+    };
+
+    it('refuses Staff callers, targets at or above the caller, yourself, the system account and clients; nothing changes', async () => {
+      const staff = await teammate(10);
+      const admin = await teammate(50);
+      // A client an Admin pulled into the workspace: the service's own invites still say client.
+      const pulled = await teammate(0);
+      db(`INSERT INTO invites VALUES (?, 'c@example.com', NULL, 'client', ?, ?, 'Nordlys', 'client', ?, 'Sofia', '[]', '[]', 'en', NULL, 1, 9999999999999, 1, NULL)`,
+        `RRRR${randomBytes(10).toString('hex')}`, pulled.id, rooms.workspace, `@sofia:${SERVER}`);
+      try {
+        const cases: [string, string, string][] = [
+          ['a client pulled into the workspace', ingrid, pulled.id],
+          ['Staff removing Staff', jonas, staff.id],
+          ['Admin removing an Admin', ingrid, admin.id],
+          ['Admin removing the Owner', ingrid, `@sofia:${SERVER}`],
+          ['Owner removing herself', sofia, `@sofia:${SERVER}`],
+          ['Admin removing herself', ingrid, `@ingrid:${SERVER}`],
+          ['the system account', sofia, `@pasodrum:${SERVER}`],
+          ['a client', ingrid, `@henrik_nordlys.no:${SERVER}`],
+          ['a client removing Staff', henrik, staff.id],
+        ];
+        for (const [what, by, target] of cases) {
+          const r = await api(by, 'DELETE', person(target));
+          assert.deepEqual([r.status, r.body], [403, { error: 'not-allowed' }], what);
+        }
+        assert.equal((await api(null, 'DELETE', person(staff.id))).status, 401);
+        assert.equal((await api(ingrid, 'DELETE', '/person')).status, 400);
+        for (const token of [staff.token, admin.token, pulled.token, sofia, ingrid, henrik]) assert.equal((await whoami(token)).status, 200);
+      } finally {
+        for (const t of [staff, admin, pulled]) await cleanUp(t.id);
+      }
+    });
+
+    it('an Admin removes Staff and the Owner removes an Admin: locked, codes revoked, held key gone', async () => {
+      const staff = await teammate(10);
+      const admin = await teammate(50);
+      try {
+        // A claimed invite (the account is theirs) and an open code.
+        const insert = (claimedTs: string) => {
+          const code = `RRRR${randomBytes(10).toString('hex')}`;
+          db(`INSERT INTO invites VALUES (?, 'x@example.com', NULL, 'external', ?, ?, 'Pasodrum', 'workspace', ?, 'Sofia', '[]', '[]', 'en', NULL, 1, 9999999999999, ${claimedTs}, NULL)`,
+            code, staff.id, rooms.workspace, `@sofia:${SERVER}`);
+          return code;
+        };
+        insert('1');
+        const open = insert('NULL');
+        db("INSERT INTO confirm_keys VALUES (?, 'sealed', 'key', 1)", staff.id);
+
+        const r = await api(ingrid, 'DELETE', person(staff.id));
+        assert.deepEqual([r.status, r.body], [200, { revoked: 1, locked: true }]);
+        const after = await whoami(staff.token);
+        assert.deepEqual([after.status, after.body.errcode], [401, 'M_USER_LOCKED']);
+        assert.equal((await loginStatus(staff.localpart, PASSWORD)).body.errcode, 'M_USER_LOCKED');
+        assert.ok(db('SELECT revokedTs FROM invites WHERE code = ?', open).revokedTs);
+        assert.equal(db('SELECT userId FROM confirm_keys WHERE userId = ?', staff.id), null);
+
+        const o = await api(sofia, 'DELETE', person(admin.id));
+        assert.deepEqual([o.status, o.body], [200, { revoked: 0, locked: true }]);
+        assert.equal((await whoami(admin.token)).status, 401);
+        for (const token of [sofia, ingrid, jonas]) assert.equal((await whoami(token)).status, 200, 'the rest stay signed in');
+      } finally {
+        for (const t of [staff, admin]) await cleanUp(t.id);
+      }
+    });
+
+    it('an External nobody claimed: codes in every space revoked, the account left unlocked for a re-invite', async () => {
+      const email = freshEmail();
+      const a = await api(jonas, 'POST', '', { email, role: 'client', spaceId: kumo, channelIds: [kumoChat] });
+      const b = await api(sofia, 'POST', '', { email, role: 'external', spaceId: rooms.workspace, channelIds: [rooms.design] });
+      assert.equal(b.status, 201, JSON.stringify(b.body));
+      const userId = b.body.userId as string;
+      assert.equal((await api(ingrid, 'DELETE', person(userId))).status, 403, 'no External record yet');
+      const record = `/_matrix/client/v3/rooms/${enc(rooms.workspace)}/state/work.pasodrum.external/${enc(userId.slice(1))}`;
+      await mxOk(sofia, 'PUT', record, { roles: [], channels: [rooms.design] });
+      try {
+        assert.equal((await api(jonas, 'DELETE', person(userId))).status, 403, 'Staff');
+        for (const code of [a.body.code, b.body.code]) assert.equal((await api(null, 'GET', `/${code}`)).body.state, 'open');
+        assert.deepEqual((await api(ingrid, 'DELETE', person(userId))).body, { revoked: 2, locked: false });
+        for (const code of [a.body.code, b.body.code]) assert.equal((await api(null, 'GET', `/${code}`)).body.state, 'revoked');
+        const temp = unseal(key, db('SELECT secret FROM invites WHERE code = ?', b.body.code).secret);
+        assert.equal((await loginStatus(localpartOf(userId), temp)).status, 200, 'not locked');
+      } finally {
+        await mxOk(sofia, 'PUT', record, {});
+      }
+    });
   });
 
   it('DES-05: revoke-space is for Owners of that client space; it kills its open codes and no other space’s', async () => {

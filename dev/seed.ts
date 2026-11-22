@@ -1,8 +1,17 @@
 // Seeds a fresh server with the workspace from the design canvas.
 // Local: pnpm dev:seed. Other server: MATRIX_BASE=https://… MATRIX_SERVER=… REGISTRATION_TOKEN=… BOOTSTRAP_TOKEN=… pnpm dev:seed
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { PASSWORD, SEED_FILE, SERVER, bootstrapToken, envToken, login, mx, ok, register, send, state, userId } from './lib.ts';
+import { PASSWORD, SEED_FILE, SERVER, bootstrapToken, envToken, login, mx, ok, register, send, sleep, state, userId } from './lib.ts';
 import { EXTERNAL, LEVEL, channelUsers, externalKey, powerLevels, type SpaceKind } from '../apps/web/src/matrix/levels.ts';
+import { makeSystemAdmin } from './system-admin.ts';
+
+// SIDE-08: the invite service locks removed people through @pasodrum, so Sofia (the server admin) makes it one. The
+// service creates the account at startup, once the first account exists.
+async function systemAdmin(sofia: string) {
+  for (let i = 0; i < 30 && (await mx(null, 'GET', '/_matrix/client/v3/register/available?username=pasodrum')).status === 200; i++) await sleep(1_000);
+  const reply = await makeSystemAdmin(sofia).catch((e: unknown) => (e as Error).message);
+  console.log(`System account: ${reply ?? 'no reply from the admin bot; run pnpm add:system-admin sofia'}`);
+}
 
 // The invite service only trusts the workspace this alias points at (D-06).
 const WORKSPACE_ALIAS = `#workspace:${SERVER}`;
@@ -15,6 +24,7 @@ if (existsSync(SEED_FILE)) {
     await ok(sofia, 'PUT', aliasPath, { room_id: seeded.rooms.workspace });
     console.log(`Added ${WORKSPACE_ALIAS}.`);
   }
+  await systemAdmin(sofia);
   console.log(`Already seeded (${SEED_FILE.pathname}). For a clean local server run pnpm dev:server:reset.`);
   process.exit(0);
 }
@@ -120,4 +130,5 @@ await send(t.ingrid, projectUpdates, { msgtype: 'm.text', body: 'Welcome to your
 
 mkdirSync(new URL('./data/', import.meta.url), { recursive: true });
 writeFileSync(SEED_FILE, JSON.stringify({ password: PASSWORD, tokens, rooms: { workspace, general, design, lead, nordlys, projectUpdates, questions } }, null, 2));
+await systemAdmin(t.sofia);
 console.log(`Seeded ${SERVER}: ${Object.keys(people).join(', ')}. Password in ${SEED_FILE.pathname}`);

@@ -1,4 +1,4 @@
-/* Workspace settings (PeopleWorkspace, PeopleAccess*, PeopleRemoveExternal). */
+/* Workspace settings (PeopleWorkspace, PeopleAccess*, RemoveExternalSignOut, RemoveStaff). */
 .overlay {
   position: fixed;
   inset: 0;
@@ -936,6 +936,13 @@
   height: 18px;
   border-radius: 5px;
   font-size: 9px;
+}
+
+.signsOut {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: var(--lh);
 }
 
 .spacer {

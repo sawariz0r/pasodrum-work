@@ -111,5 +111,5 @@ export const revokeInvitesFor = (token: string, spaceId: string, userId: string)
   call<unknown>('DELETE', `?spaceId=${encodeURIComponent(spaceId)}&userId=${encodeURIComponent(userId)}`, { token }).then(() => undefined);
 /** DES-05 delete a client space: every open code for it stops working (Owners of the space). */
 export const revokeInvitesForSpace = (token: string, spaceId: string) => call<unknown>('DELETE', `/space?spaceId=${encodeURIComponent(spaceId)}`, { token }).then(() => undefined);
-/** D-36 remove an External: every open code for this person, in any space, stops working (Owners/Admins of the workspace). */
-export const revokeAllFor = (token: string, userId: string) => call<unknown>('DELETE', `/person?userId=${encodeURIComponent(userId)}`, { token }).then(() => undefined);
+/** SIDE-08 remove from Pasodrum (Owners/Admins, target below them): every open code revoked, confirm key dropped, account locked. */
+export const removePersonFor = (token: string, userId: string) => call<{ revoked: number; locked: boolean }>('DELETE', `/person?userId=${encodeURIComponent(userId)}`, { token });

@@ -54,3 +54,4 @@ if ((await mx(me, 'GET', aliasPath)).status === 200) {
 }
 await mx(me, 'POST', '/_matrix/client/v3/logout', {});
 console.log(`${name} (@${localpart}:${SERVER}) is the server admin. Sign in with "${localpart}" in the app.`);
+console.log(`Once the invite service logs "system sender @pasodrum:${SERVER} ready", run: pnpm add:system-admin ${localpart}`);

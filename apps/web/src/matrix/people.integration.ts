@@ -35,6 +35,10 @@ const childrenOf = async (token: string, spaceId: string) => {
   const all = (await mx(token, 'GET', `/_matrix/client/v3/rooms/${E(spaceId)}/state`)).body as unknown as { type: string; state_key: string; content: { via?: string[] } }[];
   return all.filter((e) => e.type === 'm.space.child' && e.content.via?.length).map((e) => e.state_key);
 };
+const lockedOut = async (token: string) => {
+  const res = await mx(token, 'GET', '/_matrix/client/v3/account/whoami');
+  return res.status === 401 && res.body.errcode === 'M_USER_LOCKED';
+};
 const hierarchyStatus = async (token: string, spaceId: string) => (await mx(token, 'GET', `/_matrix/client/v1/rooms/${E(spaceId)}/hierarchy`)).status;
 const migrate = () => execFileSync('node', ['dev/migrate-people.ts'], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, MATRIX_BASE: BASE } });
 
@@ -171,18 +175,41 @@ describe('D-36 isolation', () => {
     await mx(owner, 'POST', `/_matrix/client/v3/rooms/${E(w2)}/kick`, { user_id: fresh.userId });
   });
 
-  it('c. removeExternal leaves them in none of our rooms, and they can’t rejoin a restricted client channel', async () => {
+  it('c. removeFromWorkspace leaves an External in none of our rooms, and locks them out', async () => {
     // A page room (D-37) isn't a space child: removal has to reach it too.
     const pageId = await sofia.store.docsBoards.createPage({ spaceId: a.spaceId, title: `PA page ${stamp()}` });
     expect(await join(ext.token, pageId)).toBe(200);
-    await sofia.store.removeExternal(ext.userId);
+    await sofia.store.removeFromWorkspace(ext.userId);
     for (const roomId of [w1, w2, a.spaceId, a.channelId, b.spaceId, b.channelId, pageId, ...(await childrenOf(owner, a.spaceId)), ...(await childrenOf(owner, b.spaceId))]) {
       expect([undefined, 'leave', 'ban']).toContain(await membership(owner, roomId, ext.userId));
     }
     expect(sofia.store.getSnapshot().externals[ext.userId]).toBeUndefined();
     expect(await sofia.store.externalAccess(ext.userId)).toEqual([]);
-    expect(await join(ext.token, a.channelId)).toBe(403);
-    expect(await join(ext.token, w1)).toBe(403);
+    expect(await lockedOut(ext.token)).toBe(true);
+  });
+
+  it('f. SIDE-08 an Owner removes a Staff member: locked, out of the workspace, its channels and client spaces; others untouched', async () => {
+    const jonas = await open('jonas');
+    const ingrid = await open('ingrid');
+    const jonasId = jonas.session.userId;
+    const staff = await register('staff');
+    const added = await sofia.store.addPeople(workspace, { type: 'staff', userIds: [staff.userId], emails: [], spaces: [a.spaceId] });
+    expect(added.failed).toEqual([]);
+    await mx(owner, 'POST', `/_matrix/client/v3/rooms/${E(w1)}/invite`, { user_id: staff.userId });
+    const invited = (await mx(staff.token, 'GET', '/_matrix/client/v3/sync?timeout=0')).body as { rooms?: { invite?: Record<string, unknown> } };
+    const rooms = Object.keys(invited.rooms?.invite ?? {});
+    expect(rooms).toEqual(expect.arrayContaining([workspace, w1, a.spaceId]));
+    for (const roomId of rooms) expect(await join(staff.token, roomId)).toBe(200);
+    const before = { workspace: await membership(owner, workspace, jonasId), w1: await membership(owner, w1, jonasId) };
+    await expect(jonas.store.removeFromWorkspace(staff.userId)).rejects.toThrow('not-allowed');
+    await expect(ingrid.store.removeFromWorkspace(sofia.session.userId)).rejects.toThrow('not-allowed');
+    expect(await membership(owner, workspace, staff.userId)).toBe('join');
+
+    await sofia.store.removeFromWorkspace(staff.userId);
+    expect(await lockedOut(staff.token)).toBe(true);
+    for (const roomId of [workspace, w1, ...rooms]) expect([undefined, 'leave', 'ban']).toContain(await membership(owner, roomId, staff.userId));
+    expect({ workspace: await membership(owner, workspace, jonasId), w1: await membership(owner, w1, jonasId) }).toEqual(before);
+    expect(before.workspace).toBe('join');
   });
 
   it('e. the migration is idempotent: a second run makes 0 writes', () => {

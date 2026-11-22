@@ -122,6 +122,10 @@ export function openStore(path: string) {
     revokeForSpace: db.prepare('UPDATE invites SET revokedTs = ? WHERE spaceId = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
     revokeAllForUser: db.prepare('UPDATE invites SET revokedTs = ? WHERE userId = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
     latestClaimed: db.prepare('SELECT * FROM invites WHERE userId = ? AND claimedTs IS NOT NULL ORDER BY claimedTs DESC'),
+    unclaimedAccount: db.prepare(`SELECT 1 FROM invites i WHERE userId = ?
+      AND NOT EXISTS (SELECT 1 FROM invites c WHERE c.userId = i.userId AND c.claimedTs IS NOT NULL)`),
+    clientAccount: db.prepare(`SELECT 1 FROM invites i WHERE userId = ?
+      AND NOT EXISTS (SELECT 1 FROM invites o WHERE o.userId = i.userId AND o.role != 'client')`),
     confirmKey: db.prepare('SELECT sealed, keyId FROM confirm_keys WHERE userId = ?'),
     putConfirmKey: db.prepare(`INSERT INTO confirm_keys VALUES (?, ?, ?, ?)
       ON CONFLICT(userId) DO UPDATE SET sealed = excluded.sealed, keyId = excluded.keyId, updatedTs = excluded.updatedTs`),
@@ -190,6 +194,14 @@ export function openStore(path: string) {
     /** Every open code for this person, in every space; returns how many. */
     revokeAllForUser(userId: string, ts: number): number {
       return Number(q.revokeAllForUser.run(ts, userId).changes);
+    },
+    /** This service made the account and nobody has claimed it: only its sealed temporary password signs in. */
+    unclaimedAccount(userId: string): boolean {
+      return !!q.unclaimedAccount.get(userId);
+    },
+    /** Every invite this service made for the account was a client invite. */
+    clientAccount(userId: string): boolean {
+      return !!q.clientAccount.get(userId);
     },
     latestClaimed(userId: string): Invite | undefined {
       const r = q.latestClaimed.get(userId);

@@ -195,7 +195,6 @@ Approved 2026-11-21 (CEO). Rules: RulesM8. Shortcuts sheet and desktop bits drop
 | No DMs yet | DmsEmpty | approved 2026-11-21 |
 | States built without boards (M4) | BuiltStatesM4 | approved 2026-11-21 |
 
-
 ## People and access (D-36)
 
 Approved 2026-11-21 (CEO). Rules: PeopleRules.
@@ -207,7 +206,7 @@ Approved 2026-11-21 (CEO). Rules: PeopleRules.
 | Add people to a channel; Staff colleagues only, with the error | PeopleAddChannel, PeopleAddStaffOnly | approved 2026-11-21 |
 | Client space settings → People with an invite field (replaces SpacePeople's Add people row) | PeopleSpaceInvite, PeopleSpaceInviteJP, PeopleSpaceInviteDark | approved 2026-11-21 |
 | Workspace settings → People (new) | PeopleWorkspace, PeopleWorkspaceJP, PeopleWorkspaceDark | approved 2026-11-21 |
-| Remove an External from Pasodrum | PeopleRemoveExternal, PeopleRemoveExternalJP | approved 2026-11-21 |
+| Remove an External from Pasodrum | RemoveExternalSignOut, RemoveExternalSignOutJPDark (replaced PeopleRemoveExternal/JP, SIDE-08) | approved 2026-11-22 |
 | Workspace settings → Access: roles, new role, not applied | PeopleAccess, PeopleAccessNew, PeopleAccessNotApplied, PeopleAccessJP, PeopleAccessDark | approved 2026-11-21 |
 | What an External sees (Pasodrum, a client space) | PeopleExternalView, PeopleExternalNordlys, PeopleExternalJP, PeopleExternalDark | approved 2026-11-21 |
 | What a client sees of an External (part of the team) | PeopleClientSeesTeam, PeopleClientSeesTeamJP | approved 2026-11-21 |
@@ -322,3 +321,14 @@ Approved 2026-11-22 (CEO). Boards on the **Docs** and **Boards** pages. DocsNone
 | Screen / state | Artboard | Status |
 |---|---|---|
 | Docs "No pages yet" and Boards "No projects yet": one standard 36px button, tile → title → button 20 apart | DocsNone(+JP, Dark, JPDark), BoardsNoProjects(+JP, Dark, JPDark) | approved 2026-11-22 |
+
+## Remove from workspace (SIDE-08)
+
+Approved 2026-11-22 (CEO, lock as the default). Boards on the canvas page **People & access**, section "Remove from Pasodrum (SIDE-08, approved 2026-11-22)"; rules in the orange note beside RemoveStaffJPDark.
+
+| Screen / state | Artboard | Status |
+|---|---|---|
+| Workspace People: ⋯ on a Staff/Admin row has Remove from Pasodrum (Owner, Admin; target below me) | RemoveStaffMenu, RemoveStaffMenuJPDark | approved 2026-11-22 |
+| Remove a Staff member: card + "Signs them out everywhere. Their messages stay." | RemoveStaff, RemoveStaffJP, RemoveStaffDark, RemoveStaffJPDark | approved 2026-11-22 |
+| Remove an External: same sign-out line under what they lose | RemoveExternalSignOut, RemoveExternalSignOutJPDark | approved 2026-11-22 |
+

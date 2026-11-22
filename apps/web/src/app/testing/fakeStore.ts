@@ -1353,14 +1353,23 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       recordOf(userId);
       return followAll([userId]);
     },
-    async removeExternal(userId) {
+    async removeFromWorkspace(userId) {
       mayManage();
-      const r = recordOf(userId);
-      r.roles = [];
-      r.channels = [];
-      follow(userId);
-      delete externalRecords[userId];
-      if (r.email) for (const k of Object.keys(pendingBy)) pendingBy[k] = pendingBy[k]!.filter((p) => p.email !== r.email);
+      const rank = (id: string) => ['staff', 'admin', 'owner'].indexOf(role(id));
+      const member = staffIds.includes(userId);
+      const r = externalRecords[userId];
+      if (userId === snapshot.me.id || !(member || r) || rank(userId) >= rank(snapshot.me.id)) throw new Error('not-allowed');
+      if (r) {
+        r.roles = [];
+        r.channels = [];
+        follow(userId);
+        delete externalRecords[userId];
+        if (r.email) for (const k of Object.keys(pendingBy)) pendingBy[k] = pendingBy[k]!.filter((p) => p.email !== r.email);
+      }
+      if (member) staffIds.splice(staffIds.indexOf(userId), 1);
+      for (const roster of Object.values(spaceRoster)) roster.team = roster.team.filter((id) => id !== userId);
+      for (const id of Object.keys(memberIds)) memberIds[id] = memberIds[id]!.filter((x) => x !== userId);
+      waiting.delete(userId);
       publishAccess();
     },
   };

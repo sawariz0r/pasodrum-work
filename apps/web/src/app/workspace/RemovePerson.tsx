@@ -1,4 +1,4 @@
-// Remove an External from the workspace (PeopleRemoveExternal): lists every channel and client space they lose.
+// Remove a person from the workspace (RemoveExternalSignOut, RemoveStaff): an External's card lists every channel and client space they lose.
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore, useWorkspace, type ExternalAccess, type Member, type Space } from '../../matrix';
@@ -11,11 +11,12 @@ import s from './Workspace.module.css';
 
 type Props = { open: boolean; workspace: Space; member: Member; access?: ExternalAccess; onCancel: () => void; onRemoved: () => void };
 
-export function RemoveExternalDialog({ open, workspace, member, access, onCancel, onRemoved }: Props) {
+export function RemovePersonDialog({ open, workspace, member, access, onCancel, onRemoved }: Props) {
   const { t } = useTranslation();
   const store = useStore();
   const { person } = member;
   const name = member.pending && member.email ? member.email : person.name;
+  const external = member.role === 'external';
   const spaces = useWorkspace((x) => x.spaces);
   const joined = useWorkspace((x) => x.channels[workspace.id]);
   const [email, setEmail] = useState(member.pending ? undefined : access?.email);
@@ -32,14 +33,16 @@ export function RemoveExternalDialog({ open, workspace, member, access, onCancel
       );
     }
     // Channels I'm not in still have a name in Browse; private ones I'm not in stay unnamed and are left out.
-    store.browseChannels(workspace.id).then(
-      (list) => live && setNamed(list),
-      () => {},
-    );
+    if (external) {
+      store.browseChannels(workspace.id).then(
+        (list) => live && setNamed(list),
+        () => {},
+      );
+    }
     return () => {
       live = false;
     };
-  }, [store, person.id, member.pending, workspace.id]);
+  }, [store, person.id, member.pending, workspace.id, external]);
 
   const channelOf = (id: string) => joined?.find((c) => c.id === id) ?? named.find((c) => c.id === id);
   const channels = (access?.rooms.channels ?? []).flatMap((id) => channelOf(id) ?? []).sort((a, b) => a.name.localeCompare(b.name));
@@ -48,7 +51,7 @@ export function RemoveExternalDialog({ open, workspace, member, access, onCancel
   const remove = () => {
     setBusy(true);
     setFailed(false);
-    store.removeExternal(person.id).then(onRemoved, () => {
+    store.removeFromWorkspace(person.id).then(onRemoved, () => {
       setBusy(false);
       setFailed(true);
     });
@@ -83,12 +86,12 @@ export function RemoveExternalDialog({ open, workspace, member, access, onCancel
           {member.pending ? (
             <span className={s.pendingFace}>
               <PendingIcon size={15} strokeWidth={2} />
-              <ExternalCorner className={`${s.corner} ${s.cardCorner}`} />
+              {external && <ExternalCorner className={`${s.corner} ${s.cardCorner}`} />}
             </span>
           ) : (
             <span className={s.faceBox}>
               <Face person={person} size={36} />
-              <ExternalCorner className={`${s.corner} ${s.cardCorner}`} />
+              {external && <ExternalCorner className={`${s.corner} ${s.cardCorner}`} />}
             </span>
           )}
           <span className={s.cardText}>
@@ -118,6 +121,7 @@ export function RemoveExternalDialog({ open, workspace, member, access, onCancel
           </div>
         )}
       </div>
+      <p className={s.signsOut}>{t('workspaceSettings.removeSignsOut')}</p>
     </Dialog>
   );
 }

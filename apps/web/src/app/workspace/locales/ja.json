@@ -23,6 +23,7 @@
     "removeFrom": "{{workspace}} から外す",
     "removeTitle": "{{name}} を {{workspace}} から外しますか？",
     "removeButton": "外す",
+    "removeSignsOut": "すべての端末からサインアウトされます。メッセージは残ります。",
     "loses": "外れる場所",
     "newRole": "新しいロール",
     "roleList": "ロール",

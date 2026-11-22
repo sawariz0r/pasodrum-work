@@ -35,9 +35,11 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const MAX_BODY = 16 * 1024;
 const TRANSLATE_PER_USER_DAY = 150;
+const EXTERNAL = 'work.pasodrum.external';
 
 export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPassword, now = Date.now }: Deps) {
-  const confirm = confirmRoutes({ cfg, store, mx, sendMail, key: confirmKey, system: systemAccount(mx, store, cfg.serverName, systemPassword, cfg.registrationToken), now });
+  const system = systemAccount(mx, store, cfg.serverName, systemPassword, cfg.registrationToken);
+  const confirm = confirmRoutes({ cfg, store, mx, sendMail, key: confirmKey, system, now });
   const allow = rateLimiter();
   const presence = createPresence({ mx, now });
   const claiming = new Set<string>();
@@ -301,15 +303,40 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
     return new Reply(200, { revoked: store.revokeForUser(userId, spaceId, now()) });
   }
 
-  // D-36 remove a person: their open codes in every space stop working. Owners and Admins of the workspace only.
-  async function revokeAll(req: IncomingMessage, userId: string | null) {
+  /**
+   * SIDE-08 remove from Pasodrum: an Owner or Admin of the workspace removes Staff or an External ranked below them. The
+   * account is locked (signed out everywhere, sign-in refused), then their codes and held key go. The app takes them
+   * out of the rooms.
+   */
+  async function removePerson(req: IncomingMessage, userId: string | null) {
     const c = await caller(req);
     if (!userId?.startsWith('@')) throw fail(400, 'bad-request');
     const workspaceId = await mx.resolveAlias(c.token, cfg.workspaceAlias);
-    const state = workspaceId && (await mx.roomState(c.token, workspaceId));
+    const state = workspaceId ? await mx.roomState(c.token, workspaceId) : null;
     const workspace = state && spaceInfo(state);
-    if (!workspace || !workspace.joined.has(c.userId) || workspace.powerOf(c.userId) < ADMIN_LEVEL) throw fail(403, 'not-allowed');
-    return new Reply(200, { revoked: store.revokeAllForUser(userId, now()) });
+    if (!state || !workspace?.joined.has(c.userId)) throw fail(403, 'not-allowed');
+    const level = workspace.powerOf(c.userId);
+    const member = state.some((e) => e.type === 'm.room.member' && e.state_key === userId && ['join', 'invite'].includes(e.content?.membership as string));
+    // D-36 record: state key is the ID without "@"; empty content means removed.
+    const external = state.some((e) => e.type === EXTERNAL && e.state_key === userId.slice(1) && Object.keys(e.content ?? {}).length > 0);
+    if (level < ADMIN_LEVEL || userId === c.userId || userId === system.id || workspace.powerOf(userId) >= level || !(member || external) || store.clientAccount(userId)) {
+      throw fail(403, 'not-allowed');
+    }
+    // The workspace record and membership above are writable by any Admin; the service's own invites say who is a client.
+    // An account nobody claimed signs in only with the sealed temporary password; locking it would break a later re-invite.
+    let locked = false;
+    if (!store.unclaimedAccount(userId)) {
+      if (!system.configured) throw fail(503, 'not-configured');
+      try {
+        locked = await system.lock(userId);
+      } catch (e) {
+        if (e instanceof MatrixError && e.status === 403) throw fail(503, 'not-configured');
+        throw e;
+      }
+    }
+    const revoked = store.revokeAllForUser(userId, now());
+    store.dropConfirmKey(userId);
+    return new Reply(200, { revoked, locked });
   }
 
   // DES-05 delete a client space: every open code for it stops working. Owners of the workspace who are Owners there.
@@ -400,7 +427,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
       if (m === 'GET' && is('list')) return list(req, url.searchParams.get('roomId'));
       if (m === 'DELETE' && is('revoke-person')) return revokePerson(req, url.searchParams.get('spaceId'), url.searchParams.get('userId'));
     } else if (!action) {
-      if (code === 'person' && m === 'DELETE' && is('revoke-all')) return revokeAll(req, url.searchParams.get('userId'));
+      if (code === 'person' && m === 'DELETE' && is('remove-person')) return removePerson(req, url.searchParams.get('userId'));
       if (code === 'space' && m === 'DELETE' && is('revoke-space')) return revokeSpace(req, url.searchParams.get('spaceId'));
       if (m === 'GET' && is('preview')) {
         limit(`preview:${ip}`, 60, MINUTE);

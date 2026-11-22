@@ -627,8 +627,16 @@ export interface WorkspaceStore {
   setExternalRoles(userId: string, roles: string[]): Promise<AccessChange>;
   /** "Apply": make this External's membership match their access again. */
   applyAccess(userId: string): Promise<AccessChange>;
-  /** Out of every client space (space first, then its channels) and workspace channel I can reach, levels cleared, join codes revoked, record deleted. Rejects Error('partial') when some room couldn't be left. */
-  removeExternal(userId: string): Promise<void>;
+  /**
+   * SIDE-08 (D-46) Remove from Pasodrum, for a Staff/Admin member (pending too) or an External. Allowed when I'm Owner/Admin
+   * and their workspace level is below mine (never myself, never an Owner, never a client). First the invite service locks
+   * the account (signed out everywhere, sign-in refused; skipped for a never-claimed account), revokes every join code and
+   * drops any held confirm key; then out of the workspace space, every workspace channel and client space I can reach (space
+   * first, then its channels), page rooms, levels cleared, External record deleted. Rejects Error('not-allowed') before
+   * anything changes, Error('other') when the service fails (nothing changed), Error('partial') when some reachable room
+   * couldn't be left (the lock already holds).
+   */
+  removeFromWorkspace(userId: string): Promise<void>;
   // D-38 confirm by email (confirmByEmail accounts: resetEncryption() hands the new key to the service itself, the app shows no
   // save step; needsRecoveryKey stays true while the silent key is being made: show the skeleton, never RecoveryKeySave)
   /** Emails the link and waits; progress in security.emailConfirm. Rejects Error(EmailConfirm['error']). */
