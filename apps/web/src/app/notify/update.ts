@@ -4,6 +4,7 @@ import { platform } from '../../platform';
 // Desktop: an update is downloaded. × hides the card until the next launch (kept in memory only).
 let ready = false;
 let dismissed = false;
+let restarting = false;
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -14,6 +15,15 @@ platform.onUpdateReady(() => {
   ready = true;
   emit();
 });
+
+export async function restartUpdate() {
+  if (restarting) return;
+  restarting = true;
+  emit();
+  await platform.restartToUpdate().catch(() => {});
+  restarting = false;
+  emit();
+}
 
 export function dismissUpdate() {
   dismissed = true;
@@ -29,4 +39,8 @@ function subscribe(cb: () => void) {
 
 export function useUpdateCard(): boolean {
   return useSyncExternalStore(subscribe, () => ready && !dismissed);
+}
+
+export function useRestarting(): boolean {
+  return useSyncExternalStore(subscribe, () => restarting);
 }

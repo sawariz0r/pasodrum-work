@@ -10,19 +10,30 @@ let win = null;
 let quitting = false;
 let updater = null;
 let updateReady = false;
+let squirrelReady = false;
+let restarting = null;
+let failRestart = null;
 const notes = new Map();
 
 const EN = {
   about: 'About Pasodrum work', restart: 'Restart to Update', check: 'Check for Updates…', settings: 'Settings…',
   hide: 'Hide Pasodrum work', quit: 'Quit Pasodrum work', file: 'File', edit: 'Edit', view: 'View', window: 'Window',
-  help: 'Help', upToDate: 'You’re up to date',
+  help: 'Help', upToDate: 'You’re up to date', updateFailed: 'Couldn’t install the update', download: 'Download', later: 'Later',
 };
 const JA = {
   about: 'Pasodrum work について', restart: '再起動して更新', check: '更新を確認…', settings: '設定…',
   hide: 'Pasodrum work を非表示', quit: 'Pasodrum work を終了', file: 'ファイル', edit: '編集', view: '表示', window: 'ウインドウ',
-  help: 'ヘルプ', upToDate: '最新の状態です',
+  help: 'ヘルプ', upToDate: '最新の状態です', updateFailed: '更新をインストールできませんでした', download: 'ダウンロード', later: 'あとで',
 };
 let L = EN;
+
+function log(level, ...parts) {
+  const text = parts.map((p) => (p instanceof Error ? p.stack : typeof p === 'string' ? p : JSON.stringify(p))).join(' ');
+  try {
+    fs.mkdirSync(app.getPath('logs'), { recursive: true });
+    fs.appendFileSync(path.join(app.getPath('logs'), 'updater.log'), `${new Date().toISOString()} ${level} ${text}\n`);
+  } catch {}
+}
 
 function openExternal(url) {
   if (/^https?:\/\//i.test(url)) shell.openExternal(url);
@@ -40,9 +51,28 @@ function openRoute(route) {
   win.webContents.send('open-route', route);
 }
 
-function restart() {
+function install() {
   quitting = true;
   updater.quitAndInstall();
+}
+
+// Resolves only if the restart failed (on success the app quits). electron-updater reports a download before
+// Squirrel has the update, and Squirrel can fail to prepare it; then ask Squirrel again instead of waiting forever.
+function restart() {
+  if (restarting) return restarting;
+  log('info', `restart requested (squirrel ready: ${squirrelReady})`);
+  restarting = new Promise((resolve) => { failRestart = resolve; });
+  if (squirrelReady) install();
+  else require('electron').autoUpdater.checkForUpdates();
+  return restarting;
+}
+
+function restartFailed() {
+  const done = failRestart;
+  restarting = failRestart = null;
+  done();
+  dialog.showMessageBox({ type: 'warning', message: L.updateFailed, buttons: [L.download, L.later], defaultId: 0, cancelId: 1 })
+    .then(({ response }) => { if (response === 0) openExternal(new URL('/download/mac', BASE).href); });
 }
 
 async function checkNow() {
@@ -56,7 +86,7 @@ function buildMenu() {
       label: app.name,
       submenu: [
         { role: 'about', label: L.about },
-        updateReady ? { label: L.restart, click: restart } : { label: L.check, click: checkNow },
+        updateReady ? { label: L.restart, click: () => void restart() } : { label: L.check, click: checkNow },
         { type: 'separator' },
         { label: L.settings, accelerator: 'Cmd+,', click: () => openRoute('/settings') },
         { type: 'separator' },
@@ -74,13 +104,24 @@ function buildMenu() {
 
 function startUpdater() {
   updater = require('electron-updater').autoUpdater;
+  updater.logger = { info: (m) => log('info', m), warn: (m) => log('warn', m), error: (m) => log('error', m), debug: () => {} };
   if (process.env.PASODRUM_FEED) updater.setFeedURL({ provider: 'generic', url: process.env.PASODRUM_FEED });
   updater.on('update-downloaded', () => {
     updateReady = true;
     buildMenu();
     win?.webContents.send('update-ready');
   });
-  updater.on('error', () => { quitting = false; });
+  // Registered after electron-updater's own listener (its constructor ran on the line above).
+  require('electron').autoUpdater.on('update-downloaded', () => {
+    squirrelReady = true;
+    if (restarting) install();
+  });
+  updater.on('error', () => {
+    quitting = false;
+    if (!restarting) return;
+    squirrelReady = false;
+    restartFailed();
+  });
   const check = () => updater.checkForUpdates().catch(() => {});
   check();
   setInterval(check, 4 * 60 * 60 * 1000);
@@ -154,7 +195,7 @@ ipcMain.on('notify', (_e, { title, body, route, tag }) => {
 });
 ipcMain.on('badge', (_e, n) => app.dock.setBadge(n > 99 ? '99+' : n > 0 ? String(n) : ''));
 ipcMain.on('external', (_e, url) => openExternal(String(url)));
-ipcMain.on('restart', () => { if (updateReady) restart(); });
+ipcMain.handle('restart', () => (updateReady ? restart() : undefined));
 
 if (!app.requestSingleInstanceLock()) app.exit(0);
 app.on('second-instance', () => win && show());

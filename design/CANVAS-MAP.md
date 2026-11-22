@@ -659,7 +659,7 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [BoardsNoProjectsDark](canvas/BoardsNoProjectsDark.dc.html) — Boards — no projects, dark `#artboard-BoardsNoProjectsDark`
 - [BoardsNoProjectsJPDark](canvas/BoardsNoProjectsJPDark.dc.html) — Boards — no projects, Japanese, dark `#artboard-BoardsNoProjectsJPDark`
 
-## Desktop app · `desktop` · 6 artboards
+## Desktop app · `desktop` · 7 artboards
 
 **Desktop app (DES-03, approved 2026-11-22)**
 
@@ -669,6 +669,7 @@ Read this map first, then only the `.dc.html` files your task names (most are a 
 - [DesktopUpdate](canvas/DesktopUpdate.dc.html) — Desktop app — update ready `#artboard-DesktopUpdate`
 - [DesktopBadge](canvas/DesktopBadge.dc.html) — Desktop app — Dock, taskbar, tray `#artboard-DesktopBadge`
 - [DesktopOffline](canvas/DesktopOffline.dc.html) — Desktop app — can’t reach `#artboard-DesktopOffline`
+- [DesktopRestart](canvas/DesktopRestart.dc.html) — Desktop app — restart: working and failed `#artboard-DesktopRestart`
 
 ## Discovery · `discovery` · 7 artboards
 

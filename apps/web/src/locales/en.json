@@ -669,6 +669,7 @@
     "forward": "Forward",
     "updateReady": "Update ready",
     "restart": "Restart",
+    "restarting": "Restarting…",
     "later": "Later"
   },
   "notify": {

@@ -4,18 +4,29 @@ import { useWorkspace } from '../../matrix';
 import { platform } from '../../platform';
 import { closeNotifyAsk, useNotifyAsk } from '../prefs';
 import { BellIcon, SmallCloseIcon } from '../shell/icons';
-import { dismissUpdate, useUpdateCard } from './update';
+import { dismissUpdate, restartUpdate, useRestarting, useUpdateCard } from './update';
 import s from './SideCard.module.css';
 
 /** The sidebar's bottom card, one at a time: Update ready (desktop), else the NotifyAsk card after the first send. */
 export function SideCard() {
   const { t } = useTranslation();
   const update = useUpdateCard();
+  const restarting = useRestarting();
   const ask = useNotifyAsk();
   const client = useWorkspace((x) => !Object.values(x.myRoles).some((r) => r !== 'client'));
 
   if (update)
-    return <Card icon={<UpdateIcon />} title={t('desktop.updateReady')} close={t('desktop.later')} onClose={dismissUpdate} action={t('desktop.restart')} onAction={() => platform.restartToUpdate()} />;
+    return (
+      <Card
+        icon={<UpdateIcon />}
+        title={t('desktop.updateReady')}
+        close={t('desktop.later')}
+        onClose={dismissUpdate}
+        action={restarting ? t('desktop.restarting') : t('desktop.restart')}
+        busy={restarting}
+        onAction={() => void restartUpdate()}
+      />
+    );
   if (ask && !client && platform.notifyPermission() === 'default')
     return (
       <Card
@@ -33,7 +44,7 @@ export function SideCard() {
   return null;
 }
 
-function Card({ icon, title, close, onClose, action, onAction }: { icon: ReactNode; title: string; close: string; onClose: () => void; action: string; onAction: () => void }) {
+function Card({ icon, title, close, onClose, action, busy = false, onAction }: { icon: ReactNode; title: string; close: string; onClose: () => void; action: string; busy?: boolean; onAction: () => void }) {
   return (
     <div role="region" aria-label={title} className={s.card}>
       <div className={s.head}>
@@ -43,7 +54,14 @@ function Card({ icon, title, close, onClose, action, onAction }: { icon: ReactNo
           <SmallCloseIcon size={14} strokeWidth={2.2} />
         </button>
       </div>
-      <button type="button" className={s.action} onClick={onAction}>
+      <button type="button" className={s.action} aria-disabled={busy || undefined} aria-busy={busy || undefined} onClick={busy ? undefined : onAction}>
+        {busy && (
+          <span className={s.dots} aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+        )}
         {action}
       </button>
     </div>

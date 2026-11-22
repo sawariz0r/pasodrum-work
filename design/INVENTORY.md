@@ -301,6 +301,7 @@ Approved 2026-11-22 (CEO). Boards on the canvas page **Desktop app**. Shell-neut
 | Download for Mac / Windows: profile menu row (browser only); InviteLanding header + join done buttons back on, label per OS | DesktopDownload | approved 2026-11-22 |
 | App window + our own title bar (rail colour, ← →, search field (no shortcut hint); Mac lights inset, Windows controls drawn); empty before sign-in | DesktopWindow | approved 2026-11-22 |
 | Update ready: sidebar card → Restart; Mac app menu (Restart to Update / Check for Updates…) | DesktopUpdate | approved 2026-11-22 |
+| DES-07: Restart pressed → button keeps its colour, dots + Restarting… until the app quits; install failed → macOS alert “Couldn’t install the update” (Later / Download) | DesktopRestart | approved 2026-11-22 |
 | Dock badge, Windows taskbar overlay + tray menu (Open / Quit) | DesktopBadge | approved 2026-11-22 |
 | Can't reach Pasodrum work (window can't load the app) | DesktopOffline | approved 2026-11-22 |
 

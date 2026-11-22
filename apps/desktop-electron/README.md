@@ -29,4 +29,4 @@ Every release:
 4. `PASODRUM_DOWNLOADS=<you>@<server>:/data/pasodrum-downloads/mac/ npm --prefix apps/desktop-electron run publish:feed` (one password prompt; `latest-mac.yml` goes last, so apps only see a complete release).
 5. First release only: set `MAC_DOWNLOAD = true` in `apps/web/src/platform/web.ts` and push, so browsers on Mac offer "Download for Mac".
 
-Installed apps check the feed at start and every 4 hours, download in the background and install on quit.
+Installed apps check the feed at start and every 4 hours, download in the background and install on quit. Update errors go to `~/Library/Logs/Pasodrum work/updater.log`. Install by dragging from the dmg, never with `sudo` (a root-owned app needs an admin password for every update; fix in DECISIONS, "Squirrel can fail after downloaded").

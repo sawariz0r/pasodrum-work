@@ -16,7 +16,8 @@ export interface Platform {
   downloadUrl(): string | null;
   /** Desktop: an update is downloaded and installs on restart. One subscriber; also fires for an update that was already ready. */
   onUpdateReady(cb: () => void): void;
-  restartToUpdate(): void;
+  /** Resolves only if the restart failed (the desktop app shows why); on success the app quits. */
+  restartToUpdate(): Promise<void>;
   openExternal(url: string): void;
   persistStorage(): Promise<boolean>;
   /** SIDE-09: the browser's password manager takes a secret from the page (Chrome, Edge); false in Safari, Firefox and the desktop app. */

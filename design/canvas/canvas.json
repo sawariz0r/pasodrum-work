@@ -4883,6 +4883,15 @@
    "expand": "fill",
    "is_interactive": true,
    "page": "boards"
+  },
+  "DesktopRestart.dc.html": {
+   "x": 0,
+   "y": 5530,
+   "w": 1440,
+   "h": 1080,
+   "title": "Desktop app — restart: working and failed",
+   "page": "desktop",
+   "is_interactive": false
   }
  },
  "order": [
@@ -5383,7 +5392,8 @@
   "DocsNoneDark.dc.html",
   "DocsNoneJPDark.dc.html",
   "BoardsNoProjectsDark.dc.html",
-  "BoardsNoProjectsJPDark.dc.html"
+  "BoardsNoProjectsJPDark.dc.html",
+  "DesktopRestart.dc.html"
  ],
  "notes": {
   "overview-Foundations--workspace": {

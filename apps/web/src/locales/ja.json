@@ -660,6 +660,7 @@
     "forward": "進む",
     "updateReady": "更新の準備完了",
     "restart": "再起動",
+    "restarting": "再起動中…",
     "later": "あとで"
   },
   "notify": {

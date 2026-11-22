@@ -51,7 +51,7 @@ export function createWebPlatform(): Platform {
 
     onUpdateReady() {},
 
-    restartToUpdate() {},
+    async restartToUpdate() {},
 
     openExternal(url) {
       window.open(url, '_blank', 'noopener,noreferrer');

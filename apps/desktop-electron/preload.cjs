@@ -18,5 +18,5 @@ contextBridge.exposeInMainWorld('pasodrumShell', {
     if (pendingRoute != null) { cb(pendingRoute); pendingRoute = null; }
   },
   onUpdateReady: (cb) => { onUpdate = cb; if (updateReady) cb(); },
-  restartToUpdate: () => ipcRenderer.send('restart'),
+  restartToUpdate: () => ipcRenderer.invoke('restart'),
 });
