@@ -86,7 +86,7 @@ function startUpdater() {
   setInterval(check, 4 * 60 * 60 * 1000);
 }
 
-function savedBounds() {
+function saved() {
   try {
     const b = JSON.parse(fs.readFileSync(BOUNDS, 'utf8'));
     const a = screen.getDisplayMatching(b).workArea;
@@ -95,39 +95,52 @@ function savedBounds() {
   return { width: 1280, height: 800 };
 }
 
-function createWindow() {
-  win = new BrowserWindow({
-    ...savedBounds(),
+function save(w, inset) {
+  fs.writeFileSync(BOUNDS, JSON.stringify({ ...w.getNormalBounds(), inset }));
+}
+
+// Our 40 px title bar exists only in pages that draw it (`<html data-desktop>`). Any other page (an older web
+// version, a non-app page) gets the native title bar, so the window buttons never sit on its content.
+function createWindow(url = BASE, { inset, ...bounds } = saved()) {
+  const w = new BrowserWindow({
+    ...bounds,
     minWidth: 800,
     minHeight: 600,
     title: 'Pasodrum work',
-    titleBarStyle: 'hiddenInset',
-    trafficLightPosition: { x: 16, y: 13 },
+    ...(inset ? { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 16, y: 13 } } : {}),
     backgroundColor: '#18171D',
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), sandbox: true, backgroundThrottling: false },
   });
-  const web = win.webContents;
-  web.setWindowOpenHandler(({ url }) => {
-    if (new URL(url).origin === ORIGIN) win.loadURL(url);
-    else openExternal(url);
+  win = w;
+  const web = w.webContents;
+  web.setWindowOpenHandler(({ url: to }) => {
+    if (new URL(to).origin === ORIGIN) w.loadURL(to);
+    else openExternal(to);
     return { action: 'deny' };
   });
-  web.on('will-navigate', (e, url) => {
-    if (new URL(url).origin !== ORIGIN) { e.preventDefault(); openExternal(url); }
+  web.on('will-navigate', (e, to) => {
+    if (new URL(to).origin !== ORIGIN) { e.preventDefault(); openExternal(to); }
   });
-  web.on('did-fail-load', (_e, code, _desc, url, isMainFrame) => {
-    if (isMainFrame && code !== -3) win.loadFile(path.join(__dirname, 'offline.html'), { query: { to: url } });
+  web.on('did-fail-load', (_e, code, _desc, failed, isMainFrame) => {
+    if (isMainFrame && code !== -3) w.loadFile(path.join(__dirname, 'offline.html'), { query: { to: failed } });
   });
-  web.on('did-finish-load', () => { if (updateReady) web.send('update-ready'); });
-  win.on('close', (e) => {
-    fs.writeFileSync(BOUNDS, JSON.stringify(win.getNormalBounds()));
+  web.on('did-finish-load', async () => {
+    const draws = await web.executeJavaScript("document.documentElement.hasAttribute('data-desktop')").catch(() => false);
+    if (draws !== !!inset) {
+      save(w, draws);
+      createWindow(web.getURL(), { ...w.getNormalBounds(), inset: draws });
+      w.destroy();
+    } else if (updateReady) web.send('update-ready');
+  });
+  w.on('close', (e) => {
+    save(w, !!inset);
     if (quitting) return;
     e.preventDefault();
-    if (win.isFullScreen()) { win.once('leave-full-screen', () => win.hide()); win.setFullScreen(false); }
-    else win.hide();
+    if (w.isFullScreen()) { w.once('leave-full-screen', () => w.hide()); w.setFullScreen(false); }
+    else w.hide();
   });
-  win.on('closed', () => { win = null; });
-  win.loadURL(BASE);
+  w.on('closed', () => { if (win === w) win = null; });
+  w.loadURL(url);
 }
 
 ipcMain.on('notify', (_e, { title, body, route, tag }) => {

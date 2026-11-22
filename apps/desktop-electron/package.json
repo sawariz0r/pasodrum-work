@@ -1,7 +1,7 @@
 {
   "name": "pasodrum-desktop-electron",
   "productName": "Pasodrum work",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "Pasodrum work for Mac",
   "main": "main.cjs",
