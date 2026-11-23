@@ -1,15 +1,14 @@
 ---
 id: AST-06
 title: Assistant service — the provider, the ask loop, answer checks and limits
-stage: todo
+stage: implementing
 area: api
 milestone: side
 priority: P1
 slice: false
 depends_on: [AST-05, AST-01]
 created: 2026-11-23
-owner:
----
+owner: SIDE-14 build session---
 
 ## Goal
 An ask over the WebSocket runs the model loop against chat sources, returns a checked answer and is counted against the two limits. Slice 1 of SIDE-14; security-sensitive.

@@ -4,13 +4,16 @@ import { DatabaseSync } from 'node:sqlite';
 import type { IncomingMessage } from 'node:http';
 import type { Duplex } from 'node:stream';
 import { WebSocketServer, type RawData, type WebSocket } from 'ws';
-import { gate, type Refusal } from './gate.ts';
+import { parseHello, startAsk, type Model, type Running } from './ask.ts';
+import { gate, type Admitted, type Refusal } from './gate.ts';
 import { masker } from './mask.ts';
-import { openReader, type HomeserverGet, type Kind } from './reader.ts';
-import { CLOSE, LIMITS, WIRE_VERSION, type ServerMessage, type Status } from './wire.ts';
+import { createStep, type Step } from './provider.ts';
+import { openReader, type HomeserverGet, type Kind, type Reader } from './reader.ts';
+import { openUsage, validTz, type Price } from './usage.ts';
+import { CLOSE, LIMITS, WIRE_VERSION, type Depth, type ServerMessage } from './wire.ts';
 
 export type { HomeserverGet } from './reader.ts';
-export type Price = { in: number; cached: number; write: number; out: number };
+export type { Price } from './usage.ts';
 export type AssistantConfig = {
   apiKey: string;
   quick: string;
@@ -29,11 +32,14 @@ export type AssistantDeps = {
   isClientOf: (userId: string, spaceId: string) => boolean;
   /** The service's per-IP limit; upgrades to this path count against it. */
   allowIp: (req: IncomingMessage) => boolean;
+  /** The provider adapter; tests pass a fake that records every request. */
+  step?: Step;
   now?: () => number;
 };
 export type Answer = { status: number; body?: unknown };
 
-const ASK_MS = 5 * 60_000;
+const OPEN_PER_PERSON = 2;
+const STARTS_PER_MINUTE = 6;
 const HTTP_STATUS: Record<Refusal, number> = { unauthorized: 401, 'not-allowed': 403, unavailable: 503 };
 
 const sizeOf = (raw: RawData) => (Array.isArray(raw) ? raw.reduce((n, b) => n + b.length, 0) : raw.byteLength);
@@ -48,12 +54,44 @@ function parse(raw: RawData, binary: boolean): Record<string, unknown> | null {
   }
 }
 
-export function createAssistant({ get, config, isClientAccount, isClientOf, allowIp, now = Date.now }: AssistantDeps) {
-  // Tables arrive with usage (AST-06); the file is the module's own, never the service's main database.
+/** "gpt-6.2-sol:low" with its price; null when the model has no price, which keeps the module off (§6.2). */
+function modelOf(setting: string, prices: Record<string, Price>): Model | null {
+  const [model = '', effort = 'medium'] = setting.split(':');
+  const price = Object.hasOwn(prices, model) ? prices[model] : undefined;
+  const ok = price && [price.in, price.cached, price.write, price.out].every((n) => typeof n === 'number' && Number.isFinite(n) && n >= 0);
+  return model && ok ? { model, effort, price } : null;
+}
+
+export function createAssistant({ get, config: given, isClientAccount, isClientOf, allowIp, step: injected, now = Date.now }: AssistantDeps) {
+  const models = given && { quick: modelOf(given.quick, given.prices), thorough: modelOf(given.thorough, given.prices) };
+  const config = models?.quick && models.thorough ? given : null;
+  const modelFor = (depth: Depth) => models![depth]!;
+  // The module's own file, never the service's main database.
   const db = config ? new DatabaseSync(config.dbPath) : null;
+  const book = db && config ? openUsage(db, config, now) : null;
+  const step = injected ?? (config ? createStep(config.apiKey) : null);
   const kinds = new Map<string, Kind>();
   const mask = config ? masker(config.serverName) : null;
   const wss = new WebSocketServer({ noServer: true, maxPayload: LIMITS.messageBytes });
+  const people = new Map<string, { open: number; starts: number[] }>();
+  const running = new Set<Running>();
+
+  /** 2 asks open at once and 6 started a minute, per person. */
+  function admit(userId: string): (() => void) | null {
+    const p = people.get(userId) ?? { open: 0, starts: [] };
+    p.starts = p.starts.filter((t) => now() - t < 60_000);
+    if (p.open >= OPEN_PER_PERSON || p.starts.length >= STARTS_PER_MINUTE) return null;
+    p.open++;
+    p.starts.push(now());
+    people.set(userId, p);
+    let done = false;
+    return () => {
+      if (done) return;
+      done = true;
+      p.open--;
+      if (!p.open && !p.starts.length) people.delete(userId);
+    };
+  }
 
   function readerFor(token: string, signal?: AbortSignal) {
     return openReader({ get, workspaceAlias: config!.workspaceAlias, serverName: config!.serverName, mask: mask!, isClientAccount, isClientOf, kinds, signal }, token);
@@ -65,8 +103,10 @@ export function createAssistant({ get, config, isClientAccount, isClientOf, allo
     if (!token) return { status: 401, body: { error: 'unauthorized' } };
     const g = await gate(readerFor(token), isClientAccount);
     if (typeof g === 'string') return { status: HTTP_STATUS[g], body: { error: g } };
-    const body: Status = { ask: 'ok', thorough: 'ok' };
-    return { status: 200, body };
+    const raw = new URL(req.url ?? '/', 'http://invite').searchParams.get('tz');
+    const tz = raw !== null && /^-?\d{1,4}$/.test(raw) ? Number(raw) : NaN;
+    if (!validTz(tz)) return { status: 400, body: { error: 'bad-tz' } };
+    return { status: 200, body: book!.status(g.userId, tz) };
   }
 
   /** /api/assistant/<parts>. Never throws, so nothing from a read reaches the service's error log. */
@@ -86,7 +126,10 @@ export function createAssistant({ get, config, isClientAccount, isClientOf, allo
   function accept(ws: WebSocket) {
     const started = now();
     const controller = new AbortController();
-    let stage: 'auth' | 'gate' | 'hello' | 'done' = 'auth';
+    let stage: 'auth' | 'gate' | 'hello' | 'ask' | 'done' = 'auth';
+    let reader: Reader | null = null;
+    let admitted: Admitted | null = null;
+    let ask: Running | null = null;
     const send = (m: ServerMessage) => ws.readyState === ws.OPEN && ws.send(JSON.stringify(m));
     const fail = (reason: 'unavailable' | 'failed', code: number) => {
       stage = 'done';
@@ -94,12 +137,11 @@ export function createAssistant({ get, config, isClientAccount, isClientOf, allo
       ws.close(code);
     };
     let late = setTimeout(() => ws.close(CLOSE.unauthorized), LIMITS.authMs);
-    const cap = setTimeout(() => fail('failed', 1000), ASK_MS);
     ws.on('error', () => ws.terminate());
     ws.on('close', (code) => {
       clearTimeout(late);
-      clearTimeout(cap);
       controller.abort();
+      ask?.end('stopped');
       console.log(`WS assistant-ask ${code} ${now() - started}ms`);
     });
     if (!config) return fail('unavailable', 1000);
@@ -112,12 +154,14 @@ export function createAssistant({ get, config, isClientAccount, isClientOf, allo
         if (m.t !== 'auth' || typeof m.token !== 'string' || !m.token || m.v !== WIRE_VERSION) return ws.close(CLOSE.unauthorized);
         stage = 'gate';
         clearTimeout(late);
-        gate(readerFor(m.token, controller.signal), isClientAccount).then(
+        reader = readerFor(m.token, controller.signal);
+        gate(reader, isClientAccount).then(
           (g) => {
             if (stage !== 'gate') return;
             if (g === 'unauthorized') return ws.close(CLOSE.unauthorized);
             if (g === 'not-allowed') return ws.close(CLOSE.notAllowed);
             if (g === 'unavailable') return fail('unavailable', 1011);
+            admitted = g;
             stage = 'hello';
             late = setTimeout(() => ws.close(1008), LIMITS.authMs);
           },
@@ -125,10 +169,28 @@ export function createAssistant({ get, config, isClientAccount, isClientOf, allo
         );
         return;
       }
+      if (stage === 'ask') return ask!.message(m);
       if (stage === 'hello' && m.t === 'hello') {
         clearTimeout(late);
-        // The ask loop is AST-06; until then every admitted ask ends here.
-        return fail('unavailable', 1000);
+        const hello = parseHello(m);
+        if (!hello) return ws.close(1008);
+        const release = admit(admitted!.userId);
+        if (!release) return ws.close(CLOSE.tooMany);
+        stage = 'ask';
+        let self: Running | null = null;
+        const started = startAsk({
+          ws, reader: reader!, step: step!, book: book!, admitted: admitted!, hello, model: modelFor(hello.depth), mask: mask!, now,
+          onEnd: () => (release(), self && running.delete(self)),
+        });
+        if (typeof started === 'string') {
+          release();
+          stage = 'done';
+          send({ t: 'error', reason: started });
+          return ws.close(1000);
+        }
+        self = ask = started;
+        running.add(started);
+        return;
       }
       ws.close(1008);
     });
@@ -148,6 +210,7 @@ export function createAssistant({ get, config, isClientAccount, isClientOf, allo
     },
     /** Shutdown: every open ask ends as failed. */
     close() {
+      for (const a of [...running]) a.end('failed');
       for (const ws of wss.clients) {
         if (ws.readyState === ws.OPEN) ws.send(JSON.stringify({ t: 'error', reason: 'failed' } satisfies ServerMessage));
         ws.terminate();

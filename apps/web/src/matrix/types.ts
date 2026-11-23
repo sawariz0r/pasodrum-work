@@ -579,8 +579,8 @@ export interface WorkspaceStore {
   assistantAsk(request: AssistantRequest, opts: { signal: AbortSignal; onStatus?: (status: AssistantStatusLine) => void }): Promise<Answer>;
   /** null when the Assistant isn't configured or allowed for me, or the server fails. */
   assistantStatus(): Promise<Status | null>;
-  /** Messages for message refs, from memory or fetched by id; a ref that can't be loaded is left out. */
-  messagesByRef(refs: Ref[]): Promise<Message[]>;
+  /** Messages for message refs, from memory or fetched by id; a ref that can't be loaded is left out. A reply carries its thread. */
+  messagesByRef(refs: Ref[]): Promise<SearchHit[]>;
   // E2
   /** Same name rules as createChannel; rejects Error('name-taken') / Error('not-allowed'). */
   renameChannel(channelId: string, name: string): Promise<void>;

@@ -43,7 +43,11 @@ export interface SealedAttachment {
   messages: { event: string; text: string }[];
 }
 
-/** The part, proposal and view kinds this app can draw. */
+/**
+ * What this app can draw. The server offers the model only these.
+ * `parts`: 'message' and 'open' (slice 1); 'person', 'heading', 'issue', 'page', 'text.summary' (slice 3).
+ * `proposals`: 'boards.issue' (slice 3). `views`: none before Time.
+ */
 export interface Can {
   parts: string[];
   proposals: string[];

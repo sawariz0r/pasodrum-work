@@ -52,7 +52,7 @@ import { createBundleReceiver, markerFor, shareHistory } from './shareHistory';
 import { clearSession } from './session';
 import {
   PasswordRequired,
-  type AccessChange, type AccessRole, type ActivityItem, type AddPeopleResult, type Channel, type ExternalAccess, type Dm, type FilesPage, type HelpCard, type HelpReason, type JoinableChannel, type LinkPreview, type Media, type Member, type Message, type MessageKind, type Person, type Role, type Session, type Space,
+  type AccessChange, type AccessRole, type ActivityItem, type AddPeopleResult, type Channel, type ExternalAccess, type Dm, type FilesPage, type HelpCard, type HelpReason, type JoinableChannel, type LinkPreview, type Media, type Member, type Message, type MessageKind, type Person, type Role, type SearchHit, type Session, type Space,
   type ThreadInfo, type ThreadSummary, type Timeline, type Upload, type WorkspaceSnapshot, type WorkspaceStore,
 } from './types';
 
@@ -3010,10 +3010,11 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
           await client.decryptEventIfNeeded(ev).catch(noop);
           if (!local) await applyLatestEdit(r.room, ev);
           const m = messageOf(ev, room, false, true);
-          return m && m.kind !== 'deleted' ? m : null;
+          const root = threadRootOf(ev);
+          return m && m.kind !== 'deleted' ? (root ? { message: m, threadRootId: root } : { message: m }) : null;
         }),
       );
-      return found.filter((m): m is Message => !!m);
+      return found.filter((h): h is SearchHit => !!h);
     },
     anotherApp: () => ({ server: new URL(client.baseUrl).host, username: client.getUserId()!.slice(1, client.getUserId()!.indexOf(':')) }),
     // E2

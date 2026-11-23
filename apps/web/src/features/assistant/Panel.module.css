@@ -1,0 +1,696 @@
+/* The Assistant panel, per Assistant.dc.html (wins) and AssistantBits.dc.html. The sidebar's warm grey; cards, rows, the chip
+   and the ask box on the raised surface. */
+.panel {
+  --ask: var(--sideactive);
+  --lh: 1.5;
+  position: relative;
+  display: flex;
+  flex: 0 0 400px;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 400px;
+  min-width: 0;
+  height: 100%;
+  border-left: 1px solid var(--line);
+  background: var(--side);
+  color: var(--ink);
+  animation: panel-in var(--dur-3) var(--ease-out) both;
+}
+
+.panel:lang(ja) {
+  --lh: 1.7;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+@keyframes panel-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 1279px) {
+  .panel {
+    flex-basis: 380px;
+    width: 380px;
+  }
+}
+
+/* Under 1000 px it takes the screen's place; the rail stays, Back instead of Close. */
+@media (max-width: 999px) {
+  .panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 68px;
+    z-index: 20;
+    width: auto;
+    border-left: 0;
+  }
+
+  .back {
+    display: inline-flex !important;
+  }
+
+  .close {
+    display: none !important;
+  }
+
+  .convo {
+    padding-right: 24px !important;
+    padding-left: 24px !important;
+  }
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 9px;
+  box-sizing: border-box;
+  height: 56px;
+  padding: 0 10px 0 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.back {
+  display: none;
+  margin-right: 2px;
+  margin-left: -8px;
+}
+
+.titleSpark {
+  display: flex;
+  color: var(--ink);
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-title);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.panel:lang(ja) .title {
+  letter-spacing: 0;
+}
+
+.chipRow {
+  flex: none;
+  padding: 12px 18px 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-sizing: border-box;
+  max-width: 100%;
+  height: 28px;
+  padding: 0 3px 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--raised);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.chipIcon {
+  display: flex;
+  color: var(--subtle);
+}
+
+.chipLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chipX {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--subtle);
+  cursor: pointer;
+}
+
+.chipX:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.convo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: 0;
+  padding: 20px 18px 16px;
+  overflow-y: auto;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 20px;
+  min-height: 100%;
+}
+
+.divider {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+}
+
+.divider > span:not(.dividerText) {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.dividerText {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.askRow {
+  display: flex;
+  justify-content: flex-end;
+  padding-left: 48px;
+}
+
+.ask {
+  box-sizing: border-box;
+  padding: 8px 13px;
+  border-radius: 12px;
+  background: var(--ask);
+  color: var(--ink);
+  font-size: 14.5px;
+  line-height: var(--lh);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  text-wrap: pretty;
+}
+
+.answer {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.spark {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 22px;
+  color: var(--subtle);
+}
+
+.pulse {
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.blocks {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.status,
+.say,
+.quiet,
+.plain {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: var(--lh);
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+  word-break: auto-phrase;
+}
+
+.status,
+.quiet {
+  color: var(--muted);
+}
+
+.say {
+  color: var(--ink);
+}
+
+.plain {
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding-top: 6px;
+}
+
+.skeleton > span {
+  display: block;
+  height: 10px;
+  border-radius: 6px;
+  background: var(--skel);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.looked {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  height: 22px;
+  margin-bottom: -6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.looked:hover {
+  color: var(--ink);
+}
+
+.lookedIcon,
+.chevron {
+  flex: none;
+}
+
+.lookedText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--raised);
+}
+
+.looked + .rows {
+  margin-top: 12px;
+}
+
+.rows > * + * {
+  border-top: 1px solid var(--line);
+}
+
+.placeRow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+}
+
+button.placeRow,
+.msgRow {
+  cursor: pointer;
+}
+
+button.placeRow:hover,
+.msgRow:hover {
+  background: var(--hover);
+}
+
+.placeIcon {
+  display: flex;
+  flex: none;
+  color: var(--subtle);
+}
+
+.placeName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placeNote {
+  flex: none;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.msgRow {
+  display: flex;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+}
+
+.msgRow .face {
+  width: 24px;
+  height: 24px;
+  margin-top: 1px;
+  border-radius: 7px;
+  font-size: 10px;
+}
+
+.msgMain {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.msgTop {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  line-height: 20px;
+}
+
+.msgName {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.msgTime {
+  color: var(--subtle);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.msgText {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 13.5px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.openButton,
+.closer {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.openButton {
+  height: 32px;
+  padding: 0 13px 0 11px;
+  background: var(--raised);
+  color: var(--ink);
+  font-size: 13.5px;
+}
+
+.closer {
+  height: 30px;
+  padding: 0 12px 0 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.openButton:hover,
+.closer:hover,
+.retry:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.retry {
+  height: 28px;
+  margin-left: -8px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--link);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.limit {
+  flex: none;
+  padding: 0 18px 12px;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: var(--lh);
+  text-align: center;
+}
+
+.boxWrap {
+  flex: none;
+  padding: 0 16px 16px;
+}
+
+.box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 48px;
+  padding: 0 7px 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--raised);
+}
+
+.box:focus-within {
+  border-color: transparent;
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.boxOff {
+  background: var(--well);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+}
+
+.input::placeholder {
+  color: var(--subtle);
+}
+
+.input:focus {
+  outline: none;
+}
+
+.input:disabled {
+  cursor: not-allowed;
+}
+
+.depth {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+  height: 30px;
+  padding: 0 6px 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.depth:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.send,
+.stop {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.send {
+  background: var(--accent);
+  color: var(--onaccent);
+}
+
+.send:disabled {
+  background: var(--well);
+  color: var(--subtle);
+  cursor: default;
+}
+
+.stop {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.menu {
+  border-radius: 12px;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 10px 0 8px;
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.menuItem[data-highlighted] {
+  background: var(--hover);
+}
+
+.menuItem[data-disabled] {
+  color: var(--subtle);
+  cursor: default;
+}
+
+.check {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+}
+
+.menuLabel {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+}
+
+.menuHint {
+  flex: none;
+  color: var(--subtle);
+  font-size: 12.5px;
+}
+
+.panel :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.panel .input:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation-name: panel-fade;
+  }
+
+  .pulse,
+  .skeleton > span {
+    animation: none;
+  }
+}

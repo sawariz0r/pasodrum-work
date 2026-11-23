@@ -1,15 +1,14 @@
 ---
 id: AST-08
 title: Assistant — the panel
-stage: todo
+stage: implementing
 area: frontend
 milestone: side
 priority: P1
 slice: false
 depends_on: [AST-07]
 created: 2026-11-23
-owner:
----
+owner: SIDE-14 build session---
 
 ## Goal
 `features/assistant`: the panel as the approved boards draw it, for asks about channels and threads. It builds only what is already drawn; chips and asks for other screens come with AST-13. Slice 1 of SIDE-14.

@@ -61,6 +61,8 @@ export interface BodyOverride {
 /** A hover-bar button, and optionally a wrapper around the text of plain and formatted messages. */
 export interface MessageAction {
   id: string;
+  /** Drawn before the shell's own buttons (first use: the Assistant's "Ask about this", as AssistantPlaces draws it). */
+  first?: boolean;
   /** A hook: the button for this message, or null when it doesn't apply. */
   useButton: (message: Message, own: boolean) => { icon: ReactNode; label: string; pressed?: boolean; run: () => void } | null;
   /** `render()` draws the text as sent; `render(override)` draws the feature's version in the same place. */

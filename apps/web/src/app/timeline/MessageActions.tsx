@@ -67,6 +67,9 @@ export function MessageActions({
 
   return (
     <div className={s.actions}>
+      {messageActions.filter((a) => a.first).map((a) => (
+        <FeatureTool key={a.id} action={a} message={m} own={own} />
+      ))}
       {tl.openThread && (
         <button type="button" className={s.tool} aria-label={t('timeline.replyInThread')} onClick={() => tl.openThread?.(m.id)}>
           <ThreadIcon />
@@ -84,7 +87,7 @@ export function MessageActions({
           </button>
         </>
       )}
-      {messageActions.map((a) => (
+      {messageActions.filter((a) => !a.first).map((a) => (
         <FeatureTool key={a.id} action={a} message={m} own={own} />
       ))}
       <Menu modal={false} onOpenChange={onOpenChange}>
