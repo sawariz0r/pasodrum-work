@@ -2,6 +2,7 @@
 
 > Status: **approved plan, M0 in progress** · Last updated 2026-11-20 · Owner: CEO
 > Companion docs: [DECISIONS.md](./DECISIONS.md) · [../AGENTS.md](../AGENTS.md) · [../design/INVENTORY.md](../design/INVENTORY.md)
+> Feature build specs: [Assistant (SIDE-14)](./specs/assistant.md)
 
 ---
 
