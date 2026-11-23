@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, use
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useRegistry } from '../../app/RegistryProvider';
 import { DrawerToggle } from '../../app/shell/Drawer';
+import { HeaderEnd } from '../../app/shell/HeaderEnd';
 import { NotAvailable } from '../../app/shell/NotAvailable';
 import { useToast } from '../../app/toast';
 import { useDocsBoards, useStore, useWorkspace, type PageSession, type PresencePeer } from '../../matrix';
@@ -239,6 +240,7 @@ function Header({ located, onMove, onDelete }: { located: Located; onMove: () =>
           </MenuItem>
         </MenuContent>
       </Menu>
+      <HeaderEnd />
     </header>
   );
 }

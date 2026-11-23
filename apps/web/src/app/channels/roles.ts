@@ -1,9 +1,8 @@
 // Who can do what (RulesM4, D-06, D-25, D-36 PeopleRules). The UI hides what you can't do (D-19); the server still decides.
 import type { Role, Space } from '../../matrix';
+import { isTeamRole as team } from '../team';
 
 export type AddRole = 'staff' | 'external' | 'client';
-
-const team = (r?: Role) => r === 'owner' || r === 'admin' || r === 'staff';
 
 export function canManage(r?: Role) {
   return r === 'owner' || r === 'admin';

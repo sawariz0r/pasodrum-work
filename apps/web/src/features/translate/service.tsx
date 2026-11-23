@@ -4,16 +4,15 @@ import { useMemo } from 'react';
 import { useStore, useWorkspace } from '../../matrix';
 import { fits, looksForeign, readableText, translateText } from '../../app/translate';
 import type { TextTranslation } from '../../app/registry';
+import { isTeamRole } from '../../app/team';
 import { LanguagesIcon } from './Translate';
 import { useT } from './strings';
-
-const TEAM = new Set<string>(['owner', 'admin', 'staff']);
 
 export const textTranslation: TextTranslation = {
   useTranslator(spaceId) {
     const { target, t } = useT();
     const store = useStore();
-    const allowed = useWorkspace((s) => s.spaces.some((x) => x.id === spaceId && x.kind === 'workspace' && TEAM.has(s.myRoles[x.id] ?? '')));
+    const allowed = useWorkspace((s) => s.spaces.some((x) => x.id === spaceId && x.kind === 'workspace' && isTeamRole(s.myRoles[x.id])));
     return useMemo(
       () =>
         allowed

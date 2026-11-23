@@ -1,7 +1,8 @@
 // What each message shows, for this tab only: the text as sent, translating, the translation, or the original again.
 import { useMemo, useSyncExternalStore } from 'react';
 import type { Message, WorkspaceStore } from '../../matrix';
-import { contentKey, onForget, translateText, type Source, type Target, type Translated } from '../../app/translate';
+import { onSignedOut } from '../../app/signOut';
+import { contentKey, translateText, type Source, type Target, type Translated } from '../../app/translate';
 
 export interface Entry {
   status: 'none' | 'translating' | 'translated' | 'original' | 'failed';
@@ -15,7 +16,7 @@ const entries = new Map<string, Entry>();
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((l) => l());
 
-onForget(() => {
+onSignedOut(() => {
   entries.clear();
   notify();
 });

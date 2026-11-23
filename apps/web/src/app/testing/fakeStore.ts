@@ -1,5 +1,5 @@
 // In-memory WorkspaceStore with the canvas workspace, for tests and /dev screens. No server.
-import { PasswordRequired } from '../../matrix';
+import { findRefs, PasswordRequired, type Answer, type Ref, type Status } from '../../matrix';
 import { createFakeDocsBoards } from './fakeDocsBoards';
 import type { AccessChange, AccessRole, ActivityItem, AddPeopleResult, Channel, ConnectionState, Device, Dm, Draft, EmailConfirm, ExternalAccess, FilesPage, HelpReason, JoinableChannel, LinkPreview, Media, Member, Message, NotifyLevel, PendingInvite, Person, Reaction, Role, SasEmoji, SearchHit, Security, Space, ThreadSummary, Timeline, Upload, WorkspaceSnapshot, WorkspaceStore } from '../../matrix';
 
@@ -455,6 +455,8 @@ export interface FakeStoreOptions {
   emailFails?: NonNullable<EmailConfirm['error']>;
   /** D-38. A help card from Pasodrum waits in a system DM (staff side). */
   helpCard?: HelpReason;
+  /** SIDE-14. What GET /api/assistant/status says (default: ok); null = not configured or not allowed. */
+  assistant?: Status | null;
 }
 
 /** M6. The fake account's recovery key; useRecoveryKey accepts it without spaces (the UI strips them), case-sensitive. */
@@ -712,10 +714,11 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     return r;
   };
 
-  return {
+  const docsBoards = createFakeDocsBoards({ perspective: opts.perspective, me: snapshot.me });
+  const fake: WorkspaceStore & { set(patch: Partial<WorkspaceSnapshot>): void } = {
     set,
     getSnapshot: () => snapshot,
-    docsBoards: createFakeDocsBoards({ perspective: opts.perspective, me: snapshot.me }),
+    docsBoards,
     subscribe(onChange) {
       listeners.add(onChange);
       return () => listeners.delete(onChange);
@@ -1372,5 +1375,42 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
       waiting.delete(userId);
       publishAccess();
     },
+    // SIDE-14: scripted answers. An ask containing "fail", "limit" or "busy" is refused; otherwise the longest word is looked up
+    // with the real find wrapper over the fake search, and its newest hits come back as sources.
+    assistantStatus: async () => (opts.assistant === undefined ? { ask: 'ok', thorough: 'ok' } : opts.assistant),
+    async assistantAsk(request, { signal, onStatus }) {
+      const wait = (ms: number) =>
+        new Promise<void>((resolve, reject) => {
+          if (signal.aborted) return reject(new DOMException('Aborted', 'AbortError'));
+          const t = setTimeout(resolve, ms);
+          signal.addEventListener('abort', () => (clearTimeout(t), reject(new DOMException('Aborted', 'AbortError'))), { once: true });
+        });
+      const places = (request.context?.refs ?? []).filter((r) => r.k === 'place' || r.k === 'thread');
+      await wait(opts.loadMs ?? 400);
+      onStatus?.({ stage: 'looking', places });
+      if (/fail/i.test(request.ask)) throw new Error('failed');
+      if (/limit/i.test(request.ask)) throw new Error('day-limit');
+      if (/busy/i.test(request.ask)) throw new Error('unavailable');
+      const word = request.ask.split(/\s+/).reduce((a, b) => (b.length > a.length ? b : a), '').slice(0, 80);
+      const refs = word.length >= 2 ? await findRefs(fake.search, snapshot, word, null, signal) : [];
+      await wait(opts.loadMs ?? 400);
+      const nameOf = (room: string) => Object.values(snapshot.channels).flat().find((c) => c.id === room)?.name ?? room;
+      const sources = refs.slice(0, 3);
+      const rooms = [...new Set(sources.map((r) => (r.k === 'message' ? r.room : '')))].filter(Boolean);
+      const answer: Answer = {
+        outcome: sources.length ? 'answered' : 'nothing',
+        depth: request.depth,
+        say: sources.length ? `Found ${refs.length} messages about “${word}”.` : `Nothing about “${word}”.`,
+        parts: sources.map((target) => ({ t: 'source', target, plain: target.k === 'message' ? findMessage(target.room, target.event)?.body.slice(0, 120) ?? '' : '' })),
+        looked: rooms.map((room) => ({ target: { k: 'place', room } satisfies Ref, plain: `#${nameOf(room)}`, count: refs.filter((r) => r.k === 'message' && r.room === room).length })),
+        usedSealed: false,
+        thorough: 'ok',
+      };
+      return answer;
+    },
+    async messagesByRef(refs) {
+      return refs.flatMap((r) => (r.k === 'message' ? (findMessage(r.room, r.event) ?? []) : []));
+    },
   };
+  return fake;
 }

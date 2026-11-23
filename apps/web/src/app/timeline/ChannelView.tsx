@@ -8,6 +8,7 @@ import { useDmName } from '../people/names';
 import { LockIcon } from '../icons';
 import { ConfirmGate, KeyGate, useGate } from '../security/Gate';
 import { PrivacyLine, usePrivacyText } from '../security/Privacy';
+import { useAssistantShown } from '../shell/RightPanel';
 import { ThreadPanel } from '../thread/ThreadPanel';
 import { useOpenThread, useThreadNav } from '../thread/useThread';
 import { ArchivedBar, useArchived } from './ArchivedBar';
@@ -79,6 +80,7 @@ function Conversation({ channelId, fadeIn }: { channelId: string; fadeIn: boolea
 
   const threadId = useOpenThread();
   const threads = useThreadNav();
+  const assistantShown = useAssistantShown();
 
   // The thread panel sits beside <main> in the shell row (full height, its own header), so it is portalled there.
   const viewRef = useRef<HTMLDivElement>(null);
@@ -121,7 +123,7 @@ function Conversation({ channelId, fadeIn }: { channelId: string; fadeIn: boolea
           {archived ? <ArchivedBar archived={archived} /> : !dm?.system && <Composer channelId={channelId} channelName={name} isDm={!!dm} />}
         </div>
       </div>
-      {threadId && row !== undefined && (
+      {threadId && row !== undefined && !assistantShown && (
         <Portal into={row}>
           <ThreadPanel key={threadId} channelId={channelId} channelName={name} rootId={threadId} onClose={threads.close} />
         </Portal>

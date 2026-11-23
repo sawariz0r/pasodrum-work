@@ -2,6 +2,7 @@
 // Docs/Boards later. Mentions, links and code never reach the model: they become ⟦n⟧ tokens, and formatting becomes
 // ⟦n⟧…⟦/n⟧ pairs, so the result is rebuilt from the original nodes and translated text only, never from returned HTML.
 import type { WorkspaceStore } from '../matrix';
+import { onSignedOut } from './signOut';
 
 export type Target = 'en' | 'ja';
 export interface Translated {
@@ -172,18 +173,13 @@ export function fits(source: Source): boolean {
 // In memory only (this tab): translations of encrypted team messages never reach storage. Cleared on every sign-out.
 const limit = 300;
 const cache = new Map<string, Translated>();
-const forgetters = new Set<() => void>();
 
-/** Forget every translation (any sign-out or session change); features holding their own state subscribe with onForget. */
+/** Forget every translation; runs on every sign-out. */
 export function forgetTranslations() {
   cache.clear();
-  forgetters.forEach((f) => f());
 }
 
-export function onForget(f: () => void): () => void {
-  forgetters.add(f);
-  return () => forgetters.delete(f);
-}
+onSignedOut(forgetTranslations);
 
 export function contentKey(source: Source, to: Target): string {
   const s = [to, source.id ?? '', source.senderId ?? '', source.body, source.html ?? ''].join('\u0000');

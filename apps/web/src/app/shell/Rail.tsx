@@ -9,6 +9,7 @@ import { forgetFreshSpace, isFreshSpace, spaceColour } from '../channels/shared'
 import { LogoMark } from '../icons';
 import { channelPath, spaceHome } from '../places';
 import { rememberSpace } from '../prefs';
+import { useIsTeam } from '../team';
 import type { RailItem } from '../registry';
 import { useRegistry } from '../RegistryProvider';
 import { BellIcon, BubbleIcon, HomeIcon, PlusIcon } from './icons';
@@ -28,7 +29,7 @@ export function Rail({ section, activeSpaceId, onSignOut }: { section: Section; 
   const myRole = useWorkspace((x) => x.myRoles[x.spaces.find((sp) => sp.kind === 'workspace')?.id ?? '']);
   const mayCreate = canManage(myRole);
   // DES-05: the team finds archived client spaces in the Pasodrum menu; the tile stays only while you're in one.
-  const team = mayCreate || myRole === 'staff';
+  const team = useIsTeam();
   const channels = useChannels();
   const { pathname } = useLocation();
   // In a feature page (Docs, Boards), a space tile stays on that page and shows the space (D-42).

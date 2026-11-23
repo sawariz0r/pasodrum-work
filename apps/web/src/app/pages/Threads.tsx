@@ -4,6 +4,7 @@ import { useWorkspace, type Channel, type Space, type ThreadSummary } from '../.
 import { HashIcon, LockIcon } from '../icons';
 import { Face } from '../people/Face';
 import { DrawerToggle } from '../shell/Drawer';
+import { HeaderEnd } from '../shell/HeaderEnd';
 import { useOpenThread, useThreadNav } from '../thread/useThread';
 import { ThreadIcon } from '../shell/icons';
 import { useListTime, useStableOrder } from './lists';
@@ -29,6 +30,7 @@ export function ThreadsView({ space }: { space: Space }) {
         <DrawerToggle />
         <ThreadIcon size={18} strokeWidth={2.1} />
         <h1 className={s.pageTitle}>{t('shell.sidebar.threads')}</h1>
+        <HeaderEnd />
       </header>
       <div className={s.pageBody}>
         {threads.length === 0 ? (

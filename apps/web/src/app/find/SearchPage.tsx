@@ -13,6 +13,7 @@ import { channelPath, dmPath } from '../places';
 import { useListTime } from '../pages/lists';
 import { useSecurityUi } from '../security/SecurityProvider';
 import { DrawerToggle } from '../shell/Drawer';
+import { HeaderEnd } from '../shell/HeaderEnd';
 import { SearchIcon, SmallCloseIcon, ThreadIcon } from '../shell/icons';
 import { highlight, type Part } from './highlight';
 import s from './Find.module.css';
@@ -128,6 +129,7 @@ export function SearchPage() {
             </button>
           )}
         </div>
+        <HeaderEnd />
       </header>
       <div className={s.results} aria-busy={run.busy}>
         {unconfirmed && (

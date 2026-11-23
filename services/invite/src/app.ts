@@ -1,4 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import type { Duplex } from 'node:stream';
+import { createAssistant, type AssistantConfig, type HomeserverGet } from './assistant/index.ts';
 import { confirmRoutes } from './confirm.ts';
 import { renderInvite, type Locale } from './email.ts';
 import { SYSTEM_LOCALPART, systemAccount } from './help.ts';
@@ -19,7 +21,10 @@ export type Config = {
   translate: TranslateConfig | null;
   translateDailyLimit: number;
 };
-export type Deps = { cfg: Config; store: Store; mx: Matrix; sendMail: SendMail; key: Buffer; confirmKey: Buffer; systemPassword?: string; now?: () => number };
+export type Deps = {
+  cfg: Config; store: Store; mx: Matrix; sendMail: SendMail; key: Buffer; confirmKey: Buffer; systemPassword?: string; now?: () => number;
+  assistant?: { get: HomeserverGet; config: AssistantConfig | null };
+};
 
 export class Reply {
   status: number;
@@ -37,11 +42,12 @@ const MAX_BODY = 16 * 1024;
 const TRANSLATE_PER_USER_DAY = 150;
 const EXTERNAL = 'work.pasodrum.external';
 
-export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPassword, now = Date.now }: Deps) {
+export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPassword, now = Date.now, assistant: fenced }: Deps) {
   const system = systemAccount(mx, store, cfg.serverName, systemPassword, cfg.registrationToken);
   const confirm = confirmRoutes({ cfg, store, mx, sendMail, key: confirmKey, system, now });
   const allow = rateLimiter();
   const presence = createPresence({ mx, now });
+  const assistant = createAssistant({ get: fenced?.get ?? (() => Promise.reject(new Error('off'))), config: fenced?.config ?? null, isClientAccount: store.clientAccount, isClientOf: store.clientOf, allowIp: (req) => allow(`ip:${clientIp(req)}`, 300, MINUTE), now });
   const claiming = new Set<string>();
   const host = new URL(cfg.publicUrl).host;
   const linkFor = (code: string) => `${cfg.publicUrl}/join/${code}`;
@@ -418,6 +424,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
       return translate(req, await readJson(req));
     }
     if (parts[0] === 'api' && parts[1] === 'invites' && parts[2] === 'confirm') return confirm(req, url, parts.slice(3), meta, ip);
+    if (parts[0] === 'api' && parts[1] === 'assistant') return assistant.route(req, parts.slice(2), meta).then((a) => new Reply(a.status, a.body));
     if (parts[0] !== 'api' || parts[1] !== 'invites' || parts.length > 4) return fail(404, 'not-found');
     const [, , code, action] = parts;
     const m = req.method;
@@ -461,7 +468,10 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
     // Paths carry codes, so only the route name is logged.
     console.log(`${req.method} ${meta.name} ${reply.status} ${Date.now() - started}ms`);
   }
-  return Object.assign(handle, { upgrade: presence.upgrade, closeSockets: presence.close });
+  return Object.assign(handle, {
+    upgrade: (req: IncomingMessage, socket: Duplex, head: Buffer) => presence.upgrade(req, socket, head) || assistant.upgrade(req, socket, head),
+    closeSockets: () => (presence.close(), assistant.close()),
+  });
 }
 
 function clientIp(req: IncomingMessage): string {

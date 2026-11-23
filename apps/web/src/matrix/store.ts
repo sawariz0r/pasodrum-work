@@ -44,6 +44,7 @@ import {
 import { ACCESS_ROLE, archivedLevels, channelUsers, dmLevels, EXTERNAL, externalKey, LEVEL, PINS, powerLevels, withLevel } from './levels';
 import { defaultLevel, defaultOps, roomLevel, roomOps, type PushOp, type PushRules } from './push';
 import { createSearch } from './search';
+import { askAssistant, assistantStatus, findRefs, placesOf } from './assistant';
 import { createDocsBoards, pageRoomsOf } from './docsBoards';
 import { issueActivityOf, PROJECT_TYPE } from './issueActivity';
 import { send, sendEdit, sendReaction, type MsgType, type TextMessage } from './send';
@@ -2986,6 +2987,34 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       await settle(() => !snapshot.spaces.some((s) => s.id === spaceId));
     },
     translate: (segments, to) => translateSegments(session.accessToken, segments, to),
+    async assistantAsk(request, opts) {
+      await ready;
+      const deps = {
+        base: location.origin,
+        token: session.accessToken,
+        find: (query: string, within: Parameters<typeof findRefs>[3], signal: AbortSignal) => findRefs(search, snapshot, query, within, signal),
+        places: () => placesOf(snapshot, docsBoards.getSnapshot()),
+      };
+      return askAssistant(deps, request, opts);
+    },
+    assistantStatus: () => assistantStatus(location.origin, session.accessToken),
+    async messagesByRef(refs) {
+      await ready;
+      const found = await Promise.all(
+        refs.map(async (r) => {
+          const room = r.k === 'message' ? client.getRoom(r.room) : null;
+          if (r.k !== 'message' || !room) return null;
+          const local = eventOf(room, r.event);
+          const ev = local ?? (await client.fetchRoomEvent(r.room, r.event).then((raw) => mapEvent(r.room, raw), () => null));
+          if (!ev) return null;
+          await client.decryptEventIfNeeded(ev).catch(noop);
+          if (!local) await applyLatestEdit(r.room, ev);
+          const m = messageOf(ev, room, false, true);
+          return m && m.kind !== 'deleted' ? m : null;
+        }),
+      );
+      return found.filter((m): m is Message => !!m);
+    },
     anotherApp: () => ({ server: new URL(client.baseUrl).host, username: client.getUserId()!.slice(1, client.getUserId()!.indexOf(':')) }),
     // E2
     async renameChannel(channelId, name) {

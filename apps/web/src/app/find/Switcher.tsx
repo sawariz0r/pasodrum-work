@@ -1,5 +1,6 @@
 // ⌘K (Switcher, SwitcherResults, SwitcherEmpty; RulesM8): opened by ⌘K / Ctrl K or the header search button.
 // Empty: recent conversations. Typed: Channels, Direct messages, People, then always "Search messages for …".
+// A feature may add one last row through the registry (SIDE-14: the Assistant, for the team).
 import * as RD from '@radix-ui/react-dialog';
 import { createContext, useContext, useEffect, useMemo, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +13,7 @@ import { Face, others } from '../people/Face';
 import { useDmName, useShowExternal } from '../people/names';
 import { channelPath, dmPath } from '../places';
 import { recentConversations } from '../prefs';
+import { useRegistry } from '../RegistryProvider';
 import { spaceColour, useWorkspaceName } from '../channels/shared';
 import { SearchIcon } from '../shell/icons';
 import { firstName, useToast } from '../toast';
@@ -73,7 +75,8 @@ type Option =
   | { kind: 'channel'; key: string; channel: Channel }
   | { kind: 'dm'; key: string; dm: Dm }
   | { kind: 'person'; key: string; person: Person }
-  | { kind: 'search'; key: string };
+  | { kind: 'search'; key: string }
+  | { kind: 'extra'; key: string };
 
 const recentCount = 6;
 const perGroup = 5;
@@ -102,6 +105,8 @@ function Switcher({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [query, setQuery] = useState('');
   const [people, setPeople] = useState<Person[]>([]);
   const [active, setActive] = useState(0);
+  // The registry is fixed for the app's life, so this hook runs on every render or never.
+  const extra = useRegistry().assistant?.useSwitcherRow(query) ?? null;
 
   const q = query.trim();
   const needle = fold(q);
@@ -140,7 +145,7 @@ function Switcher({ open, onClose }: { open: boolean; onClose: () => void }) {
     if (convs.length) groups.push({ id: 'dms', label: t('find.dms'), options: convs.map((d) => ({ kind: 'dm', key: d.id, dm: d })) });
     if (folks.length) groups.push({ id: 'people', label: t('find.people'), options: folks.map((p) => ({ kind: 'person', key: p.id, person: p })) });
   }
-  const options = [...groups.flatMap((g) => g.options), ...(q ? [{ kind: 'search', key: 'search' } as Option] : [])];
+  const options = [...groups.flatMap((g) => g.options), ...(q ? [{ kind: 'search', key: 'search' } as Option] : []), ...(extra ? [{ kind: 'extra', key: 'extra' } as Option] : [])];
   const current = Math.min(active, Math.max(options.length - 1, 0));
   const listId = 'find-options';
   const optionId = (i: number) => `${listId}-${i}`;
@@ -150,6 +155,7 @@ function Switcher({ open, onClose }: { open: boolean; onClose: () => void }) {
     if (o.kind === 'channel') navigate(channelPath(o.channel.spaceId, o.channel.id));
     else if (o.kind === 'dm') navigate(dmPath(o.dm.id));
     else if (o.kind === 'search') navigate(searchPath(q));
+    else if (o.kind === 'extra') extra?.run();
     else
       store.openDm([o.person.id]).then(
         (id) => navigate(dmPath(id)),
@@ -169,11 +175,12 @@ function Switcher({ open, onClose }: { open: boolean; onClose: () => void }) {
   };
 
   const nameOf = (o: Option) =>
-    o.kind === 'channel' ? o.channel.name : o.kind === 'dm' ? dmName(o.dm) : o.kind === 'person' ? o.person.name : t('find.searchFor', { query: q });
+    o.kind === 'channel' ? o.channel.name : o.kind === 'dm' ? dmName(o.dm) : o.kind === 'person' ? o.person.name : o.kind === 'extra' ? (extra?.label ?? '') : t('find.searchFor', { query: q });
 
   const icon = (o: Option) => {
     if (o.kind === 'channel') return o.channel.private ? <LockIcon size={17} strokeWidth={1.9} /> : <HashIcon size={17} strokeWidth={1.9} />;
     if (o.kind === 'search') return <SearchIcon size={17} strokeWidth={1.9} />;
+    if (o.kind === 'extra') return extra?.icon;
     const list = o.kind === 'dm' ? others(o.dm, meId) : [o.person];
     if (list.length > 1) return <span className={s.count}>{list.length}</span>;
     return list[0] ? <Face person={list[0]} size={26} className={s.face} /> : null;
@@ -181,6 +188,7 @@ function Switcher({ open, onClose }: { open: boolean; onClose: () => void }) {
 
   // Names only from spaces I'm in: a client space I'm not in gives no tag at all, never "External".
   const tagOf = (o: Option): { text: string; style?: CSSProperties } | null => {
+    if (o.kind === 'extra') return extra?.hint ? { text: extra.hint } : null;
     if (!showTags || o.kind === 'channel' || o.kind === 'search') return null;
     const list = o.kind === 'dm' ? others(o.dm, meId) : [o.person];
     const person = list.length === 1 ? list[0]! : undefined;
@@ -196,7 +204,7 @@ function Switcher({ open, onClose }: { open: boolean; onClose: () => void }) {
   const row = (o: Option) => {
     const i = ++index;
     const label =
-      o.kind === 'search'
+      o.kind === 'search' || o.kind === 'extra'
         ? nameOf(o)
         : highlight(nameOf(o), q).map((p, k) => (p.hit ? <mark key={k}>{p.text}</mark> : <span key={k}>{p.text}</span>));
     const space = o.kind === 'channel' && acrossSpaces ? spaceById.get(o.channel.spaceId) : undefined;
@@ -281,6 +289,12 @@ function Switcher({ open, onClose }: { open: boolean; onClose: () => void }) {
                   <>
                     {groups.length > 0 && <div role="separator" className={s.separator} />}
                     {row({ kind: 'search', key: 'search' })}
+                  </>
+                )}
+                {extra && (
+                  <>
+                    {!q && groups.some((g) => g.options.length) && <div role="separator" className={s.separator} />}
+                    {row({ kind: 'extra', key: 'extra' })}
                   </>
                 )}
               </div>

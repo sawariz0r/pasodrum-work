@@ -11,6 +11,7 @@ import { ComposerProvider } from '../composer/context';
 import { Timeline, TimelineSkeleton, type ThreadMode } from '../timeline/Timeline';
 import tl from '../timeline/Timeline.module.css';
 import { ConfirmGate, KeyGate, useGate } from '../security/Gate';
+import { useConversationScreen } from '../screenContext';
 import { BackIcon } from './icons';
 import s from './Thread.module.css';
 
@@ -33,6 +34,7 @@ export function ThreadPanel({ channelId, channelName, rootId, onClose }: Props) 
   const { t } = useTranslation();
   // M6: in the Threads view the panel stands alone, so it gates encrypted channels itself (in a channel, ChannelView already has).
   const gate = useGate(channelId);
+  useConversationScreen({ kind: 'thread', layer: 'panel', room: channelId, label: channelName, thread: rootId });
 
   const close = useRef(onClose);
   useLayoutEffect(() => {

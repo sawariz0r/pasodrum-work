@@ -126,6 +126,8 @@ export function openStore(path: string) {
       AND NOT EXISTS (SELECT 1 FROM invites c WHERE c.userId = i.userId AND c.claimedTs IS NOT NULL)`),
     clientAccount: db.prepare(`SELECT 1 FROM invites i WHERE userId = ?
       AND NOT EXISTS (SELECT 1 FROM invites o WHERE o.userId = i.userId AND o.role != 'client')`),
+    clientOf: db.prepare(`SELECT 1 FROM invites i WHERE userId = ? AND spaceId = ? AND role = 'client' AND claimedTs IS NOT NULL
+      AND NOT EXISTS (SELECT 1 FROM invites o WHERE o.userId = i.userId AND o.role != 'client')`),
     confirmKey: db.prepare('SELECT sealed, keyId FROM confirm_keys WHERE userId = ?'),
     putConfirmKey: db.prepare(`INSERT INTO confirm_keys VALUES (?, ?, ?, ?)
       ON CONFLICT(userId) DO UPDATE SET sealed = excluded.sealed, keyId = excluded.keyId, updatedTs = excluded.updatedTs`),
@@ -202,6 +204,10 @@ export function openStore(path: string) {
     /** Every invite this service made for the account was a client invite. */
     clientAccount(userId: string): boolean {
       return !!q.clientAccount.get(userId);
+    },
+    /** D-53: invited to this space as a client, claimed, and never invited as anything else. */
+    clientOf(userId: string, spaceId: string): boolean {
+      return !!q.clientOf.get(userId, spaceId);
     },
     latestClaimed(userId: string): Invite | undefined {
       const r = q.latestClaimed.get(userId);

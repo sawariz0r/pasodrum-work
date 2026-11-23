@@ -11,6 +11,7 @@ import { DmFace, Face, others } from '../people/Face';
 import { useDmName } from '../people/names';
 import { channelPath, spaceDmPath, threadPath } from '../places';
 import { DrawerToggle } from '../shell/Drawer';
+import { HeaderEnd } from '../shell/HeaderEnd';
 import { SendIcon, ThreadIcon, TrashIcon } from '../shell/icons';
 import { useSpaceDrafts } from '../shell/spaceRooms';
 import { useListTime } from './lists';
@@ -39,6 +40,7 @@ export function DraftsView({ space }: { space: Space }) {
         <DrawerToggle />
         <SendIcon size={18} strokeWidth={2.1} />
         <h1 className={s.pageTitle}>{t('shell.sidebar.drafts')}</h1>
+        <HeaderEnd />
       </header>
       <div className={s.pageBody}>
         {drafts.length === 0 ? (

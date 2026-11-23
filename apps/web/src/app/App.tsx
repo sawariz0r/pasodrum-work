@@ -13,7 +13,7 @@ import { SecurityProvider, useSecurityUi } from './security/SecurityProvider';
 import { SettingsSync, WithSettings } from './settings/SettingsRoute';
 import { Workspace } from './shell/Shell';
 import { SignIn, type Expired } from './signin/SignIn';
-import { forgetTranslations } from './translate';
+import { notifySignedOut } from './signOut';
 
 export function App({ backend = matrixBackend, basename }: { backend?: Backend; basename?: string }) {
   return (
@@ -57,7 +57,7 @@ export function AppRoutes({ backend }: { backend: Backend }) {
   const end = (next?: Expired, to = '/signin') => {
     if (!signed) return;
     void signed.store.signOut().catch(() => {});
-    forgetTranslations();
+    notifySignedOut();
     setExpired(next);
     setSignedOut(!next);
     setSigned(null);

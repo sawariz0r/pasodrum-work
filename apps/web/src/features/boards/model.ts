@@ -52,12 +52,8 @@ export function allGroups(projects: Project[], activeSpaceId: string | undefined
     .filter((g) => g.issues.length);
 }
 
-const TEAM = new Set(['owner', 'admin', 'staff']);
-
 /** Owner, Admin or Staff in the workspace: may create projects (and columns, where the server agrees). */
-export function useIsTeam(): boolean {
-  return useWorkspace((x) => x.spaces.some((s) => s.kind === 'workspace' && TEAM.has(x.myRoles[s.id] ?? '')));
-}
+export { useIsTeam } from '../../app/team';
 
 export const issueKey = (project: Pick<Project, 'key'>, issue: Pick<Issue, 'n'>) => `${project.key}-${issue.n}`;
 

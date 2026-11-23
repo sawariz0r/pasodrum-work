@@ -19,7 +19,7 @@
 		reverse_proxy continuwuity:6167
 	}
 	# /api/presence/* is a WebSocket; reverse_proxy passes the upgrade through.
-	@invite path /api/invites /api/invites/* /api/translate /api/presence/*
+	@invite path /api/invites /api/invites/* /api/translate /api/presence/* /api/assistant /api/assistant/*
 	handle @invite {
 		reverse_proxy invite:8080
 	}

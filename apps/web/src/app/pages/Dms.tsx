@@ -15,8 +15,10 @@ import { ChannelTabs } from '../shell/ChannelTabs';
 import { ChevronDownIcon, ComposeIcon } from '../shell/icons';
 import { FindButton } from '../find/Switcher';
 import { rememberRecent } from '../prefs';
+import { useConversationScreen } from '../screenContext';
 import { PrivacyLock, usePrivacyText } from '../security/Privacy';
 import { DrawerToggle } from '../shell/Drawer';
+import { HeaderEnd } from '../shell/HeaderEnd';
 import shell from '../shell/Shell.module.css';
 import { useListTime } from './lists';
 import s from './Pages.module.css';
@@ -107,6 +109,7 @@ export function DmConversation({ dmId }: { dmId: string }) {
   const title = useRef<HTMLButtonElement>(null);
   const privacy = usePrivacyText(dm);
   useEffect(() => rememberRecent(dmId), [dmId]);
+  useConversationScreen(dm ? { kind: 'dm', layer: 'page', room: dm.id, label: name(dm) } : null);
   if (!dm) return null;
   const list = others(dm, meId);
   const single = list.length === 1 ? list[0] : undefined;
@@ -142,6 +145,7 @@ export function DmConversation({ dmId }: { dmId: string }) {
         )}
         {privacy && <PrivacyLock text={privacy} />}
         <FindButton />
+        <HeaderEnd afterSearch />
       </header>
       <ChannelTabs key={dm.id} channelId={dm.id} stored={noStoredTabs} />
     </>

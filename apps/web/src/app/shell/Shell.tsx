@@ -15,8 +15,10 @@ import { NewMessageProvider } from '../people/NewMessage';
 import { ProfileCardProvider } from '../people/ProfileCard';
 import { channelPath, dmPath, useFallbackSpace as useSpaceFallback, homeChannel, spaceHome } from '../places';
 import { rememberPlace } from '../prefs';
+import { useConversationScreen } from '../screenContext';
 import { ThreadPanel } from '../thread/ThreadPanel';
 import { useOpenThread, useThreadNav } from '../thread/useThread';
+import { useDmName } from '../people/names';
 import { noStoredTabs, type FeatureRoute } from '../registry';
 import { useRegistry } from '../RegistryProvider';
 import { ToastProvider } from '../toast';
@@ -26,6 +28,7 @@ import { ConnectionBanner } from './ConnectionBanner';
 import { DrawerContext, DrawerToggle, useNarrow } from './Drawer';
 import { NotAvailable } from './NotAvailable';
 import { Notifier } from '../notify/Notifier';
+import { RightPanel, RightPanelHost, useRightPanelOpen } from './RightPanel';
 import { platform } from '../../platform';
 import { Rail, type Section } from './Rail';
 import s from './Shell.module.css';
@@ -46,6 +49,7 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
       <ToastProvider>
       <FindProvider>
       <Notifier />
+      <RightPanelHost />
       {platform.desktop && <TitleBarControls />}
       <ProfileCardProvider>
         <NewMessageProvider>
@@ -191,7 +195,11 @@ function ActivityRoute() {
     }
     return undefined;
   });
-  const isDm = useWorkspace((x) => !!item && x.dms.some((d) => d.id === item.channelId));
+  const dm = useWorkspace((x) => (item ? x.dms.find((d) => d.id === item.channelId) : undefined));
+  const isDm = !!dm;
+  const dmName = useDmName();
+  const shown = item && !item.issue && (channel || dm);
+  useConversationScreen(shown ? { kind: 'activity', layer: 'page', room: item.channelId, label: channel ? channel.name : dmName(dm!), message: item.message.id } : null);
   return (
     <Frame section="activity" space={space} column={<ActivityColumn selectedId={item?.id} />} list={{ back: '/activity', detail: !!item }}>
       {channel ? <ChannelPage channel={channel} /> : isDm && item ? <DmConversation dmId={item.channelId} /> : <HomePage />}
@@ -239,7 +247,7 @@ type FrameProps = {
   space?: Space;
   column: ReactNode;
   children: ReactNode;
-  /** Beside main (the thread panel in the Threads view). */
+  /** Beside main (the thread panel in the Threads view); the Assistant takes this place when it is on top. */
   aside?: ReactNode;
   /** Rail pages with a list column (DMs, Activity): at ≤800px the list and the open item take turns. */
   list?: { back: string; detail: boolean };
@@ -252,7 +260,7 @@ function Frame({ section, space, column, children, aside, list }: FrameProps) {
   const [openAt, setOpenAt] = useState<string | null>(null);
   const open = openAt === location.key;
   const toggle = () => setOpenAt(open ? null : location.key);
-  const threadOpen = useOpenThread() !== null;
+  const panelOpen = useRightPanelOpen();
 
   useEffect(() => {
     if (!open) return;
@@ -270,8 +278,8 @@ function Frame({ section, space, column, children, aside, list }: FrameProps) {
           s.shell,
           open && s.drawerOpen,
           open && 'drawer-open',
-          threadOpen && s.threadFold,
-          threadOpen && 'thread-fold',
+          panelOpen && s.threadFold,
+          panelOpen && 'thread-fold',
           list && s.listPage,
           list && (list.detail ? 'pane-detail' : 'pane-list'),
         ]
@@ -285,13 +293,14 @@ function Frame({ section, space, column, children, aside, list }: FrameProps) {
           <ConnectionBanner />
           {children}
         </main>
-        {aside}
+        <RightPanel thread={aside} />
       </div>
     </DrawerContext.Provider>
   );
 }
 
 function ChannelPage({ channel }: { channel: Channel }) {
+  useConversationScreen({ kind: 'channel', layer: 'page', room: channel.id, label: channel.name });
   return (
     <>
       <header className={s.header}>

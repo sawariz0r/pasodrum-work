@@ -1,6 +1,6 @@
 // Feature-module contract (D-04). Features call defineFeature and are listed once in features/index.ts.
 import type { ComponentType, ReactNode } from 'react';
-import type { Message } from '../matrix';
+import type { Message, Ref } from '../matrix';
 
 export interface RailItem {
   id: string;
@@ -67,6 +67,39 @@ export interface MessageAction {
   Body?: ComponentType<{ message: Message; render: (override?: BodyOverride) => ReactNode }>;
 }
 
+/** What a screen shows, for the Assistant (SIDE-14 spec §5.1): references and a label, never message, page or draft text. */
+export interface ScreenContext {
+  /** 'channel' | 'thread' | 'dm' | 'activity' | 'page' | 'project' | 'issue' | 'issues' | … */
+  kind: string;
+  /** A thread or an open issue wins over the page under it. */
+  layer: 'page' | 'panel';
+  /** For the chip; the server works out the space itself. */
+  space?: string;
+  refs: Ref[];
+  /** The newest message on screen; reading stops there. */
+  newest?: string;
+  /** For the chip only; never sent. */
+  label: string;
+  /** Up to three, from the screen's owner, already translated. */
+  asks?: { id: string; text: string }[];
+  /** The screen is an encrypted conversation: no refs. */
+  closed?: 'sealed';
+}
+
+/** The Assistant (SIDE-14): one feature provides it; the shell draws its panel, header button and ⌘K row, and binds ⌘J. */
+export interface AssistantSlot {
+  /** Drawn in the right panel when the Assistant is open and on top. */
+  Panel: ComponentType;
+  /** null when not offered. */
+  useHeaderButton(): { icon: ReactNode; label: string; pressed: boolean; dot: boolean; run(): void } | null;
+  /** The last row of ⌘K; null when not offered. */
+  useSwitcherRow(query: string): { icon: ReactNode; label: string; hint: string; run(): void } | null;
+  /** Called by every screen that reports what it shows (app/screenContext.ts). */
+  useScreen(ctx: ScreenContext | null): void;
+  /** ⌘J / Ctrl J. */
+  toggle(): void;
+}
+
 export interface Feature {
   id: string;
   rail?: RailItem[];
@@ -75,6 +108,8 @@ export interface Feature {
   messageActions?: MessageAction[];
   messageParts?: MessagePart[];
   translation?: TextTranslation;
+  /** Provided by one feature; the first wins, like `translation`. */
+  assistant?: AssistantSlot;
 }
 
 export function defineFeature<F extends Feature>(feature: F): F {
@@ -89,6 +124,8 @@ export interface Registry {
   messageParts: MessagePart[];
   /** The first feature's translation, if any feature provides one. */
   translation?: TextTranslation;
+  /** The first feature's Assistant, if any feature provides one. */
+  assistant?: AssistantSlot;
 }
 
 export function buildRegistry(features: readonly Feature[]): Registry {
@@ -101,6 +138,7 @@ export function buildRegistry(features: readonly Feature[]): Registry {
     messageActions: features.flatMap((f) => f.messageActions ?? []),
     messageParts: features.flatMap((f) => f.messageParts ?? []),
     translation: features.find((f) => f.translation)?.translation,
+    assistant: features.find((f) => f.assistant)?.assistant,
   };
 }
 

@@ -173,3 +173,15 @@ export function matrixClient(base: string) {
 }
 
 export type Matrix = ReturnType<typeof matrixClient>;
+
+/** All the Assistant may do on the homeserver (spec §2.1): a GET under /_matrix/ with the token it is handed. */
+export function homeserverGet(base: string) {
+  return async (token: string, path: string, signal: AbortSignal): Promise<{ status: number; body: unknown }> => {
+    if (!path.startsWith('/_matrix/')) throw new Error('assistant path refused');
+    const res = await fetch(base + path, { method: 'GET', headers: { Authorization: `Bearer ${token}` }, signal, redirect: 'error' });
+    const text = await res.text();
+    let body: unknown = null;
+    try { body = JSON.parse(text); } catch { /* empty or not JSON */ }
+    return { status: res.status, body };
+  };
+}

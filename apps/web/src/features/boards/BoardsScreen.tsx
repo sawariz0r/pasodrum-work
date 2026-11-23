@@ -4,6 +4,7 @@ import { Navigate, useNavigate } from 'react-router';
 import { rememberSpace } from '../../app/prefs';
 import { NotAvailable } from '../../app/shell/NotAvailable';
 import { DrawerToggle } from '../../app/shell/Drawer';
+import { HeaderEnd } from '../../app/shell/HeaderEnd';
 import { useDocsBoards, useStore, useWorkspace, type Column, type DocsBoardsSnapshot, type Issue, type Person, type Project } from '../../matrix';
 import { Button, EmptyState, Skeleton } from '../../ui';
 import { Board } from './Board';
@@ -149,6 +150,7 @@ export function BoardsScreen() {
             {t('newIssue')}
           </button>
         )}
+        <HeaderEnd />
       </header>
       <div className={s.body}>
         <div ref={viewRef} className={s.view} onClick={onViewClick}>
@@ -253,6 +255,7 @@ function NoProjects({ team, onNew }: { team: boolean; onNew: () => void }) {
     >
       <header className={s.bareHeader}>
         <DrawerToggle />
+        <HeaderEnd />
       </header>
     </EmptyState>
   );

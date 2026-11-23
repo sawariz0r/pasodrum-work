@@ -8,6 +8,7 @@ import { HashIcon, LockIcon } from '../icons';
 import { FindButton } from '../find/Switcher';
 import { Face } from '../people/Face';
 import { rememberRecent } from '../prefs';
+import { HeaderEnd } from '../shell/HeaderEnd';
 import { ChevronDownIcon, PlusIcon as SmallPlusIcon } from '../shell/icons';
 import s from './Channels.module.css';
 import { useChannels } from './ChannelsProvider';
@@ -180,6 +181,7 @@ export function ChannelHeaderBar({ channel }: { channel: Channel }) {
         {mayAdd && <IconButton label={t('common.addPeople')} icon={<UserPlusIcon />} onClick={() => channels.addPeople(channel.id)} />}
         <IconButton label={t('shell.header.details')} icon={<InfoIcon />} onClick={() => channels.details(channel.id)} />
         <FindButton />
+        <HeaderEnd afterSearch />
       </span>
     </>
   );

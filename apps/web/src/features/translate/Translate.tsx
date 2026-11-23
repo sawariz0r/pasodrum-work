@@ -2,6 +2,7 @@ import { useMemo, type ReactNode } from 'react';
 import { useStore, useWorkspace, type Message, type WorkspaceSnapshot } from '../../matrix';
 import { fits, looksForeign, readableText } from '../../app/translate';
 import type { BodyOverride } from '../../app/registry';
+import { teamWorkspace } from '../../app/team';
 import { sourceOf, toggle, translate, useEntry } from './state';
 import { useT } from './strings';
 import c from './Translate.module.css';
@@ -20,14 +21,13 @@ export function LanguagesIcon({ size = 16, className }: { size?: number; classNa
 }
 
 const textKinds = new Set(['text', 'emote', 'notice']);
-const team = (role: string | undefined) => role === 'owner' || role === 'admin' || role === 'staff';
 
 /**
  * Team only, and never where clients or guests are: only channels of the workspace I'm on the team of (an unjoined
  * client space can look like a workspace), only once their member list is known, and DMs without outside people.
  */
 export function teamConversation(s: WorkspaceSnapshot, channelId: string): boolean {
-  const ws = s.spaces.find((x) => x.kind === 'workspace' && team(s.myRoles[x.id]));
+  const ws = teamWorkspace(s);
   if (!ws) return false;
   const ch = s.channels[ws.id]?.find((x) => x.id === channelId);
   if (ch) return !ch.outside?.length && !ch.outsidePending;

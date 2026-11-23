@@ -1,4 +1,5 @@
 // The only shapes the app sees from the server (D-03). Product vocabulary, no Matrix terms.
+import type { Answer, ClientMessage, Ref, Status } from './assistantWire';
 import type { DocsBoards } from './docsBoardsTypes';
 
 export type ConnectionState = 'starting' | 'online' | 'reconnecting' | 'offline';
@@ -469,6 +470,14 @@ export interface WorkspaceSnapshot {
   externals: Record<string, { roles: string[]; channels: string[] }>;
 }
 
+/** SIDE-14. What one ask sends after auth (the `hello` message without its tag). */
+export type AssistantRequest = Omit<Extract<ClientMessage, { t: 'hello' }>, 't'>;
+/** SIDE-14. The working line while an ask runs; the app writes the words. */
+export interface AssistantStatusLine {
+  stage: 'looking' | 'closer';
+  places: Ref[];
+}
+
 export interface WorkspaceStore {
   getSnapshot(): WorkspaceSnapshot;
   subscribe(onChange: () => void): () => void;
@@ -562,6 +571,16 @@ export interface WorkspaceStore {
   anotherApp(): AnotherAppInfo;
   /** SIDE-01. Our translation service: same number of segments back, in order. Rejects with Error('rate-limited' | 'unavailable' | 'failed'). */
   translate(segments: string[], to: 'en' | 'ja'): Promise<string[]>;
+  // SIDE-14 Assistant (docs/specs/assistant.md §2.3, §2.4)
+  /**
+   * One ask over /api/assistant/ask: answers the server's find (local search, refs only, encrypted conversations skipped) and
+   * list itself, resolves with the checked answer. Rejects Error(AskError); abort closes the socket and rejects AbortError.
+   */
+  assistantAsk(request: AssistantRequest, opts: { signal: AbortSignal; onStatus?: (status: AssistantStatusLine) => void }): Promise<Answer>;
+  /** null when the Assistant isn't configured or allowed for me, or the server fails. */
+  assistantStatus(): Promise<Status | null>;
+  /** Messages for message refs, from memory or fetched by id; a ref that can't be loaded is left out. */
+  messagesByRef(refs: Ref[]): Promise<Message[]>;
   // E2
   /** Same name rules as createChannel; rejects Error('name-taken') / Error('not-allowed'). */
   renameChannel(channelId: string, name: string): Promise<void>;

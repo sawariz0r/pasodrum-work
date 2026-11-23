@@ -7,6 +7,7 @@ import { useStore, useWorkspace, type Channel, type JoinableChannel, type Space 
 import { HashIcon, LockIcon } from '../icons';
 import { channelPath } from '../places';
 import { DrawerToggle } from '../shell/Drawer';
+import { HeaderEnd } from '../shell/HeaderEnd';
 import { SearchIcon } from '../shell/icons';
 import s from './Channels.module.css';
 import { useChannels } from './ChannelsProvider';
@@ -85,6 +86,7 @@ export function BrowseChannels({ space }: { space: Space }) {
             {t('channels.newChannel')}
           </button>
         )}
+        <HeaderEnd />
       </header>
       <div className={s.search}>
         <label className={s.searchField}>
