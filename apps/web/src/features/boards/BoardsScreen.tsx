@@ -89,7 +89,12 @@ export function BoardsScreen() {
     if (!scopeLoaded) return <Loading />;
     const last = selected && lastProject(selected.id);
     const target = inScope.find((p) => p.id === last) ?? inScope[0];
-    if (target) return <Navigate to={boardsPath(target.id)} replace />;
+    if (target) return (
+      <>
+        <Navigate to={boardsPath(target.id)} replace />
+        <Loading />
+      </>
+    );
     return (
       <div className={s.screen}>
         <NoProjects team={team} onNew={() => selected && openNewProject(selected.id)} />

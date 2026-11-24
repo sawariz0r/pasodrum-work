@@ -1050,6 +1050,9 @@ export function createFakeStore(opts: FakeStoreOptions = {}): WorkspaceStore & {
     async setSetting(key, value) {
       settings[key] = value;
     },
+    async settings() {
+      return { ...settings };
+    },
     // M5. Names containing "fail" reject once with a generic error (ClientSpaceCreateError board).
     async createClientSpace({ name, colour, channels: names, team, clientEmails }) {
       const clean = name.trim();

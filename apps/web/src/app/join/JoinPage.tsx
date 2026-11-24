@@ -6,6 +6,7 @@ import { platform } from '../../platform';
 import { Avatar, avatarColor, Button, initialsOf, isCjk, isImeEnter, TextField } from '../../ui';
 import type { Backend } from '../backend';
 import { formatList } from '../format';
+import { resolveLanguage } from '../i18n';
 import { DownloadIcon, LogoMark } from '../icons';
 import { AccountPair } from '../another/AccountPair';
 import { elementXLink, hostOf, usePhone } from '../another/elementX';
@@ -110,7 +111,7 @@ export function JoinPage({
     setBusy(true);
     setFailed(undefined);
     try {
-      const identifier = await backend.claimInvite(code, name.trim(), password);
+      const identifier = await backend.claimInvite(code, name.trim(), password, resolveLanguage(null, navigator.languages ?? [navigator.language]));
       const session = await backend.signIn(backend.defaultServer(), identifier, password).catch(() => undefined);
       setClaimed({ identifier, session });
     } catch (err) {

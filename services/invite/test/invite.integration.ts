@@ -17,6 +17,7 @@ const key = keyFrom(devEnv.match(/^INVITE_SECRET=(.+)$/m)![1]!.trim());
 const accountData = (type: string) => (userId: string) => `/_matrix/client/v3/user/${encodeURIComponent(userId)}/account_data/${type}`;
 const spacesPath = accountData('work.pasodrum.spaces');
 const invitedPath = accountData('work.pasodrum.invited');
+const settingsPath = accountData('work.pasodrum.settings');
 const enc = encodeURIComponent;
 
 const loginStatus = async (localpart: string, password: string) =>
@@ -72,7 +73,7 @@ describe('invite service', () => {
     assert.equal(list.status, 200);
     assert.ok(list.body.some((i: any) => i.code === r.body.code && i.email === email && i.role === 'staff'));
 
-    const c = await api(null, 'POST', `/${r.body.code}/claim`, { name: 'Tess Person', password: 'a-good-long-password' });
+    const c = await api(null, 'POST', `/${r.body.code}/claim`, { name: 'Tess Person', password: 'a-good-long-password', language: 'ja' });
     assert.equal(c.status, 200, JSON.stringify(c.body));
     assert.deepEqual(c.body, { userId: r.body.userId, identifier: localpartOf(r.body.userId) });
 
@@ -80,6 +81,7 @@ describe('invite service', () => {
     const profile = await mx(token, 'GET', `/_matrix/client/v3/profile/${encodeURIComponent(r.body.userId)}/displayname`);
     assert.equal(profile.body.displayname, 'Tess Person');
     assert.deepEqual((await mx(token, 'GET', invitedPath(r.body.userId))).body, { rooms: [rooms.workspace, rooms.general] });
+    assert.deepEqual((await mx(token, 'GET', settingsPath(r.body.userId))).body, { language: 'ja' });
 
     assert.equal((await api(null, 'POST', `/${r.body.code}/claim`, { name: 'X', password: 'another-password' })).status, 410);
     assert.equal((await api(null, 'GET', `/${r.body.code}`)).body.state, 'used');
@@ -235,6 +237,12 @@ describe('invite service', () => {
     const c = await api(null, 'POST', `/${r.body.code}/claim`, { name: 'A', password: 'long-enough-pw' });
     assert.deepEqual([c.status, c.body], [410, { error: 'expired' }]);
     assert.equal((await api(null, 'GET', `/${'A'.repeat(24)}`)).status, 404);
+
+    const f = await api(sofia, 'POST', '', { email: freshEmail(), role: 'external', spaceId: rooms.workspace, channelIds: [] });
+    const fc = await api(null, 'POST', `/${f.body.code}/claim`, { name: 'Fran', password: 'long-enough-pw', language: 'fr' });
+    assert.equal(fc.status, 200, JSON.stringify(fc.body));
+    const token = await login(fc.body.identifier, 'long-enough-pw');
+    assert.equal((await mx(token, 'GET', settingsPath(f.body.userId))).status, 404, 'an unknown language is ignored');
   });
 
   it('D-36: Staff at 10 on a client space invite its clients, nowhere else', async () => {

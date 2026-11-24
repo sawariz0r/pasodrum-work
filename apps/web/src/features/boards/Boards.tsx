@@ -1,3 +1,4 @@
+import shell from '../../app/shell/Shell.module.css';
 import { useT } from './strings';
 
 export function BoardsIcon({ size = 19, strokeWidth = 1.9 }: { size?: number; strokeWidth?: number }) {
@@ -11,4 +12,9 @@ export function BoardsIcon({ size = 19, strokeWidth = 1.9 }: { size?: number; st
 
 export function useBoardsLabel() {
   return useT()('boards');
+}
+
+/** The column's frame while its code loads, so the page doesn't shift. */
+export function BoardsColumnFallback() {
+  return <aside className={shell.sidebar} aria-hidden="true" />;
 }

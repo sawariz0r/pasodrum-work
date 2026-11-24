@@ -128,6 +128,12 @@ describe('settings', () => {
     expect(sync).toHaveBeenCalledWith('language', 'ja');
   });
 
+  it('stamps an account without a saved language with the current one', async () => {
+    const { store } = renderApp('/w/!pasodrum/c/!eng');
+    await flush();
+    expect(await store().settings()).toEqual({ language: 'en' });
+  });
+
   it('lists devices, this one first, and signs out one and the others', async () => {
     const { store } = renderApp('/settings/devices');
     await flush();

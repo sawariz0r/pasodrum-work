@@ -5,11 +5,14 @@ import { createElement } from 'react';
 import { lazyComponent } from '../../app/lazy';
 import { defineFeature } from '../../app/registry';
 import { useWorkspace } from '../../matrix';
-import { BoardsIcon, useBoardsLabel } from './Boards';
+import { BoardsColumnFallback, BoardsIcon, useBoardsLabel } from './Boards';
 import { IssueCard } from './IssueCard';
 
 const BoardsScreen = lazyComponent(() => import('./BoardsScreen').then((m) => m.BoardsScreen));
-const BoardsColumn = lazyComponent(() => import('./BoardsColumn').then((m) => m.BoardsColumn));
+const BoardsColumn = lazyComponent(
+  () => import('./BoardsColumn').then((m) => m.BoardsColumn),
+  () => createElement(BoardsColumnFallback),
+);
 /** Unread issue mentions and assignments (the same items Activity lists). */
 const useBoardsBadge = () => useWorkspace((x) => x.activity.filter((a) => a.unread && a.issue).length);
 

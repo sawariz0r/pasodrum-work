@@ -22,14 +22,14 @@ export async function api(token: string | null, method: string, path: string, bo
 export const freshEmail = (domain = 'example.com') => `t${randomBytes(4).toString('hex')}@${domain}`;
 export const localpartOf = (userId: string) => userId.slice(1, userId.indexOf(':'));
 
-const local = process.env.INVITE_DB ? new DatabaseSync(process.env.INVITE_DB) : null;
+const local = process.env.INVITE_DB ? new DatabaseSync(process.env.INVITE_DB, { timeout: 2000 }) : null;
 const run = (s: { get: (...p: string[]) => unknown; run: (...p: string[]) => unknown }, sql: string, params: string[]) =>
   /^select/i.test(sql) ? s.get(...params) ?? null : s.run(...params);
 
 // Without INVITE_DB it runs inside the invite container, which has node:sqlite and the database.
 export function db(sql: string, ...params: string[]): any {
   if (local) return JSON.parse(JSON.stringify(run(local.prepare(sql), sql, params), (_, v) => (typeof v === 'bigint' ? Number(v) : v)));
-  const script = `const {DatabaseSync}=require('node:sqlite');const d=new DatabaseSync('/data/invites.db');
+  const script = `const {DatabaseSync}=require('node:sqlite');const d=new DatabaseSync('/data/invites.db',{timeout:2000});
     const s=d.prepare(process.argv[1]);const p=JSON.parse(process.argv[2]);
     console.log(JSON.stringify(/^select/i.test(process.argv[1])?s.get(...p)??null:s.run(...p)));`;
   const out = execFileSync('docker', ['compose', '-f', 'dev/docker-compose.yml', '--env-file', 'dev/.env', 'exec', '-T', 'invite',

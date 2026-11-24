@@ -13,11 +13,6 @@
   color: var(--sidetext);
 }
 
-/* The list fades in, not the column: a transparent column shows the shell's base through it for the first frame. */
-.column > * {
-  animation: fade-in var(--dur-2) var(--ease-out);
-}
-
 .columnHead {
   display: flex;
   flex-shrink: 0;
@@ -328,7 +323,6 @@
   flex: 1;
   flex-direction: column;
   min-height: 0;
-  animation: fade-in var(--dur-2) var(--ease-out);
 }
 
 .pageHeader {
@@ -361,6 +355,7 @@
   min-height: 0;
   padding: 16px 20px 24px;
   overflow-y: auto;
+  animation: fade-in var(--dur-2) var(--ease-out);
 }
 
 .card {
@@ -678,15 +673,10 @@ button.dmTitle:hover {
     z-index: 26;
     visibility: hidden;
     transform: translateX(-100%);
-    animation: none;
     transition:
       transform var(--dur-3) var(--ease-out),
       box-shadow var(--dur-3) var(--ease-out),
       visibility 0s linear var(--dur-3);
-  }
-
-  :global(.thread-fold) .column > * {
-    animation: none;
   }
 
   :global(.thread-fold.drawer-open) .column {

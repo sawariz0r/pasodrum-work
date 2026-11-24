@@ -129,6 +129,13 @@ export function connectionOf(syncState: string | null, synced: boolean): Connect
   return 'online';
 }
 
+export const FIRST_RUN_HOLD_MS = 15_000;
+
+/** A fresh account whose listed invites are still being accepted: hold the start screen (capped) so it lands on a channel. */
+export function arriving(f: { synced: boolean; sinceSyncMs: number; hasChannel: boolean; listedInvite: boolean }): boolean {
+  return f.synced && !f.hasChannel && f.listedInvite && f.sinceSyncMs < FIRST_RUN_HOLD_MS;
+}
+
 const str = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
 const MEDIA = new Set(['m.image', 'm.video', 'm.audio', 'm.file']);

@@ -97,7 +97,8 @@ CREATE TABLE IF NOT EXISTS help_sent (userId TEXT PRIMARY KEY, ts INTEGER NOT NU
 `;
 
 export function openStore(path: string) {
-  const db = new DatabaseSync(path);
+  // The integration tests open this file from a second process; wait for it instead of failing with "database is locked".
+  const db = new DatabaseSync(path, { timeout: 2000 });
   db.exec(SCHEMA);
   const toInvite = (r: unknown): Invite => {
     const row = r as Record<string, unknown>;

@@ -22,6 +22,8 @@ Roadmap page: https://claude.ai/artifact/48a49o72pqtecYYWnVSXvk (source `docs/ro
 
 ## Waiting on the CEO
 
+- Invite emails (OPS-02, 2026-11-24): in Coolify, check `RESEND_API_KEY` is set on the invite service. After the next deploy its start log says `mail via Resend` or `mail via NOTHING`.
+- Client-join fixes (DES-08, 2026-11-24): built and committed. Re-test on production after deploy: new client space with a client email, join link in a private window.
 - Test confirm by email (SIDE-04): first turn OFF click and open tracking for noreply.prpl.se in Resend.
 - Test the client DM line ("Henrik Dahl is from Nordlys") in a real DM.
 

@@ -14,7 +14,11 @@ export function lazyComponent<P extends object>(load: () => Promise<ComponentTyp
   let Loaded: ComponentType<P> | undefined;
   let loading: Promise<ComponentType<P>> | undefined;
   const preload = () => (loading ??= load().then((c) => (Loaded = c)));
-  loaders.add(preload);
+  // A preload that fails (a network blip while idle) is forgotten, so opening the component later tries again.
+  loaders.add(() => preload().catch((e: unknown) => {
+    loading = undefined;
+    throw e;
+  }));
 
   function Inner(props: P) {
     // Suspends the way React.lazy does; use() would object when the retry finds the code already here.

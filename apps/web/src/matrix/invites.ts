@@ -63,8 +63,9 @@ export async function previewInvite(code: string): Promise<InvitePreview> {
 }
 
 /** Sets name + password for the invited account; resolves to the identifier to sign in with. */
-export async function claimInvite(code: string, name: string, password: string): Promise<string> {
-  const raw = await call<{ userId?: unknown; identifier?: unknown }>('POST', `/${encodeURIComponent(code)}/claim`, { body: { name, password } });
+export async function claimInvite(code: string, name: string, password: string, language?: 'en' | 'ja'): Promise<string> {
+  const body = { name, password, ...(language ? { language } : {}) };
+  const raw = await call<{ userId?: unknown; identifier?: unknown }>('POST', `/${encodeURIComponent(code)}/claim`, { body });
   const identifier = str(raw.identifier) ?? str(raw.userId);
   if (!identifier) throw new InviteError('other');
   return identifier;

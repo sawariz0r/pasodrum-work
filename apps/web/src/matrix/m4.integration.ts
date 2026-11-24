@@ -331,6 +331,7 @@ describe.skipIf(!inviteServiceUp)('invites by email (invite service)', () => {
     const identifier = await claimInvite(invite.code, 'New Person', 'a-new-password-123').catch((e: Error) => (e.message === 'rate-limited' ? ctx.skip() : Promise.reject(e)));
     expect((await previewInvite(invite.code)).state).toBe('used');
     const fresh = await openGuest(identifier, 'a-new-password-123');
+    expect(Object.values(fresh.store.getSnapshot().channels).flat().length).toBeGreaterThan(0);
     await until(fresh.store, (s) => s.spaces.some((x) => x.id === pasodrum) && s.channels[pasodrum]?.some((c) => c.id === id));
     expect(fresh.store.getSnapshot().myRoles[pasodrum]).toBe('staff');
     expect((await ingrid.store.pendingInvites(id)).some((p) => p.email === email)).toBe(false);
@@ -348,6 +349,7 @@ describe.skipIf(!inviteServiceUp)('invites by email (invite service)', () => {
     const invite = (await ingrid.store.pendingInvites(id)).find((p) => p.email === email)!;
     const identifier = await claimInvite(invite.code, 'Guest Person', 'a-new-password-123').catch((e: Error) => (e.message === 'rate-limited' ? ctx.skip() : Promise.reject(e)));
     const guest = await openGuest(identifier, 'a-new-password-123');
+    expect(Object.values(guest.store.getSnapshot().channels).flat().length).toBeGreaterThan(0);
     await until(guest.store, (s) => s.channels[pasodrum]?.some((c) => c.id === id));
     const snap = guest.store.getSnapshot();
     expect(snap.spaces).toEqual([{ id: pasodrum, name: 'Pasodrum', kind: 'workspace' }]);

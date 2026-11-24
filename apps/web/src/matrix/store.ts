@@ -37,7 +37,7 @@ import { sanitizeHtml, type SanitizedHtml } from './html';
 import { translateSegments } from './translate';
 import { createInvite, InviteError, listInvites, normalizeEmail, removePersonFor, resendInvite, revokeInvitesFor, revokeInvitesForSpace, revokeInvite, type NewInvite } from './invites';
 import {
-  connectionOf, emailFromId, hydra, looksExternal, mayChangeRole, mediaOf, membershipSummary, powerLevel, reactionsOf, replyFallback, roleOf, sameMembers, share,
+  arriving as firstRunArriving, connectionOf, emailFromId, FIRST_RUN_HOLD_MS, hydra, looksExternal, mayChangeRole, mediaOf, membershipSummary, powerLevel, reactionsOf, replyFallback, roleOf, sameMembers, share,
   accessRoleOf, externalRecordOf, knownSpacesOf, linkPreviewOf, linksOf, pinnedIdsOf, stripReplyFallback, threadStats, workspaceOf,
   type ExternalRecord, type PowerFacts, type RoomFacts, type ThreadReply,
 } from './map';
@@ -342,6 +342,8 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   let me: Person = { id: session.userId, name: localpart(session.userId) };
   let syncState: SyncState | null = null;
   let synced = false;
+  let syncedAt = 0;
+  let arrived = false;
   let sessionExpired = false;
   let uploadSeq = 0;
   let stopped = false;
@@ -1387,9 +1389,13 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   function confirmByEmail(): boolean | undefined {
     if (!synced) return undefined;
     if (client.getRooms().some((r) => r.isSpaceRoom() && joined(r) && !isClientSpace(r))) return false;
-    const listed = invitedNow().rooms;
-    if (client.getRooms().some((r) => r.getMyMembership() === KnownMembership.Invite && listed.has(r.roomId))) return undefined;
+    if (acceptingListed()) return undefined;
     return true;
+  }
+  /** True while a room the invite service listed is still an invite (being accepted). */
+  function acceptingListed(): boolean {
+    const listed = invitedNow().rooms;
+    return client.getRooms().some((r) => r.getMyMembership() === KnownMembership.Invite && listed.has(r.roomId));
   }
   const securityOf = () => {
     const byEmail = confirmByEmail();
@@ -1406,9 +1412,16 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
     const workspace = workspaceOf(rooms.map(factsOf), knownSpacesOf(client.getAccountData(SPACES as never)?.getContent()));
     const myRoles = myRolesOf(workspace.spaces);
     viewer = workspaceRoom ? 'team' : Object.values(myRoles).includes('external') ? 'external' : 'client';
+    const held = !arrived && firstRunArriving({
+      synced,
+      sinceSyncMs: Date.now() - syncedAt,
+      hasChannel: Object.values(workspace.channels).some((l) => l.length > 0),
+      listedInvite: synced && acceptingListed(),
+    });
+    if (synced && !held) arrived = true;
     return {
       me,
-      connection: connectionOf(syncState, synced),
+      connection: connectionOf(syncState, synced && !held),
       spaces: workspace.spaces,
       channels: withFlags(withOutside(workspace.channels, myRoles)),
       timelines: Object.fromEntries([...open].map(([id, flags]) => [id, timelineOf(id, flags)])),
@@ -1532,7 +1545,11 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
   client.on(ClientEvent.Sync, (state) => {
     syncState = state;
     if (state === SyncState.Prepared || state === SyncState.Syncing) {
-      if (!synced) security.refresh();
+      if (!synced) {
+        security.refresh();
+        syncedAt = Date.now();
+        setTimeout(() => !stopped && schedule(), FIRST_RUN_HOLD_MS + 50);
+      }
       synced = true;
       markReady();
       housekeeping();
@@ -2745,6 +2762,11 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       await ready;
       const prev = client.getAccountData(SETTINGS as never)?.getContent<Record<string, unknown>>() ?? {};
       await client.setAccountData(SETTINGS as never, { ...prev, [key]: value } as never);
+    },
+    async settings() {
+      await ready;
+      const language = client.getAccountData(SETTINGS as never)?.getContent<Record<string, unknown>>()?.language;
+      return typeof language === 'string' ? { language } : {};
     },
     async createClientSpace({ name, colour, channels: channelNames, team, clientEmails }) {
       await ready;

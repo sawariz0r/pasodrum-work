@@ -21,6 +21,7 @@ import { useOpenThread, useThreadNav } from '../thread/useThread';
 import { useDmName } from '../people/names';
 import { noStoredTabs, type FeatureRoute } from '../registry';
 import { useRegistry } from '../RegistryProvider';
+import { preloadAll } from '../lazy';
 import { ToastProvider } from '../toast';
 import { AppStart } from './AppStart';
 import { ChannelTabs } from './ChannelTabs';
@@ -43,6 +44,15 @@ export function Workspace({ onSignOut }: { onSignOut: () => void }) {
   const meId = useWorkspace((x) => x.me.id);
   const { routes } = useRegistry();
   useDraftsFor(meId);
+  useEffect(() => {
+    const load = () => void preloadAll().catch(() => {});
+    if ('requestIdleCallback' in window) {
+      const id = requestIdleCallback(load, { timeout: 1500 });
+      return () => cancelIdleCallback(id);
+    }
+    const id = setTimeout(load, 300);
+    return () => clearTimeout(id);
+  }, []);
   if (starting) return <AppStart />;
   return (
     <SignOut.Provider value={onSignOut}>
@@ -111,7 +121,6 @@ function ChannelRoute() {
     if (channel && !redirect) rememberPlace(channel.spaceId, channel.id);
   }, [channel, redirect]);
 
-  if (!channelId) return <Navigate to="/unavailable" replace />;
   return (
     <>
       {redirect && <Navigate to={redirect} replace />}

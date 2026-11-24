@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  connectionOf, emailFromId, knownSpacesOf, linksOf, loginCandidates, looksExternal, mediaOf, membershipSummary, reactionsOf, replyFallback, sameMembers, share, stripReplyFallback, threadStats, workspaceOf,
+  arriving, connectionOf, emailFromId, FIRST_RUN_HOLD_MS, knownSpacesOf, linksOf, loginCandidates, looksExternal, mediaOf, membershipSummary, reactionsOf, replyFallback, sameMembers, share, stripReplyFallback, threadStats, workspaceOf,
   type RoomFacts,
 } from './map';
 
@@ -150,6 +150,19 @@ describe('connectionOf', () => {
     expect(connectionOf('CATCHUP', true)).toBe('reconnecting');
     expect(connectionOf('ERROR', true)).toBe('offline');
     expect(connectionOf('ERROR', false)).toBe('offline');
+  });
+});
+
+describe('arriving', () => {
+  const base = { synced: true, sinceSyncMs: 0, hasChannel: false, listedInvite: true };
+  it('holds a fresh account only while its listed invites are accepted, under the cap', () => {
+    expect(arriving(base)).toBe(true);
+    expect(arriving({ ...base, sinceSyncMs: FIRST_RUN_HOLD_MS - 1 })).toBe(true);
+    expect(arriving({ ...base, sinceSyncMs: FIRST_RUN_HOLD_MS })).toBe(false);
+    expect(arriving({ ...base, sinceSyncMs: FIRST_RUN_HOLD_MS + 1 })).toBe(false);
+    expect(arriving({ ...base, synced: false })).toBe(false);
+    expect(arriving({ ...base, hasChannel: true })).toBe(false);
+    expect(arriving({ ...base, listedInvite: false })).toBe(false);
   });
 });
 

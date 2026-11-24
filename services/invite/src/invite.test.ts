@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderInvite, tileColor } from './email.ts';
 import { isCode, localpartFor, newCode, newPassword, normalizeEmail } from './ids.ts';
-import { parseAddress } from './mail.ts';
+import { mailer, parseAddress } from './mail.ts';
 import { canDelete, canInvite, canManage, isGenuine, normalizeRole, rateLimiter, spaceInfo, stateOf, teamOf, type StateEvent } from './rules.ts';
 import { keyFrom, seal, unseal } from './secret.ts';
 
@@ -189,5 +189,22 @@ describe('invite email', () => {
   it('parses the From address', () => {
     expect(parseAddress('Pasodrum work <invites@noreply.prpl.se>')).toEqual({ name: 'Pasodrum work', email: 'invites@noreply.prpl.se' });
     expect(parseAddress('invites@noreply.prpl.se')).toEqual({ email: 'invites@noreply.prpl.se' });
+  });
+});
+
+describe('mail', () => {
+  const mail = { to: 'a@example.com', subject: 's', html: '<p>h</p>', text: 't' };
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('refuses to send when nothing is configured, without a request', async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    await expect(mailer({ from: 'x@example.com' })(mail)).rejects.toThrow('not configured');
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('carries Resend’s status and reason into the error', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{"message":"domain is not verified"}', { status: 403 })));
+    await expect(mailer({ from: 'x@example.com', resendKey: 're_test' })(mail)).rejects.toThrow(/403.*domain is not verified/);
   });
 });

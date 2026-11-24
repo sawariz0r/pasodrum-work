@@ -1,5 +1,5 @@
 export type Mail = { to: string; subject: string; html: string; text: string };
-export type MailConfig = { from: string; resendKey?: string; mailpitUrl: string };
+export type MailConfig = { from: string; resendKey?: string; mailpitUrl?: string };
 export type SendMail = (mail: Mail) => Promise<void>;
 
 export function parseAddress(s: string): { name?: string; email: string } {
@@ -10,6 +10,7 @@ export function parseAddress(s: string): { name?: string; email: string } {
 // D-26: Resend in production, Mailpit's HTTP send API locally.
 export function mailer(cfg: MailConfig): SendMail {
   return async (mail) => {
+    if (!cfg.resendKey && !cfg.mailpitUrl) throw new Error('mail is not configured (set RESEND_API_KEY)');
     const res = cfg.resendKey
       ? await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -27,6 +28,6 @@ export function mailer(cfg: MailConfig): SendMail {
             Text: mail.text,
           }),
         });
-    if (!res.ok) throw new Error(`mail ${cfg.resendKey ? 'resend' : 'mailpit'} → ${res.status}`);
+    if (!res.ok) throw new Error(`mail ${cfg.resendKey ? 'resend' : 'mailpit'} → ${res.status}: ${(await res.text()).slice(0, 300)}`);
   };
 }

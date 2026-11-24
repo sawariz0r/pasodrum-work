@@ -244,6 +244,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
     if (!name || name.length > 100) throw fail(400, 'invalid-name');
     const password = body.password;
     if (typeof password !== 'string' || password.length < 8 || password.length > 1024) throw fail(400, 'weak-password');
+    const language = body.language === 'en' || body.language === 'ja' ? body.language : undefined;
     if (claiming.has(code)) throw fail(409, 'busy');
     claiming.add(code);
     try {
@@ -261,6 +262,10 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
         const had = Array.isArray(prev.rooms) ? prev.rooms.filter((r): r is string => typeof r === 'string') : [];
         return { ...prev, rooms: [...new Set([...had, ...invited])] };
       }).catch((e: unknown) => console.error(`invited account data failed: ${(e as Error).message}`));
+      if (language) {
+        await mx.updateAccountData(token, i.userId, 'work.pasodrum.settings', (prev) => ({ ...prev, language }))
+          .catch((e: unknown) => console.error(`settings account data failed: ${(e as Error).message}`));
+      }
       await mx.changePassword(token, localpart, temp, password);
       await mx.logout(token);
       store.claim(code, i.userId, now());

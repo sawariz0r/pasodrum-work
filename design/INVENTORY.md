@@ -333,3 +333,8 @@ Approved 2026-11-22 (CEO, lock as the default). Boards on the canvas page **Peop
 | Remove a Staff member: card + "Signs them out everywhere. Their messages stay." | RemoveStaff, RemoveStaffJP, RemoveStaffDark, RemoveStaffJPDark | approved 2026-11-22 |
 | Remove an External: same sign-out line under what they lose | RemoveExternalSignOut, RemoveExternalSignOutJPDark | approved 2026-11-22 |
 
+## Invite email not sent (DES-09)
+
+| Screen / state | Board | Status |
+|---|---|---|
+| The invite email could not be sent: New client space, Add people, Resend (D-56) | — | needs design |

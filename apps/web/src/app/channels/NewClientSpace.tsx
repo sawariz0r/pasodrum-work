@@ -48,14 +48,15 @@ export function NewClientSpaceDialog({ open, onClose }: { open: boolean; onClose
 
   const clean = name.trim();
   const lower = clean.toLowerCase();
-  const taken = !!clean && (spaces.some((sp) => sp.kind === 'client' && sp.name.trim().toLowerCase() === lower) || rejected.includes(lower));
-  const chosen = channels.filter((c) => c.on).map((c) => c.name);
   const creating = phase === 'creating';
+  // The new space lands in the snapshot before the store resolves; it isn't a duplicate of itself.
+  const taken = !creating && !!clean && (spaces.some((sp) => sp.kind === 'client' && sp.name.trim().toLowerCase() === lower) || rejected.includes(lower));
+  const chosen = channels.filter((c) => c.on).map((c) => c.name);
   // A leftover address that isn't one keeps Create off instead of vanishing on Create.
   const badDraft = !!draft.trim() && !isEmail(draft.trim());
   const ok = !!clean && !taken && chosen.length > 0 && !badDraft && !creating;
   const initial = (Array.from(clean)[0] ?? '?').toUpperCase();
-  const others = spaces.filter((sp) => sp.kind === 'client').slice(0, 1);
+  const others = spaces.filter((sp) => sp.kind === 'client' && !(creating && sp.name.trim().toLowerCase() === lower)).slice(0, 1);
 
   /** Turns what's typed or pasted into chips; whatever isn't an address stays in the field. */
   const takeDraft = (value: string, all: boolean) => {

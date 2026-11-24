@@ -546,6 +546,7 @@ export interface WorkspaceStore {
   setNotifyLevel(channelId: string | 'default', level: NotifyLevel): Promise<void>;
   /** Synced language/theme settings (account data work.pasodrum.settings, D-09). */
   setSetting(key: 'language' | 'theme', value: string): Promise<void>;
+  settings(): Promise<{ language?: string }>;
   // M5
   /**
    * Owners/Admins of the workspace. Creates the space (D-27 levels), its channels, adds the team, invites the client emails.

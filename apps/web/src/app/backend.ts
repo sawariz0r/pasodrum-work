@@ -25,7 +25,7 @@ export interface Backend {
   /** M4 join page, before sign-in (D-26). */
   previewInvite(code: string): Promise<InvitePreview>;
   /** Resolves to the identifier to sign in with. Used or expired links reject (410). */
-  claimInvite(code: string, name: string, password: string): Promise<string>;
+  claimInvite(code: string, name: string, password: string, language?: 'en' | 'ja'): Promise<string>;
   /** D-38 confirm link page, before sign-in. Opening never confirms; rejects Error('unreachable'). */
   previewConfirm(code: string): Promise<ConfirmLink>;
   /** "Yes, it's me". Rejects Error('gone' | 'unreachable' | 'other'). */

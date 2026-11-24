@@ -102,6 +102,16 @@ Cross-link related decisions with `[[D-NN]]`. When superseding, add a new entry 
 - **Sign-in identifier:** a username, or a work email. For an email we try, in order: email bound to an account; the local part when the domain is the server's own (`oscar@pasodrum.work` → `oscar`); the deterministic ID from [[D-07]] (`henrik@nordlys.no` → `henrik_nordlys.no`).
 - **Routes:** `/signin`, `/w/:spaceId/c/:channelId` (ids URL-encoded), catch-all "not available". The URL is the navigation state.
 
+### D-56 · The invite service runs without mail and says so, amends D-26 · Accepted · 2026-11-24
+- **Why:** on the CEO's production test no invite email arrived and nothing said why. With `RESEND_API_KEY` empty the mailer fell back to `http://mailpit:8025`, which does not exist in production, and a failed send was only a log line.
+- **Decision:** no fallback host. With neither `RESEND_API_KEY` nor `MAILPIT_URL` the service logs `MAIL IS OFF…` at start, prints `mail via NOTHING`, and every send fails with "mail is not configured". It keeps running: there is no staging (D-18), and refusing to start would take invites, claims, Translate, presence and confirm by email down with it. Send errors carry the provider's reply (first 300 characters) in the log only.
+- **Not yet:** telling the admin in the app when `emailed:false` comes back is a new state and needs a board first (DES-09).
+
+### D-55 · Language is set when the account is made and follows the account, completes D-09 · Accepted (CEO) · 2026-11-24
+- **CEO, 2026-11-24:** "If it's Japanese, they should be set to Japanese, any other lang then they'll be english."
+- **Decision:** the join page sends the browser's language with the claim (`ja…` → `ja`, anything else → `en`; a language someone else picked earlier in the same browser is ignored on purpose), and the invite service writes it to `work.pasodrum.settings`. At every start the account's language wins over the device's. An account without one (made before this) takes the device's current language once.
+- **Consequence:** a language picked in the browser's storage no longer overrides the account. Change it in the profile menu.
+
 ### D-46 · Remove from Pasodrum locks the account (SIDE-08), amends D-07/D-26/D-36/D-38 · Accepted (CEO approved the boards, lock as default) · 2026-11-22
 - **Who:** Workspace settings → People → ⋯ → Remove from Pasodrum. Allowed when the target's workspace level is below mine and I'm Owner/Admin: Owners remove Admins, Staff, Externals; Admins remove Staff and Externals; nobody removes an Owner (Owners step down themselves, D-27) or themselves. Clients keep "Remove from space" (D-28). Checked by the invite service and again by the app.
 - **Lock, not deactivate (CEO):** the invite service locks the account with Continuwuity's HTTP admin lock (MSC4323, `PUT /_matrix/client/v1/admin/lock/{user}`): every token gets 401 `M_USER_LOCKED`, sign-in is refused. Reversible (`{"locked":false}`); deactivation would burn the email/ID for good (D-26 amendment). A never-claimed account isn't locked (its codes die, as today).
@@ -419,3 +429,11 @@ Format: **Date · short title** → what was discovered, why it matters, what ch
 - electron-updater fires `update-downloaded` as soon as its own zip is on disk, before Squirrel.Mac has fetched and unpacked it from electron-updater's local proxy. If Squirrel then fails (bad bundle, permissions), the card still says Update ready and `quitAndInstall()` waits forever for Squirrel. The shell now tracks Squirrel's own `update-downloaded`, asks Squirrel again on Restart if it never got the update, and shows the macOS alert on any error after a press. Background errors only go to the log.
 - Updater log: `~/Library/Logs/Pasodrum work/updater.log`.
 - If an install ever runs privileged (bundle or its folder not writable by the user), ShipIt moves the new bundle in as `root:wheel`, so every later update needs an admin prompt too. Install by dragging from the dmg; never copy the app with `sudo`. Fix a stuck Mac: `sudo chown -R "$USER":staff "<app>"`, `sudo launchctl bootout system/work.pasodrum.app.ShipIt`, delete `~/Library/Caches/work.pasodrum.app.ShipIt`.
+
+**2026-11-24 · CEO client-join test (DES-08)**
+- A fresh account's first sync ends before its invites are accepted, so anything that routes on "first sync done" sees an empty workspace. `connection` now stays `starting` (the App start skeleton) for up to 15 s while a listed invite is still pending and no channel is joined, once per session.
+- Never redirect to a dead-end URL. "Not available" is drawn in place at `/`, so the page moves on by itself when a channel appears.
+- The shell remounts when you move between route types (Home, DMs, Docs…), so a mount animation replays on every rail click. Animate content only, never a title or a column.
+- Lazy code is preloaded when the app is idle after start (`preloadAll()`), so Docs and Boards open without a chunk wait. A preload that fails is forgotten so a later click retries.
+- A dialog that checks a name against the live list must stop checking once its own create is in flight (the new space lands in the list before the create call returns).
+- The local stack fills up with spaces from integration runs; with many leftovers the seeded accounts lose the "+" tile and name-based tests fail. `pnpm dev:server:reset` then `pnpm dev:seed` before a full `test:invite` / `test:matrix` run. `dev/.env` needs `SYSTEM_PASSWORD` (see `dev/.env.example`).

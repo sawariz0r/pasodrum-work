@@ -54,6 +54,8 @@ describe('invite service client', () => {
     expect(await claimInvite('c', 'Henrik Dahl', 'secret-pass')).toBe('henrik@nordlys.no');
     expect(JSON.parse(String(calls[0]!.init.body))).toEqual({ name: 'Henrik Dahl', password: 'secret-pass' });
     expect(calls[0]!.url).toBe('https://pasodrum.work/api/invites/c/claim');
+    await claimInvite('c', 'Henrik Dahl', 'secret-pass', 'ja');
+    expect(JSON.parse(String(calls[1]!.init.body))).toEqual({ name: 'Henrik Dahl', password: 'secret-pass', language: 'ja' });
     reply = { status: 410, body: { error: 'used' } };
     expect((await rejection(claimInvite('c', 'H', 'p')))?.message).toBe('used');
     reply = { status: 410, body: {} };

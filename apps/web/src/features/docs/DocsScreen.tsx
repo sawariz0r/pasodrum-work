@@ -34,10 +34,20 @@ export function DocsScreen() {
     const mine = selected && pages[selected.id];
     if (!selected || !mine) return <PageSkeleton />;
     const first = mine.roots[0];
-    if (first) return <Navigate to={pagePath(first.id)} replace />;
+    if (first) return (
+      <>
+        <Navigate to={pagePath(first.id)} replace />
+        <PageSkeleton />
+      </>
+    );
     return <NoPages spaceId={selected.id} canCreate={mine.canCreate} />;
   }
-  if (!located && pageId === seen) return <Navigate to="/docs" replace />;
+  if (!located && pageId === seen) return (
+    <>
+      <Navigate to="/docs" replace />
+      <PageSkeleton />
+    </>
+  );
   if (!located) return spaces.every((sp) => pages[sp.id]) ? <NotAvailable /> : <PageSkeleton />;
   return <PageView key={pageId} located={located} />;
 }

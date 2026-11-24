@@ -51,6 +51,9 @@ function assistantConfig() {
   };
 }
 const assistant = assistantConfig();
+const resendKey = process.env.RESEND_API_KEY || undefined;
+const mailpitUrl = process.env.MAILPIT_URL || undefined;
+if (!resendKey && !mailpitUrl) console.error('MAIL IS OFF: RESEND_API_KEY is not set. Invites are created but no email is sent.');
 const app = createApp({
   cfg: {
     serverName,
@@ -65,8 +68,8 @@ const app = createApp({
   assistant: { get: homeserverGet(matrixUrl), config: assistant },
   sendMail: mailer({
     from: env('MAIL_FROM', 'Pasodrum work <invites@noreply.prpl.se>'),
-    resendKey: process.env.RESEND_API_KEY || undefined,
-    mailpitUrl: env('MAILPIT_URL', 'http://mailpit:8025'),
+    resendKey,
+    mailpitUrl,
   }),
   key: keyFrom(env('INVITE_SECRET')),
   confirmKey: keyFrom(env('CONFIRM_KEY_SECRET'), 'pasodrum-confirm-keys/v1', 'CONFIRM_KEY_SECRET'),
@@ -75,7 +78,7 @@ const app = createApp({
 
 const port = Number(env('PORT', '8080'));
 const server = createServer(app).listen(port, () => {
-  console.log(`invite service on :${port} (${serverName}, mail via ${process.env.RESEND_API_KEY ? 'Resend' : 'Mailpit'}, translate ${translate ? `on, ${dailyLimit}/day` : 'off'}, assistant ${assistant ? 'on' : 'off'})`);
+  console.log(`invite service on :${port} (${serverName}, mail via ${resendKey ? 'Resend' : mailpitUrl ? 'Mailpit' : 'NOTHING'}, translate ${translate ? `on, ${dailyLimit}/day` : 'off'}, assistant ${assistant ? 'on' : 'off'})`);
 });
 server.on('upgrade', (req, socket, head) => {
   if (!app.upgrade(req, socket, head)) socket.destroy();

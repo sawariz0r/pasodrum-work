@@ -3,6 +3,7 @@ import i18n from 'i18next';
 import { matchPath, Route, Routes, useLocation, useNavigate } from 'react-router';
 import { useStore, useWorkspace } from '../../matrix';
 import { channelPath, homeChannel } from '../places';
+import { currentLanguage, setLanguage } from '../i18n';
 import { lazyComponent } from '../lazy';
 import { onThemePrefChange } from '../prefs';
 
@@ -32,7 +33,7 @@ export function WithSettings({ children }: { children: ReactNode }) {
   const from = (location.state as Background | null)?.background;
   const home = useWorkspace((x) => {
     const c = homeChannel(x);
-    return c ? channelPath(c.spaceId, c.id) : '/unavailable';
+    return c ? channelPath(c.spaceId, c.id) : '/';
   });
   const tab = (match?.tab as SettingsTab | undefined) ?? 'profile';
   const background = match ? (from ?? home) : undefined;
@@ -57,10 +58,30 @@ export function WithSettings({ children }: { children: ReactNode }) {
 export function SettingsSync() {
   const store = useStore();
   useEffect(() => {
-    const onLanguage = (lng: string) => void store.setSetting('language', lng).catch(() => {});
+    let live = true;
+    let account: string | undefined;
+    const onLanguage = (lng: string) => {
+      if (lng === account) return;
+      account = lng;
+      void store.setSetting('language', lng).catch(() => {
+        if (account === lng) account = undefined;
+      });
+    };
     i18n.on('languageChanged', onLanguage);
+    // The account's language wins at sign-in; an account without one (made before this) is stamped with the current one.
+    store.settings().then(
+      ({ language }) => {
+        if (!live || account !== undefined) return;
+        if (language === 'en' || language === 'ja') {
+          account = language;
+          if (language !== currentLanguage()) void setLanguage(language);
+        } else onLanguage(currentLanguage());
+      },
+      () => {},
+    );
     const offTheme = onThemePrefChange((pref) => void store.setSetting('theme', pref).catch(() => {}));
     return () => {
+      live = false;
       i18n.off('languageChanged', onLanguage);
       offTheme();
     };
