@@ -1,4 +1,5 @@
 // D-38: the system sender "Pasodrum" (the service makes sure it exists at startup) tells a client's contact that they need help.
+import { localpartOf } from './ids.ts';
 import { MatrixError, type Matrix } from './matrix.ts';
 import type { Store } from './store.ts';
 
@@ -34,10 +35,21 @@ export type Help = {
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
+const NAME_MAX = 100;
+
+// The system account is a server admin: Continuwuity runs a body it sends that starts with `\!admin` as an admin command,
+// in any room. A display name is the requester's own text, so it is one line, and quoted unless it starts with a letter or digit.
+function nameLine(name: string): { plain: string; lead: string } {
+  const plain = Array.from(name.replace(/[\p{Cc}\p{Cf}\p{Z}\s]+/gu, ' ').trim()).slice(0, NAME_MAX).join('').trim();
+  return { plain, lead: /^[\p{L}\p{N}]/u.test(plain) ? plain : `“${plain}”` };
+}
+
 // Full plain body for every client (D-05); our fields ride along. Never a code, key or link.
 export function helpMessage(h: Help): Record<string, unknown> {
+  const given = nameLine(h.name);
+  const name = given.plain ? given : nameLine(localpartOf(h.userId));
   const lines = [
-    `${h.name} needs your help`,
+    `${name.lead} needs your help`,
     REASON[h.reason],
     NEXT[h.reason],
     [h.spaceName, h.email, h.localTime && `their time ${h.localTime}`].filter(Boolean).join(' · '),
@@ -49,7 +61,7 @@ export function helpMessage(h: Help): Record<string, unknown> {
     formatted_body: lines.map(esc).join('<br>'),
     'work.pasodrum.help': {
       user_id: h.userId,
-      name: h.name,
+      name: name.plain,
       ...(h.spaceId ? { space_id: h.spaceId } : {}),
       ...(h.spaceName ? { space_name: h.spaceName } : {}),
       reason: h.reason,
