@@ -12,6 +12,8 @@ new_user_displayname_suffix = ""
 # 50 MB uploads (Batch B) plus request overhead.
 max_request_size = 53000000
 url_preview_domain_contains_allowlist = ["*"]
+# The system account is a server admin and posts text from clients; admin commands only in #admins.
+admin_escape_commands = false
 
 [global.well_known]
 client = "http://localhost:8008"
