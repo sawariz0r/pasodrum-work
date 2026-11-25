@@ -347,6 +347,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
     }
     const revoked = store.revokeAllForUser(userId, now());
     store.dropConfirmKey(userId);
+    presence.closeUser(userId);
     return new Reply(200, { revoked, locked });
   }
 
