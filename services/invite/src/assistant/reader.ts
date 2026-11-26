@@ -32,6 +32,7 @@ const CALL_MS = 10_000;
 const MAX_KINDS = 100_000;
 const MAX_JOINED = 5_000;
 const PAGE_LIMIT = 100;
+const NAME_CHARS = 256;
 const ROOM_ID = /^![\x21-\x7e]{1,254}$/;
 const EVENT_ID = /^\$[\x21-\x7e]{1,254}$/;
 const PROJECT = 'work.pasodrum.boards.project';
@@ -272,7 +273,7 @@ export function openReader(deps: ReaderDeps, token: string) {
     if (!kind || kind === 'other') return null;
     const where = await whereIs(room, kind, state, me, ws);
     if (!where) return null;
-    return { id: room, kind, name: mask(str(contentOf(state.one('m.room.name')).name) ?? ''), where, state };
+    return { id: room, kind, name: mask(str(contentOf(state.one('m.room.name')).name) ?? '', NAME_CHARS), where, state };
   }
 
   const located = (room: string): Promise<Located | null> =>
@@ -314,10 +315,10 @@ export function openReader(deps: ReaderDeps, token: string) {
     return {
       kind: 'message',
       place: place.name,
-      from: mask(str(contentOf(place.state.one('m.room.member', sender)).displayname) ?? ''),
+      from: mask(str(contentOf(place.state.one('m.room.member', sender)).displayname) ?? '', NAME_CHARS),
       role,
       at: typeof e.origin_server_ts === 'number' ? e.origin_server_ts : 0,
-      text: mask(body).slice(0, LIMITS.itemChars),
+      text: mask(body, LIMITS.itemChars),
       ref: { k: 'message', room: place.id, event: e.event_id },
     };
   }

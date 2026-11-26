@@ -7,7 +7,7 @@ import { asRef, openLedger, type ModelItem } from './ledger.ts';
 import type { Mask } from './mask.ts';
 import { INSTRUCTIONS } from './prompt.ts';
 import { ProviderError, developer, userData, type ProviderItem, type Step, type StepResult, type Usage } from './provider.ts';
-import type { Place, Reader, Where } from './reader.ts';
+import type { Place, Read, Reader, Where } from './reader.ts';
 import { CHAT_TOOLS, runChat, type ChatContext } from './sources/chat.ts';
 import { add, costMicros, estimate, validTz, zero, type Outcome, type Price, type UsageBook } from './usage.ts';
 import { CAPS, FIND_MS, LIMITS, type Answer, type AskContext, type Can, type Depth, type HistoryTurn, type Lang, type Ref, type ServerMessage } from './wire.ts';
@@ -161,6 +161,15 @@ export function startAsk(d: AskDeps): Running | 'day-limit' | 'month-limit' {
 
   const status = () => send({ t: 'status', stage: hello.closer ? 'closer' : 'looking', places: ledger.placesRead() });
 
+  /** The context and the earlier turns may name one message or thread many times; each is read once per ask. */
+  const reads = new Map<string, Promise<Read | null>>();
+  function readRef(ref: Extract<Ref, { k: 'message' | 'thread' }>): Promise<Read | null> {
+    const key = ref.k === 'message' ? `m\u0000${ref.room}\u0000${ref.event}` : `t\u0000${ref.room}\u0000${ref.root}`;
+    let read = reads.get(key);
+    if (!read) reads.set(key, (read = ref.k === 'message' ? reader.readEvent(ref.room, ref.event) : reader.readThread(ref.room, ref.root)));
+    return read;
+  }
+
   /** One source of an earlier turn, checked now; null drops the whole turn. */
   async function checkSource(ref: Ref): Promise<ModelItem | null> {
     if (ref.k === 'place') {
@@ -168,7 +177,7 @@ export function startAsk(d: AskDeps): Running | 'day-limit' | 'month-limit' {
       return p && ledger.place(p).item;
     }
     if (ref.k !== 'message' && ref.k !== 'thread') return null;
-    const read = ref.k === 'message' ? await reader.readEvent(ref.room, ref.event) : await reader.readThread(ref.room, ref.root);
+    const read = await readRef(ref);
     const first = read?.items[0];
     return read && first ? ledger.quiet(read.place, first) : null;
   }
@@ -200,7 +209,7 @@ export function startAsk(d: AskDeps): Running | 'day-limit' | 'month-limit' {
         else wheres.push(null);
         if (p && c.newest) chat.newest = { room: p.id, event: c.newest };
       } else if (ref.k === 'message' || ref.k === 'thread') {
-        const read = ref.k === 'message' ? await reader.readEvent(ref.room, ref.event) : await reader.readThread(ref.room, ref.root);
+        const read = await readRef(ref);
         if (!read) {
           wheres.push(null);
           continue;
