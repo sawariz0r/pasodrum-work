@@ -29,7 +29,7 @@ export const offeredFrom = (parts: string[]): Offered => new Set(parts.map((p) =
 
 const STRIP = /[؜‎‏‪-‮⁦-⁩]/g;
 const CONTROL = /\p{Cc}+/gu;
-const LINK = /[a-z][a-z0-9+.-]*:\/\/|\bwww\.|\bmailto:|\bmatrix:|[\w.%+-]+@[\w-]+(?:\.[\w-]+)+|[@!#$+][\w.=/+-]+:[\w.-]+|\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}(?![\w-])(?:\/\S*)?/i;
+const LINK = /[a-z][a-z0-9+.-]*:\/\/|\bwww\.|\bmailto:|\bmatrix:|(?<![\w.%+-])[\w.%+-]+@[\w-]+(?:\.[\w-]+)+|[@!#$+][\w.=/+-]+:[\w.-]+|\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}(?![\w-])(?:\/\S*)?/i;
 const SENTENCE = /[^]*?(?:[.!?](?:\s+|$)|[。！？]\s*|$)/g;
 
 export function clean(v: unknown, max: number): string {
