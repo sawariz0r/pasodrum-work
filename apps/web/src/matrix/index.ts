@@ -8,6 +8,7 @@ export { createWorkspaceStore } from './store';
 export { previewInvite, claimInvite } from './invites';
 export { previewConfirm, confirmDevice, askForHelpByLink, type ConfirmLink } from './confirm';
 export { fold } from './search';
+export { trimUrl } from './html';
 export { findRefs } from './assistant';
 export type { Answer, AskContext, AskError, Availability, Can, Depth, HistoryTurn, Lang, Looked, Part, Ref, Status } from './assistantWire';
 

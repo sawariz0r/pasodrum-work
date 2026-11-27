@@ -1,4 +1,4 @@
-import type { Message } from '../../matrix';
+import { trimUrl, type Message } from '../../matrix';
 
 const groupWindowMs = 5 * 60_000;
 
@@ -83,15 +83,6 @@ export function dayLabel(day: Date, now: Date): DayLabel {
 export type TextPart = { text: string; href?: string };
 
 const urlPattern = /https?:\/\/[A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]+/g;
-const trailing = /[.,;:!?'"\]]+$/;
-
-function trimUrl(raw: string): string {
-  let url = raw.replace(trailing, '');
-  while (url.endsWith(')') && (url.match(/\(/g)?.length ?? 0) < (url.match(/\)/g)?.length ?? 0)) {
-    url = url.slice(0, -1).replace(trailing, '');
-  }
-  return url;
-}
 
 /** Splits plain text into text and http(s) link parts. */
 export function linkify(body: string): TextPart[] {
