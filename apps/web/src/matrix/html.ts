@@ -40,8 +40,7 @@ export interface SanitizedHtml {
 
 // ASCII URL characters only, so Japanese text right after a URL ends it.
 const URL_RUN = /https?:\/\/[A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]+/gi;
-const TRAILING = /[.,;:!?'*]$/;
-const count = (s: string, ch: string) => s.split(ch).length - 1;
+const TRAILING = new Set(['.', ',', ';', ':', '!', '?', "'", '*']);
 
 const isWebUrl = (raw: string) => {
   try {
@@ -52,17 +51,36 @@ const isWebUrl = (raw: string) => {
   }
 };
 
+/**
+ * A URL run without its trailing punctuation or unbalanced closing brackets. Brackets are counted once and the end
+ * walks back, so a run of thousands of closers stays linear (a message body is attacker-controlled).
+ */
+export function trimUrl(raw: string): string {
+  let parens = 0;
+  let brackets = 0;
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i];
+    if (ch === ')') parens++;
+    else if (ch === '(') parens--;
+    else if (ch === ']') brackets++;
+    else if (ch === '[') brackets--;
+  }
+  let end = raw.length;
+  while (end > 0) {
+    const ch = raw[end - 1]!;
+    if (TRAILING.has(ch)) end--;
+    else if (ch === ')' && parens > 0) { parens--; end--; }
+    else if (ch === ']' && brackets > 0) { brackets--; end--; }
+    else break;
+  }
+  return raw.slice(0, end);
+}
+
 /** M7. http(s) URLs in plain text, in order; trailing punctuation and an unbalanced closing bracket aren't part of them. */
 export function urlsIn(text: string): string[] {
   const out: string[] = [];
   for (const m of text.matchAll(URL_RUN)) {
-    let url = m[0];
-    for (;;) {
-      if (TRAILING.test(url)) url = url.slice(0, -1);
-      else if (url.endsWith(')') && count(url, ')') > count(url, '(')) url = url.slice(0, -1);
-      else if (url.endsWith(']') && count(url, ']') > count(url, '[')) url = url.slice(0, -1);
-      else break;
-    }
+    const url = trimUrl(m[0]);
     if (isWebUrl(url)) out.push(url);
   }
   return out;
