@@ -83,14 +83,23 @@ export function dayLabel(day: Date, now: Date): DayLabel {
 export type TextPart = { text: string; href?: string };
 
 const urlPattern = /https?:\/\/[A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]+/g;
-const trailing = /[.,;:!?'"\]]+$/;
+const trailing = new Set('.,;:!?\'"]');
 
+// Counts once and walks back from the end: the trim must stay linear in the run's length.
 function trimUrl(raw: string): string {
-  let url = raw.replace(trailing, '');
-  while (url.endsWith(')') && (url.match(/\(/g)?.length ?? 0) < (url.match(/\)/g)?.length ?? 0)) {
-    url = url.slice(0, -1).replace(trailing, '');
+  let parens = 0;
+  for (let i = 0; i < raw.length; i++) {
+    if (raw[i] === ')') parens++;
+    else if (raw[i] === '(') parens--;
   }
-  return url;
+  let end = raw.length;
+  for (;;) {
+    while (end > 0 && trailing.has(raw[end - 1]!)) end--;
+    if (end === 0 || raw[end - 1] !== ')' || parens <= 0) break;
+    parens--;
+    end--;
+  }
+  return raw.slice(0, end);
 }
 
 /** Splits plain text into text and http(s) link parts. */

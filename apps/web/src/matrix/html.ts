@@ -40,8 +40,7 @@ export interface SanitizedHtml {
 
 // ASCII URL characters only, so Japanese text right after a URL ends it.
 const URL_RUN = /https?:\/\/[A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]+/gi;
-const TRAILING = /[.,;:!?'*]$/;
-const count = (s: string, ch: string) => s.split(ch).length - 1;
+const TRAILING = new Set(".,;:!?'*");
 
 const isWebUrl = (raw: string) => {
   try {
@@ -56,13 +55,26 @@ const isWebUrl = (raw: string) => {
 export function urlsIn(text: string): string[] {
   const out: string[] = [];
   for (const m of text.matchAll(URL_RUN)) {
-    let url = m[0];
-    for (;;) {
-      if (TRAILING.test(url)) url = url.slice(0, -1);
-      else if (url.endsWith(')') && count(url, ')') > count(url, '(')) url = url.slice(0, -1);
-      else if (url.endsWith(']') && count(url, ']') > count(url, '[')) url = url.slice(0, -1);
+    const run = m[0];
+    // Unmatched closers, counted once: the trim must stay linear in the run's length.
+    let parens = 0;
+    let squares = 0;
+    for (let i = 0; i < run.length; i++) {
+      const ch = run[i];
+      if (ch === ')') parens++;
+      else if (ch === '(') parens--;
+      else if (ch === ']') squares++;
+      else if (ch === '[') squares--;
+    }
+    let end = run.length;
+    for (; end > 0; end--) {
+      const ch = run[end - 1]!;
+      if (TRAILING.has(ch)) continue;
+      if (ch === ')' && parens > 0) parens--;
+      else if (ch === ']' && squares > 0) squares--;
       else break;
     }
+    const url = run.slice(0, end);
     if (isWebUrl(url)) out.push(url);
   }
   return out;
