@@ -49,6 +49,12 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
   const presence = createPresence({ mx, now });
   const assistant = createAssistant({ get: fenced?.get ?? (() => Promise.reject(new Error('off'))), config: fenced?.config ?? null, isClientAccount: store.clientAccount, isClientOf: store.clientOf, allowIp: (req) => allow(`ip:${clientIp(req)}`, 300, MINUTE), now });
   const claiming = new Set<string>();
+  // The removal each person last had, from Pasodrum (key userId) or a space and its children (userId + room ID). A request
+  // that hands out codes and began before it refuses, since the removal revoked only the codes it had recorded as seen.
+  let removals = 0;
+  const removed = new Map<string, number>();
+  const removedSince = (userId: string, rooms: string[], asked: number) =>
+    (removed.get(userId) ?? 0) > asked || rooms.some((r) => (removed.get(`${userId} ${r}`) ?? 0) > asked);
   const host = new URL(cfg.publicUrl).host;
   const linkFor = (code: string) => `${cfg.publicUrl}/join/${code}`;
   // Calls that reached OpenAI and came back, per UTC day: for everyone (TRANSLATE_DAILY_LIMIT) and per person (150).
@@ -81,7 +87,6 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
   }
 
   async function manages(i: Invite, c: { token: string; userId: string }) {
-    if (c.userId === i.inviterId) return true;
     const state = await mx.roomState(c.token, i.spaceId);
     return canManage(i.inviterId, c.userId, state && spaceInfo(state));
   }
@@ -135,6 +140,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
   }
 
   async function create(req: IncomingMessage, body: Record<string, unknown>) {
+    const asked = removals;
     const c = await caller(req);
     limit(`create:${c.userId}`, 60, HOUR);
     const { spaceId, channelIds = [], locale = 'en', name } = body;
@@ -173,6 +179,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
     let secret = availability === 'taken' ? await existing() : undefined;
     if (secret === null) return new Reply(409, { error: 'exists', userId });
 
+    let fresh = false;
     if (secret === undefined) {
       const password = newPassword();
       let token: string | null = null;
@@ -186,6 +193,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
         await mx.setProfileField(token, userId, 'work.pasodrum.email', email).catch(() => {});
         await mx.logout(token);
         secret = seal(key, password);
+        fresh = true;
       } else {
         secret = await existing();
         if (!secret) return new Reply(409, { error: 'exists', userId });
@@ -213,6 +221,11 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
       claimedTs: null,
       revokedTs: null,
     };
+    if (removedSince(c.userId, i.rooms, asked)) {
+      // Filed revoked, so an account made just now keeps its sealed password and a later invite can still reach it.
+      if (fresh) store.insert({ ...i, revokedTs: ts });
+      throw fail(403, 'not-allowed');
+    }
     store.supersede(userId, spaceId, ts);
     store.insert(i);
     const emailed = await deliver(i).then(() => true, (e: unknown) => {
@@ -311,7 +324,10 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
     const state = await mx.roomState(c.token, spaceId);
     const space = state && spaceInfo(state);
     if (!space || !space.joined.has(c.userId) || space.powerOf(c.userId) < ADMIN_LEVEL) throw fail(403, 'not-allowed');
-    return new Reply(200, { revoked: store.revokeForUser(userId, spaceId, now()) });
+    const rooms = [spaceId, ...space.children];
+    const n = ++removals;
+    for (const r of rooms) removed.set(`${userId} ${r}`, n);
+    return new Reply(200, { revoked: store.revokeForUser(userId, spaceId, rooms, now()) });
   }
 
   /**
@@ -345,6 +361,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
         throw e;
       }
     }
+    removed.set(userId, ++removals);
     const revoked = store.revokeAllForUser(userId, now());
     store.dropConfirmKey(userId);
     return new Reply(200, { revoked, locked });
@@ -366,17 +383,21 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
   }
 
   async function list(req: IncomingMessage, roomId: string | null) {
+    const asked = removals;
     const c = await caller(req);
     if (!roomId) throw fail(400, 'bad-request');
     if ((await mx.membership(c.token, roomId, c.userId)) !== 'join') throw fail(403, 'not-allowed');
-    const t = now();
     // Codes claim accounts, so only the inviter and Admins of the space see them.
     const spaces = new Map<string, SpaceInfo | null>();
-    const visible: Invite[] = [];
+    const managed: Invite[] = [];
     for (const i of store.pendingForRoom(roomId)) {
       if (!spaces.has(i.spaceId)) spaces.set(i.spaceId, await mx.roomState(c.token, i.spaceId).then((s) => s && spaceInfo(s)));
-      if (canManage(i.inviterId, c.userId, spaces.get(i.spaceId)!)) visible.push(i);
+      if (canManage(i.inviterId, c.userId, spaces.get(i.spaceId)!)) managed.push(i);
     }
+    // No await from here to the reply, so a removal either revokes what is recorded as seen or is caught by removedSince.
+    const visible = managed.filter((i) => !removedSince(c.userId, [i.spaceId, ...i.rooms], asked));
+    store.seen(visible.map((i) => i.code), c.userId);
+    const t = now();
     return new Reply(200, visible.map((i) => ({
       code: i.code,
       email: i.email,

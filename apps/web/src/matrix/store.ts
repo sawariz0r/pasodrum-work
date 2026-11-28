@@ -2945,7 +2945,9 @@ export function createWorkspaceStore(session: Session): WorkspaceStore {
       });
       // D-36: the space first, then its channels.
       const unreached = await outOfSpace(space, userId).catch((e: unknown) => Promise.reject(forbidden(e)));
-      if (unreached.length) throw new Error('partial');
+      // Codes they read from the pending list until they were out.
+      const revoked = await revokeInvitesFor(session.accessToken, spaceId, userId).then(() => true, () => false);
+      if (unreached.length || !revoked) throw new Error('partial');
     },
     async setArchived(spaceId, archived) {
       await ready;
