@@ -125,8 +125,10 @@ describe('permission rules (D-25, D-36)', () => {
     expect(canDelete(workspace, sofia)).toBe(false);
   });
 
-  it('the inviter or an Admin of the space manages an invite', () => {
-    expect(canManage(jonas, jonas, null)).toBe(true);
+  it('the inviter or an Admin of the space manages an invite while still in it', () => {
+    expect(canManage(jonas, jonas, workspace)).toBe(true);
+    expect(canManage(jonas, jonas, null)).toBe(false);
+    expect(canManage(henrik, henrik, workspace)).toBe(false);
     expect(canManage(jonas, ingrid, workspace)).toBe(true);
     expect(canManage(sofia, jonas, workspace)).toBe(false);
     expect(canManage(sofia, ingrid, null)).toBe(false);

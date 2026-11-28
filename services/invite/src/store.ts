@@ -67,6 +67,8 @@ CREATE TABLE IF NOT EXISTS invites (
   revokedTs INTEGER
 );
 CREATE INDEX IF NOT EXISTS invites_user ON invites(userId);
+CREATE TABLE IF NOT EXISTS invite_seen (code TEXT NOT NULL, userId TEXT NOT NULL, PRIMARY KEY (code, userId));
+CREATE INDEX IF NOT EXISTS invite_seen_user ON invite_seen(userId);
 CREATE TABLE IF NOT EXISTS confirm_keys (
   userId TEXT PRIMARY KEY,
   sealed TEXT NOT NULL,
@@ -99,7 +101,11 @@ CREATE TABLE IF NOT EXISTS help_sent (userId TEXT PRIMARY KEY, ts INTEGER NOT NU
 export function openStore(path: string) {
   // The integration tests open this file from a second process; wait for it instead of failing with "database is locked".
   const db = new DatabaseSync(path, { timeout: 2000 });
-  db.exec(SCHEMA);
+  const exists = (table: string) => !!db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(table);
+  const legacy = exists('invites') && !exists('invite_seen');
+  // Nobody knows who read codes from the list before invite_seen existed: '*' means anyone, so any removal revokes them.
+  db.exec(`BEGIN; ${SCHEMA} ${legacy ? `INSERT OR IGNORE INTO invite_seen SELECT code, inviterId FROM invites WHERE claimedTs IS NULL AND revokedTs IS NULL;
+    INSERT OR IGNORE INTO invite_seen SELECT code, '*' FROM invites WHERE claimedTs IS NULL AND revokedTs IS NULL;` : ''} COMMIT;`);
   const toInvite = (r: unknown): Invite => {
     const row = r as Record<string, unknown>;
     // Rows from before D-36 say member/guest; they're read as staff/external, never rewritten.
@@ -122,6 +128,12 @@ export function openStore(path: string) {
     revokeForUser: db.prepare('UPDATE invites SET revokedTs = ? WHERE userId = ? AND spaceId = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
     revokeForSpace: db.prepare('UPDATE invites SET revokedTs = ? WHERE spaceId = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
     revokeAllForUser: db.prepare('UPDATE invites SET revokedTs = ? WHERE userId = ? AND claimedTs IS NULL AND revokedTs IS NULL'),
+    seen: db.prepare('INSERT OR IGNORE INTO invite_seen VALUES (?, ?)'),
+    revokeSeenIn: db.prepare(`UPDATE invites SET revokedTs = $ts WHERE claimedTs IS NULL AND revokedTs IS NULL
+      AND code IN (SELECT code FROM invite_seen WHERE userId IN ($userId, '*'))
+      AND (spaceId IN (SELECT value FROM json_each($rooms)) OR EXISTS (SELECT 1 FROM json_each(invites.rooms) WHERE value IN (SELECT value FROM json_each($rooms))))`),
+    revokeAllSeen: db.prepare(`UPDATE invites SET revokedTs = ? WHERE claimedTs IS NULL AND revokedTs IS NULL
+      AND code IN (SELECT code FROM invite_seen WHERE userId IN (?, '*'))`),
     latestClaimed: db.prepare('SELECT * FROM invites WHERE userId = ? AND claimedTs IS NOT NULL ORDER BY claimedTs DESC'),
     unclaimedAccount: db.prepare(`SELECT 1 FROM invites i WHERE userId = ?
       AND NOT EXISTS (SELECT 1 FROM invites c WHERE c.userId = i.userId AND c.claimedTs IS NOT NULL)`),
@@ -159,6 +171,11 @@ export function openStore(path: string) {
   return {
     insert(i: Invite) {
       q.insert.run({ ...i, team: JSON.stringify(i.team), rooms: JSON.stringify(i.rooms) });
+      q.seen.run(i.code, i.inviterId);
+    },
+    /** These codes were handed to this person; removing them revokes the codes. */
+    seen(codes: string[], userId: string) {
+      for (const code of codes) q.seen.run(code, userId);
     },
     get(code: string): Invite | undefined {
       const r = q.get.get(code);
@@ -186,17 +203,20 @@ export function openStore(path: string) {
     revoke(code: string, ts: number) {
       q.revoke.run(ts, code);
     },
-    /** Every open code for this person in this space; returns how many. */
-    revokeForUser(userId: string, spaceId: string, ts: number): number {
-      return Number(q.revokeForUser.run(ts, userId, spaceId).changes);
+    /**
+     * Every open code for this person in this space, and every one they created or read that is filed under or adds to
+     * one of `rooms` (the space and its children: an External's code is filed under the workspace); returns how many.
+     */
+    revokeForUser(userId: string, spaceId: string, rooms: string[], ts: number): number {
+      return Number(q.revokeForUser.run(ts, userId, spaceId).changes) + Number(q.revokeSeenIn.run({ ts, userId, rooms: JSON.stringify(rooms) }).changes);
     },
     /** Every open code in this space; returns how many. */
     revokeForSpace(spaceId: string, ts: number): number {
       return Number(q.revokeForSpace.run(ts, spaceId).changes);
     },
-    /** Every open code for this person, in every space; returns how many. */
+    /** Every open code for this person, and every one they created or read, in every space; returns how many. */
     revokeAllForUser(userId: string, ts: number): number {
-      return Number(q.revokeAllForUser.run(ts, userId).changes);
+      return Number(q.revokeAllForUser.run(ts, userId).changes) + Number(q.revokeAllSeen.run(ts, userId).changes);
     },
     /** This service made the account and nobody has claimed it: only its sealed temporary password signs in. */
     unclaimedAccount(userId: string): boolean {

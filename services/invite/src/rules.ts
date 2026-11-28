@@ -98,8 +98,9 @@ export function canDelete(space: SpaceInfo, caller: string): boolean {
   return space.kind === 'client' && space.joined.has(caller) && space.powerOf(caller) >= OWNER_LEVEL;
 }
 
+/** The inviter or an Admin, while still in the space: someone removed from it can't revoke, resend or re-issue a code. */
 export function canManage(inviterId: string, caller: string, space: SpaceInfo | null): boolean {
-  return caller === inviterId || (!!space && space.joined.has(caller) && space.powerOf(caller) >= ADMIN_LEVEL);
+  return !!space && space.joined.has(caller) && (caller === inviterId || space.powerOf(caller) >= ADMIN_LEVEL);
 }
 
 // Inviter first, then by rank; the join page shows a few faces.
