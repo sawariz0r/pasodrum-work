@@ -90,7 +90,7 @@ export function AppRoutes({ backend }: { backend: Backend }) {
         element={
           signed ? (
             <WorkspaceProvider store={signed.store}>
-              <SecurityProvider onSignOut={() => end(undefined, location.pathname)}>
+              <SecurityProvider onSignOut={() => end(undefined, location.pathname + location.hash)}>
                 <GuardedJoin backend={backend} onJoined={onJoined} />
               </SecurityProvider>
             </WorkspaceProvider>

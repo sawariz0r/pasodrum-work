@@ -67,6 +67,11 @@ CREATE TABLE IF NOT EXISTS invites (
   revokedTs INTEGER
 );
 CREATE INDEX IF NOT EXISTS invites_user ON invites(userId);
+CREATE TABLE IF NOT EXISTS verified (
+  userId TEXT PRIMARY KEY,
+  email TEXT NOT NULL,
+  ts INTEGER NOT NULL
+);
 CREATE TABLE IF NOT EXISTS confirm_keys (
   userId TEXT PRIMARY KEY,
   sealed TEXT NOT NULL,
@@ -109,9 +114,10 @@ export function openStore(path: string) {
     insert: db.prepare(`INSERT INTO invites VALUES ($code, $email, $name, $role, $userId, $spaceId, $spaceName, $spaceKind,
       $inviterId, $inviterName, $team, $rooms, $locale, $secret, $createdTs, $expiresTs, $claimedTs, $revokedTs)`),
     get: db.prepare('SELECT * FROM invites WHERE code = ?'),
-    // Latest code for an account this service created and nobody has claimed.
-    dormantForUser: db.prepare(`SELECT * FROM invites i WHERE userId = ? AND secret IS NOT NULL
-      AND NOT EXISTS (SELECT 1 FROM invites c WHERE c.userId = i.userId AND c.claimedTs IS NOT NULL) ORDER BY createdTs DESC`),
+    forUser: db.prepare('SELECT * FROM invites WHERE userId = ? ORDER BY createdTs, rowid'),
+    verifiedEmail: db.prepare('SELECT email FROM verified WHERE userId = ?'),
+    putVerified: db.prepare(`INSERT INTO verified VALUES (?, ?, ?)
+      ON CONFLICT(userId) DO UPDATE SET email = excluded.email, ts = excluded.ts`),
     pendingForRoom: db.prepare(`SELECT * FROM invites WHERE claimedTs IS NULL AND revokedTs IS NULL
       AND EXISTS (SELECT 1 FROM json_each(invites.rooms) WHERE value = ?) ORDER BY createdTs`),
     supersede: db.prepare('UPDATE invites SET revokedTs = coalesce(revokedTs, ?), secret = NULL WHERE userId = ? AND spaceId = ? AND claimedTs IS NULL'),
@@ -164,9 +170,13 @@ export function openStore(path: string) {
       const r = q.get.get(code);
       return r ? toInvite(r) : undefined;
     },
-    dormantForUser(userId: string): Invite | undefined {
-      const r = q.dormantForUser.get(userId);
-      return r ? toInvite(r) : undefined;
+    /** Every invite ever made for the account, oldest first; none = this service didn't make it. */
+    forUser(userId: string): Invite[] {
+      return q.forUser.all(userId).map(toInvite);
+    },
+    /** The address whose owner claimed the account through the emailed link. */
+    verifiedEmail(userId: string): string | undefined {
+      return (q.verifiedEmail.get(userId) as { email: string } | undefined)?.email;
     },
     pendingForRoom(roomId: string): Invite[] {
       return q.pendingForRoom.all(roomId).map(toInvite);
@@ -178,10 +188,11 @@ export function openStore(path: string) {
     extend(code: string, expiresTs: number) {
       q.extend.run(expiresTs, code);
     },
-    // The account is claimed: its codes for other spaces die with it.
-    claim(code: string, userId: string, ts: number) {
+    // The account is claimed: its codes for other spaces die with it. `verifiedEmail` when the emailed link was used.
+    claim(code: string, userId: string, ts: number, verifiedEmail?: string) {
       q.claim.run(ts, code);
       q.claimedElsewhere.run(ts, userId, code);
+      if (verifiedEmail) q.putVerified.run(userId, verifiedEmail, ts);
     },
     revoke(code: string, ts: number) {
       q.revoke.run(ts, code);

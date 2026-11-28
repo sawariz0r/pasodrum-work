@@ -6,6 +6,21 @@ import { createWorkspaceStore, signIn, type WorkspaceSnapshot, type WorkspaceSto
 export const BASE = process.env.MATRIX_BASE ?? 'http://localhost:8008';
 export const PASSWORD = 'pasodrum-dev-password';
 export const stores: WorkspaceStore[] = [];
+const MAILPIT = process.env.MAILPIT_URL ?? 'http://localhost:8025';
+
+/** What the emailed join link for `code` carries after "#" (Staff and Externals claim only with it, D-57). */
+export async function joinProof(email: string, code: string): Promise<string> {
+  for (let i = 0; i < 20; i++) {
+    const list = (await fetch(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:"${email}"`)}`).then((r) => r.json())) as { messages?: { ID: string }[] };
+    for (const m of list.messages ?? []) {
+      const full = (await fetch(`${MAILPIT}/api/v1/message/${m.ID}`).then((r) => r.json())) as { Text?: string };
+      const hit = full.Text?.match(new RegExp(`/join/${code}#([A-Za-z0-9_-]+)`));
+      if (hit) return hit[1]!;
+    }
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  throw new Error(`no join link for ${code} in mail to ${email}`);
+}
 
 /** Browser globals the store relies on, then sign every store out at the end. */
 export function setupIntegration() {
