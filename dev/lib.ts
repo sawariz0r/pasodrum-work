@@ -86,7 +86,7 @@ export function pinWorkspace(roomId: string) {
   const file = new URL('./.env', import.meta.url);
   const env = readFileSync(file, 'utf8');
   if (env.match(/^WORKSPACE_ID=(.*)$/m)?.[1]?.trim() === roomId) return;
-  writeFileSync(file, /^WORKSPACE_ID=.*$/m.test(env) ? env.replace(/^WORKSPACE_ID=.*$/m, line) : `${env.trimEnd()}\n${line}\n`);
+  writeFileSync(file, /^WORKSPACE_ID=.*$/m.test(env) ? env.replace(/^WORKSPACE_ID=.*$/m, () => line) : `${env.trimEnd()}\n${line}\n`);
   execSync('docker compose -f dev/docker-compose.yml --env-file dev/.env up -d invite', { stdio: 'inherit' });
   console.log(`Invite service pinned to the workspace (${line} in dev/.env).`);
 }

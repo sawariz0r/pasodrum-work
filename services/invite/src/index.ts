@@ -26,7 +26,7 @@ if (workspaceId && !/^![\x21-\x7e]{1,254}$/.test(workspaceId)) {
   console.error('WORKSPACE_ID is not a room ID (it starts with "!")');
   process.exit(1);
 }
-if (!workspaceId) console.error('WORKSPACE_ID is not set: staff invites, removal, Translate, device confirmation and the Assistant are refused. pnpm bootstrap prints it.');
+if (!workspaceId) console.error("WORKSPACE_ID is not set: invites, removal, Translate, device confirmation and the Assistant are refused. Set it to the workspace's room ID (D-57).");
 
 // Spec §2.5, §6.2: prices in US dollars per million tokens, keyed by model id.
 const DEFAULT_PRICES = '{"gpt-6.2-sol":{"in":2,"cached":0.1,"write":2.5,"out":10},"gpt-6.2-astra":{"in":8,"cached":0.4,"write":10,"out":40}}';
