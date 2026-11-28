@@ -52,12 +52,15 @@ function guardImeEnter(e: KeyboardEvent) {
 export function JoinPage({
   backend,
   code,
+  proof,
   current,
   onSignOut,
   onJoined,
 }: {
   backend: Backend;
   code: string;
+  /** From the emailed link, after "#". */
+  proof?: string;
   current?: Current;
   onSignOut?: () => void;
   onJoined: (session: Session, identifier: string, preview: InvitePreview) => void;
@@ -111,7 +114,7 @@ export function JoinPage({
     setBusy(true);
     setFailed(undefined);
     try {
-      const identifier = await backend.claimInvite(code, name.trim(), password, resolveLanguage(null, navigator.languages ?? [navigator.language]));
+      const identifier = await backend.claimInvite(code, name.trim(), password, resolveLanguage(null, navigator.languages ?? [navigator.language]), proof);
       const session = await backend.signIn(backend.defaultServer(), identifier, password).catch(() => undefined);
       setClaimed({ identifier, session });
     } catch (err) {

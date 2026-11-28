@@ -75,6 +75,15 @@ describe('join page', () => {
     expect(zone).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone);
   });
 
+  it('claims with the proof the emailed link carries after "#"', async () => {
+    const { backend } = renderJoin('k3y#emailed-proof');
+    await flush();
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'a long password' } });
+    fireEvent.click(joinButton());
+    await flush();
+    expect(backend.claims).toEqual([{ code: 'k3y', name: 'Henrik', proof: 'emailed-proof' }]);
+  });
+
   it('shows a used link with Sign in', async () => {
     const { where } = renderJoin('used');
     await flush();

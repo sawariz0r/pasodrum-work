@@ -45,3 +45,14 @@ export async function mailTo(email: string): Promise<{ Subject: string; HTML: st
   }
   throw new Error(`no mail to ${email}`);
 }
+
+/** The proof the emailed link for `code` carries after "#" (claiming with it shows the address's owner joined). */
+export async function proofFrom(email: string, code: string): Promise<string> {
+  const search = await fetch(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:"${email}"`)}`).then((x) => x.json()) as any;
+  for (const m of search.messages ?? []) {
+    const text = (await fetch(`${MAILPIT}/api/v1/message/${m.ID}`).then((x) => x.json()) as any).Text as string;
+    const found = text.match(new RegExp(`/join/${code}#([A-Za-z0-9_-]+)`));
+    if (found) return found[1]!;
+  }
+  throw new Error(`no link for ${code} in mail to ${email}`);
+}

@@ -24,8 +24,8 @@ export interface Backend {
   createWorkspaceStore(session: Session): WorkspaceStore;
   /** M4 join page, before sign-in (D-26). */
   previewInvite(code: string): Promise<InvitePreview>;
-  /** Resolves to the identifier to sign in with. Used or expired links reject (410). */
-  claimInvite(code: string, name: string, password: string, language?: 'en' | 'ja'): Promise<string>;
+  /** Resolves to the identifier to sign in with. Used or expired links reject (410). `proof`: the emailed link's "#…". */
+  claimInvite(code: string, name: string, password: string, language?: 'en' | 'ja', proof?: string): Promise<string>;
   /** D-38 confirm link page, before sign-in. Opening never confirms; rejects Error('unreachable'). */
   previewConfirm(code: string): Promise<ConfirmLink>;
   /** "Yes, it's me". Rejects Error('gone' | 'unreachable' | 'other'). */

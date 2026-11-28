@@ -1,14 +1,15 @@
+import { hkdfSync } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Duplex } from 'node:stream';
 import { createAssistant, type AssistantConfig, type HomeserverGet } from './assistant/index.ts';
 import { confirmRoutes } from './confirm.ts';
 import { renderInvite, type Locale } from './email.ts';
 import { SYSTEM_LOCALPART, systemAccount } from './help.ts';
-import { isCode, localpartFor, localpartOf, newCode, newPassword, normalizeEmail } from './ids.ts';
+import { isCode, isProof, localpartFor, localpartOf, newCode, newPassword, normalizeEmail, proofFor } from './ids.ts';
 import type { SendMail } from './mail.ts';
 import { MatrixError, type Matrix } from './matrix.ts';
 import { createPresence } from './presence.ts';
-import { ADMIN_LEVEL, OWNER_LEVEL, TTL_MS, canDelete, canInvite, canManage, isGenuine, normalizeRole, rateLimiter, spaceInfo, stateOf, teamOf, type SpaceInfo } from './rules.ts';
+import { ADMIN_LEVEL, OWNER_LEVEL, TTL_MS, canDelete, canInvite, canManage, isGenuine, normalizeRole, rateLimiter, spaceInfo, stateOf, teamOf, type Role, type SpaceInfo } from './rules.ts';
 import { seal, unseal } from './secret.ts';
 import type { Invite, Store } from './store.ts';
 import { parseRequest, translate as callTranslate, type TranslateConfig } from './translate.ts';
@@ -48,7 +49,9 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
   const allow = rateLimiter();
   const presence = createPresence({ mx, now });
   const assistant = createAssistant({ get: fenced?.get ?? (() => Promise.reject(new Error('off'))), config: fenced?.config ?? null, isClientAccount: store.clientAccount, isClientOf: store.clientOf, allowIp: (req) => allow(`ip:${clientIp(req)}`, 300, MINUTE), now });
-  const claiming = new Set<string>();
+  // Accounts with a create or claim in flight.
+  const busy = new Set<string>();
+  const proofKey = Buffer.from(hkdfSync('sha256', key, '', 'pasodrum-invite/join-proof', 32));
   const host = new URL(cfg.publicUrl).host;
   const linkFor = (code: string) => `${cfg.publicUrl}/join/${code}`;
   // Calls that reached OpenAI and came back, per UTC day: for everyone (TRANSLATE_DAILY_LIMIT) and per person (150).
@@ -73,7 +76,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
       spaceName: i.spaceName,
       spaceId: i.spaceId,
       spaceKind: i.spaceKind,
-      link: linkFor(i.code),
+      link: `${linkFor(i.code)}#${proofFor(proofKey, i.code)}`,
       expiresTs: i.expiresTs,
       host,
     });
@@ -158,22 +161,47 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
     const localpart = localpartFor(email, cfg.serverName);
     if (localpart === SYSTEM_LOCALPART) throw fail(400, 'invalid-email');
     const userId = `@${localpart}:${cfg.serverName}`;
-    let rooms = [spaceId, ...(channelIds as string[])];
+    // What's decided about the account below holds until its invite is stored: no other create or claim for it meanwhile.
+    if (busy.has(userId)) throw fail(409, 'busy');
+    busy.add(userId);
+    try {
+      return await createFor(c, { email, userId, localpart, role, spaceId, space, channelIds: channelIds as string[], locale: locale as Locale, name });
+    } finally {
+      busy.delete(userId);
+    }
+  }
+
+  /**
+   * The address's account is taken. It is handed out as that person (`exists`) only when its owner proved the address
+   * by claiming through the emailed link, or when this service didn't make it (a team account). One nobody claimed gets
+   * a fresh code, but never to someone who'd hand it into a space a holder of another live code of it wasn't given.
+   */
+  async function taken(c: { token: string; userId: string }, email: string, userId: string, spaceId: string): Promise<Reply | { secret: string; rooms: string[] }> {
+    const all = store.forUser(userId);
+    if (!all.length) return new Reply(409, { error: 'exists', userId });
+    if (all.some((i) => i.claimedTs)) return store.verifiedEmail(userId) === email ? new Reply(409, { error: 'exists', userId }) : fail(409, 'unconfirmed');
+    const source = all.findLast((i) => i.secret);
+    const live = all.filter((i) => i.secret && !i.revokedTs);
+    const here = live.findLast((i) => i.spaceId === spaceId);
+    // Codes for other spaces stay (D-28), so only who made them may add another space; codes here are superseded.
+    if (!source || live.some((i) => i.spaceId !== spaceId && i.inviterId !== c.userId) || (here && !(await manages(here, c)))) {
+      return fail(409, 'unconfirmed');
+    }
+    return { secret: source.secret!, rooms: here && stateOf(here, now()) === 'open' ? here.rooms : [] };
+  }
+
+  async function createFor(
+    c: { token: string; userId: string },
+    a: { email: string; userId: string; localpart: string; role: Role; spaceId: string; space: SpaceInfo; channelIds: string[]; locale: Locale; name: unknown },
+  ) {
+    const { email, userId, localpart, role, spaceId, space, name } = a;
+    let rooms = [spaceId, ...a.channelIds];
     const displayName = typeof name === 'string' && name.trim() ? name.trim() : null;
-    // An account this service created and nobody claimed gets a fresh code, but only from someone who may manage its
-    // latest invite: the code claims the account. For anyone else it already exists (the app just adds them).
-    const existing = async () => {
-      const dormant = store.dormantForUser(userId);
-      if (!dormant?.secret || !(await manages(dormant, c))) return null;
-      if (dormant.spaceId === spaceId && !dormant.revokedTs && stateOf(dormant, now()) === 'open') rooms = [...dormant.rooms, ...rooms];
-      return dormant.secret;
-    };
     const availability = await mx.availability(localpart);
     if (availability === 'invalid') throw fail(400, 'invalid-email');
-    let secret = availability === 'taken' ? await existing() : undefined;
-    if (secret === null) return new Reply(409, { error: 'exists', userId });
 
-    if (secret === undefined) {
+    let secret: string | null = null;
+    if (availability === 'available') {
       const password = newPassword();
       let token: string | null = null;
       try {
@@ -186,10 +214,13 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
         await mx.setProfileField(token, userId, 'work.pasodrum.email', email).catch(() => {});
         await mx.logout(token);
         secret = seal(key, password);
-      } else {
-        secret = await existing();
-        if (!secret) return new Reply(409, { error: 'exists', userId });
       }
+    }
+    if (!secret) {
+      const reuse = await taken(c, email, userId, spaceId);
+      if (reuse instanceof Reply) return reuse;
+      secret = reuse.secret;
+      rooms = [...reuse.rooms, ...rooms];
     }
 
     const ts = now();
@@ -206,7 +237,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
       inviterName: space.joined.get(c.userId) ?? localpartOf(c.userId),
       team: teamOf(space, c.userId),
       rooms: [...new Set(rooms)],
-      locale: locale as Locale,
+      locale: a.locale,
       secret,
       createdTs: ts,
       expiresTs: ts + TTL_MS,
@@ -245,8 +276,13 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
     const password = body.password;
     if (typeof password !== 'string' || password.length < 8 || password.length > 1024) throw fail(400, 'weak-password');
     const language = body.language === 'en' || body.language === 'ja' ? body.language : undefined;
-    if (claiming.has(code)) throw fail(409, 'busy');
-    claiming.add(code);
+    // Claiming takes the account with every invite sent to it. Without the emailed link's proof it's whoever holds a
+    // copied link: the inviter or an Admin of the space. That's only safe for a client's invite to one client space (they
+    // are all in it); Staff and Externals are filed under the workspace but reach client spaces its Admins may not be in.
+    const verified = isProof(proofKey, code, body.proof);
+    if (!verified && (i.spaceKind !== 'client' || store.forUser(i.userId).some((o) => o.spaceId !== i.spaceId))) throw fail(403, 'use-email-link');
+    if (busy.has(i.userId)) throw fail(409, 'busy');
+    busy.add(i.userId);
     try {
       const localpart = localpartOf(i.userId);
       const temp = unseal(key, i.secret);
@@ -268,10 +304,10 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
       }
       await mx.changePassword(token, localpart, temp, password);
       await mx.logout(token);
-      store.claim(code, i.userId, now());
+      store.claim(code, i.userId, now(), verified ? i.email : undefined);
       return new Reply(200, { userId: i.userId, identifier: localpart });
     } finally {
-      claiming.delete(code);
+      busy.delete(i.userId);
     }
   }
 

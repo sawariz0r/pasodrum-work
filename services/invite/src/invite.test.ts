@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderInvite, tileColor } from './email.ts';
-import { isCode, localpartFor, newCode, newPassword, normalizeEmail } from './ids.ts';
+import { isCode, isProof, localpartFor, newCode, newPassword, normalizeEmail, proofFor } from './ids.ts';
 import { mailer, parseAddress } from './mail.ts';
 import { canDelete, canInvite, canManage, isGenuine, normalizeRole, rateLimiter, spaceInfo, stateOf, teamOf, type StateEvent } from './rules.ts';
 import { keyFrom, seal, unseal } from './secret.ts';
@@ -10,6 +10,17 @@ describe('ids', () => {
     expect(localpartFor('henrik@nordlys.no', 'pasodrum.work')).toBe('henrik_nordlys.no');
     expect(localpartFor('oscar@pasodrum.work', 'pasodrum.work')).toBe('oscar');
     expect(localpartFor('a.b-c@sub.example.com', 'pasodrum.work')).toBe('a.b-c_sub.example.com');
+    // An own-domain address never lands on an outside address's account.
+    expect(localpartFor('henrik_nordlys.no@pasodrum.work', 'pasodrum.work')).toBe('henrik_nordlys.no_pasodrum.work');
+  });
+
+  it('accepts only the proof made for that code', () => {
+    const key = keyFrom('x'.repeat(32));
+    const code = newCode();
+    expect(isProof(key, code, proofFor(key, code))).toBe(true);
+    for (const bad of [proofFor(key, newCode()), proofFor(keyFrom('y'.repeat(32)), code), '', 'é'.repeat(12), undefined, 42]) {
+      expect(isProof(key, code, bad)).toBe(false);
+    }
   });
 
   it('normalizes and validates emails', () => {

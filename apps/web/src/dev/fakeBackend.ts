@@ -22,9 +22,11 @@ const team = [
 
 const henrik = { id: '@henrik_nordlys.no:pasodrum.work', name: 'Henrik Dahl', external: true, client: '!nordlys' };
 
-export function createFakeBackend(opts: FakeBackendOptions = {}): Backend & { stores: ReturnType<typeof createFakeStore>[]; claims: { code: string; name: string }[] } {
+type Claim = { code: string; name: string; proof?: string };
+
+export function createFakeBackend(opts: FakeBackendOptions = {}): Backend & { stores: ReturnType<typeof createFakeStore>[]; claims: Claim[] } {
   let current: Session | null = opts.signedIn === false ? null : session;
-  const claims: { code: string; name: string }[] = [];
+  const claims: Claim[] = [];
   const confirmed = new Set<string>();
   const wait = () => (opts.delayMs ? new Promise((r) => setTimeout(r, opts.delayMs)) : Promise.resolve());
   const stores: ReturnType<typeof createFakeStore>[] = [];
@@ -38,7 +40,7 @@ export function createFakeBackend(opts: FakeBackendOptions = {}): Backend & { st
       const state: InvitePreview['state'] = code === 'used' || claimed ? 'used' : code === 'expired' ? 'expired' : 'open';
       return { email: 'henrik@nordlys.no', spaceName: 'Nordlys', spaceKind: 'client', inviter: 'Jonas Berg', team, state };
     },
-    async claimInvite(code, name) {
+    async claimInvite(code, name, _password, _language, proof) {
       await wait();
       if (code === 'down') throw new Error('unreachable');
       if (code === 'weak') throw new Error('weak-password');
@@ -46,7 +48,7 @@ export function createFakeBackend(opts: FakeBackendOptions = {}): Backend & { st
         claims.push({ code, name });
         throw new Error('used');
       }
-      claims.push({ code, name });
+      claims.push({ code, name, ...(proof ? { proof } : {}) });
       return 'henrik@nordlys.no';
     },
     async previewConfirm(code) {

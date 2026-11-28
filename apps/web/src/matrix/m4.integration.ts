@@ -1,7 +1,7 @@
 // M4 against the seeded local server (+ the invite service when it runs): pnpm dev:server && pnpm dev:seed && pnpm test:matrix
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { claimInvite, createWorkspaceStore, PasswordRequired, previewInvite, signIn, type WorkspaceStore } from './index';
-import { BASE, channel, mx, open, PASSWORD, setupIntegration, stores, until } from './integration.helpers';
+import { BASE, channel, joinProof, mx, open, PASSWORD, setupIntegration, stores, until } from './integration.helpers';
 import { createInvite } from './invites';
 
 setupIntegration();
@@ -328,7 +328,7 @@ describe.skipIf(!inviteServiceUp)('invites by email (invite service)', () => {
     await ingrid.store.resendInvite(invite.code);
 
     // The service allows 20 claims per hour per IP; repeated local runs can use them up.
-    const identifier = await claimInvite(invite.code, 'New Person', 'a-new-password-123').catch((e: Error) => (e.message === 'rate-limited' ? ctx.skip() : Promise.reject(e)));
+    const identifier = await claimInvite(invite.code, 'New Person', 'a-new-password-123', undefined, await joinProof(email, invite.code)).catch((e: Error) => (e.message === 'rate-limited' ? ctx.skip() : Promise.reject(e)));
     expect((await previewInvite(invite.code)).state).toBe('used');
     const fresh = await openGuest(identifier, 'a-new-password-123');
     expect(Object.values(fresh.store.getSnapshot().channels).flat().length).toBeGreaterThan(0);
@@ -347,7 +347,7 @@ describe.skipIf(!inviteServiceUp)('invites by email (invite service)', () => {
     expect(await jonas.store.addPeople(id, { type: 'channel', userIds: [], emails: [email] })).toEqual({ added: [], invited: [], failed: [{ who: email, reason: 'not-allowed' }] });
     expect((await ingrid.store.addPeople(id, { type: 'channel', userIds: [], emails: [email] })).invited).toEqual([email]);
     const invite = (await ingrid.store.pendingInvites(id)).find((p) => p.email === email)!;
-    const identifier = await claimInvite(invite.code, 'Guest Person', 'a-new-password-123').catch((e: Error) => (e.message === 'rate-limited' ? ctx.skip() : Promise.reject(e)));
+    const identifier = await claimInvite(invite.code, 'Guest Person', 'a-new-password-123', undefined, await joinProof(email, invite.code)).catch((e: Error) => (e.message === 'rate-limited' ? ctx.skip() : Promise.reject(e)));
     const guest = await openGuest(identifier, 'a-new-password-123');
     expect(Object.values(guest.store.getSnapshot().channels).flat().length).toBeGreaterThan(0);
     await until(guest.store, (s) => s.channels[pasodrum]?.some((c) => c.id === id));
