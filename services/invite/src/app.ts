@@ -17,7 +17,11 @@ export type Config = {
   serverName: string;
   publicUrl: string;
   registrationToken: string;
-  workspaceAlias: string;
+  /**
+   * The workspace's room ID (WORKSPACE_ID), written once at bootstrap. Never looked up through #workspace: any Admin may
+   * repoint that alias at a room they outrank. Null until set; everything that needs the workspace is refused then.
+   */
+  workspaceId: string | null;
   translate: TranslateConfig | null;
   translateDailyLimit: number;
 };
@@ -47,7 +51,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
   const confirm = confirmRoutes({ cfg, store, mx, sendMail, key: confirmKey, system, now });
   const allow = rateLimiter();
   const presence = createPresence({ mx, now });
-  const assistant = createAssistant({ get: fenced?.get ?? (() => Promise.reject(new Error('off'))), config: fenced?.config ?? null, isClientAccount: store.clientAccount, isClientOf: store.clientOf, allowIp: (req) => allow(`ip:${clientIp(req)}`, 300, MINUTE), now });
+  const assistant = createAssistant({ get: fenced?.get ?? (() => Promise.reject(new Error('off'))), config: fenced?.config ?? null, workspaceId: cfg.workspaceId, isClientAccount: store.clientAccount, isClientOf: store.clientOf, allowIp: (req) => allow(`ip:${clientIp(req)}`, 300, MINUTE), now });
   const claiming = new Set<string>();
   const host = new URL(cfg.publicUrl).host;
   const linkFor = (code: string) => `${cfg.publicUrl}/join/${code}`;
@@ -90,9 +94,14 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
     if (!(await manages(i, c))) throw fail(403, 'not-allowed');
   }
 
+  function pinned(): string {
+    if (!cfg.workspaceId) throw fail(503, 'not-configured');
+    return cfg.workspaceId;
+  }
+
   async function genuine(token: string, spaceId: string, space: SpaceInfo) {
-    const workspaceId = await mx.resolveAlias(token, cfg.workspaceAlias);
-    if (space.kind === 'workspace' || !workspaceId) return isGenuine(spaceId, space, workspaceId, null);
+    const workspaceId = pinned();
+    if (space.kind === 'workspace') return isGenuine(spaceId, space, workspaceId, null);
     const state = await mx.roomState(token, workspaceId);
     return isGenuine(spaceId, space, workspaceId, state && spaceInfo(state));
   }
@@ -322,8 +331,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
   async function removePerson(req: IncomingMessage, userId: string | null) {
     const c = await caller(req);
     if (!userId?.startsWith('@')) throw fail(400, 'bad-request');
-    const workspaceId = await mx.resolveAlias(c.token, cfg.workspaceAlias);
-    const state = workspaceId ? await mx.roomState(c.token, workspaceId) : null;
+    const state = await mx.roomState(c.token, pinned());
     const workspace = state && spaceInfo(state);
     if (!state || !workspace?.joined.has(c.userId)) throw fail(403, 'not-allowed');
     const level = workspace.powerOf(c.userId);
@@ -358,8 +366,8 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
     const space = state && spaceInfo(state);
     if (!space || !canDelete(space, c.userId)) throw fail(403, 'not-allowed');
     // A v12 creator outranks everyone in the space itself, so the Owner check is on the workspace.
-    const workspaceId = await mx.resolveAlias(c.token, cfg.workspaceAlias);
-    const wsState = workspaceId && workspaceId !== spaceId && (await mx.roomState(c.token, workspaceId));
+    const workspaceId = pinned();
+    const wsState = workspaceId !== spaceId && (await mx.roomState(c.token, workspaceId));
     const workspace = wsState && spaceInfo(wsState);
     if (!workspace || !workspace.joined.has(c.userId) || workspace.powerOf(c.userId) < OWNER_LEVEL) throw fail(403, 'not-allowed');
     return new Reply(200, { revoked: store.revokeForSpace(spaceId, now()) });
@@ -393,8 +401,7 @@ export function createApp({ cfg, store, mx, sendMail, key, confirmKey, systemPas
   // Team only: clients and guests never join the workspace space (D-06).
   async function translate(req: IncomingMessage, body: Record<string, unknown>) {
     const c = await caller(req);
-    const workspaceId = await mx.resolveAlias(c.token, cfg.workspaceAlias);
-    if (!workspaceId || (await mx.membership(c.token, workspaceId, c.userId)) !== 'join') throw fail(403, 'not-allowed');
+    if ((await mx.membership(c.token, pinned(), c.userId)) !== 'join') throw fail(403, 'not-allowed');
     if (!cfg.translate) throw fail(503, 'not-configured');
     const input = parseRequest(body);
     if (!input) throw fail(400, 'bad-request');

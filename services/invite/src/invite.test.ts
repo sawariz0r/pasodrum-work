@@ -72,7 +72,7 @@ describe('permission rules (D-25, D-36)', () => {
     expect(workspace.powerOf(jonas)).toBe(0);
   });
 
-  it('trusts only the aliased workspace and client spaces marked by a workspace Admin (D-06)', () => {
+  it('trusts only the pinned workspace and client spaces marked by a workspace Admin (D-06)', () => {
     const marked = (by: string) => spaceInfo([{ type: 'work.pasodrum.space', state_key: '', sender: by, content: { kind: 'client' } }, member(by)]);
     expect(isGenuine('!ws', workspace, '!ws', null)).toBe(true);
     expect(isGenuine('!fake', workspace, '!ws', null)).toBe(false);

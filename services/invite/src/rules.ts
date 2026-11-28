@@ -83,8 +83,8 @@ export function canInvite(role: Role, space: SpaceInfo, caller: string): boolean
 }
 
 /**
- * D-06: anyone can make a room and call it a space, so only real ones count: the workspace is the room its alias points
- * at; a client space is one whose `work.pasodrum.space` was set by an Owner/Admin of the workspace.
+ * D-06: anyone can make a room and call it a space, so only real ones count: the workspace is the pinned room
+ * (WORKSPACE_ID); a client space is one whose `work.pasodrum.space` was set by an Owner/Admin of the workspace.
  */
 export function isGenuine(spaceId: string, space: SpaceInfo, workspaceId: string | null, workspace: SpaceInfo | null): boolean {
   if (!workspaceId) return false;

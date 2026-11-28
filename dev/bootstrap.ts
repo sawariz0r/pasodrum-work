@@ -2,7 +2,7 @@
 // (room version 12 creator) and the server admin. Nothing else: add people from the app or with pnpm add:staff.
 // Production after a wipe: set -a; . dev/.env.production; set +a; pnpm bootstrap <username> "<Display name>"
 // Asks for the one-time token the server logs on its first start ("using the registration token …") and the new password.
-import { SERVER, askHidden, enc, mx, ok, userId } from './lib.ts';
+import { SERVER, askHidden, enc, mx, ok, pinWorkspace, userId } from './lib.ts';
 import { powerLevels } from '../apps/web/src/matrix/levels.ts';
 
 const [localpart, name] = process.argv.slice(2);
@@ -51,6 +51,7 @@ if ((await mx(me, 'GET', aliasPath)).status === 200) {
   });
   await ok(me, 'PUT', `/_matrix/client/v3/rooms/${enc(workspace)}/state/m.space.child/${enc(general)}`, { ...via, suggested: true });
   console.log(`Workspace "Pasodrum" ${workspace} with #general ${general}.`);
+  pinWorkspace(workspace);
 }
 await mx(me, 'POST', '/_matrix/client/v3/logout', {});
 console.log(`${name} (@${localpart}:${SERVER}) is the server admin. Sign in with "${localpart}" in the app.`);

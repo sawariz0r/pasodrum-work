@@ -7,6 +7,8 @@
 # Resend's open and click tracking are per domain: keep both off for noreply.prpl.se (confirm links are single use).
 # Coolify generates CONFIRM_KEY_SECRET and SYSTEM_PASSWORD (D-38); losing CONFIRM_KEY_SECRET means every client starts fresh.
 # The invite service creates (or signs in as) the system sender @pasodrum itself at startup; nothing to copy out of Coolify.
+# Set WORKSPACE_ID to the workspace's room ID ("!…"; pnpm bootstrap prints it for a new workspace). Until it is set,
+# invites, removal, Translate, device confirmation and the Assistant are refused; #workspace is never trusted for them.
 # Set OPENAI_API_KEY to turn on Translate (TRANSLATE_MODEL overrides the default gpt-6-luna); TRANSLATE_DAILY_LIMIT (calls per UTC day, all callers) is optional.
 services:
   web:
@@ -35,6 +37,7 @@ services:
       INVITE_SECRET: ${SERVICE_PASSWORD_64_INVITESECRET}
       CONFIRM_KEY_SECRET: ${SERVICE_PASSWORD_64_CONFIRMKEYS}
       SYSTEM_PASSWORD: ${SERVICE_PASSWORD_64_SYSTEM}
+      WORKSPACE_ID: ${WORKSPACE_ID:-}
       RESEND_API_KEY: ${RESEND_API_KEY}
       MAIL_FROM: ${MAIL_FROM:-Pasodrum work <invites@noreply.prpl.se>}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
