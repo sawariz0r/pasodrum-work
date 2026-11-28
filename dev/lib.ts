@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 
 export const BASE = process.env.MATRIX_BASE ?? 'http://localhost:8008';
@@ -71,6 +71,24 @@ export function envToken(): string {
   const m = env.match(/^REGISTRATION_TOKEN=(.+)$/m);
   if (!m?.[1]) throw new Error('REGISTRATION_TOKEN missing in dev/.env');
   return m[1].trim();
+}
+
+/**
+ * The invite service trusts only the workspace room it is pinned to (WORKSPACE_ID), never #workspace. Locally this writes
+ * it to dev/.env and restarts the service; elsewhere it says what to set.
+ */
+export function pinWorkspace(roomId: string) {
+  const line = `WORKSPACE_ID=${roomId}`;
+  if (!LOCAL) {
+    console.log(`Set ${line} on the invite service (Coolify) and redeploy.`);
+    return;
+  }
+  const file = new URL('./.env', import.meta.url);
+  const env = readFileSync(file, 'utf8');
+  if (env.match(/^WORKSPACE_ID=(.*)$/m)?.[1]?.trim() === roomId) return;
+  writeFileSync(file, /^WORKSPACE_ID=.*$/m.test(env) ? env.replace(/^WORKSPACE_ID=.*$/m, line) : `${env.trimEnd()}\n${line}\n`);
+  execSync('docker compose -f dev/docker-compose.yml --env-file dev/.env up -d invite', { stdio: 'inherit' });
+  console.log(`Invite service pinned to the workspace (${line} in dev/.env).`);
 }
 
 export function bootstrapToken(): string | null {

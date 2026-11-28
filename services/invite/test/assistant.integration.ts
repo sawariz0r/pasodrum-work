@@ -30,7 +30,7 @@ const store = openStore(join(dir, 'invites.db'));
 const config: AssistantConfig = {
   apiKey: 'not-a-key', quick: 'q-model:low', thorough: 't-model:medium',
   prices: { 'q-model': { in: 2, cached: 0.1, write: 2.5, out: 10 }, 't-model': { in: 8, cached: 0.4, write: 10, out: 40 } }, dayUsd: 3, monthUsd: 100,
-  dbPath: join(dir, 'assistant.db'), workspaceAlias: `#workspace:${SERVER}`, serverName: SERVER,
+  dbPath: join(dir, 'assistant.db'), serverName: SERVER,
 };
 
 const calls: { token: string; path: string }[] = [];
@@ -45,7 +45,7 @@ const kinds = new Map<string, Kind>();
 
 /** One ask: a fresh reader, after the gate. */
 async function ask(token: string) {
-  const reader = openReader({ get, workspaceAlias: config.workspaceAlias, serverName: SERVER, mask: masker(SERVER), isClientAccount: store.clientAccount, isClientOf: store.clientOf, kinds }, token);
+  const reader = openReader({ get, workspaceId: W, serverName: SERVER, mask: masker(SERVER), isClientAccount: store.clientAccount, isClientOf: store.clientOf, kinds }, token);
   const g = await gate(reader, store.clientAccount);
   assert.equal(typeof g, 'object', `gate: ${String(g)}`);
   return reader;
@@ -195,7 +195,7 @@ const waitFor = async (f: () => boolean, ms = 5000) => {
 let on: Awaited<ReturnType<typeof serve>>, off: Awaited<ReturnType<typeof serve>>, shut: Awaited<ReturnType<typeof serve>>;
 const assistants: Assistant[] = [];
 const makeAssistant = (c: AssistantConfig | null, allowIp = () => true) => {
-  const a = createAssistant({ get, config: c, isClientAccount: store.clientAccount, isClientOf: store.clientOf, allowIp, step: fakeStep });
+  const a = createAssistant({ get, config: c, workspaceId: W, isClientAccount: store.clientAccount, isClientOf: store.clientOf, allowIp, step: fakeStep });
   assistants.push(a);
   return a;
 };

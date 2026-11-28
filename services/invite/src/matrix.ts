@@ -68,11 +68,6 @@ export function matrixClient(base: string) {
       return Array.isArray(r.body.value) ? (r.body.value as StateEvent[]) : null;
     },
 
-    async resolveAlias(token: string, alias: string): Promise<string | null> {
-      const r = await call(token, 'GET', `/_matrix/client/v3/directory/room/${enc(alias)}`);
-      return r.status === 200 && typeof r.body.room_id === 'string' ? r.body.room_id : null;
-    },
-
     async membership(token: string, roomId: string, userId: string): Promise<string | null> {
       const r = await call(token, 'GET', `/_matrix/client/v3/rooms/${enc(roomId)}/state/m.room.member/${enc(userId)}`);
       if (r.status === 403 || r.status === 404) return null;

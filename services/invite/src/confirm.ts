@@ -46,9 +46,8 @@ export function confirmRoutes({ cfg, store, mx, sendMail, key, system, now }: Co
     const who = m ? await mx.session(m[1]!) : null;
     if (!m || !who?.deviceId) throw fail(401, 'unauthorized');
     limit(`confirm:${who.userId}`, 120, MINUTE);
-    const workspaceId = await mx.resolveAlias(m[1]!, cfg.workspaceAlias);
-    if (!workspaceId) throw fail(502, 'server');
-    if ((await mx.membership(m[1]!, workspaceId, who.userId)) === 'join') {
+    if (!cfg.workspaceId) throw fail(503, 'not-configured');
+    if ((await mx.membership(m[1]!, cfg.workspaceId, who.userId)) === 'join') {
       store.dropConfirmKey(who.userId);
       throw fail(403, 'staff');
     }

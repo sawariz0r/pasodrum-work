@@ -13,7 +13,8 @@ export type Read = { place: Place; items: Item[]; more?: string };
 
 export type ReaderDeps = {
   get: HomeserverGet;
-  workspaceAlias: string;
+  /** The pinned workspace room; never resolved from #workspace, which any workspace Admin can repoint. */
+  workspaceId: string | null;
   serverName: string;
   mask: Mask;
   isClientAccount: (userId: string) => boolean;
@@ -159,9 +160,9 @@ export function openReader(deps: ReaderDeps, token: string) {
     return Array.isArray(body) ? indexState(body) : null;
   });
 
-  /** The workspace is the room the configured alias points at, and its state as the caller sees it now. */
+  /** The pinned workspace room and its state as the caller sees it now. */
   const workspace = () => once('workspace', async () => {
-    const id = await resolve(deps.workspaceAlias);
+    const id = deps.workspaceId && ROOM_ID.test(deps.workspaceId) ? deps.workspaceId : null;
     const state = id ? await stateOf(id) : null;
     return id && state ? { id, state } : null;
   });

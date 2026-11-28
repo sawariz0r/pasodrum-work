@@ -20,7 +20,13 @@ const { OPENAI_API_KEY, TRANSLATE_MODEL } = process.env;
 const translate = OPENAI_API_KEY ? { apiKey: OPENAI_API_KEY, model: TRANSLATE_MODEL || 'gpt-6-luna' } : null;
 const dailyLimit = Number(env('TRANSLATE_DAILY_LIMIT', '2000'));
 const matrixUrl = env('MATRIX_URL', 'http://continuwuity:6167');
-const workspaceAlias = env('WORKSPACE_ALIAS', `#workspace:${serverName}`);
+// Unset only until bootstrap has made the workspace; the service must run before that to create @pasodrum.
+const workspaceId = process.env.WORKSPACE_ID?.trim() || null;
+if (workspaceId && !/^![\x21-\x7e]{1,254}$/.test(workspaceId)) {
+  console.error('WORKSPACE_ID is not a room ID (it starts with "!")');
+  process.exit(1);
+}
+if (!workspaceId) console.error('WORKSPACE_ID is not set: staff invites, removal, Translate, device confirmation and the Assistant are refused. pnpm bootstrap prints it.');
 
 // Spec §2.5, §6.2: prices in US dollars per million tokens, keyed by model id.
 const DEFAULT_PRICES = '{"gpt-6.2-sol":{"in":2,"cached":0.1,"write":2.5,"out":10},"gpt-6.2-astra":{"in":8,"cached":0.4,"write":10,"out":40}}';
@@ -46,7 +52,6 @@ function assistantConfig() {
     dayUsd: usd('ASSISTANT_DAY_USD', 3),
     monthUsd: usd('ASSISTANT_MONTH_USD', 100),
     dbPath: process.env.ASSISTANT_DB_PATH || '/data/assistant.db',
-    workspaceAlias,
     serverName,
   };
 }
@@ -59,7 +64,7 @@ const app = createApp({
     serverName,
     publicUrl: env('PUBLIC_URL', `https://${serverName}`).replace(/\/+$/, ''),
     registrationToken: env('REGISTRATION_TOKEN'),
-    workspaceAlias,
+    workspaceId,
     translate,
     translateDailyLimit: Number.isFinite(dailyLimit) ? dailyLimit : 0,
   },

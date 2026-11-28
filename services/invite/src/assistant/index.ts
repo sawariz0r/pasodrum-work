@@ -22,12 +22,13 @@ export type AssistantConfig = {
   dayUsd: number;
   monthUsd: number;
   dbPath: string;
-  workspaceAlias: string;
   serverName: string;
 };
 export type AssistantDeps = {
   get: HomeserverGet;
   config: AssistantConfig | null;
+  /** The service's pinned workspace room (WORKSPACE_ID); null refuses everyone. */
+  workspaceId: string | null;
   isClientAccount: (userId: string) => boolean;
   isClientOf: (userId: string, spaceId: string) => boolean;
   /** The service's per-IP limit; upgrades to this path count against it. */
@@ -62,7 +63,7 @@ function modelOf(setting: string, prices: Record<string, Price>): Model | null {
   return model && ok ? { model, effort, price } : null;
 }
 
-export function createAssistant({ get, config: given, isClientAccount, isClientOf, allowIp, step: injected, now = Date.now }: AssistantDeps) {
+export function createAssistant({ get, config: given, workspaceId, isClientAccount, isClientOf, allowIp, step: injected, now = Date.now }: AssistantDeps) {
   const models = given && { quick: modelOf(given.quick, given.prices), thorough: modelOf(given.thorough, given.prices) };
   const config = models?.quick && models.thorough ? given : null;
   const modelFor = (depth: Depth) => models![depth]!;
@@ -94,7 +95,7 @@ export function createAssistant({ get, config: given, isClientAccount, isClientO
   }
 
   function readerFor(token: string, signal?: AbortSignal) {
-    return openReader({ get, workspaceAlias: config!.workspaceAlias, serverName: config!.serverName, mask: mask!, isClientAccount, isClientOf, kinds, signal }, token);
+    return openReader({ get, workspaceId, serverName: config!.serverName, mask: mask!, isClientAccount, isClientOf, kinds, signal }, token);
   }
 
   async function status(req: IncomingMessage): Promise<Answer> {
